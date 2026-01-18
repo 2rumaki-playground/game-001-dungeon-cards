@@ -52,4 +52,4 @@ AI による自動生成の結果は日本語で出力すること。
 - 既存文章の大規模リライト（差分が読めなくなるため）
 
 ## コミットメッセージの書き方
-- [.github/git-commit-instructions.md](.github/git-commit-instructions.md) を参照
+- [.github/git-commit-instructions.md](git-commit-instructions.md) を参照
