@@ -21,6 +21,22 @@
 - バランス調整・演出・拡張要素は対象外
 - 仕様は「実装に合わせて進化」する
 
+## MVP の技術スタック（仮）
+- フロント：TypeScript + Vite
+- 描画：PixiJS（2Dタイル描画）
+- UI：HTML/CSS で必要最小限（React は必要になってから）
+- バック：ASP.NET Core (.NET 10) Minimal API
+- DB：MVP では使用しない（将来は EF Core + SQLite → Postgres）
+- テスト：xUnit
+
+## MVP の最小スコープ（仮）
+- セーブ：ローカルのみ（`IndexedDB` / `localStorage`）
+- プレイ：ソロ専用
+- 認証：なし
+- サーバ：MVP では不要
+- ログ保存：直近 N 件のみ保持
+- 再開：1 つの途中セーブのみ
+
 ## 実装状況（手動更新）
 - [ ] ターン進行
 - [ ] マップ生成
