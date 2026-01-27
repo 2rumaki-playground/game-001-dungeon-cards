@@ -31,4 +31,7 @@ async function main() {
 	app.stage.addChild(grid);
 }
 
-main();
+main().catch((error) => {
+	console.error("アプリケーションの初期化に失敗しました:", error);
+	alert("アプリケーションの初期化中にエラーが発生しました。詳細はコンソールを確認してください。");
+});
