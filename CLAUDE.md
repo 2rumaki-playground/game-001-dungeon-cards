@@ -67,6 +67,7 @@ Issueとして起票する：
 - **描画ライブラリ**: PixiJS
 - **パッケージマネージャー**: pnpm
 - **リンター/フォーマッター**: Biome
+- **テスト**: Vitest
 
 ### バックエンド（予定）
 
@@ -87,6 +88,20 @@ pnpm build       # プロダクションビルド
 pnpm preview     # ビルド結果のプレビュー
 pnpm lint        # Biomeによるリント
 pnpm format      # Biomeによるフォーマット
+pnpm test        # テスト実行（watchモード）
+pnpm test:run    # テスト実行（1回のみ）
+```
+
+### ディレクトリ構造
+
+```
+frontend/src/
+├── main.ts          # エントリーポイント
+├── constants.ts     # 定数（constants.mdの値）
+├── types/           # 型定義
+├── game/            # ゲームロジック
+├── ui/              # UI関連
+└── utils/           # ユーティリティ（RNGなど）
 ```
 
 ### コーディング規約
