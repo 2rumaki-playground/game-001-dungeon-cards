@@ -16,6 +16,8 @@ import type {
 } from "../types";
 import { RNG } from "../utils/rng";
 
+const cloneRng = (rng: RNG): RNG => rng.clone();
+
 /**
  * 初期プレイヤー状態を作成
  */
@@ -68,28 +70,28 @@ export function createTitleScreenState(seed?: number): GameState {
  * 画面を変更
  */
 export function changeScreen(state: GameState, screen: Screen): GameState {
-	return { ...state, screen };
+	return { ...state, screen, rng: cloneRng(state.rng) };
 }
 
 /**
  * ターンを変更
  */
 export function changeTurn(state: GameState, turn: Turn): GameState {
-	return { ...state, turn };
+	return { ...state, turn, rng: cloneRng(state.rng) };
 }
 
 /**
  * 階層を設定
  */
 export function setFloor(state: GameState, floor: number): GameState {
-	return { ...state, floor };
+	return { ...state, floor, rng: cloneRng(state.rng) };
 }
 
 /**
  * マップを設定
  */
 export function setMap(state: GameState, map: GameMap): GameState {
-	return { ...state, map };
+	return { ...state, map, rng: cloneRng(state.rng) };
 }
 
 /**
@@ -99,14 +101,14 @@ export function updatePlayer(
 	state: GameState,
 	updater: (player: Player) => Player,
 ): GameState {
-	return { ...state, player: updater(state.player) };
+	return { ...state, player: updater(state.player), rng: cloneRng(state.rng) };
 }
 
 /**
  * 敵リストを設定
  */
 export function setEnemies(state: GameState, enemies: Enemy[]): GameState {
-	return { ...state, enemies };
+	return { ...state, enemies, rng: cloneRng(state.rng) };
 }
 
 /**
@@ -120,6 +122,7 @@ export function updateEnemy(
 	return {
 		...state,
 		enemies: state.enemies.map((e) => (e.id === enemyId ? updater(e) : e)),
+		rng: cloneRng(state.rng),
 	};
 }
 
@@ -130,6 +133,7 @@ export function removeEnemy(state: GameState, enemyId: string): GameState {
 	return {
 		...state,
 		enemies: state.enemies.filter((e) => e.id !== enemyId),
+		rng: cloneRng(state.rng),
 	};
 }
 
@@ -137,7 +141,7 @@ export function removeEnemy(state: GameState, enemyId: string): GameState {
  * デッキ状態を設定
  */
 export function setDeck(state: GameState, deck: DeckState): GameState {
-	return { ...state, deck };
+	return { ...state, deck, rng: cloneRng(state.rng) };
 }
 
 /**
@@ -154,12 +158,12 @@ export function addActionLog(
 		timestamp: Date.now(),
 	};
 	const newLog = [entry, ...state.actionLog].slice(0, maxEntries);
-	return { ...state, actionLog: newLog };
+	return { ...state, actionLog: newLog, rng: cloneRng(state.rng) };
 }
 
 /**
  * 行動ログをクリア
  */
 export function clearActionLog(state: GameState): GameState {
-	return { ...state, actionLog: [] };
+	return { ...state, actionLog: [], rng: cloneRng(state.rng) };
 }

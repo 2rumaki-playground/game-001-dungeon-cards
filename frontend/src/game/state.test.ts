@@ -56,6 +56,17 @@ describe("state", () => {
 		});
 	});
 
+	describe("rng", () => {
+		it("状態更新でRNG参照が共有されない", () => {
+			const state = createTitleScreenState(12345);
+			const newState = changeScreen(state, "game");
+			expect(newState.rng).not.toBe(state.rng);
+			const newStateValue = newState.rng.random();
+			const oldStateValue = state.rng.random();
+			expect(oldStateValue).toBe(newStateValue);
+		});
+	});
+
 	describe("setFloor", () => {
 		it("階層を設定", () => {
 			const state = createTitleScreenState(12345);
