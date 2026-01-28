@@ -20,6 +20,15 @@ export class RNG {
 	}
 
 	/**
+	 * 内部状態を保持したまま複製
+	 */
+	clone(): RNG {
+		const rng = new RNG(this.seed);
+		rng.state = this.state;
+		return rng;
+	}
+
+	/**
 	 * ランダムなシード値を生成
 	 */
 	private generateRandomSeed(): number {
