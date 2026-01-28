@@ -3,6 +3,7 @@
  * @see docs/spec/mvp/rules.md
  */
 
+import type { RNG } from "../utils/rng";
 import type { DeckState } from "./card";
 import type { Enemy, Player } from "./character";
 import type { GameMap } from "./map";
@@ -46,4 +47,6 @@ export type GameState = {
 	deck: DeckState;
 	/** 行動ログ */
 	actionLog: ActionLogEntry[];
+	/** 乱数生成器 */
+	rng: RNG;
 };
