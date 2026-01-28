@@ -1,34 +1,60 @@
-import { Application, Graphics } from "pixi.js";
+import { Application } from "pixi.js";
+import { COLORS } from "./constants";
+import { createInitialGameState } from "./game";
+import type { GameState } from "./types";
+import { getMapPixelSize, MapRenderer } from "./ui";
 
-const GRID_SIZE = 7;
-const CELL_SIZE = 64;
-const CELL_GAP = 4;
-const GRID_COLOR = 0x3a3a3a;
-const BACKGROUND_COLOR = 0x1a1a1a;
+/** 現在のゲーム状態 */
+let gameState: GameState;
+
+/** マップレンダラー */
+let mapRenderer: MapRenderer;
+
+/**
+ * ゲーム状態を更新して再描画
+ */
+function updateState(newState: GameState): void {
+	gameState = newState;
+	renderGame();
+}
+
+/**
+ * ゲームを描画
+ */
+function renderGame(): void {
+	if (gameState.screen === "game") {
+		mapRenderer.render(gameState.map, gameState.player, gameState.enemies);
+	} else {
+		mapRenderer.clear();
+	}
+}
 
 async function main() {
 	const app = new Application();
+	const mapSize = getMapPixelSize();
 
 	await app.init({
-		width: GRID_SIZE * (CELL_SIZE + CELL_GAP) + CELL_GAP,
-		height: GRID_SIZE * (CELL_SIZE + CELL_GAP) + CELL_GAP,
-		backgroundColor: BACKGROUND_COLOR,
+		width: mapSize.width,
+		height: mapSize.height,
+		backgroundColor: COLORS.background,
 	});
 
 	document.body.appendChild(app.canvas);
 
-	const grid = new Graphics();
+	// マップレンダラーを初期化
+	mapRenderer = new MapRenderer();
+	app.stage.addChild(mapRenderer.getContainer());
 
-	for (let row = 0; row < GRID_SIZE; row++) {
-		for (let col = 0; col < GRID_SIZE; col++) {
-			const x = col * (CELL_SIZE + CELL_GAP) + CELL_GAP;
-			const y = row * (CELL_SIZE + CELL_GAP) + CELL_GAP;
-			grid.rect(x, y, CELL_SIZE, CELL_SIZE);
-			grid.fill(GRID_COLOR);
-		}
-	}
+	// ゲーム状態を初期化
+	gameState = createInitialGameState();
 
-	app.stage.addChild(grid);
+	// 初回描画
+	renderGame();
+
+	// デバッグ用：コンソールからゲーム状態を確認できるようにする
+	(window as unknown as { gameState: GameState }).gameState = gameState;
+	(window as unknown as { updateState: typeof updateState }).updateState =
+		updateState;
 }
 
 main().catch((error) => {

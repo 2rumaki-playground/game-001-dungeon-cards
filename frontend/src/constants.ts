@@ -46,3 +46,20 @@ export const ACTION_LOG_LIMIT = 50;
 // マップレイアウト（内側の床タイル）
 export const FLOOR_AREA_SIZE = 5; // 5x5
 export const FLOOR_TILE_COUNT = FLOOR_AREA_SIZE * FLOOR_AREA_SIZE; // 25
+
+// 描画設定
+export const CELL_SIZE = 64;
+export const CELL_GAP = 4;
+
+// 色定義
+export const COLORS = {
+	// 背景
+	background: 0x1a1a1a,
+	// タイル
+	floor: 0x3a3a3a,
+	wall: 0x1a1a1a,
+	stairs: 0x4a6a4a,
+	// キャラクター
+	player: 0x4a8cca,
+	enemy: 0xca4a4a,
+} as const;
