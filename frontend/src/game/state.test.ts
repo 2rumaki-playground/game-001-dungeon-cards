@@ -1,9 +1,18 @@
 import { describe, expect, it } from "vitest";
-import { INITIAL_FLOOR, MAX_AP, PLAYER_INITIAL_HP } from "../constants";
+import {
+	ENEMY_COUNT,
+	ENEMY_HP,
+	INITIAL_FLOOR,
+	MAX_AP,
+	MAP_HEIGHT,
+	MAP_WIDTH,
+	PLAYER_INITIAL_HP,
+} from "../constants";
 import {
 	addActionLog,
 	changeScreen,
 	changeTurn,
+	createInitialGameState,
 	createInitialPlayer,
 	createTitleScreenState,
 	removeEnemy,
@@ -36,6 +45,32 @@ describe("state", () => {
 			const state1 = createTitleScreenState();
 			const state2 = createTitleScreenState();
 			expect(state1.rng.seed).not.toBe(state2.rng.seed);
+		});
+	});
+
+	describe("createInitialGameState", () => {
+		it("ゲーム画面の初期状態を作成", () => {
+			const state = createInitialGameState(12345);
+			expect(state.screen).toBe("game");
+			expect(state.turn).toBe("player");
+			expect(state.floor).toBe(INITIAL_FLOOR);
+			expect(state.rng.seed).toBe(12345);
+			expect(state.map.length).toBe(MAP_HEIGHT);
+			for (const row of state.map) {
+				expect(row.length).toBe(MAP_WIDTH);
+			}
+			expect(state.enemies.length).toBe(ENEMY_COUNT);
+			for (const enemy of state.enemies) {
+				expect(enemy.hp).toBe(ENEMY_HP);
+				expect(enemy.maxHp).toBe(ENEMY_HP);
+				expect(state.map[enemy.position.y][enemy.position.x].type).toBe("floor");
+			}
+			expect(state.map[state.player.position.y][state.player.position.x].type).toBe(
+				"floor",
+			);
+			const stairsCount = state.map.flat().filter((tile) => tile.type === "stairs")
+				.length;
+			expect(stairsCount).toBe(1);
 		});
 	});
 
