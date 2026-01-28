@@ -3,7 +3,12 @@
  * @see docs/spec/mvp/rules.md
  */
 
-import { INITIAL_FLOOR, MAX_AP, PLAYER_INITIAL_HP } from "../constants";
+import {
+	ENEMY_HP,
+	INITIAL_FLOOR,
+	MAX_AP,
+	PLAYER_INITIAL_HP,
+} from "../constants";
 import type {
 	ActionLogEntry,
 	DeckState,
@@ -14,6 +19,7 @@ import type {
 	Screen,
 	Turn,
 } from "../types";
+import { generateMapPlacement } from "./map";
 import { RNG } from "../utils/rng";
 
 const cloneRng = (rng: RNG): RNG => rng.clone();
@@ -63,6 +69,33 @@ export function createTitleScreenState(seed?: number): GameState {
 		deck: createEmptyDeckState(),
 		actionLog: [],
 		rng: new RNG(seed),
+	};
+}
+
+/**
+ * ゲーム画面の初期状態を作成
+ */
+export function createInitialGameState(seed?: number): GameState {
+	const rng = new RNG(seed);
+	const { map, player, enemies } = generateMapPlacement(rng);
+	const initialPlayer = createInitialPlayer();
+	const enemyStates: Enemy[] = enemies.map((position, index) => ({
+		id: `enemy-${index + 1}`,
+		position,
+		hp: ENEMY_HP,
+		maxHp: ENEMY_HP,
+	}));
+
+	return {
+		screen: "game",
+		turn: "player",
+		floor: INITIAL_FLOOR,
+		map,
+		player: { ...initialPlayer, position: player },
+		enemies: enemyStates,
+		deck: createEmptyDeckState(),
+		actionLog: [],
+		rng,
 	};
 }
 
