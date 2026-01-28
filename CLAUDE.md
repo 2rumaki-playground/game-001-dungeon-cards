@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## プロジェクト概要
 
-「タイル制ローグライク × デッキ構築」ゲームのMVP（Minimum Viable Product）開発。現在は仕様策定フェーズで、実装コードはまだ存在しない。
+「タイル制ローグライク × デッキ構築」ゲームのMVP（Minimum Viable Product）開発。
 
 ## 仕様ドキュメント構成
 
@@ -56,12 +56,46 @@ Issueとして起票する：
 - **背景/問題**: 実装・テスト・UXで何が困るか
 - **受け入れ条件**: 何が決まれば完了か
 
-## 技術スタック（予定）
+## 技術スタック
 
-- フロント: TypeScript + Vite + PixiJS
-- バック: ASP.NET Core (.NET 10) Minimal API
+### フロントエンド
+
+`frontend/` ディレクトリで管理
+
+- **言語**: TypeScript
+- **ビルドツール**: Vite
+- **描画ライブラリ**: PixiJS
+- **パッケージマネージャー**: pnpm
+- **リンター/フォーマッター**: Biome
+
+### バックエンド（予定）
+
+- ASP.NET Core (.NET 10) Minimal API
 - テスト: xUnit
 - DB: MVPでは使用しない
+
+## フロントエンド開発
+
+### コマンド
+
+```bash
+cd frontend
+
+pnpm install     # 依存関係のインストール
+pnpm dev         # 開発サーバー起動
+pnpm build       # プロダクションビルド
+pnpm preview     # ビルド結果のプレビュー
+pnpm lint        # Biomeによるリント
+pnpm format      # Biomeによるフォーマット
+```
+
+### コーディング規約
+
+- インデント: タブ
+- クォートスタイル: ダブルクォート (`"`)
+- import文の自動整理: 有効
+
+これらは `frontend/biome.json` で設定済み
 
 ## 言語
 
