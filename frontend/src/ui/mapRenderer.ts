@@ -103,12 +103,7 @@ export class MapRenderer {
 			const size = CELL_SIZE - padding * 2;
 
 			// 敵を四角で描画
-			graphics.rect(
-				pixelPos.x + padding,
-				pixelPos.y + padding,
-				size,
-				size,
-			);
+			graphics.rect(pixelPos.x + padding, pixelPos.y + padding, size, size);
 			graphics.fill(COLORS.enemy);
 
 			this.enemiesContainer.addChild(graphics);
