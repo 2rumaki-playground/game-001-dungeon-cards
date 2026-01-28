@@ -3,12 +3,7 @@
  * @see docs/spec/mvp/rules.md - マップ生成
  */
 
-import {
-	ENEMY_COUNT,
-	MAP_HEIGHT,
-	MAP_WIDTH,
-	STAIRS_COUNT,
-} from "../constants";
+import { ENEMY_COUNT, MAP_HEIGHT, MAP_WIDTH, STAIRS_COUNT } from "../constants";
 import type { GameMap, Position, Tile } from "../types";
 import { RNG } from "../utils/rng";
 

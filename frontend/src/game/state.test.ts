@@ -63,13 +63,16 @@ describe("state", () => {
 			for (const enemy of state.enemies) {
 				expect(enemy.hp).toBe(ENEMY_HP);
 				expect(enemy.maxHp).toBe(ENEMY_HP);
-				expect(state.map[enemy.position.y][enemy.position.x].type).toBe("floor");
+				expect(state.map[enemy.position.y][enemy.position.x].type).toBe(
+					"floor",
+				);
 			}
-			expect(state.map[state.player.position.y][state.player.position.x].type).toBe(
-				"floor",
-			);
-			const stairsCount = state.map.flat().filter((tile) => tile.type === "stairs")
-				.length;
+			expect(
+				state.map[state.player.position.y][state.player.position.x].type,
+			).toBe("floor");
+			const stairsCount = state.map
+				.flat()
+				.filter((tile) => tile.type === "stairs").length;
 			expect(stairsCount).toBe(1);
 		});
 	});

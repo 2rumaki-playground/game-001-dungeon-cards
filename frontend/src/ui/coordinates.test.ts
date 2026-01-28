@@ -53,6 +53,52 @@ describe("pixelToGrid", () => {
 		const result = pixelToGrid({ x, y });
 		expect(result).toEqual({ x: MAP_WIDTH - 1, y: MAP_HEIGHT - 1 });
 	});
+
+	it("セル間のギャップ（横方向）ではnullを返す", () => {
+		// セル(0,0)とセル(1,0)の間のギャップ領域
+		const gapX = CELL_GAP + CELL_SIZE + 1; // ギャップの中
+		const cellY = CELL_GAP + 10; // セル(0,0)のY座標内
+		const result = pixelToGrid({ x: gapX, y: cellY });
+		expect(result).toBeNull();
+	});
+
+	it("セル間のギャップ（縦方向）ではnullを返す", () => {
+		// セル(0,0)とセル(0,1)の間のギャップ領域
+		const cellX = CELL_GAP + 10; // セル(0,0)のX座標内
+		const gapY = CELL_GAP + CELL_SIZE + 1; // ギャップの中
+		const result = pixelToGrid({ x: cellX, y: gapY });
+		expect(result).toBeNull();
+	});
+
+	it("セルの右端（CELL_SIZE-1）では有効なグリッド座標を返す", () => {
+		const x = CELL_GAP + CELL_SIZE - 1; // セル(0,0)の右端
+		const y = CELL_GAP + 10;
+		const result = pixelToGrid({ x, y });
+		expect(result).toEqual({ x: 0, y: 0 });
+	});
+
+	it("セルの下端（CELL_SIZE-1）では有効なグリッド座標を返す", () => {
+		const x = CELL_GAP + 10;
+		const y = CELL_GAP + CELL_SIZE - 1; // セル(0,0)の下端
+		const result = pixelToGrid({ x, y });
+		expect(result).toEqual({ x: 0, y: 0 });
+	});
+
+	it("右端の外周余白ではnullを返す", () => {
+		// マップの右端（最後のセルの右側）のギャップ領域
+		const x = MAP_WIDTH * (CELL_SIZE + CELL_GAP) + CELL_GAP + 1;
+		const y = CELL_GAP + 10;
+		const result = pixelToGrid({ x, y });
+		expect(result).toBeNull();
+	});
+
+	it("下端の外周余白ではnullを返す", () => {
+		// マップの下端（最後のセルの下側）のギャップ領域
+		const x = CELL_GAP + 10;
+		const y = MAP_HEIGHT * (CELL_SIZE + CELL_GAP) + CELL_GAP + 1;
+		const result = pixelToGrid({ x, y });
+		expect(result).toBeNull();
+	});
 });
 
 describe("getMapPixelSize", () => {
