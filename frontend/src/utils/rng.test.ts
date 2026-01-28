@@ -120,5 +120,13 @@ describe("RNG", () => {
 				"Cannot sample 5 items from array of length 3",
 			);
 		});
+
+		it("負の個数でエラー", () => {
+			const rng = new RNG(12345);
+			const array = [1, 2, 3];
+			expect(() => rng.sample(array, -1)).toThrow(
+				"Cannot sample negative count: -1",
+			);
+		});
 	});
 });

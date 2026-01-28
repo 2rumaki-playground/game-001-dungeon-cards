@@ -72,6 +72,9 @@ export class RNG {
 	 * 配列からランダムにn個選択（重複なし）
 	 */
 	sample<T>(array: readonly T[], n: number): T[] {
+		if (n < 0) {
+			throw new Error(`Cannot sample negative count: ${n}`);
+		}
 		if (n > array.length) {
 			throw new Error(
 				`Cannot sample ${n} items from array of length ${array.length}`,
