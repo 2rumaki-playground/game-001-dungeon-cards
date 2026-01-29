@@ -3,9 +3,9 @@ import {
 	ENEMY_COUNT,
 	ENEMY_HP,
 	INITIAL_FLOOR,
-	MAX_AP,
 	MAP_HEIGHT,
 	MAP_WIDTH,
+	MAX_AP,
 	PLAYER_INITIAL_HP,
 } from "../constants";
 import {
