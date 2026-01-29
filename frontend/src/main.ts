@@ -4,6 +4,7 @@ import {
 	createInitialDeckState,
 	createInitialGameState,
 	drawCards,
+	executeMove,
 } from "./game";
 import type { Card, GameState } from "./types";
 import {
@@ -83,14 +84,14 @@ async function main() {
 	app.stage.addChild(directionContainer);
 
 	directionSelector.setOnDirectionSelect((direction) => {
-		console.log(
-			"カード使用:",
-			pendingCard?.type,
-			pendingCard?.id,
-			"方向:",
-			direction,
-		);
-		// TODO: ゲームロジックにカード使用を反映
+		if (pendingCard) {
+			if (pendingCard.type === "move") {
+				updateState(executeMove(gameState, pendingCard.id, direction));
+			} else if (pendingCard.type === "attack") {
+				// TODO: 攻撃処理は #93 スコープ
+				console.log("攻撃:", pendingCard.id, "方向:", direction);
+			}
+		}
 		directionSelector.hide();
 		pendingCard = null;
 	});
