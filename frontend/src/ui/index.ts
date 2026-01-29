@@ -3,4 +3,5 @@
  */
 
 export * from "./coordinates";
+export * from "./handRenderer";
 export * from "./mapRenderer";
