@@ -19,8 +19,8 @@ import type {
 	Screen,
 	Turn,
 } from "../types";
-import { generateMapPlacement } from "./map";
 import { RNG } from "../utils/rng";
+import { generateMapPlacement } from "./map";
 
 const cloneRng = (rng: RNG): RNG => rng.clone();
 

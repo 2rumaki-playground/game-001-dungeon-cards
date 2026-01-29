@@ -5,7 +5,7 @@
 
 import { ENEMY_COUNT, MAP_HEIGHT, MAP_WIDTH, STAIRS_COUNT } from "../constants";
 import type { GameMap, Position, Tile } from "../types";
-import { RNG } from "../utils/rng";
+import type { RNG } from "../utils/rng";
 
 export type MapPlacement = {
 	map: GameMap;

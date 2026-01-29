@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { MAP_HEIGHT, MAP_WIDTH } from "../constants";
-import { createFixedLayoutMap, generateMapPlacement } from "./map";
 import { RNG } from "../utils/rng";
+import { createFixedLayoutMap, generateMapPlacement } from "./map";
 
 describe("map", () => {
 	describe("createFixedLayoutMap", () => {
