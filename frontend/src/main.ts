@@ -1,8 +1,17 @@
 import { Application } from "pixi.js";
 import { COLORS } from "./constants";
-import { createInitialDeckState, createInitialGameState, drawCards } from "./game";
-import type { GameState } from "./types";
-import { HandRenderer, MapRenderer, getMapPixelSize } from "./ui";
+import {
+	createInitialDeckState,
+	createInitialGameState,
+	drawCards,
+} from "./game";
+import type { Card, GameState } from "./types";
+import {
+	DirectionSelector,
+	getMapPixelSize,
+	HandRenderer,
+	MapRenderer,
+} from "./ui";
 
 /** 手札エリアの高さ */
 const HAND_AREA_HEIGHT = 160;
@@ -15,6 +24,12 @@ let mapRenderer: MapRenderer;
 
 /** 手札レンダラー */
 let handRenderer: HandRenderer;
+
+/** 方向選択UI */
+let directionSelector: DirectionSelector;
+
+/** 方向選択待ちのカード */
+let pendingCard: Card | null = null;
 
 /**
  * ゲーム状態を更新して再描画
@@ -60,8 +75,39 @@ async function main() {
 	handContainer.y = mapSize.height + HAND_AREA_HEIGHT / 2 - 60;
 	app.stage.addChild(handContainer);
 
+	// 方向選択UIを初期化
+	directionSelector = new DirectionSelector();
+	const directionContainer = directionSelector.getContainer();
+	directionContainer.x = mapSize.width / 2;
+	directionContainer.y = mapSize.height + HAND_AREA_HEIGHT / 2 - 60;
+	app.stage.addChild(directionContainer);
+
+	directionSelector.setOnDirectionSelect((direction) => {
+		console.log(
+			"カード使用:",
+			pendingCard?.type,
+			pendingCard?.id,
+			"方向:",
+			direction,
+		);
+		// TODO: ゲームロジックにカード使用を反映
+		directionSelector.hide();
+		pendingCard = null;
+	});
+
+	directionSelector.setOnCancel(() => {
+		directionSelector.hide();
+		pendingCard = null;
+	});
+
 	handRenderer.setOnCardSelect((card) => {
-		console.log("カード選択:", card.type, card.id);
+		if (card.type === "wait") {
+			console.log("待機カード使用:", card.id);
+			// TODO: ゲームロジックに待機を反映
+		} else {
+			pendingCard = card;
+			directionSelector.show();
+		}
 	});
 
 	// ゲーム状態を初期化（デッキ生成＋手札ドロー込み）

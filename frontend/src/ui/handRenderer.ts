@@ -68,8 +68,7 @@ export class HandRenderer {
 	render(hand: Card[], currentAp: number): void {
 		this.container.removeChildren();
 
-		const totalWidth =
-			hand.length * CARD_WIDTH + (hand.length - 1) * CARD_GAP;
+		const totalWidth = hand.length * CARD_WIDTH + (hand.length - 1) * CARD_GAP;
 		const startX = -totalWidth / 2;
 
 		for (let i = 0; i < hand.length; i++) {
