@@ -103,10 +103,12 @@ describe("turn", () => {
 			expect(next.deck.discardPile.length).toBe(5);
 		});
 
-		it("ターンをenemyに遷移する", () => {
+		it("ターンをplayerからenemyに遷移する", () => {
 			const state = createGameState({
 				turn: "player",
 			});
+
+			expect(state.turn).toBe("player");
 
 			const next = endPlayerTurn(state);
 
