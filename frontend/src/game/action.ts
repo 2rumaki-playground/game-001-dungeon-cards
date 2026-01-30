@@ -3,11 +3,22 @@
  * @see docs/spec/mvp/rules.md
  */
 
-import { CARD_COST, MAP_HEIGHT, MAP_WIDTH } from "../constants";
+import {
+	CARD_COST,
+	MAP_HEIGHT,
+	MAP_WIDTH,
+	PLAYER_ATTACK_DAMAGE,
+} from "../constants";
 import type { Direction, GameState } from "../types";
 import { DIRECTION_DELTA } from "../types";
 import { playCard } from "./deck";
-import { addActionLog, setDeck, updatePlayer } from "./state";
+import {
+	addActionLog,
+	removeEnemy,
+	setDeck,
+	updateEnemy,
+	updatePlayer,
+} from "./state";
 
 /**
  * 移動可否を判定
@@ -79,4 +90,83 @@ export function executeMove(
 	}
 
 	return next;
+}
+
+/**
+ * 攻撃成立を判定
+ *
+ * 成立条件:
+ * - 指定方向1マス先がマップ内
+ * - 指定方向1マス先が壁タイルではない
+ * - 指定方向1マス先に敵が存在する
+ */
+function canAttack(
+	state: GameState,
+	direction: Direction,
+): { hit: false } | { hit: true; enemyId: string } {
+	const delta = DIRECTION_DELTA[direction];
+	const nx = state.player.position.x + delta.x;
+	const ny = state.player.position.y + delta.y;
+
+	// マップ範囲外
+	if (nx < 0 || ny < 0 || nx >= MAP_WIDTH || ny >= MAP_HEIGHT) {
+		return { hit: false };
+	}
+
+	// 壁タイル
+	if (state.map[ny][nx].type === "wall") {
+		return { hit: false };
+	}
+
+	// 敵が存在するか
+	const enemy = state.enemies.find(
+		(e) => e.position.x === nx && e.position.y === ny,
+	);
+	if (!enemy) {
+		return { hit: false };
+	}
+
+	return { hit: true, enemyId: enemy.id };
+}
+
+/**
+ * 攻撃カード使用時のプレイヤー攻撃処理
+ *
+ * 成功/失敗に関わらずAP消費・カード使用を行う。
+ * 成功時は敵にダメージ、HP0以下で敵を削除。
+ */
+export function executeAttack(
+	state: GameState,
+	cardId: string,
+	direction: Direction,
+): GameState {
+	// AP消費
+	let next = updatePlayer(state, (p) => ({
+		...p,
+		ap: p.ap - CARD_COST.attack,
+	}));
+
+	// カードを捨て札へ
+	next = setDeck(next, playCard(next.deck, cardId));
+
+	// 攻撃判定
+	const result = canAttack(state, direction);
+	if (!result.hit) {
+		return addActionLog(next, "攻撃できなかった");
+	}
+
+	// 敵にダメージ
+	next = updateEnemy(next, result.enemyId, (e) => ({
+		...e,
+		hp: e.hp - PLAYER_ATTACK_DAMAGE,
+	}));
+
+	// 敵HP0以下で死亡処理
+	const target = next.enemies.find((e) => e.id === result.enemyId);
+	if (target && target.hp <= 0) {
+		next = removeEnemy(next, result.enemyId);
+		return addActionLog(next, "敵を倒した");
+	}
+
+	return addActionLog(next, "敵に攻撃した");
 }
