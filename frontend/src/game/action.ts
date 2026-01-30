@@ -170,3 +170,21 @@ export function executeAttack(
 
 	return addActionLog(next, "敵に攻撃した");
 }
+
+/**
+ * 待機カード使用時の処理
+ *
+ * APコスト0。カードを捨て札へ移動し、行動ログを記録する。
+ */
+export function executeWait(state: GameState, cardId: string): GameState {
+	// AP消費（コスト0）
+	let next = updatePlayer(state, (p) => ({
+		...p,
+		ap: p.ap - CARD_COST.wait,
+	}));
+
+	// カードを捨て札へ
+	next = setDeck(next, playCard(next.deck, cardId));
+
+	return addActionLog(next, "待機した");
+}

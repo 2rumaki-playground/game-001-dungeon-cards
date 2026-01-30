@@ -9,7 +9,7 @@ import {
 } from "../constants";
 import type { Enemy, GameMap, GameState, Tile } from "../types";
 import { RNG } from "../utils/rng";
-import { executeAttack, executeMove } from "./action";
+import { executeAttack, executeMove, executeWait } from "./action";
 
 /**
  * テスト用の7x7マップを生成（外周壁・内側床）
@@ -299,5 +299,46 @@ describe("executeAttack", () => {
 		expect(state.enemies[0].hp).toBe(originalEnemyHp);
 		expect(state.player.ap).toBe(originalAp);
 		expect(state.deck.hand).toHaveLength(1);
+	});
+});
+
+describe("executeWait", () => {
+	it("待機成功: AP消費なし・カード捨て札移動・行動ログ", () => {
+		const state = createTestState({
+			deck: {
+				drawPile: [],
+				hand: [{ id: "wait-1", type: "wait" }],
+				discardPile: [],
+			},
+		});
+		const result = executeWait(state, "wait-1");
+
+		// APが減らない（コスト0）
+		expect(result.player.ap).toBe(MAX_AP - CARD_COST.wait);
+		expect(result.player.ap).toBe(MAX_AP);
+		// カードが捨て札に移動
+		expect(result.deck.hand).toHaveLength(0);
+		expect(result.deck.discardPile).toHaveLength(1);
+		expect(result.deck.discardPile[0].id).toBe("wait-1");
+		// 行動ログに記録
+		expect(result.actionLog).toHaveLength(1);
+		expect(result.actionLog[0].message).toBe("待機した");
+	});
+
+	it("元のGameStateが変更されない（イミュータブル）", () => {
+		const state = createTestState({
+			deck: {
+				drawPile: [],
+				hand: [{ id: "wait-1", type: "wait" }],
+				discardPile: [],
+			},
+		});
+		const originalAp = state.player.ap;
+
+		executeWait(state, "wait-1");
+
+		expect(state.player.ap).toBe(originalAp);
+		expect(state.deck.hand).toHaveLength(1);
+		expect(state.deck.discardPile).toHaveLength(0);
 	});
 });

@@ -4,7 +4,9 @@ import {
 	createInitialDeckState,
 	createInitialGameState,
 	drawCards,
+	executeAttack,
 	executeMove,
+	executeWait,
 } from "./game";
 import type { Card, GameState } from "./types";
 import {
@@ -32,10 +34,19 @@ let directionSelector: DirectionSelector;
 /** 方向選択待ちのカード */
 let pendingCard: Card | null = null;
 
+/** デバッグログの有効/無効（コンソールから切替可能） */
+let debugLog = import.meta.env.DEV;
+
 /**
  * ゲーム状態を更新して再描画
  */
 function updateState(newState: GameState): void {
+	if (debugLog) {
+		const newEntries = newState.actionLog.length - gameState.actionLog.length;
+		for (let i = newEntries - 1; i >= 0; i--) {
+			console.log(`[行動ログ] ${newState.actionLog[i].message}`);
+		}
+	}
 	gameState = newState;
 	renderGame();
 }
@@ -88,8 +99,7 @@ async function main() {
 			if (pendingCard.type === "move") {
 				updateState(executeMove(gameState, pendingCard.id, direction));
 			} else if (pendingCard.type === "attack") {
-				// TODO: 攻撃処理は #93 スコープ
-				console.log("攻撃:", pendingCard.id, "方向:", direction);
+				updateState(executeAttack(gameState, pendingCard.id, direction));
 			}
 		}
 		directionSelector.hide();
@@ -103,8 +113,7 @@ async function main() {
 
 	handRenderer.setOnCardSelect((card) => {
 		if (card.type === "wait") {
-			console.log("待機カード使用:", card.id);
-			// TODO: ゲームロジックに待機を反映
+			updateState(executeWait(gameState, card.id));
 		} else {
 			pendingCard = card;
 			directionSelector.show();
@@ -120,10 +129,20 @@ async function main() {
 	// 初回描画
 	renderGame();
 
-	// デバッグ用：コンソールからゲーム状態を確認できるようにする
-	(window as unknown as { gameState: GameState }).gameState = gameState;
-	(window as unknown as { updateState: typeof updateState }).updateState =
-		updateState;
+	// デバッグ用：コンソールからゲーム状態・ログ設定を確認・変更できるようにする
+	const debugWindow = window as unknown as {
+		gameState: GameState;
+		updateState: typeof updateState;
+		debugLog: boolean;
+	};
+	debugWindow.gameState = gameState;
+	debugWindow.updateState = updateState;
+	Object.defineProperty(debugWindow, "debugLog", {
+		get: () => debugLog,
+		set: (v: boolean) => {
+			debugLog = v;
+		},
+	});
 }
 
 main().catch((error) => {
