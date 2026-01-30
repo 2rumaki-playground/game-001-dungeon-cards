@@ -4,7 +4,9 @@ import {
 	createInitialDeckState,
 	createInitialGameState,
 	drawCards,
+	executeAttack,
 	executeMove,
+	executeWait,
 } from "./game";
 import type { Card, GameState } from "./types";
 import {
@@ -88,8 +90,7 @@ async function main() {
 			if (pendingCard.type === "move") {
 				updateState(executeMove(gameState, pendingCard.id, direction));
 			} else if (pendingCard.type === "attack") {
-				// TODO: 攻撃処理は #93 スコープ
-				console.log("攻撃:", pendingCard.id, "方向:", direction);
+				updateState(executeAttack(gameState, pendingCard.id, direction));
 			}
 		}
 		directionSelector.hide();
@@ -103,8 +104,7 @@ async function main() {
 
 	handRenderer.setOnCardSelect((card) => {
 		if (card.type === "wait") {
-			console.log("待機カード使用:", card.id);
-			// TODO: ゲームロジックに待機を反映
+			updateState(executeWait(gameState, card.id));
 		} else {
 			pendingCard = card;
 			directionSelector.show();
