@@ -1,8 +1,15 @@
 import { describe, expect, it } from "vitest";
-import { CARD_COST, MAP_HEIGHT, MAP_WIDTH, MAX_AP } from "../constants";
+import {
+	CARD_COST,
+	ENEMY_HP,
+	MAP_HEIGHT,
+	MAP_WIDTH,
+	MAX_AP,
+	PLAYER_ATTACK_DAMAGE,
+} from "../constants";
 import type { Enemy, GameMap, GameState, Tile } from "../types";
 import { RNG } from "../utils/rng";
-import { executeMove } from "./action";
+import { executeAttack, executeMove } from "./action";
 
 /**
  * テスト用の7x7マップを生成（外周壁・内側床）
@@ -134,6 +141,162 @@ describe("executeMove", () => {
 		executeMove(state, "move-1", "right");
 
 		expect(state.player.position).toEqual(originalPosition);
+		expect(state.player.ap).toBe(originalAp);
+		expect(state.deck.hand).toHaveLength(1);
+	});
+});
+
+describe("executeAttack", () => {
+	it("攻撃成功: 敵HPが減少・AP消費・カード捨て札移動・行動ログ", () => {
+		const enemies: Enemy[] = [
+			{
+				id: "enemy-1",
+				position: { x: 4, y: 3 },
+				hp: ENEMY_HP,
+				maxHp: ENEMY_HP,
+			},
+		];
+		const state = createTestState({
+			enemies,
+			deck: {
+				drawPile: [],
+				hand: [{ id: "attack-1", type: "attack" }],
+				discardPile: [],
+			},
+		});
+		const result = executeAttack(state, "attack-1", "right");
+
+		// 敵HPが減少
+		expect(result.enemies).toHaveLength(1);
+		expect(result.enemies[0].hp).toBe(ENEMY_HP - PLAYER_ATTACK_DAMAGE);
+		// AP消費
+		expect(result.player.ap).toBe(MAX_AP - CARD_COST.attack);
+		// カードが捨て札に移動
+		expect(result.deck.hand).toHaveLength(0);
+		expect(result.deck.discardPile).toHaveLength(1);
+		expect(result.deck.discardPile[0].id).toBe("attack-1");
+		// 行動ログに記録
+		expect(result.actionLog.length).toBeGreaterThan(0);
+		expect(result.actionLog[0].message).toBe("敵に攻撃した");
+	});
+
+	it("攻撃成功（敵HP0で死亡）: 敵がenemiesから削除される", () => {
+		const enemies: Enemy[] = [
+			{ id: "enemy-1", position: { x: 4, y: 3 }, hp: 1, maxHp: ENEMY_HP },
+		];
+		const state = createTestState({
+			enemies,
+			deck: {
+				drawPile: [],
+				hand: [{ id: "attack-1", type: "attack" }],
+				discardPile: [],
+			},
+		});
+		const result = executeAttack(state, "attack-1", "right");
+
+		// 敵が削除される
+		expect(result.enemies).toHaveLength(0);
+		// AP消費
+		expect(result.player.ap).toBe(MAX_AP - CARD_COST.attack);
+		// 行動ログに死亡が記録
+		expect(result.actionLog[0].message).toBe("敵を倒した");
+	});
+
+	it("攻撃不成立（敵がいない方向）: AP消費・カード捨て札移動・失敗ログ", () => {
+		const state = createTestState({
+			enemies: [],
+			deck: {
+				drawPile: [],
+				hand: [{ id: "attack-1", type: "attack" }],
+				discardPile: [],
+			},
+		});
+		const result = executeAttack(state, "attack-1", "right");
+
+		// AP消費
+		expect(result.player.ap).toBe(MAX_AP - CARD_COST.attack);
+		// カードが捨て札に移動
+		expect(result.deck.hand).toHaveLength(0);
+		expect(result.deck.discardPile).toHaveLength(1);
+		// 失敗ログ
+		expect(result.actionLog[0].message).toBe("攻撃できなかった");
+	});
+
+	it("攻撃不成立（壁方向）: AP消費・カード捨て札移動", () => {
+		const state = createTestState({
+			player: {
+				position: { x: 1, y: 1 },
+				hp: 10,
+				maxHp: 10,
+				ap: MAX_AP,
+				maxAp: MAX_AP,
+			},
+			deck: {
+				drawPile: [],
+				hand: [{ id: "attack-1", type: "attack" }],
+				discardPile: [],
+			},
+		});
+		const result = executeAttack(state, "attack-1", "up");
+
+		// AP消費
+		expect(result.player.ap).toBe(MAX_AP - CARD_COST.attack);
+		// カードが捨て札に移動
+		expect(result.deck.hand).toHaveLength(0);
+		expect(result.deck.discardPile).toHaveLength(1);
+		// 失敗ログ
+		expect(result.actionLog[0].message).toBe("攻撃できなかった");
+	});
+
+	it("攻撃不成立（マップ外方向）: AP消費・カード捨て札移動", () => {
+		const state = createTestState({
+			player: {
+				position: { x: 0, y: 0 },
+				hp: 10,
+				maxHp: 10,
+				ap: MAX_AP,
+				maxAp: MAX_AP,
+			},
+			deck: {
+				drawPile: [],
+				hand: [{ id: "attack-1", type: "attack" }],
+				discardPile: [],
+			},
+		});
+		const result = executeAttack(state, "attack-1", "up");
+
+		// AP消費
+		expect(result.player.ap).toBe(MAX_AP - CARD_COST.attack);
+		// カードが捨て札に移動
+		expect(result.deck.hand).toHaveLength(0);
+		expect(result.deck.discardPile).toHaveLength(1);
+		// 失敗ログ
+		expect(result.actionLog[0].message).toBe("攻撃できなかった");
+	});
+
+	it("元のGameStateが変更されない（イミュータブル）", () => {
+		const enemies: Enemy[] = [
+			{
+				id: "enemy-1",
+				position: { x: 4, y: 3 },
+				hp: ENEMY_HP,
+				maxHp: ENEMY_HP,
+			},
+		];
+		const state = createTestState({
+			enemies,
+			deck: {
+				drawPile: [],
+				hand: [{ id: "attack-1", type: "attack" }],
+				discardPile: [],
+			},
+		});
+		const originalEnemyHp = state.enemies[0].hp;
+		const originalAp = state.player.ap;
+
+		executeAttack(state, "attack-1", "right");
+
+		expect(state.enemies[0].hp).toBe(originalEnemyHp);
 		expect(state.player.ap).toBe(originalAp);
 		expect(state.deck.hand).toHaveLength(1);
 	});
