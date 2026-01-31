@@ -170,18 +170,20 @@ async function updateStateWithDealAnimation(
 	// アニメーション中フラグをセット
 	isAnimating = true;
 
-	// 手札以外を描画
-	render(true);
+	try {
+		// 手札以外を描画
+		render(true);
 
-	// 手札配布アニメーション
-	await handRenderer.renderWithAnimation(
-		gameState.deck.hand,
-		gameState.player.ap,
-		newCardCount,
-	);
-
-	// アニメーション完了
-	isAnimating = false;
+		// 手札配布アニメーション
+		await handRenderer.renderWithAnimation(
+			gameState.deck.hand,
+			gameState.player.ap,
+			newCardCount,
+		);
+	} finally {
+		// アニメーション完了（エラー時も確実にフラグを戻す）
+		isAnimating = false;
+	}
 }
 
 /**
@@ -291,6 +293,9 @@ function setupEventHandlers(
 				const next = executeMove(gameState, card.id, direction);
 				// 階層遷移が発生した場合はアニメーション付きで描画
 				if (next.floor !== prevFloor) {
+					// 階層遷移時は方向選択状態をクリア
+					directionSelector.hide();
+					pendingCard = null;
 					await updateStateWithDealAnimation(next, next.deck.hand.length);
 				} else {
 					updateState(next);

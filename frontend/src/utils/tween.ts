@@ -76,7 +76,7 @@ export function tween(
 	to: TweenProps,
 	options: TweenOptions,
 ): Promise<void> {
-	return new Promise((resolve) => {
+	return new Promise((resolve, reject) => {
 		const {
 			duration,
 			easing = Easing.easeOut,
@@ -99,45 +99,50 @@ export function tween(
 		const ticker = Ticker.shared;
 
 		const update = (tick: Ticker): void => {
-			elapsed += tick.deltaMS;
+			try {
+				elapsed += tick.deltaMS;
 
-			if (elapsed < 0) {
-				// 遅延中
-				return;
-			}
+				if (elapsed < 0) {
+					// 遅延中
+					return;
+				}
 
-			const progress = Math.min(elapsed / duration, 1);
-			const easedProgress = easing(progress);
+				const progress = Math.min(elapsed / duration, 1);
+				const easedProgress = easing(progress);
 
-			// 各プロパティを補間
-			if (from.x !== undefined && to.x !== undefined) {
-				target.x = from.x + (to.x - from.x) * easedProgress;
-			}
-			if (from.y !== undefined && to.y !== undefined) {
-				target.y = from.y + (to.y - from.y) * easedProgress;
-			}
-			if (from.alpha !== undefined && to.alpha !== undefined) {
-				target.alpha = from.alpha + (to.alpha - from.alpha) * easedProgress;
-			}
-			if (from.scaleX !== undefined && to.scaleX !== undefined) {
-				target.scale.x =
-					from.scaleX + (to.scaleX - from.scaleX) * easedProgress;
-			}
-			if (from.scaleY !== undefined && to.scaleY !== undefined) {
-				target.scale.y =
-					from.scaleY + (to.scaleY - from.scaleY) * easedProgress;
-			}
-			if (from.rotation !== undefined && to.rotation !== undefined) {
-				target.rotation =
-					from.rotation + (to.rotation - from.rotation) * easedProgress;
-			}
+				// 各プロパティを補間
+				if (from.x !== undefined && to.x !== undefined) {
+					target.x = from.x + (to.x - from.x) * easedProgress;
+				}
+				if (from.y !== undefined && to.y !== undefined) {
+					target.y = from.y + (to.y - from.y) * easedProgress;
+				}
+				if (from.alpha !== undefined && to.alpha !== undefined) {
+					target.alpha = from.alpha + (to.alpha - from.alpha) * easedProgress;
+				}
+				if (from.scaleX !== undefined && to.scaleX !== undefined) {
+					target.scale.x =
+						from.scaleX + (to.scaleX - from.scaleX) * easedProgress;
+				}
+				if (from.scaleY !== undefined && to.scaleY !== undefined) {
+					target.scale.y =
+						from.scaleY + (to.scaleY - from.scaleY) * easedProgress;
+				}
+				if (from.rotation !== undefined && to.rotation !== undefined) {
+					target.rotation =
+						from.rotation + (to.rotation - from.rotation) * easedProgress;
+				}
 
-			onUpdate?.(progress);
+				onUpdate?.(progress);
 
-			if (progress >= 1) {
+				if (progress >= 1) {
+					ticker.remove(update);
+					onComplete?.();
+					resolve();
+				}
+			} catch (error) {
 				ticker.remove(update);
-				onComplete?.();
-				resolve();
+				reject(error);
 			}
 		};
 
@@ -150,15 +155,20 @@ export function tween(
  * @param ms ミリ秒
  */
 export function wait(ms: number): Promise<void> {
-	return new Promise((resolve) => {
+	return new Promise((resolve, reject) => {
 		let elapsed = 0;
 		const ticker = Ticker.shared;
 
 		const update = (tick: Ticker): void => {
-			elapsed += tick.deltaMS;
-			if (elapsed >= ms) {
+			try {
+				elapsed += tick.deltaMS;
+				if (elapsed >= ms) {
+					ticker.remove(update);
+					resolve();
+				}
+			} catch (error) {
 				ticker.remove(update);
-				resolve();
+				reject(error);
 			}
 		};
 
@@ -179,7 +189,8 @@ export async function sequence(tweens: (() => Promise<void>)[]): Promise<void> {
 /**
  * 複数のTweenを並列に実行
  * @param tweens Promise配列
+ * @returns すべてのTweenが完了したら解決するPromise
  */
-export async function parallel(tweens: Promise<void>[]): Promise<void> {
-	await Promise.all(tweens);
+export function parallel(tweens: Promise<void>[]): Promise<undefined[]> {
+	return Promise.all(tweens);
 }

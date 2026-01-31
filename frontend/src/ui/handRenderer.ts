@@ -163,12 +163,13 @@ export class HandRenderer {
 			const targetY = 0;
 			const selected = card.id === this.selectedCardId;
 
-			// インタラクションは最初は無効（アニメーション中）
+			// アニメーション完了後に this.render(hand, currentAp) で enabled を再計算して有効化するため、
+			// ここでは一時的にインタラクションを無効（false 固定）でカードを生成する
 			const cardContainer = this.createCardView(
 				card,
 				targetX,
 				targetY,
-				false, // アニメーション中は無効
+				false,
 				selected,
 			);
 
