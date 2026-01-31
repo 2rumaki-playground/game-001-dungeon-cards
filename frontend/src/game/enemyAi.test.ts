@@ -184,9 +184,9 @@ describe("pickMoveDirection", () => {
 		expect(pickMoveDirection(state, enemy)).toBe("up");
 	});
 
-	it("壁方向へは移動できず、別の方向を選択する", () => {
-		// 敵が(1,1)にいて、プレイヤーが(1,3)にいる → 下へ移動したい
-		// 上方向は壁(1,0)なので無効
+	it("壁に隣接していても最善方向が床なら移動できる", () => {
+		// 敵(1,1)、プレイヤー(1,3) → 最善方向は下(1,2)で距離1、移動可能
+		// 上(1,0)は壁だが距離3なので最善方向にならない
 		const state = createTestState({
 			player: {
 				position: { x: 1, y: 3 },
