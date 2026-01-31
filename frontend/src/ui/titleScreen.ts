@@ -22,6 +22,7 @@ const BUTTON_COLORS = {
 export class TitleScreen {
 	private container: Container;
 	private onNewGame: (() => void) | null = null;
+	private onContinue: (() => void) | null = null;
 
 	constructor() {
 		this.container = new Container();
@@ -42,9 +43,20 @@ export class TitleScreen {
 	}
 
 	/**
+	 * 続きからコールバックを設定
+	 */
+	setOnContinue(callback: () => void): void {
+		this.onContinue = callback;
+	}
+
+	/**
 	 * タイトル画面を描画
 	 */
-	render(screenWidth: number, screenHeight: number): void {
+	render(
+		screenWidth: number,
+		screenHeight: number,
+		canContinue = false,
+	): void {
 		this.container.removeChildren();
 
 		// ゲームタイトル
@@ -73,13 +85,13 @@ export class TitleScreen {
 		);
 		this.container.addChild(newGameButton);
 
-		// 続きからボタン（常に非活性）
+		// 続きからボタン
 		const continueButton = this.createButton(
 			"続きから",
 			screenWidth / 2,
 			centerY + BUTTON_HEIGHT + BUTTON_GAP,
-			false,
-			null,
+			canContinue,
+			() => this.onContinue?.(),
 		);
 		this.container.addChild(continueButton);
 	}
