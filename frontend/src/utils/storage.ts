@@ -37,9 +37,26 @@ export function loadGame(): GameState | null {
 	try {
 		const data = JSON.parse(json);
 		
-		// 必須プロパティの簡易チェック
-		if (!data.floor || !data.player || !data.rng) {
-			console.warn("Invalid save data format");
+		// 必須プロパティの検証
+		if (
+			typeof data.floor !== "number" ||
+			!data.player ||
+			typeof data.player.hp !== "number" || // 最低限の構造チェック
+			!data.rng ||
+			typeof data.rng.seed !== "number" ||
+			typeof data.rng.state !== "number"
+		) {
+			console.warn("Invalid save data format: missing required properties");
+			return null;
+		}
+
+		// screen の検証
+		if (
+			data.screen !== "title" && 
+			data.screen !== "game" && 
+			data.screen !== "gameOver"
+		) {
+			console.warn(`Invalid screen value: ${data.screen}`);
 			return null;
 		}
 

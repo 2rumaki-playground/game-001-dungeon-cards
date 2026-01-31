@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
 	ENEMY_COUNT,
 	ENEMY_HP,
@@ -10,8 +10,18 @@ import {
 } from "../constants";
 import type { GameMap, GameState, Tile } from "../types";
 import { RNG } from "../utils/rng";
+import * as storage from "../utils/storage"; // Import for mocking
 import { createInitialDeckState } from "./deck";
 import { transitionFloor } from "./floor";
+
+// storage.saveGame をモック
+vi.mock("../utils/storage", async (importOriginal) => {
+	const mod = await importOriginal<typeof import("../utils/storage")>();
+	return {
+		...mod,
+		saveGame: vi.fn(),
+	};
+});
 
 /**
  * テスト用の7x7マップを生成（外周壁・内側床・階段1つ）
@@ -57,6 +67,10 @@ function createTestState(overrides?: Partial<GameState>): GameState {
 }
 
 describe("transitionFloor", () => {
+	beforeEach(() => {
+		vi.clearAllMocks();
+	});
+
 	it("階層番号が +1 される", () => {
 		const state = createTestState({ floor: 3 });
 		const result = transitionFloor(state);
@@ -164,5 +178,19 @@ describe("transitionFloor", () => {
 		expect(state.floor).toBe(originalFloor);
 		expect(state.player.hp).toBe(originalHp);
 		expect(state.player.position).toEqual(originalPosition);
+	});
+
+	it("saveGame が呼び出され、更新後の状態が保存される", () => {
+		const state = createTestState({ floor: 5 });
+		const result = transitionFloor(state);
+
+		expect(storage.saveGame).toHaveBeenCalledTimes(1);
+		
+		// 呼び出し引数が更新後の状態（result）と一致するか
+		expect(storage.saveGame).toHaveBeenCalledWith(result);
+		
+		// 念のため、保存された状態が期待通りか確認（例：階層が進んでいるか）
+		const savedState = (storage.saveGame as any).mock.calls[0][0] as GameState;
+		expect(savedState.floor).toBe(6);
 	});
 });

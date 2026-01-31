@@ -90,7 +90,7 @@ export class TitleScreen {
 			"続きから",
 			screenWidth / 2,
 			centerY + BUTTON_HEIGHT + BUTTON_GAP,
-			canContinue,
+			canContinue && this.onContinue !== null,
 			() => this.onContinue?.(),
 		);
 		this.container.addChild(continueButton);

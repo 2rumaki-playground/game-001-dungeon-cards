@@ -71,4 +71,39 @@ describe("storage", () => {
 		
 		consoleSpy.mockRestore();
 	});
+
+	it("should return null if required properties are missing", () => {
+		const invalidStates = [
+			{}, // empty
+			{ floor: 1 }, // missing player, rng
+			{ floor: 1, player: { hp: 10 } }, // missing rng
+			{ floor: 1, player: { hp: 10 }, rng: {} }, // invalid rng
+			{ floor: "1", player: { hp: 10 }, rng: { seed: 1, state: 1 } }, // invalid floor type
+		];
+
+		const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+		for (const state of invalidStates) {
+			localStorageMock.setItem("dungeon-cards-save", JSON.stringify(state));
+			expect(loadGame()).toBeNull();
+		}
+
+		warnSpy.mockRestore();
+	});
+
+	it("should return null if screen is invalid", () => {
+		const validState = createTitleScreenState();
+		const invalidState = {
+			...validState,
+			screen: "invalid-screen",
+			rng: validState.rng.serialize(),
+		};
+
+		localStorageMock.setItem("dungeon-cards-save", JSON.stringify(invalidState));
+		const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+		expect(loadGame()).toBeNull();
+
+		warnSpy.mockRestore();
+	});
 });

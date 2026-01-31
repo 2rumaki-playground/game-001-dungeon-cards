@@ -228,6 +228,11 @@ async function main() {
 	// ゲームオーバー画面のコールバック設定
 	gameOverScreen.setOnReturnToTitle(() => {
 		updateState(returnToTitle(gameState));
+
+		// タイトル画面に戻った際にセーブデータ有無を反映して再描画
+		const totalWidth =
+			mapSize.width + LOG_AREA_GAP + actionLogRenderer.getWidth();
+		titleScreen.render(totalWidth, totalHeight, hasSaveData());
 	});
 
 	// ターン終了ボタンのコールバック設定
