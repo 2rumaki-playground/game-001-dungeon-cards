@@ -5,11 +5,13 @@ import {
 	executeAttack,
 	executeMove,
 	executeWait,
+	returnToTitle,
 	startNewGame,
 } from "./game";
 import type { Card, GameState } from "./types";
 import {
 	DirectionSelector,
+	GameOverScreen,
 	getMapPixelSize,
 	HandRenderer,
 	MapRenderer,
@@ -24,6 +26,9 @@ let gameState: GameState;
 
 /** タイトル画面 */
 let titleScreen: TitleScreen;
+
+/** ゲームオーバー画面 */
+let gameOverScreen: GameOverScreen;
 
 /** マップレンダラー */
 let mapRenderer: MapRenderer;
@@ -60,16 +65,25 @@ function updateState(newState: GameState): void {
 function render(): void {
 	if (gameState.screen === "title") {
 		titleScreen.show();
+		gameOverScreen.hide();
 		mapRenderer.clear();
 		handRenderer.clear();
 	} else if (gameState.screen === "game") {
 		titleScreen.hide();
+		gameOverScreen.hide();
 		mapRenderer.render(gameState.map, gameState.player, gameState.enemies);
 		handRenderer.render(gameState.deck.hand, gameState.player.ap);
-	} else {
+	} else if (gameState.screen === "gameOver") {
 		titleScreen.hide();
 		mapRenderer.clear();
 		handRenderer.clear();
+		const mapSize = getMapPixelSize();
+		gameOverScreen.render(
+			gameState.floor,
+			mapSize.width,
+			mapSize.height + HAND_AREA_HEIGHT,
+		);
+		gameOverScreen.show();
 	}
 }
 
@@ -88,6 +102,10 @@ async function main() {
 	// タイトル画面を初期化
 	titleScreen = new TitleScreen();
 	app.stage.addChild(titleScreen.getContainer());
+
+	// ゲームオーバー画面を初期化
+	gameOverScreen = new GameOverScreen();
+	app.stage.addChild(gameOverScreen.getContainer());
 
 	// マップレンダラーを初期化
 	mapRenderer = new MapRenderer();
@@ -136,6 +154,13 @@ async function main() {
 	// タイトル画面のコールバック設定
 	titleScreen.setOnNewGame(() => {
 		updateState(startNewGame(gameState));
+	});
+
+	// ゲームオーバー画面のコールバック設定
+	gameOverScreen.setOnReturnToTitle(() => {
+		const newState = returnToTitle(gameState);
+		updateState(newState);
+		titleScreen.render(mapSize.width, mapSize.height + HAND_AREA_HEIGHT);
 	});
 
 	// タイトル画面状態で初期化

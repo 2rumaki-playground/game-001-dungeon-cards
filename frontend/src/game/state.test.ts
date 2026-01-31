@@ -17,6 +17,7 @@ import {
 	createInitialPlayer,
 	createTitleScreenState,
 	removeEnemy,
+	returnToTitle,
 	setFloor,
 	startNewGame,
 	updateEnemy,
@@ -183,6 +184,27 @@ describe("state", () => {
 			const newState = removeEnemy(state, "e1");
 			expect(newState.enemies.length).toBe(1);
 			expect(newState.enemies[0].id).toBe("e2");
+		});
+	});
+
+	describe("returnToTitle", () => {
+		it("タイトル画面に遷移する", () => {
+			const gameState = createInitialGameState(12345);
+			const titleState = returnToTitle(gameState);
+			expect(titleState.screen).toBe("title");
+		});
+
+		it("ゲーム状態がリセットされる", () => {
+			const gameState = createInitialGameState(12345);
+			const titleState = returnToTitle(gameState);
+			expect(titleState.floor).toBe(INITIAL_FLOOR);
+			expect(titleState.player.hp).toBe(PLAYER_INITIAL_HP);
+			expect(titleState.player.ap).toBe(MAX_AP);
+			expect(titleState.enemies).toEqual([]);
+			expect(titleState.deck.hand).toEqual([]);
+			expect(titleState.deck.drawPile).toEqual([]);
+			expect(titleState.deck.discardPile).toEqual([]);
+			expect(titleState.actionLog).toEqual([]);
 		});
 	});
 
