@@ -3,13 +3,13 @@
  * @see docs/spec/mvp/rules.md
  */
 
-import { ENEMY_HP } from "../constants";
-import type { Enemy, GameState } from "../types";
+import type { GameState } from "../types";
 import { saveGame } from "../utils/storage";
 import { reshuffleDeck } from "./deck";
 import { generateMapPlacement } from "./map";
 import {
 	addActionLog,
+	createEnemiesFromPositions,
 	setDeck,
 	setEnemies,
 	setFloor,
@@ -46,13 +46,7 @@ export function transitionFloor(state: GameState): GameState {
 	}));
 
 	// 4. 敵を新マップの配置で初期化
-	const enemyStates: Enemy[] = enemies.map((position, index) => ({
-		id: `enemy-${index + 1}`,
-		position,
-		hp: ENEMY_HP,
-		maxHp: ENEMY_HP,
-	}));
-	next = setEnemies(next, enemyStates);
+	next = setEnemies(next, createEnemiesFromPositions(enemies));
 
 	// 5. デッキをリセット・シャッフル
 	next = setDeck(next, reshuffleDeck(next.deck, next.rng));

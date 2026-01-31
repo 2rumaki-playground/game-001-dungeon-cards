@@ -81,56 +81,76 @@ function updateState(newState: GameState): void {
 }
 
 /**
+ * タイトル画面の描画
+ */
+function renderTitleScreen(): void {
+	titleScreen.show();
+	gameOverScreen.hide();
+	statusBar.hide();
+	turnEndButton.hide();
+	actionLogRenderer.hide();
+	mapRenderer.clear();
+	handRenderer.clear();
+}
+
+/**
+ * ゲーム画面の描画
+ */
+function renderGameScreen(): void {
+	titleScreen.hide();
+	gameOverScreen.hide();
+	statusBar.show();
+	statusBar.render(gameState.player, gameState.floor);
+	mapRenderer.render(gameState.map, gameState.player, gameState.enemies);
+	handRenderer.render(gameState.deck.hand, gameState.player.ap);
+	turnEndButton.show();
+	turnEndButton.render(gameState.turn);
+	actionLogRenderer.show();
+	actionLogRenderer.render(gameState.actionLog);
+}
+
+/**
+ * ゲームオーバー画面の描画
+ */
+function renderGameOverScreen(): void {
+	titleScreen.hide();
+	statusBar.hide();
+	turnEndButton.hide();
+	actionLogRenderer.hide();
+	mapRenderer.clear();
+	handRenderer.clear();
+	const size = getMapPixelSize();
+	const width = size.width + LOG_AREA_GAP + actionLogRenderer.getWidth();
+	const height = size.height + HAND_AREA_HEIGHT + STATUS_BAR_HEIGHT;
+	gameOverScreen.render(gameState.floor, width, height);
+	gameOverScreen.show();
+}
+
+/**
  * 画面に応じた描画
  */
 function render(): void {
-	if (gameState.screen === "title") {
-		titleScreen.show();
-		gameOverScreen.hide();
-		statusBar.hide();
-		turnEndButton.hide();
-		actionLogRenderer.hide();
-		mapRenderer.clear();
-		handRenderer.clear();
-	} else if (gameState.screen === "game") {
-		titleScreen.hide();
-		gameOverScreen.hide();
-		statusBar.show();
-		statusBar.render(gameState.player, gameState.floor);
-		mapRenderer.render(gameState.map, gameState.player, gameState.enemies);
-		handRenderer.render(gameState.deck.hand, gameState.player.ap);
-		turnEndButton.show();
-		turnEndButton.render(gameState.turn);
-		actionLogRenderer.show();
-		actionLogRenderer.render(gameState.actionLog);
-	} else if (gameState.screen === "gameOver") {
-		titleScreen.hide();
-		statusBar.hide();
-		turnEndButton.hide();
-		actionLogRenderer.hide();
-		mapRenderer.clear();
-		handRenderer.clear();
-		const size = getMapPixelSize();
-		const width = size.width + LOG_AREA_GAP + actionLogRenderer.getWidth();
-		const height = size.height + HAND_AREA_HEIGHT + STATUS_BAR_HEIGHT;
-		gameOverScreen.render(gameState.floor, width, height);
-		gameOverScreen.show();
+	switch (gameState.screen) {
+		case "title":
+			renderTitleScreen();
+			break;
+		case "game":
+			renderGameScreen();
+			break;
+		case "gameOver":
+			renderGameOverScreen();
+			break;
 	}
 }
 
-async function main() {
-	const app = new Application();
-	const mapSize = getMapPixelSize();
-	const totalHeight = mapSize.height + HAND_AREA_HEIGHT + STATUS_BAR_HEIGHT;
-
-	await app.init({
-		width: mapSize.width + LOG_AREA_GAP + LOG_AREA_WIDTH,
-		height: totalHeight,
-		backgroundColor: COLORS.background,
-	});
-
-	document.body.appendChild(app.canvas);
-
+/**
+ * UIコンポーネントを初期化してステージに追加
+ */
+function initializeUIComponents(
+	app: Application,
+	mapSize: { width: number; height: number },
+	totalHeight: number,
+): void {
 	// タイトル画面を初期化
 	titleScreen = new TitleScreen();
 	app.stage.addChild(titleScreen.getContainer());
@@ -179,7 +199,16 @@ async function main() {
 	directionContainer.y =
 		STATUS_BAR_HEIGHT + mapSize.height + HAND_AREA_HEIGHT / 2 - 60;
 	app.stage.addChild(directionContainer);
+}
 
+/**
+ * イベントハンドラを設定
+ */
+function setupEventHandlers(
+	mapSize: { width: number; height: number },
+	totalHeight: number,
+): void {
+	// 方向選択UIのコールバック設定
 	directionSelector.setOnDirectionSelect((direction) => {
 		if (pendingCard) {
 			if (pendingCard.type === "move") {
@@ -197,6 +226,7 @@ async function main() {
 		pendingCard = null;
 	});
 
+	// 手札選択のコールバック設定
 	handRenderer.setOnCardSelect((card) => {
 		if (card.type === "wait") {
 			updateState(executeWait(gameState, card.id));
@@ -217,8 +247,6 @@ async function main() {
 			updateState(savedState);
 		} else {
 			alert("セーブデータの読み込みに失敗しました。");
-			// 画面更新してボタンを無効化するなどしても良いが、
-			// ひとまずタイトル画面を再描画して状態を反映
 			const totalWidth =
 				mapSize.width + LOG_AREA_GAP + actionLogRenderer.getWidth();
 			titleScreen.render(totalWidth, totalHeight, hasSaveData());
@@ -228,8 +256,6 @@ async function main() {
 	// ゲームオーバー画面のコールバック設定
 	gameOverScreen.setOnReturnToTitle(() => {
 		updateState(returnToTitle(gameState));
-
-		// タイトル画面に戻った際にセーブデータ有無を反映して再描画
 		const totalWidth =
 			mapSize.width + LOG_AREA_GAP + actionLogRenderer.getWidth();
 		titleScreen.render(totalWidth, totalHeight, hasSaveData());
@@ -237,31 +263,23 @@ async function main() {
 
 	// ターン終了ボタンのコールバック設定
 	turnEndButton.setOnEndTurn(() => {
-		// プレイヤーターン終了
 		let next = endPlayerTurn(gameState);
-
-		// 敵ターン実行
 		next = executeEnemyTurn(next);
 
-		// ゲームオーバーでなければプレイヤーターン開始
 		if (next.screen !== "gameOver") {
 			next = startPlayerTurn(next);
 		} else {
-			// ゲームオーバー時はセーブデータを削除
 			deleteSaveData();
 		}
 
 		updateState(next);
 	});
+}
 
-	// タイトル画面状態で初期化
-	gameState = createTitleScreenState();
-	const totalWidth =
-		mapSize.width + LOG_AREA_GAP + actionLogRenderer.getWidth();
-	titleScreen.render(totalWidth, totalHeight, hasSaveData());
-	render();
-
-	// デバッグ用：コンソールからゲーム状態・ログ設定を確認・変更できるようにする
+/**
+ * デバッグ用のグローバル変数を設定
+ */
+function setupDebugGlobals(): void {
 	const debugWindow = window as unknown as {
 		gameState: GameState;
 		updateState: typeof updateState;
@@ -275,6 +293,36 @@ async function main() {
 			debugLog = v;
 		},
 	});
+}
+
+async function main() {
+	const app = new Application();
+	const mapSize = getMapPixelSize();
+	const totalHeight = mapSize.height + HAND_AREA_HEIGHT + STATUS_BAR_HEIGHT;
+
+	await app.init({
+		width: mapSize.width + LOG_AREA_GAP + LOG_AREA_WIDTH,
+		height: totalHeight,
+		backgroundColor: COLORS.background,
+	});
+
+	document.body.appendChild(app.canvas);
+
+	// UIコンポーネントの初期化
+	initializeUIComponents(app, mapSize, totalHeight);
+
+	// イベントハンドラの設定
+	setupEventHandlers(mapSize, totalHeight);
+
+	// タイトル画面状態で初期化
+	gameState = createTitleScreenState();
+	const totalWidth =
+		mapSize.width + LOG_AREA_GAP + actionLogRenderer.getWidth();
+	titleScreen.render(totalWidth, totalHeight, hasSaveData());
+	render();
+
+	// デバッグ用グローバル変数の設定
+	setupDebugGlobals();
 }
 
 main().catch((error) => {

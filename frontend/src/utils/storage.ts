@@ -36,7 +36,7 @@ export function loadGame(): GameState | null {
 
 	try {
 		const data = JSON.parse(json);
-		
+
 		// 必須プロパティの検証
 		if (
 			typeof data.floor !== "number" ||
@@ -52,8 +52,8 @@ export function loadGame(): GameState | null {
 
 		// screen の検証
 		if (
-			data.screen !== "title" && 
-			data.screen !== "game" && 
+			data.screen !== "title" &&
+			data.screen !== "game" &&
 			data.screen !== "gameOver"
 		) {
 			console.warn(`Invalid screen value: ${data.screen}`);

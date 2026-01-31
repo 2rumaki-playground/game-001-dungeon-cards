@@ -46,7 +46,7 @@ describe("storage", () => {
 		if (loadedState) {
 			expect(loadedState.floor).toBe(originalState.floor);
 			expect(loadedState.rng.seed).toBe(originalState.rng.seed);
-			
+
 			// RNGの状態が正しく復元されているか（次の乱数が同じになるか）
 			expect(loadedState.rng.random()).toBe(nextRandom);
 		}
@@ -66,9 +66,9 @@ describe("storage", () => {
 		localStorageMock.setItem("dungeon-cards-save", "invalid json");
 		// console.error をモックしてエラー出力を抑制
 		const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-		
+
 		expect(loadGame()).toBeNull();
-		
+
 		consoleSpy.mockRestore();
 	});
 
@@ -99,7 +99,10 @@ describe("storage", () => {
 			rng: validState.rng.serialize(),
 		};
 
-		localStorageMock.setItem("dungeon-cards-save", JSON.stringify(invalidState));
+		localStorageMock.setItem(
+			"dungeon-cards-save",
+			JSON.stringify(invalidState),
+		);
 		const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
 
 		expect(loadGame()).toBeNull();
