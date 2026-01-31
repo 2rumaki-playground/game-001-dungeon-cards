@@ -6,12 +6,22 @@
 import { Container, Graphics, Text } from "pixi.js";
 import { CARD_COST } from "../constants";
 import type { Card, CardType, Direction } from "../types";
+import { Easing, tween } from "../utils/tween";
 
 /** カード描画定数 */
 export const CARD_WIDTH = 90;
 export const CARD_HEIGHT = 120;
 const CARD_GAP = 8;
 const CARD_RADIUS = 8;
+
+/**
+ * アニメーション定数
+ * UI実装の詳細であり、仕様レベル（constants.md）での管理は不要
+ */
+const DEAL_ANIMATION_DURATION = 200; // 1枚あたりのアニメーション時間（ms）
+const DEAL_ANIMATION_DELAY = 80; // カード間のディレイ（ms）
+const DECK_OFFSET_X = -300; // 山札の位置（手札コンテナからの相対X）
+const DECK_OFFSET_Y = -50; // 山札の位置（手札コンテナからの相対Y）
 
 /**
  * カード内のクリック位置から方向を判定
@@ -121,6 +131,89 @@ export class HandRenderer {
 			const cardContainer = this.createCardView(card, x, 0, enabled, selected);
 			this.container.addChild(cardContainer);
 		}
+	}
+
+	/**
+	 * アニメーション付きで手札を描画
+	 * 山札の位置から手札の位置にカードが飛んでくる演出
+	 * @param hand 手札のカード配列
+	 * @param currentAp 現在のAP
+	 * @param newCardCount 新しく引いたカードの枚数（アニメーション対象）
+	 * @returns アニメーション完了時にresolveするPromise
+	 */
+	async renderWithAnimation(
+		hand: Card[],
+		currentAp: number,
+		newCardCount: number,
+	): Promise<void> {
+		this.container.removeChildren();
+
+		const totalWidth = hand.length * CARD_WIDTH + (hand.length - 1) * CARD_GAP;
+		const startX = -totalWidth / 2;
+
+		// アニメーション対象のカード（末尾のnewCardCount枚）
+		// newCardCount が手札枚数を超える・負になる入力に対しても挙動を明確にするためクランプする
+		const clampedNewCardCount = Math.min(
+			Math.max(newCardCount, 0),
+			hand.length,
+		);
+		const existingCardCount = hand.length - clampedNewCardCount;
+		const animationPromises: Promise<void>[] = [];
+
+		for (let i = 0; i < hand.length; i++) {
+			const card = hand[i];
+			const targetX = startX + i * (CARD_WIDTH + CARD_GAP);
+			const targetY = 0;
+			const selected = card.id === this.selectedCardId;
+
+			// アニメーション完了後に this.render(hand, currentAp) で enabled を再計算して有効化するため、
+			// ここでは一時的にインタラクションを無効（false 固定）でカードを生成する
+			const cardContainer = this.createCardView(
+				card,
+				targetX,
+				targetY,
+				false,
+				selected,
+			);
+
+			if (i >= existingCardCount) {
+				// 新しく引いたカードはアニメーション
+				const animationIndex = i - existingCardCount;
+				cardContainer.x = DECK_OFFSET_X;
+				cardContainer.y = DECK_OFFSET_Y;
+				cardContainer.alpha = 0;
+				cardContainer.scale.set(0.5);
+
+				// 各カードに少しずつディレイを入れて順番に配る
+				const delay = animationIndex * DEAL_ANIMATION_DELAY;
+
+				const animPromise = tween(
+					cardContainer,
+					{
+						x: targetX,
+						y: targetY,
+						alpha: 1,
+						scaleX: 1,
+						scaleY: 1,
+					},
+					{
+						duration: DEAL_ANIMATION_DURATION,
+						delay,
+						easing: Easing.easeOutCubic,
+					},
+				);
+
+				animationPromises.push(animPromise);
+			}
+
+			this.container.addChild(cardContainer);
+		}
+
+		// すべてのアニメーションが完了するまで待機
+		await Promise.all(animationPromises);
+
+		// アニメーション完了後、インタラクションを有効化して再描画
+		this.render(hand, currentAp);
 	}
 
 	/**
