@@ -11,14 +11,9 @@ import {
 } from "../constants";
 import type { Direction, GameState } from "../types";
 import { DIRECTION_DELTA } from "../types";
+import { applyDamageToEnemy } from "./combat";
 import { playCard } from "./deck";
-import {
-	addActionLog,
-	removeEnemy,
-	setDeck,
-	updateEnemy,
-	updatePlayer,
-} from "./state";
+import { addActionLog, setDeck, updatePlayer } from "./state";
 
 /**
  * 移動可否を判定
@@ -155,20 +150,10 @@ export function executeAttack(
 		return addActionLog(next, "攻撃できなかった");
 	}
 
-	// 敵にダメージ
-	next = updateEnemy(next, result.enemyId, (e) => ({
-		...e,
-		hp: e.hp - PLAYER_ATTACK_DAMAGE,
-	}));
+	// 敵にダメージ（HP0以下で自動除去）
+	next = applyDamageToEnemy(next, result.enemyId, PLAYER_ATTACK_DAMAGE);
 
-	// 敵HP0以下で死亡処理
-	const target = next.enemies.find((e) => e.id === result.enemyId);
-	if (target && target.hp <= 0) {
-		next = removeEnemy(next, result.enemyId);
-		return addActionLog(next, "敵を倒した");
-	}
-
-	return addActionLog(next, "敵に攻撃した");
+	return next;
 }
 
 /**
