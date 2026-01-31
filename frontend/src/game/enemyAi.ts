@@ -6,7 +6,8 @@
 import { ENEMY_ATTACK_DAMAGE, MAP_HEIGHT, MAP_WIDTH } from "../constants";
 import type { Direction, Enemy, GameState, Position } from "../types";
 import { DIRECTION_DELTA } from "../types";
-import { addActionLog, setEnemies, updatePlayer } from "./state";
+import { applyDamageToPlayer, checkGameOver } from "./combat";
+import { addActionLog, setEnemies } from "./state";
 
 /**
  * 2点が4近傍で隣接しているか判定
@@ -125,10 +126,7 @@ export function executeEnemyTurn(state: GameState): GameState {
 
 		if (isAdjacent(enemy.position, next.player.position)) {
 			// 攻撃
-			next = updatePlayer(next, (p) => ({
-				...p,
-				hp: p.hp - ENEMY_ATTACK_DAMAGE,
-			}));
+			next = applyDamageToPlayer(next, ENEMY_ATTACK_DAMAGE);
 			next = addActionLog(next, "敵が攻撃した");
 		} else {
 			// 移動
@@ -153,6 +151,9 @@ export function executeEnemyTurn(state: GameState): GameState {
 			}
 		}
 	}
+
+	// プレイヤー死亡判定
+	next = checkGameOver(next);
 
 	return next;
 }

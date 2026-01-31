@@ -479,6 +479,47 @@ describe("executeEnemyTurn", () => {
 		expect(state.enemies[0].position).toEqual(originalEnemyPos);
 	});
 
+	it("敵の攻撃でプレイヤーHP0以下になるとゲームオーバーに遷移する", () => {
+		const enemies: Enemy[] = [
+			{
+				id: "enemy-1",
+				position: { x: 4, y: 3 },
+				hp: ENEMY_HP,
+				maxHp: ENEMY_HP,
+			},
+		];
+		const state = createTestState({
+			enemies,
+			player: {
+				position: { x: 3, y: 3 },
+				hp: 1,
+				maxHp: PLAYER_INITIAL_HP,
+				ap: MAX_AP,
+				maxAp: MAX_AP,
+			},
+		});
+		const result = executeEnemyTurn(state);
+
+		expect(result.player.hp).toBe(1 - ENEMY_ATTACK_DAMAGE);
+		expect(result.screen).toBe("gameOver");
+	});
+
+	it("敵の攻撃でプレイヤーHPが残っていればゲームは続行する", () => {
+		const enemies: Enemy[] = [
+			{
+				id: "enemy-1",
+				position: { x: 4, y: 3 },
+				hp: ENEMY_HP,
+				maxHp: ENEMY_HP,
+			},
+		];
+		const state = createTestState({ enemies });
+		const result = executeEnemyTurn(state);
+
+		expect(result.player.hp).toBe(PLAYER_INITIAL_HP - ENEMY_ATTACK_DAMAGE);
+		expect(result.screen).toBe("game");
+	});
+
 	it("入力stateのRNGが変更されない", () => {
 		const enemies: Enemy[] = [
 			{

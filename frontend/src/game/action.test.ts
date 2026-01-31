@@ -177,7 +177,7 @@ describe("executeAttack", () => {
 		expect(result.deck.discardPile[0].id).toBe("attack-1");
 		// 行動ログに記録
 		expect(result.actionLog.length).toBeGreaterThan(0);
-		expect(result.actionLog[0].message).toBe("敵に攻撃した");
+		expect(result.actionLog[0].message).toBe("敵にダメージを与えた");
 	});
 
 	it("攻撃成功（敵HP0で死亡）: 敵がenemiesから削除される", () => {
