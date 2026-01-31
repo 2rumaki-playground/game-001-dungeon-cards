@@ -50,6 +50,7 @@ export const FLOOR_TILE_COUNT = FLOOR_AREA_SIZE * FLOOR_AREA_SIZE; // 25
 // 描画設定
 export const CELL_SIZE = 64;
 export const CELL_GAP = 4;
+export const STATUS_BAR_HEIGHT = 40;
 
 // 色定義
 export const COLORS = {

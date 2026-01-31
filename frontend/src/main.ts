@@ -1,5 +1,5 @@
 import { Application } from "pixi.js";
-import { COLORS } from "./constants";
+import { COLORS, STATUS_BAR_HEIGHT } from "./constants";
 import {
 	createTitleScreenState,
 	executeAttack,
@@ -15,6 +15,7 @@ import {
 	getMapPixelSize,
 	HandRenderer,
 	MapRenderer,
+	StatusBar,
 	TitleScreen,
 } from "./ui";
 
@@ -29,6 +30,9 @@ let titleScreen: TitleScreen;
 
 /** ゲームオーバー画面 */
 let gameOverScreen: GameOverScreen;
+
+/** ステータスバー */
+let statusBar: StatusBar;
 
 /** マップレンダラー */
 let mapRenderer: MapRenderer;
@@ -66,22 +70,26 @@ function render(): void {
 	if (gameState.screen === "title") {
 		titleScreen.show();
 		gameOverScreen.hide();
+		statusBar.hide();
 		mapRenderer.clear();
 		handRenderer.clear();
 	} else if (gameState.screen === "game") {
 		titleScreen.hide();
 		gameOverScreen.hide();
+		statusBar.show();
+		statusBar.render(gameState.player, gameState.floor);
 		mapRenderer.render(gameState.map, gameState.player, gameState.enemies);
 		handRenderer.render(gameState.deck.hand, gameState.player.ap);
 	} else if (gameState.screen === "gameOver") {
 		titleScreen.hide();
+		statusBar.hide();
 		mapRenderer.clear();
 		handRenderer.clear();
 		const mapSize = getMapPixelSize();
 		gameOverScreen.render(
 			gameState.floor,
 			mapSize.width,
-			mapSize.height + HAND_AREA_HEIGHT,
+			mapSize.height + HAND_AREA_HEIGHT + STATUS_BAR_HEIGHT,
 		);
 		gameOverScreen.show();
 	}
@@ -93,7 +101,7 @@ async function main() {
 
 	await app.init({
 		width: mapSize.width,
-		height: mapSize.height + HAND_AREA_HEIGHT,
+		height: mapSize.height + HAND_AREA_HEIGHT + STATUS_BAR_HEIGHT,
 		backgroundColor: COLORS.background,
 	});
 
@@ -107,22 +115,30 @@ async function main() {
 	gameOverScreen = new GameOverScreen();
 	app.stage.addChild(gameOverScreen.getContainer());
 
+	// ステータスバーを初期化
+	statusBar = new StatusBar();
+	app.stage.addChild(statusBar.getContainer());
+
 	// マップレンダラーを初期化
 	mapRenderer = new MapRenderer();
-	app.stage.addChild(mapRenderer.getContainer());
+	const mapContainer = mapRenderer.getContainer();
+	mapContainer.y = STATUS_BAR_HEIGHT;
+	app.stage.addChild(mapContainer);
 
 	// 手札レンダラーを初期化
 	handRenderer = new HandRenderer();
 	const handContainer = handRenderer.getContainer();
 	handContainer.x = mapSize.width / 2;
-	handContainer.y = mapSize.height + HAND_AREA_HEIGHT / 2 - 60;
+	handContainer.y =
+		STATUS_BAR_HEIGHT + mapSize.height + HAND_AREA_HEIGHT / 2 - 60;
 	app.stage.addChild(handContainer);
 
 	// 方向選択UIを初期化
 	directionSelector = new DirectionSelector();
 	const directionContainer = directionSelector.getContainer();
 	directionContainer.x = mapSize.width / 2;
-	directionContainer.y = mapSize.height + HAND_AREA_HEIGHT / 2 - 60;
+	directionContainer.y =
+		STATUS_BAR_HEIGHT + mapSize.height + HAND_AREA_HEIGHT / 2 - 60;
 	app.stage.addChild(directionContainer);
 
 	directionSelector.setOnDirectionSelect((direction) => {
@@ -163,7 +179,10 @@ async function main() {
 
 	// タイトル画面状態で初期化
 	gameState = createTitleScreenState();
-	titleScreen.render(mapSize.width, mapSize.height + HAND_AREA_HEIGHT);
+	titleScreen.render(
+		mapSize.width,
+		mapSize.height + HAND_AREA_HEIGHT + STATUS_BAR_HEIGHT,
+	);
 	render();
 
 	// デバッグ用：コンソールからゲーム状態・ログ設定を確認・変更できるようにする
