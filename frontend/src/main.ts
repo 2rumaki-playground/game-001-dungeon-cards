@@ -263,6 +263,8 @@ function setupEventHandlers(
 				if (next.floor !== prevFloor) {
 					directionSelector.hide();
 					pendingCard = null;
+					// 階層遷移時はreshuffleDeckで手札が空になった後にstartPlayerTurnで補充されるため、
+					// 手札の全枚数が新しく引いたカード枚数となる
 					await updateStateWithDealAnimation(next, next.deck.hand.length);
 					return;
 				}
@@ -297,6 +299,8 @@ function setupEventHandlers(
 					// 階層遷移時は方向選択状態をクリア
 					directionSelector.hide();
 					pendingCard = null;
+					// 階層遷移時はreshuffleDeckで手札が空になった後にstartPlayerTurnで補充されるため、
+					// 手札の全枚数が新しく引いたカード枚数となる
 					await updateStateWithDealAnimation(next, next.deck.hand.length);
 				} else {
 					updateState(next);
