@@ -1,3 +1,4 @@
+import type { FederatedPointerEvent } from "pixi.js";
 import { describe, expect, it, vi } from "vitest";
 import { TurnEndButton } from "./turnEndButton";
 
@@ -56,7 +57,7 @@ describe("TurnEndButton", () => {
 
 			const container = button.getContainer();
 			const buttonContainer = container.children[0];
-			buttonContainer.emit("pointerdown");
+			buttonContainer.emit("pointerdown", {} as FederatedPointerEvent);
 
 			expect(callback).toHaveBeenCalledTimes(1);
 		});
@@ -70,7 +71,7 @@ describe("TurnEndButton", () => {
 
 			const container = button.getContainer();
 			const buttonContainer = container.children[0];
-			buttonContainer.emit("pointerdown");
+			buttonContainer.emit("pointerdown", {} as FederatedPointerEvent);
 
 			expect(callback).not.toHaveBeenCalled();
 		});
