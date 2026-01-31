@@ -159,6 +159,10 @@ async function updateStateWithDealAnimation(
 	newState: GameState,
 	newCardCount: number,
 ): Promise<void> {
+	// 競合状態を防ぐため、チェック後に即座にフラグを立てる
+	if (isAnimating) return;
+	isAnimating = true;
+
 	if (debugLog) {
 		const newEntries = newState.actionLog.length - gameState.actionLog.length;
 		for (let i = newEntries - 1; i >= 0; i--) {
@@ -166,9 +170,6 @@ async function updateStateWithDealAnimation(
 		}
 	}
 	gameState = newState;
-
-	// アニメーション中フラグをセット
-	isAnimating = true;
 
 	try {
 		// 手札以外を描画
@@ -353,6 +354,7 @@ function setupEventHandlers(
 			const newCardCount = next.deck.hand.length;
 			await updateStateWithDealAnimation(next, newCardCount);
 		} else {
+			// ゲームオーバー時は手札配布がないためアニメーションをスキップ
 			deleteSaveData();
 			updateState(next);
 		}

@@ -85,6 +85,24 @@ export function tween(
 			onUpdate,
 		} = options;
 
+		// duration が 0 以下の場合は即座に目標値を適用して完了
+		if (duration <= 0) {
+			try {
+				if (to.x !== undefined) target.x = to.x;
+				if (to.y !== undefined) target.y = to.y;
+				if (to.alpha !== undefined) target.alpha = to.alpha;
+				if (to.scaleX !== undefined) target.scale.x = to.scaleX;
+				if (to.scaleY !== undefined) target.scale.y = to.scaleY;
+				if (to.rotation !== undefined) target.rotation = to.rotation;
+				onUpdate?.(1);
+				onComplete?.();
+				resolve();
+			} catch (error) {
+				reject(error);
+			}
+			return;
+		}
+
 		// 開始値を記録
 		const from: TweenProps = {
 			x: to.x !== undefined ? target.x : undefined,

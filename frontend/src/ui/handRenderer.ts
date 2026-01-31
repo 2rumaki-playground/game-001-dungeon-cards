@@ -14,7 +14,10 @@ export const CARD_HEIGHT = 120;
 const CARD_GAP = 8;
 const CARD_RADIUS = 8;
 
-/** アニメーション定数 */
+/**
+ * アニメーション定数
+ * UI実装の詳細であり、仕様レベル（constants.md）での管理は不要
+ */
 const DEAL_ANIMATION_DURATION = 200; // 1枚あたりのアニメーション時間（ms）
 const DEAL_ANIMATION_DELAY = 80; // カード間のディレイ（ms）
 const DECK_OFFSET_X = -300; // 山札の位置（手札コンテナからの相対X）
