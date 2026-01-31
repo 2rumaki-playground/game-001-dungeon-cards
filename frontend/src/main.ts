@@ -33,6 +33,15 @@ import { deleteSaveData, hasSaveData, loadGame } from "./utils/storage";
 /** 手札エリアの高さ */
 const HAND_AREA_HEIGHT = 200;
 
+/** 手札エリア上部のパディング */
+const HAND_AREA_TOP_PADDING = 20;
+
+/** ターン終了ボタンの高さ */
+const BUTTON_HEIGHT = 36;
+
+/** ターン終了ボタン下部のマージン */
+const BUTTON_BOTTOM_MARGIN = 12;
+
 /** 現在のゲーム状態 */
 let gameState: GameState;
 
@@ -173,14 +182,14 @@ function initializeUIComponents(
 	handRenderer = new HandRenderer();
 	const handContainer = handRenderer.getContainer();
 	handContainer.x = mapSize.width / 2;
-	handContainer.y = STATUS_BAR_HEIGHT + mapSize.height + 20;
+	handContainer.y = STATUS_BAR_HEIGHT + mapSize.height + HAND_AREA_TOP_PADDING;
 	app.stage.addChild(handContainer);
 
 	// ターン終了ボタンを初期化
 	turnEndButton = new TurnEndButton();
 	const turnEndContainer = turnEndButton.getContainer();
 	turnEndContainer.x = mapSize.width - 136;
-	turnEndContainer.y = totalHeight - 48;
+	turnEndContainer.y = totalHeight - BUTTON_HEIGHT - BUTTON_BOTTOM_MARGIN;
 	app.stage.addChild(turnEndContainer);
 
 	// 行動ログレンダラーを初期化
@@ -194,7 +203,8 @@ function initializeUIComponents(
 	directionSelector = new DirectionSelector();
 	const directionContainer = directionSelector.getContainer();
 	directionContainer.x = mapSize.width / 2;
-	directionContainer.y = STATUS_BAR_HEIGHT + mapSize.height + 20;
+	directionContainer.y =
+		STATUS_BAR_HEIGHT + mapSize.height + HAND_AREA_TOP_PADDING;
 	app.stage.addChild(directionContainer);
 }
 
