@@ -504,6 +504,44 @@ describe("executeEnemyTurn", () => {
 		expect(result.screen).toBe("gameOver");
 	});
 
+	it("プレイヤー死亡後は残りの敵が行動しない", () => {
+		// 敵2体が隣接、HP1のプレイヤー → 1体目の攻撃で死亡 → 2体目は行動しない
+		const enemies: Enemy[] = [
+			{
+				id: "enemy-1",
+				position: { x: 4, y: 3 },
+				hp: ENEMY_HP,
+				maxHp: ENEMY_HP,
+			},
+			{
+				id: "enemy-2",
+				position: { x: 2, y: 3 },
+				hp: ENEMY_HP,
+				maxHp: ENEMY_HP,
+			},
+		];
+		const state = createTestState({
+			enemies,
+			player: {
+				position: { x: 3, y: 3 },
+				hp: 1,
+				maxHp: PLAYER_INITIAL_HP,
+				ap: MAX_AP,
+				maxAp: MAX_AP,
+			},
+		});
+		const result = executeEnemyTurn(state);
+
+		// ダメージは1回分のみ（追加ダメージなし）
+		expect(result.player.hp).toBe(1 - ENEMY_ATTACK_DAMAGE);
+		expect(result.screen).toBe("gameOver");
+		// 攻撃ログは1回分のみ
+		const attackLogs = result.actionLog.filter(
+			(log) => log.message === "敵が攻撃した",
+		);
+		expect(attackLogs).toHaveLength(1);
+	});
+
 	it("敵の攻撃でプレイヤーHPが残っていればゲームは続行する", () => {
 		const enemies: Enemy[] = [
 			{

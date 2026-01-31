@@ -6,7 +6,7 @@
 import { ENEMY_ATTACK_DAMAGE, MAP_HEIGHT, MAP_WIDTH } from "../constants";
 import type { Direction, Enemy, GameState, Position } from "../types";
 import { DIRECTION_DELTA } from "../types";
-import { applyDamageToPlayer, checkGameOver } from "./combat";
+import { applyDamageToPlayer, checkGameOver, isDefeated } from "./combat";
 import { addActionLog, setEnemies } from "./state";
 
 /**
@@ -122,6 +122,9 @@ export function executeEnemyTurn(state: GameState): GameState {
 	let next = { ...state, enemies: state.enemies.map((e) => ({ ...e })), rng };
 
 	for (const idx of order) {
+		// プレイヤーが死亡していたら残りの敵は行動しない
+		if (isDefeated(next.player.hp)) break;
+
 		const enemy = next.enemies[idx];
 
 		if (isAdjacent(enemy.position, next.player.position)) {
