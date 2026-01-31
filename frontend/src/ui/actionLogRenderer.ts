@@ -5,10 +5,10 @@
  */
 
 import { Container, Graphics, Text } from "pixi.js";
+import { LOG_AREA_WIDTH } from "../constants";
 import type { ActionLogEntry } from "../types";
 
 /** ログ表示エリアの設定 */
-const LOG_AREA_WIDTH = 200;
 const LOG_AREA_PADDING = 8;
 const LOG_FONT_SIZE = 12;
 const LOG_LINE_HEIGHT = 18;

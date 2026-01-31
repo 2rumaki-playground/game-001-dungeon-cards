@@ -1,5 +1,10 @@
 import { Application } from "pixi.js";
-import { COLORS, STATUS_BAR_HEIGHT } from "./constants";
+import {
+	COLORS,
+	LOG_AREA_GAP,
+	LOG_AREA_WIDTH,
+	STATUS_BAR_HEIGHT,
+} from "./constants";
 import {
 	createTitleScreenState,
 	endPlayerTurn,
@@ -105,18 +110,12 @@ function render(): void {
 		mapRenderer.clear();
 		handRenderer.clear();
 		const size = getMapPixelSize();
-		const width = size.width + LOG_AREA_GAP + LOG_AREA_WIDTH;
+		const width = size.width + LOG_AREA_GAP + actionLogRenderer.getWidth();
 		const height = size.height + HAND_AREA_HEIGHT + STATUS_BAR_HEIGHT;
 		gameOverScreen.render(gameState.floor, width, height);
 		gameOverScreen.show();
 	}
 }
-
-/** ログエリアの幅 */
-const LOG_AREA_WIDTH = 200;
-
-/** ログエリアとマップ間のギャップ */
-const LOG_AREA_GAP = 8;
 
 async function main() {
 	const app = new Application();
@@ -234,7 +233,8 @@ async function main() {
 
 	// タイトル画面状態で初期化
 	gameState = createTitleScreenState();
-	const totalWidth = mapSize.width + LOG_AREA_GAP + LOG_AREA_WIDTH;
+	const totalWidth =
+		mapSize.width + LOG_AREA_GAP + actionLogRenderer.getWidth();
 	titleScreen.render(totalWidth, totalHeight);
 	render();
 
