@@ -6,3 +6,4 @@ export * from "./coordinates";
 export * from "./directionSelector";
 export * from "./handRenderer";
 export * from "./mapRenderer";
+export * from "./titleScreen";

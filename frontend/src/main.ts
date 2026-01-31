@@ -1,12 +1,11 @@
 import { Application } from "pixi.js";
 import { COLORS } from "./constants";
 import {
-	createInitialDeckState,
-	createInitialGameState,
-	drawCards,
+	createTitleScreenState,
 	executeAttack,
 	executeMove,
 	executeWait,
+	startNewGame,
 } from "./game";
 import type { Card, GameState } from "./types";
 import {
@@ -14,6 +13,7 @@ import {
 	getMapPixelSize,
 	HandRenderer,
 	MapRenderer,
+	TitleScreen,
 } from "./ui";
 
 /** 手札エリアの高さ */
@@ -21,6 +21,9 @@ const HAND_AREA_HEIGHT = 160;
 
 /** 現在のゲーム状態 */
 let gameState: GameState;
+
+/** タイトル画面 */
+let titleScreen: TitleScreen;
 
 /** マップレンダラー */
 let mapRenderer: MapRenderer;
@@ -48,17 +51,23 @@ function updateState(newState: GameState): void {
 		}
 	}
 	gameState = newState;
-	renderGame();
+	render();
 }
 
 /**
- * ゲームを描画
+ * 画面に応じた描画
  */
-function renderGame(): void {
-	if (gameState.screen === "game") {
+function render(): void {
+	if (gameState.screen === "title") {
+		titleScreen.show();
+		mapRenderer.clear();
+		handRenderer.clear();
+	} else if (gameState.screen === "game") {
+		titleScreen.hide();
 		mapRenderer.render(gameState.map, gameState.player, gameState.enemies);
 		handRenderer.render(gameState.deck.hand, gameState.player.ap);
 	} else {
+		titleScreen.hide();
 		mapRenderer.clear();
 		handRenderer.clear();
 	}
@@ -75,6 +84,10 @@ async function main() {
 	});
 
 	document.body.appendChild(app.canvas);
+
+	// タイトル画面を初期化
+	titleScreen = new TitleScreen();
+	app.stage.addChild(titleScreen.getContainer());
 
 	// マップレンダラーを初期化
 	mapRenderer = new MapRenderer();
@@ -120,14 +133,15 @@ async function main() {
 		}
 	});
 
-	// ゲーム状態を初期化（デッキ生成＋手札ドロー込み）
-	gameState = createInitialGameState();
-	const deck = createInitialDeckState(gameState.rng);
-	const deckWithHand = drawCards(deck, gameState.rng);
-	gameState = { ...gameState, deck: deckWithHand };
+	// タイトル画面のコールバック設定
+	titleScreen.setOnNewGame(() => {
+		updateState(startNewGame(gameState));
+	});
 
-	// 初回描画
-	renderGame();
+	// タイトル画面状態で初期化
+	gameState = createTitleScreenState();
+	titleScreen.render(mapSize.width, mapSize.height + HAND_AREA_HEIGHT);
+	render();
 
 	// デバッグ用：コンソールからゲーム状態・ログ設定を確認・変更できるようにする
 	const debugWindow = window as unknown as {
