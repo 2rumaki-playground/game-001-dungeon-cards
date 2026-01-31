@@ -31,6 +31,11 @@ export function applyDamageToEnemy(
 	enemyId: string,
 	damage: number,
 ): GameState {
+	// 対象の敵が存在しない場合は何もしない
+	if (!state.enemies.some((e) => e.id === enemyId)) {
+		return state;
+	}
+
 	let next = updateEnemy(state, enemyId, (e) => ({
 		...e,
 		hp: e.hp - damage,

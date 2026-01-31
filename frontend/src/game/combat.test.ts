@@ -167,6 +167,18 @@ describe("applyDamageToEnemy", () => {
 		expect(enemy2?.hp).toBe(ENEMY_HP);
 	});
 
+	it("存在しない敵IDを指定した場合、状態が変更されない", () => {
+		const state = createTestState();
+		const result = applyDamageToEnemy(
+			state,
+			"nonexistent",
+			PLAYER_ATTACK_DAMAGE,
+		);
+
+		expect(result).toBe(state);
+		expect(result.actionLog).toHaveLength(0);
+	});
+
 	it("元のGameStateが変更されない（イミュータブル）", () => {
 		const enemies: Enemy[] = [
 			{
