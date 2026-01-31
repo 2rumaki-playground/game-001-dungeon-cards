@@ -191,6 +191,6 @@ export async function sequence(tweens: (() => Promise<void>)[]): Promise<void> {
  * @param tweens Promise配列
  * @returns すべてのTweenが完了したら解決するPromise
  */
-export function parallel(tweens: Promise<void>[]): Promise<undefined[]> {
-	return Promise.all(tweens);
+export async function parallel(tweens: Promise<void>[]): Promise<void> {
+	await Promise.all(tweens);
 }
