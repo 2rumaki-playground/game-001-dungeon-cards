@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
 	CARD_COST,
+	ENEMY_COUNT,
 	ENEMY_HP,
 	MAP_HEIGHT,
 	MAP_WIDTH,
@@ -114,23 +115,35 @@ describe("executeMove", () => {
 		expect(result.deck.discardPile).toHaveLength(1);
 	});
 
-	it("階段タイルへの移動成功: 位置更新・行動ログに階段到達記録", () => {
+	it("階段タイルへの移動成功: 階層遷移が発生する", () => {
 		const map = createTestMap();
 		// (4,3)を階段タイルに設定
+		map[3][4] = { type: "stairs" };
+
+		const state = createTestState({ map, floor: 1 });
+		const result = executeMove(state, "move-1", "right");
+
+		// 階層が +1
+		expect(result.floor).toBe(2);
+		// 新マップが生成される
+		expect(result.map).toHaveLength(MAP_HEIGHT);
+		// 敵が新規配置される
+		expect(result.enemies).toHaveLength(ENEMY_COUNT);
+		// 行動ログに階層遷移が記録
+		const hasFloorLog = result.actionLog.some((log) =>
+			log.message.includes("2階に到達した"),
+		);
+		expect(hasFloorLog).toBe(true);
+	});
+
+	it("階段タイルへの移動成功: 遷移後のターンが player", () => {
+		const map = createTestMap();
 		map[3][4] = { type: "stairs" };
 
 		const state = createTestState({ map });
 		const result = executeMove(state, "move-1", "right");
 
-		// 位置が更新される
-		expect(result.player.position).toEqual({ x: 4, y: 3 });
-		// AP消費
-		expect(result.player.ap).toBe(MAX_AP - CARD_COST.move);
-		// 行動ログに階段到達が記録
-		const hasStairsLog = result.actionLog.some((log) =>
-			log.message.includes("階段"),
-		);
-		expect(hasStairsLog).toBe(true);
+		expect(result.turn).toBe("player");
 	});
 
 	it("元のGameStateが変更されない（イミュータブル）", () => {
