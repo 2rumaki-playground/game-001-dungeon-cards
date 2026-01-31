@@ -8,10 +8,48 @@ import { CARD_COST } from "../constants";
 import type { Card, CardType, Direction } from "../types";
 
 /** カード描画定数 */
-const CARD_WIDTH = 90;
-const CARD_HEIGHT = 120;
+export const CARD_WIDTH = 90;
+export const CARD_HEIGHT = 120;
 const CARD_GAP = 8;
 const CARD_RADIUS = 8;
+
+/**
+ * カード内のクリック位置から方向を判定
+ * カードを対角線で4分割し、クリック位置がどの領域にあるかで方向を決定
+ * @param localX カード内のX座標
+ * @param localY カード内のY座標
+ * @param cardWidth カードの幅
+ * @param cardHeight カードの高さ
+ */
+export function getDirectionFromClickPosition(
+	localX: number,
+	localY: number,
+	cardWidth: number = CARD_WIDTH,
+	cardHeight: number = CARD_HEIGHT,
+): Direction {
+	const centerX = cardWidth / 2;
+	const centerY = cardHeight / 2;
+
+	// 中心からの相対位置
+	const relX = localX - centerX;
+	const relY = localY - centerY;
+
+	// 対角線の傾き（矩形のアスペクト比）と比較して4方向を判定
+	// relX が 0 の場合は垂直線上なので上下判定にフォールバック
+	if (relX === 0) {
+		return relY > 0 ? "down" : "up";
+	}
+
+	const slope = relY / relX;
+	const diagSlope = cardHeight / cardWidth;
+
+	if (Math.abs(slope) < diagSlope) {
+		// 左右（傾きが対角線より緩やか）
+		return relX > 0 ? "right" : "left";
+	}
+	// 上下（傾きが対角線より急）
+	return relY > 0 ? "down" : "up";
+}
 
 /** カード色定義 */
 const CARD_COLORS = {
@@ -155,7 +193,7 @@ export class HandRenderer {
 			cardContainer.on("pointerdown", (event) => {
 				// 方向パラメータを持つカードの場合、クリック位置から方向を判定
 				if (card.type === "move" || card.type === "attack") {
-					const direction = this.getDirectionFromClickPosition(
+					const direction = getDirectionFromClickPosition(
 						event.global.x - cardContainer.getGlobalPosition().x,
 						event.global.y - cardContainer.getGlobalPosition().y,
 					);
@@ -167,34 +205,6 @@ export class HandRenderer {
 		}
 
 		return cardContainer;
-	}
-
-	/**
-	 * カード内のクリック位置から方向を判定
-	 * カードを対角線で4分割し、クリック位置がどの領域にあるかで方向を決定
-	 */
-	private getDirectionFromClickPosition(
-		localX: number,
-		localY: number,
-	): Direction {
-		const centerX = CARD_WIDTH / 2;
-		const centerY = CARD_HEIGHT / 2;
-
-		// 中心からの相対位置
-		const relX = localX - centerX;
-		const relY = localY - centerY;
-
-		// 対角線で分割: |relX| > |relY| なら左右、そうでなければ上下
-		// アスペクト比を考慮して正規化
-		const normalizedX = relX / CARD_WIDTH;
-		const normalizedY = relY / CARD_HEIGHT;
-
-		if (Math.abs(normalizedX) > Math.abs(normalizedY)) {
-			// 左右
-			return normalizedX > 0 ? "right" : "left";
-		}
-		// 上下
-		return normalizedY > 0 ? "down" : "up";
 	}
 
 	/**
