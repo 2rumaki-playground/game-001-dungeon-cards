@@ -158,9 +158,7 @@ async function main() {
 
 	// ゲームオーバー画面のコールバック設定
 	gameOverScreen.setOnReturnToTitle(() => {
-		const newState = returnToTitle(gameState);
-		updateState(newState);
-		titleScreen.render(mapSize.width, mapSize.height + HAND_AREA_HEIGHT);
+		updateState(returnToTitle(gameState));
 	});
 
 	// タイトル画面状態で初期化
