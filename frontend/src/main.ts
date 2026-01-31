@@ -1,6 +1,7 @@
 import { Application } from "pixi.js";
 import {
 	COLORS,
+	HAND_LIMIT,
 	LOG_AREA_GAP,
 	LOG_AREA_WIDTH,
 	STATUS_BAR_HEIGHT,
@@ -63,6 +64,9 @@ let actionLogRenderer: ActionLogRenderer;
 /** 方向選択待ちのカード */
 let pendingCard: Card | null = null;
 
+/** アニメーション中フラグ（UI操作を無効化） */
+let isAnimating = false;
+
 /** デバッグログの有効/無効（コンソールから切替可能） */
 let debugLog = import.meta.env.DEV;
 
@@ -95,14 +99,17 @@ function renderTitleScreen(): void {
 
 /**
  * ゲーム画面の描画
+ * @param skipHand trueの場合、手札描画をスキップ（アニメーション中に使用）
  */
-function renderGameScreen(): void {
+function renderGameScreen(skipHand = false): void {
 	titleScreen.hide();
 	gameOverScreen.hide();
 	statusBar.show();
 	statusBar.render(gameState.player, gameState.floor);
 	mapRenderer.render(gameState.map, gameState.player, gameState.enemies);
-	handRenderer.render(gameState.deck.hand, gameState.player.ap);
+	if (!skipHand) {
+		handRenderer.render(gameState.deck.hand, gameState.player.ap);
+	}
 	turnEndButton.show();
 	turnEndButton.render(gameState.turn);
 	actionLogRenderer.show();
@@ -128,19 +135,54 @@ function renderGameOverScreen(): void {
 
 /**
  * 画面に応じた描画
+ * @param skipHand trueの場合、手札描画をスキップ
  */
-function render(): void {
+function render(skipHand = false): void {
 	switch (gameState.screen) {
 		case "title":
 			renderTitleScreen();
 			break;
 		case "game":
-			renderGameScreen();
+			renderGameScreen(skipHand);
 			break;
 		case "gameOver":
 			renderGameOverScreen();
 			break;
 	}
+}
+
+/**
+ * ゲーム状態を更新して手札配布アニメーション付きで再描画
+ * @param newState 新しいゲーム状態
+ * @param newCardCount 新しく引いたカードの枚数
+ */
+async function updateStateWithDealAnimation(
+	newState: GameState,
+	newCardCount: number,
+): Promise<void> {
+	if (debugLog) {
+		const newEntries = newState.actionLog.length - gameState.actionLog.length;
+		for (let i = newEntries - 1; i >= 0; i--) {
+			console.log(`[行動ログ] ${newState.actionLog[i].message}`);
+		}
+	}
+	gameState = newState;
+
+	// アニメーション中フラグをセット
+	isAnimating = true;
+
+	// 手札以外を描画
+	render(true);
+
+	// 手札配布アニメーション
+	await handRenderer.renderWithAnimation(
+		gameState.deck.hand,
+		gameState.player.ap,
+		newCardCount,
+	);
+
+	// アニメーション完了
+	isAnimating = false;
 }
 
 /**
@@ -210,6 +252,7 @@ function setupEventHandlers(
 ): void {
 	// 方向選択UIのコールバック設定
 	directionSelector.setOnDirectionSelect((direction) => {
+		if (isAnimating) return; // アニメーション中は無効
 		if (pendingCard) {
 			if (pendingCard.type === "move") {
 				updateState(executeMove(gameState, pendingCard.id, direction));
@@ -222,6 +265,7 @@ function setupEventHandlers(
 	});
 
 	directionSelector.setOnCancel(() => {
+		if (isAnimating) return; // アニメーション中は無効
 		directionSelector.hide();
 		pendingCard = null;
 	});
@@ -229,6 +273,7 @@ function setupEventHandlers(
 	// 手札選択のコールバック設定
 	// 方向パラメータを持つカードはクリック位置で方向が決まる
 	handRenderer.setOnCardSelect((card, direction) => {
+		if (isAnimating) return; // アニメーション中は無効
 		if (card.type === "wait") {
 			updateState(executeWait(gameState, card.id));
 		} else if (direction) {
@@ -246,11 +291,15 @@ function setupEventHandlers(
 	});
 
 	// タイトル画面のコールバック設定
-	titleScreen.setOnNewGame(() => {
-		updateState(startNewGame(gameState));
+	titleScreen.setOnNewGame(async () => {
+		if (isAnimating) return;
+		const newState = startNewGame(gameState);
+		// 新規ゲーム開始時は全カードがアニメーション対象
+		await updateStateWithDealAnimation(newState, newState.deck.hand.length);
 	});
 
 	titleScreen.setOnContinue(() => {
+		if (isAnimating) return;
 		const savedState = loadGame();
 		if (savedState) {
 			updateState(savedState);
@@ -264,6 +313,7 @@ function setupEventHandlers(
 
 	// ゲームオーバー画面のコールバック設定
 	gameOverScreen.setOnReturnToTitle(() => {
+		if (isAnimating) return; // アニメーション中は無効
 		updateState(returnToTitle(gameState));
 		const totalWidth =
 			mapSize.width + LOG_AREA_GAP + actionLogRenderer.getWidth();
@@ -271,17 +321,21 @@ function setupEventHandlers(
 	});
 
 	// ターン終了ボタンのコールバック設定
-	turnEndButton.setOnEndTurn(() => {
+	turnEndButton.setOnEndTurn(async () => {
+		if (isAnimating) return; // アニメーション中は無効
+
 		let next = endPlayerTurn(gameState);
 		next = executeEnemyTurn(next);
 
 		if (next.screen !== "gameOver") {
 			next = startPlayerTurn(next);
+			// 新しく引いたカードの枚数（手札上限まで補充）
+			const newCardCount = Math.min(HAND_LIMIT, next.deck.hand.length);
+			await updateStateWithDealAnimation(next, newCardCount);
 		} else {
 			deleteSaveData();
+			updateState(next);
 		}
-
-		updateState(next);
 	});
 }
 
