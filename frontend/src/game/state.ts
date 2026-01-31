@@ -104,29 +104,10 @@ export function createInitialGameState(seed?: number): GameState {
  * タイトル画面から新規ゲームを開始
  */
 export function startNewGame(state: GameState): GameState {
-	const rng = cloneRng(state.rng);
-	const { map, player, enemies } = generateMapPlacement(rng);
-	const initialPlayer = createInitialPlayer();
-	const enemyStates: Enemy[] = enemies.map((position, index) => ({
-		id: `enemy-${index + 1}`,
-		position,
-		hp: ENEMY_HP,
-		maxHp: ENEMY_HP,
-	}));
-	const deck = createInitialDeckState(rng);
-	const deckWithHand = drawCards(deck, rng);
-
-	return {
-		screen: "game",
-		turn: "player",
-		floor: INITIAL_FLOOR,
-		map,
-		player: { ...initialPlayer, position: player },
-		enemies: enemyStates,
-		deck: deckWithHand,
-		actionLog: [],
-		rng,
-	};
+	const gameState = createInitialGameState(state.rng.seed);
+	const deck = createInitialDeckState(gameState.rng);
+	const deckWithHand = drawCards(deck, gameState.rng);
+	return { ...gameState, deck: deckWithHand };
 }
 
 /**
