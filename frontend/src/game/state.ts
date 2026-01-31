@@ -111,6 +111,13 @@ export function startNewGame(state: GameState): GameState {
 }
 
 /**
+ * ゲームオーバー画面からタイトル画面に戻る
+ */
+export function returnToTitle(_state: GameState): GameState {
+	return createTitleScreenState();
+}
+
+/**
  * 画面を変更
  */
 export function changeScreen(state: GameState, screen: Screen): GameState {
