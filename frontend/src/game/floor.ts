@@ -5,6 +5,7 @@
 
 import { ENEMY_HP } from "../constants";
 import type { Enemy, GameState } from "../types";
+import { saveGame } from "../utils/storage";
 import { reshuffleDeck } from "./deck";
 import { generateMapPlacement } from "./map";
 import {
@@ -62,7 +63,8 @@ export function transitionFloor(state: GameState): GameState {
 	// 7. 行動ログに記録
 	next = addActionLog(next, `${next.floor}階に到達した`);
 
-	// TODO: セーブ処理 (#104)
+	// 8. セーブ処理 (#104)
+	saveGame(next);
 
 	return next;
 }

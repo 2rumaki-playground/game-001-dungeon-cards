@@ -20,6 +20,25 @@ export class RNG {
 	}
 
 	/**
+	 * 内部状態をシリアライズ
+	 */
+	serialize(): { seed: number; state: number } {
+		return {
+			seed: this.seed,
+			state: this.state,
+		};
+	}
+
+	/**
+	 * シリアライズされたデータから復元
+	 */
+	static deserialize(data: { seed: number; state: number }): RNG {
+		const rng = new RNG(data.seed);
+		rng.state = data.state;
+		return rng;
+	}
+
+	/**
 	 * 内部状態を保持したまま複製
 	 */
 	clone(): RNG {

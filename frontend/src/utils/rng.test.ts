@@ -129,4 +129,45 @@ describe("RNG", () => {
 			);
 		});
 	});
+
+	describe("serialize/deserialize", () => {
+		it("シリアライズ/デシリアライズ後にRNGの内部状態が正しく復元される", () => {
+			const original = new RNG(12345);
+			
+			// 乱数をいくつか消費
+			original.random();
+			original.random();
+			
+			const serialized = original.serialize();
+			const restored = RNG.deserialize(serialized);
+			
+			// シードが同じか
+			expect(restored.seed).toBe(original.seed);
+			
+			// 次の乱数が同じになるか（状態の復元確認）
+			for (let i = 0; i < 10; i++) {
+				expect(restored.random()).toBe(original.random());
+			}
+		});
+
+		it("複数回の乱数生成後でもシリアライズ/デシリアライズが正しく動作する", () => {
+			const original = new RNG(9999);
+			const values1: number[] = [];
+			
+			// 100回回す
+			for (let i = 0; i < 100; i++) {
+				values1.push(original.random());
+			}
+			
+			const serialized = original.serialize();
+			const restored = RNG.deserialize(serialized);
+			
+			// 続きから100回回す
+			for (let i = 0; i < 100; i++) {
+				const v1 = original.random();
+				const v2 = restored.random();
+				expect(v2).toBe(v1);
+			}
+		});
+	});
 });

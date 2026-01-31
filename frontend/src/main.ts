@@ -28,6 +28,7 @@ import {
 	TitleScreen,
 	TurnEndButton,
 } from "./ui";
+import { deleteSaveData, hasSaveData, loadGame } from "./utils/storage";
 
 /** 手札エリアの高さ */
 const HAND_AREA_HEIGHT = 160;
@@ -210,9 +211,28 @@ async function main() {
 		updateState(startNewGame(gameState));
 	});
 
+	titleScreen.setOnContinue(() => {
+		const savedState = loadGame();
+		if (savedState) {
+			updateState(savedState);
+		} else {
+			alert("セーブデータの読み込みに失敗しました。");
+			// 画面更新してボタンを無効化するなどしても良いが、
+			// ひとまずタイトル画面を再描画して状態を反映
+			const totalWidth =
+				mapSize.width + LOG_AREA_GAP + actionLogRenderer.getWidth();
+			titleScreen.render(totalWidth, totalHeight, hasSaveData());
+		}
+	});
+
 	// ゲームオーバー画面のコールバック設定
 	gameOverScreen.setOnReturnToTitle(() => {
 		updateState(returnToTitle(gameState));
+
+		// タイトル画面に戻った際にセーブデータ有無を反映して再描画
+		const totalWidth =
+			mapSize.width + LOG_AREA_GAP + actionLogRenderer.getWidth();
+		titleScreen.render(totalWidth, totalHeight, hasSaveData());
 	});
 
 	// ターン終了ボタンのコールバック設定
@@ -226,6 +246,9 @@ async function main() {
 		// ゲームオーバーでなければプレイヤーターン開始
 		if (next.screen !== "gameOver") {
 			next = startPlayerTurn(next);
+		} else {
+			// ゲームオーバー時はセーブデータを削除
+			deleteSaveData();
 		}
 
 		updateState(next);
@@ -235,7 +258,7 @@ async function main() {
 	gameState = createTitleScreenState();
 	const totalWidth =
 		mapSize.width + LOG_AREA_GAP + actionLogRenderer.getWidth();
-	titleScreen.render(totalWidth, totalHeight);
+	titleScreen.render(totalWidth, totalHeight, hasSaveData());
 	render();
 
 	// デバッグ用：コンソールからゲーム状態・ログ設定を確認・変更できるようにする
