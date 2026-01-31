@@ -2,11 +2,14 @@ import { Application } from "pixi.js";
 import { COLORS, STATUS_BAR_HEIGHT } from "./constants";
 import {
 	createTitleScreenState,
+	endPlayerTurn,
 	executeAttack,
+	executeEnemyTurn,
 	executeMove,
 	executeWait,
 	returnToTitle,
 	startNewGame,
+	startPlayerTurn,
 } from "./game";
 import type { Card, GameState } from "./types";
 import {
@@ -17,6 +20,7 @@ import {
 	MapRenderer,
 	StatusBar,
 	TitleScreen,
+	TurnEndButton,
 } from "./ui";
 
 /** 手札エリアの高さ */
@@ -42,6 +46,9 @@ let handRenderer: HandRenderer;
 
 /** 方向選択UI */
 let directionSelector: DirectionSelector;
+
+/** ターン終了ボタン */
+let turnEndButton: TurnEndButton;
 
 /** 方向選択待ちのカード */
 let pendingCard: Card | null = null;
@@ -71,6 +78,7 @@ function render(): void {
 		titleScreen.show();
 		gameOverScreen.hide();
 		statusBar.hide();
+		turnEndButton.hide();
 		mapRenderer.clear();
 		handRenderer.clear();
 	} else if (gameState.screen === "game") {
@@ -80,9 +88,12 @@ function render(): void {
 		statusBar.render(gameState.player, gameState.floor);
 		mapRenderer.render(gameState.map, gameState.player, gameState.enemies);
 		handRenderer.render(gameState.deck.hand, gameState.player.ap);
+		turnEndButton.show();
+		turnEndButton.render(gameState.turn);
 	} else if (gameState.screen === "gameOver") {
 		titleScreen.hide();
 		statusBar.hide();
+		turnEndButton.hide();
 		mapRenderer.clear();
 		handRenderer.clear();
 		const mapSize = getMapPixelSize();
@@ -133,6 +144,14 @@ async function main() {
 		STATUS_BAR_HEIGHT + mapSize.height + HAND_AREA_HEIGHT / 2 - 60;
 	app.stage.addChild(handContainer);
 
+	// ターン終了ボタンを初期化
+	turnEndButton = new TurnEndButton();
+	const turnEndContainer = turnEndButton.getContainer();
+	turnEndContainer.x = mapSize.width - 136;
+	turnEndContainer.y =
+		STATUS_BAR_HEIGHT + mapSize.height + HAND_AREA_HEIGHT - 52;
+	app.stage.addChild(turnEndContainer);
+
 	// 方向選択UIを初期化
 	directionSelector = new DirectionSelector();
 	const directionContainer = directionSelector.getContainer();
@@ -175,6 +194,22 @@ async function main() {
 	// ゲームオーバー画面のコールバック設定
 	gameOverScreen.setOnReturnToTitle(() => {
 		updateState(returnToTitle(gameState));
+	});
+
+	// ターン終了ボタンのコールバック設定
+	turnEndButton.setOnEndTurn(() => {
+		// プレイヤーターン終了
+		let next = endPlayerTurn(gameState);
+
+		// 敵ターン実行
+		next = executeEnemyTurn(next);
+
+		// ゲームオーバーでなければプレイヤーターン開始
+		if (next.screen !== "gameOver") {
+			next = startPlayerTurn(next);
+		}
+
+		updateState(next);
 	});
 
 	// タイトル画面状態で初期化
