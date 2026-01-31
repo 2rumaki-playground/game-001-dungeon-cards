@@ -21,9 +21,9 @@ describe("StatusBar", () => {
 		statusBar.render(player, 5);
 
 		const container = statusBar.getContainer();
-		const hpText = container.children[0] as { text: string };
-		const apText = container.children[1] as { text: string };
-		const floorText = container.children[2] as { text: string };
+		const hpText = container.children[0] as unknown as { text: string };
+		const apText = container.children[1] as unknown as { text: string };
+		const floorText = container.children[2] as unknown as { text: string };
 
 		expect(hpText.text).toBe("HP: 7/10");
 		expect(apText.text).toBe("AP: 2/3");
@@ -43,9 +43,9 @@ describe("StatusBar", () => {
 		statusBar.clear();
 
 		const container = statusBar.getContainer();
-		const hpText = container.children[0] as { text: string };
-		const apText = container.children[1] as { text: string };
-		const floorText = container.children[2] as { text: string };
+		const hpText = container.children[0] as unknown as { text: string };
+		const apText = container.children[1] as unknown as { text: string };
+		const floorText = container.children[2] as unknown as { text: string };
 
 		expect(hpText.text).toBe("");
 		expect(apText.text).toBe("");
