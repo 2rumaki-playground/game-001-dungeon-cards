@@ -1,7 +1,6 @@
 import { Application } from "pixi.js";
 import {
 	COLORS,
-	HAND_LIMIT,
 	LOG_AREA_GAP,
 	LOG_AREA_WIDTH,
 	STATUS_BAR_HEIGHT,
@@ -251,11 +250,20 @@ function setupEventHandlers(
 	totalHeight: number,
 ): void {
 	// 方向選択UIのコールバック設定
-	directionSelector.setOnDirectionSelect((direction) => {
+	directionSelector.setOnDirectionSelect(async (direction) => {
 		if (isAnimating) return; // アニメーション中は無効
 		if (pendingCard) {
 			if (pendingCard.type === "move") {
-				updateState(executeMove(gameState, pendingCard.id, direction));
+				const prevFloor = gameState.floor;
+				const next = executeMove(gameState, pendingCard.id, direction);
+				// 階層遷移が発生した場合はアニメーション付きで描画
+				if (next.floor !== prevFloor) {
+					directionSelector.hide();
+					pendingCard = null;
+					await updateStateWithDealAnimation(next, next.deck.hand.length);
+					return;
+				}
+				updateState(next);
 			} else if (pendingCard.type === "attack") {
 				updateState(executeAttack(gameState, pendingCard.id, direction));
 			}
@@ -272,14 +280,21 @@ function setupEventHandlers(
 
 	// 手札選択のコールバック設定
 	// 方向パラメータを持つカードはクリック位置で方向が決まる
-	handRenderer.setOnCardSelect((card, direction) => {
+	handRenderer.setOnCardSelect(async (card, direction) => {
 		if (isAnimating) return; // アニメーション中は無効
 		if (card.type === "wait") {
 			updateState(executeWait(gameState, card.id));
 		} else if (direction) {
 			// 方向が指定されている場合は即座に実行
 			if (card.type === "move") {
-				updateState(executeMove(gameState, card.id, direction));
+				const prevFloor = gameState.floor;
+				const next = executeMove(gameState, card.id, direction);
+				// 階層遷移が発生した場合はアニメーション付きで描画
+				if (next.floor !== prevFloor) {
+					await updateStateWithDealAnimation(next, next.deck.hand.length);
+				} else {
+					updateState(next);
+				}
 			} else if (card.type === "attack") {
 				updateState(executeAttack(gameState, card.id, direction));
 			}
@@ -329,8 +344,8 @@ function setupEventHandlers(
 
 		if (next.screen !== "gameOver") {
 			next = startPlayerTurn(next);
-			// 新しく引いたカードの枚数（手札上限まで補充）
-			const newCardCount = Math.min(HAND_LIMIT, next.deck.hand.length);
+			// 新しく引いたカードの枚数（ターン終了で手札は空になるため全カードが対象）
+			const newCardCount = next.deck.hand.length;
 			await updateStateWithDealAnimation(next, newCardCount);
 		} else {
 			deleteSaveData();

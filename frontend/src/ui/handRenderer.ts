@@ -149,7 +149,12 @@ export class HandRenderer {
 		const startX = -totalWidth / 2;
 
 		// アニメーション対象のカード（末尾のnewCardCount枚）
-		const existingCardCount = hand.length - newCardCount;
+		// newCardCount が手札枚数を超える・負になる入力に対しても挙動を明確にするためクランプする
+		const clampedNewCardCount = Math.min(
+			Math.max(newCardCount, 0),
+			hand.length,
+		);
+		const existingCardCount = hand.length - clampedNewCardCount;
 		const animationPromises: Promise<void>[] = [];
 
 		for (let i = 0; i < hand.length; i++) {
