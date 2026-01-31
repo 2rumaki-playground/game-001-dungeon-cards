@@ -205,9 +205,9 @@ describe("pickMoveDirection", () => {
 		expect(pickMoveDirection(state, enemy)).toBe("down");
 	});
 
-	it("他の敵がいるマスへは移動できない", () => {
+	it("最善方向に他の敵がいる場合、移動失敗でnullを返す", () => {
 		// 敵1が(3,3)、敵2が(3,2)（プレイヤー方向をブロック）
-		// プレイヤーが(3,1)にいる → 上(3,2)は敵2がいるのでブロック
+		// プレイヤーが(3,1)にいる → 最善方向は上(3,2)だが敵2がいる → 留まる
 		const enemies: Enemy[] = [
 			{
 				id: "enemy-2",
@@ -232,12 +232,11 @@ describe("pickMoveDirection", () => {
 			hp: ENEMY_HP,
 			maxHp: ENEMY_HP,
 		};
-		const dir = pickMoveDirection(state, enemy);
-		// 上は敵2がいるのでブロック、次善の方向を選択
-		expect(dir).not.toBe("up");
+		// 壁回避の経路探索は行わない → 最善方向がブロックなら留まる
+		expect(pickMoveDirection(state, enemy)).toBeNull();
 	});
 
-	it("階段タイルへは移動できない", () => {
+	it("最善方向が階段タイルの場合、移動失敗でnullを返す", () => {
 		const map = createTestMap();
 		// (3,2)を階段タイルに設定
 		map[2][3] = { type: "stairs" };
@@ -257,8 +256,8 @@ describe("pickMoveDirection", () => {
 			hp: ENEMY_HP,
 			maxHp: ENEMY_HP,
 		};
-		const dir = pickMoveDirection(state, enemy);
-		expect(dir).not.toBe("up");
+		// 最善方向は上(3,2)だが階段 → 留まる
+		expect(pickMoveDirection(state, enemy)).toBeNull();
 	});
 
 	it("全方向移動不可の場合nullを返す", () => {
@@ -478,5 +477,25 @@ describe("executeEnemyTurn", () => {
 
 		expect(state.player.hp).toBe(originalPlayerHp);
 		expect(state.enemies[0].position).toEqual(originalEnemyPos);
+	});
+
+	it("入力stateのRNGが変更されない", () => {
+		const enemies: Enemy[] = [
+			{
+				id: "enemy-1",
+				position: { x: 5, y: 3 },
+				hp: ENEMY_HP,
+				maxHp: ENEMY_HP,
+			},
+		];
+		const state = createTestState({ enemies });
+		const rngBefore = state.rng.random();
+
+		const state2 = createTestState({ enemies });
+		executeEnemyTurn(state2);
+		const rngAfter = state2.rng.random();
+
+		// 同じシードから同じ最初の値が得られる（RNGが進んでいない）
+		expect(rngAfter).toBe(rngBefore);
 	});
 });

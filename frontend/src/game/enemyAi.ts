@@ -68,9 +68,9 @@ function canEnemyMoveTo(
 /**
  * 敵の移動方向を決定
  *
- * マンハッタン距離が最小になる方向を選択。
- * 同距離の場合は固定順序（上→下→左→右）で優先。
- * 全方向移動不可の場合はnullを返す。
+ * 1. マンハッタン距離が最小になる方向を選択（障害物を考慮しない）
+ * 2. 同距離の場合は固定順序（上→下→左→右）で優先
+ * 3. 選択した方向が移動不可ならnullを返す（壁回避の経路探索は行わない）
  */
 export function pickMoveDirection(
 	state: GameState,
@@ -79,20 +79,27 @@ export function pickMoveDirection(
 	let bestDirection: Direction | null = null;
 	let bestDistance = Number.POSITIVE_INFINITY;
 
+	// 障害物を無視して最善方向を決定
 	for (const dir of DIRECTION_PRIORITY) {
 		const delta = DIRECTION_DELTA[dir];
 		const nx = enemy.position.x + delta.x;
 		const ny = enemy.position.y + delta.y;
-
-		if (!canEnemyMoveTo(state, enemy, nx, ny)) {
-			continue;
-		}
 
 		const dist = manhattanDistance({ x: nx, y: ny }, state.player.position);
 		if (dist < bestDistance) {
 			bestDistance = dist;
 			bestDirection = dir;
 		}
+	}
+
+	if (!bestDirection) return null;
+
+	// 移動可否を判定（移動不可なら留まる）
+	const delta = DIRECTION_DELTA[bestDirection];
+	const nx = enemy.position.x + delta.x;
+	const ny = enemy.position.y + delta.y;
+	if (!canEnemyMoveTo(state, enemy, nx, ny)) {
+		return null;
 	}
 
 	return bestDirection;
@@ -107,10 +114,11 @@ export function pickMoveDirection(
  *    - それ以外 → プレイヤーに近づく移動
  */
 export function executeEnemyTurn(state: GameState): GameState {
-	// 行動順序をシャッフル
-	const order = state.rng.shuffle(state.enemies.map((_e, i) => i));
+	// RNGをcloneして入力stateを変更しない
+	const rng = state.rng.clone();
+	const order = rng.shuffle(state.enemies.map((_e, i) => i));
 
-	let next = { ...state, enemies: state.enemies.map((e) => ({ ...e })) };
+	let next = { ...state, enemies: state.enemies.map((e) => ({ ...e })), rng };
 
 	for (const idx of order) {
 		const enemy = next.enemies[idx];
