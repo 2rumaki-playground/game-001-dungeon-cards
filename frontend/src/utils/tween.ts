@@ -98,8 +98,8 @@ export function tween(
 		let elapsed = -delay;
 		const ticker = Ticker.shared;
 
-		const update = (delta: number): void => {
-			elapsed += delta.deltaMS;
+		const update = (tick: Ticker): void => {
+			elapsed += tick.deltaMS;
 
 			if (elapsed < 0) {
 				// 遅延中
@@ -154,8 +154,8 @@ export function wait(ms: number): Promise<void> {
 		let elapsed = 0;
 		const ticker = Ticker.shared;
 
-		const update = (delta: number): void => {
-			elapsed += delta.deltaMS;
+		const update = (tick: Ticker): void => {
+			elapsed += tick.deltaMS;
 			if (elapsed >= ms) {
 				ticker.remove(update);
 				resolve();
@@ -180,6 +180,6 @@ export async function sequence(tweens: (() => Promise<void>)[]): Promise<void> {
  * 複数のTweenを並列に実行
  * @param tweens Promise配列
  */
-export function parallel(tweens: Promise<void>[]): Promise<undefined[]> {
-	return Promise.all(tweens);
+export async function parallel(tweens: Promise<void>[]): Promise<void> {
+	await Promise.all(tweens);
 }
