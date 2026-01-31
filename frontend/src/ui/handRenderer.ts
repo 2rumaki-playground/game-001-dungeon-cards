@@ -5,7 +5,7 @@
 
 import { Container, Graphics, Text } from "pixi.js";
 import { CARD_COST } from "../constants";
-import type { Card, CardType } from "../types";
+import type { Card, CardType, Direction } from "../types";
 
 /** カード描画定数 */
 const CARD_WIDTH = 90;
@@ -35,7 +35,8 @@ const CARD_TYPE_NAME: Record<CardType, string> = {
 export class HandRenderer {
 	private container: Container;
 	private selectedCardId: string | null = null;
-	private onCardSelect: ((card: Card) => void) | null = null;
+	private onCardSelect: ((card: Card, direction?: Direction) => void) | null =
+		null;
 
 	constructor() {
 		this.container = new Container();
@@ -50,8 +51,9 @@ export class HandRenderer {
 
 	/**
 	 * カード選択コールバックを設定
+	 * @param callback カード選択時のコールバック。方向パラメータを持つカードの場合、クリック位置に応じた方向も渡される
 	 */
-	setOnCardSelect(callback: (card: Card) => void): void {
+	setOnCardSelect(callback: (card: Card, direction?: Direction) => void): void {
 		this.onCardSelect = callback;
 	}
 
@@ -140,16 +142,86 @@ export class HandRenderer {
 		costText.y = 70;
 		cardContainer.addChild(costText);
 
+		// 方向カードには方向ヒントを表示
+		if (card.type === "move" || card.type === "attack") {
+			const arrowColor = enabled ? 0x888888 : 0x444444;
+			this.addDirectionHints(cardContainer, arrowColor);
+		}
+
 		// インタラクション
 		if (enabled) {
 			cardContainer.eventMode = "static";
 			cardContainer.cursor = "pointer";
-			cardContainer.on("pointerdown", () => {
-				this.onCardSelect?.(card);
+			cardContainer.on("pointerdown", (event) => {
+				// 方向パラメータを持つカードの場合、クリック位置から方向を判定
+				if (card.type === "move" || card.type === "attack") {
+					const direction = this.getDirectionFromClickPosition(
+						event.global.x - cardContainer.getGlobalPosition().x,
+						event.global.y - cardContainer.getGlobalPosition().y,
+					);
+					this.onCardSelect?.(card, direction);
+				} else {
+					this.onCardSelect?.(card);
+				}
 			});
 		}
 
 		return cardContainer;
+	}
+
+	/**
+	 * カード内のクリック位置から方向を判定
+	 * カードを対角線で4分割し、クリック位置がどの領域にあるかで方向を決定
+	 */
+	private getDirectionFromClickPosition(
+		localX: number,
+		localY: number,
+	): Direction {
+		const centerX = CARD_WIDTH / 2;
+		const centerY = CARD_HEIGHT / 2;
+
+		// 中心からの相対位置
+		const relX = localX - centerX;
+		const relY = localY - centerY;
+
+		// 対角線で分割: |relX| > |relY| なら左右、そうでなければ上下
+		// アスペクト比を考慮して正規化
+		const normalizedX = relX / CARD_WIDTH;
+		const normalizedY = relY / CARD_HEIGHT;
+
+		if (Math.abs(normalizedX) > Math.abs(normalizedY)) {
+			// 左右
+			return normalizedX > 0 ? "right" : "left";
+		}
+		// 上下
+		return normalizedY > 0 ? "down" : "up";
+	}
+
+	/**
+	 * 方向ヒント（矢印）をカードに追加
+	 */
+	private addDirectionHints(cardContainer: Container, color: number): void {
+		const arrows = [
+			{ text: "↑", x: CARD_WIDTH / 2, y: 8 },
+			{ text: "↓", x: CARD_WIDTH / 2, y: CARD_HEIGHT - 8 },
+			{ text: "←", x: 8, y: CARD_HEIGHT / 2 },
+			{ text: "→", x: CARD_WIDTH - 8, y: CARD_HEIGHT / 2 },
+		];
+
+		for (const arrow of arrows) {
+			const arrowText = new Text({
+				text: arrow.text,
+				style: {
+					fontSize: 12,
+					fontFamily: "sans-serif",
+					fill: color,
+				},
+			});
+			arrowText.anchor.set(0.5);
+			arrowText.x = arrow.x;
+			arrowText.y = arrow.y;
+			cardContainer.addChild(arrowText);
+		}
 	}
 
 	/**

@@ -227,10 +227,19 @@ function setupEventHandlers(
 	});
 
 	// 手札選択のコールバック設定
-	handRenderer.setOnCardSelect((card) => {
+	// 方向パラメータを持つカードはクリック位置で方向が決まる
+	handRenderer.setOnCardSelect((card, direction) => {
 		if (card.type === "wait") {
 			updateState(executeWait(gameState, card.id));
+		} else if (direction) {
+			// 方向が指定されている場合は即座に実行
+			if (card.type === "move") {
+				updateState(executeMove(gameState, card.id, direction));
+			} else if (card.type === "attack") {
+				updateState(executeAttack(gameState, card.id, direction));
+			}
 		} else {
+			// 方向が指定されていない場合は方向選択UIを表示（フォールバック）
 			pendingCard = card;
 			directionSelector.show();
 		}
