@@ -9,3 +9,4 @@ export * from "./handRenderer";
 export * from "./mapRenderer";
 export * from "./statusBar";
 export * from "./titleScreen";
+export * from "./turnEndButton";
