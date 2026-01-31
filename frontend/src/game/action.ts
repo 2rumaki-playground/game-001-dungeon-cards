@@ -13,6 +13,7 @@ import type { Direction, GameState } from "../types";
 import { DIRECTION_DELTA } from "../types";
 import { applyDamageToEnemy } from "./combat";
 import { playCard } from "./deck";
+import { transitionFloor } from "./floor";
 import { addActionLog, setDeck, updatePlayer } from "./state";
 
 /**
@@ -80,8 +81,7 @@ export function executeMove(
 
 	// 階段判定
 	if (state.map[ny][nx].type === "stairs") {
-		// TODO: 階層遷移は #98 スコープ
-		next = addActionLog(next, "階段に到達した");
+		return transitionFloor(next);
 	}
 
 	return next;
