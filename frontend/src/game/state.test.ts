@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
 	ENEMY_COUNT,
 	ENEMY_HP,
+	HAND_LIMIT,
 	INITIAL_FLOOR,
 	MAP_HEIGHT,
 	MAP_WIDTH,
@@ -17,6 +18,7 @@ import {
 	createTitleScreenState,
 	removeEnemy,
 	setFloor,
+	startNewGame,
 	updateEnemy,
 	updatePlayer,
 } from "./state";
@@ -74,6 +76,44 @@ describe("state", () => {
 				.flat()
 				.filter((tile) => tile.type === "stairs").length;
 			expect(stairsCount).toBe(1);
+		});
+	});
+
+	describe("startNewGame", () => {
+		it("ゲーム画面に遷移する", () => {
+			const titleState = createTitleScreenState(12345);
+			const gameState = startNewGame(titleState);
+			expect(gameState.screen).toBe("game");
+			expect(gameState.turn).toBe("player");
+			expect(gameState.floor).toBe(INITIAL_FLOOR);
+		});
+
+		it("マップと敵が初期化される", () => {
+			const titleState = createTitleScreenState(12345);
+			const gameState = startNewGame(titleState);
+			expect(gameState.map.length).toBe(MAP_HEIGHT);
+			for (const row of gameState.map) {
+				expect(row.length).toBe(MAP_WIDTH);
+			}
+			expect(gameState.enemies.length).toBe(ENEMY_COUNT);
+			for (const enemy of gameState.enemies) {
+				expect(enemy.hp).toBe(ENEMY_HP);
+				expect(enemy.maxHp).toBe(ENEMY_HP);
+			}
+		});
+
+		it("デッキが生成され手札がドローされる", () => {
+			const titleState = createTitleScreenState(12345);
+			const gameState = startNewGame(titleState);
+			expect(gameState.deck.hand.length).toBe(HAND_LIMIT);
+			expect(gameState.deck.drawPile.length).toBeGreaterThan(0);
+		});
+
+		it("プレイヤーのHP/APが初期値", () => {
+			const titleState = createTitleScreenState(12345);
+			const gameState = startNewGame(titleState);
+			expect(gameState.player.hp).toBe(PLAYER_INITIAL_HP);
+			expect(gameState.player.ap).toBe(MAX_AP);
 		});
 	});
 

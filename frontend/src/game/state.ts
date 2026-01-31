@@ -20,6 +20,7 @@ import type {
 	Turn,
 } from "../types";
 import { RNG } from "../utils/rng";
+import { createInitialDeckState, drawCards } from "./deck";
 import { generateMapPlacement } from "./map";
 
 const cloneRng = (rng: RNG): RNG => rng.clone();
@@ -97,6 +98,16 @@ export function createInitialGameState(seed?: number): GameState {
 		actionLog: [],
 		rng,
 	};
+}
+
+/**
+ * タイトル画面から新規ゲームを開始
+ */
+export function startNewGame(state: GameState): GameState {
+	const gameState = createInitialGameState(state.rng.seed);
+	const deck = createInitialDeckState(gameState.rng);
+	const deckWithHand = drawCards(deck, gameState.rng);
+	return { ...gameState, deck: deckWithHand };
 }
 
 /**
