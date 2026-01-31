@@ -2,6 +2,7 @@
  * UI関連のエクスポート
  */
 
+export * from "./actionLogRenderer";
 export * from "./coordinates";
 export * from "./directionSelector";
 export * from "./gameOverScreen";
