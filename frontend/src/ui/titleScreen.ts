@@ -52,11 +52,7 @@ export class TitleScreen {
 	/**
 	 * タイトル画面を描画
 	 */
-	render(
-		screenWidth: number,
-		screenHeight: number,
-		canContinue = false,
-	): void {
+	render(screenWidth: number, screenHeight: number, canContinue = false): void {
 		this.container.removeChildren();
 
 		// ゲームタイトル

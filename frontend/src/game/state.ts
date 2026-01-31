@@ -16,6 +16,7 @@ import type {
 	GameMap,
 	GameState,
 	Player,
+	Position,
 	Screen,
 	Turn,
 } from "../types";
@@ -24,6 +25,18 @@ import { createInitialDeckState, drawCards } from "./deck";
 import { generateMapPlacement } from "./map";
 
 const cloneRng = (rng: RNG): RNG => rng.clone();
+
+/**
+ * 座標リストから敵リストを生成
+ */
+export function createEnemiesFromPositions(positions: Position[]): Enemy[] {
+	return positions.map((position, index) => ({
+		id: `enemy-${index + 1}`,
+		position,
+		hp: ENEMY_HP,
+		maxHp: ENEMY_HP,
+	}));
+}
 
 /**
  * 初期プレイヤー状態を作成
@@ -80,12 +93,6 @@ export function createInitialGameState(seed?: number): GameState {
 	const rng = new RNG(seed);
 	const { map, player, enemies } = generateMapPlacement(rng);
 	const initialPlayer = createInitialPlayer();
-	const enemyStates: Enemy[] = enemies.map((position, index) => ({
-		id: `enemy-${index + 1}`,
-		position,
-		hp: ENEMY_HP,
-		maxHp: ENEMY_HP,
-	}));
 
 	return {
 		screen: "game",
@@ -93,7 +100,7 @@ export function createInitialGameState(seed?: number): GameState {
 		floor: INITIAL_FLOOR,
 		map,
 		player: { ...initialPlayer, position: player },
-		enemies: enemyStates,
+		enemies: createEnemiesFromPositions(enemies),
 		deck: createEmptyDeckState(),
 		actionLog: [],
 		rng,
