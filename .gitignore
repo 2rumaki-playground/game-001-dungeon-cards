@@ -139,3 +139,6 @@ vite.config.ts.timestamp-*
 
 # JetBrains IDEs
 .idea/
+
+# Playwright CLI
+.playwright-cli/
