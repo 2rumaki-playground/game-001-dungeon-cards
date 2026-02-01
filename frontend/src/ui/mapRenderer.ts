@@ -5,8 +5,29 @@
 
 import { Container, Graphics } from "pixi.js";
 import { CELL_SIZE, COLORS } from "../constants";
-import type { Enemy, GameMap, Player, TileType } from "../types";
+import type {
+	Direction,
+	Enemy,
+	GameMap,
+	Player,
+	Position,
+	TileType,
+} from "../types";
+import { DIRECTION_DELTA } from "../types";
+import { Easing, tween } from "../utils/tween";
 import { gridToPixel } from "./coordinates";
+
+/** プレイヤー移動アニメーションの時間（ms） */
+const PLAYER_MOVE_DURATION = 150;
+
+/** 壁バンプアニメーションの移動距離（px） */
+const BUMP_DISTANCE = 12;
+
+/** 壁バンプアニメーションの往路時間（ms） */
+const BUMP_FORWARD_DURATION = 60;
+
+/** 壁バンプアニメーションの復路時間（ms） */
+const BUMP_BACK_DURATION = 80;
 
 /**
  * タイル種別に対応する色を取得
@@ -33,6 +54,7 @@ export class MapRenderer {
 	private tilesGraphics: Graphics;
 	private playerGraphics: Graphics;
 	private enemiesContainer: Container;
+	private isPlayerInitialized = false;
 
 	constructor() {
 		this.container = new Container();
@@ -72,22 +94,73 @@ export class MapRenderer {
 	}
 
 	/**
-	 * プレイヤーを描画
+	 * プレイヤーのグラフィックスを初期化（1回だけ）
 	 */
-	renderPlayer(player: Player): void {
-		this.playerGraphics.clear();
+	private initPlayerGraphics(): void {
+		if (this.isPlayerInitialized) return;
 
-		const pixelPos = gridToPixel(player.position);
+		this.playerGraphics.clear();
 		const padding = 8;
 		const size = CELL_SIZE - padding * 2;
 
-		// プレイヤーを円で描画
-		this.playerGraphics.circle(
-			pixelPos.x + CELL_SIZE / 2,
-			pixelPos.y + CELL_SIZE / 2,
-			size / 2,
-		);
+		// ローカル座標でセル中心に円を描画
+		this.playerGraphics.circle(CELL_SIZE / 2, CELL_SIZE / 2, size / 2);
 		this.playerGraphics.fill(COLORS.player);
+		this.isPlayerInitialized = true;
+	}
+
+	/**
+	 * プレイヤーを描画
+	 */
+	renderPlayer(player: Player): void {
+		this.initPlayerGraphics();
+
+		const pixelPos = gridToPixel(player.position);
+		this.playerGraphics.x = pixelPos.x;
+		this.playerGraphics.y = pixelPos.y;
+	}
+
+	/**
+	 * プレイヤー移動アニメーション
+	 * @param targetGridPos 移動先のグリッド座標
+	 */
+	async animatePlayerMove(targetGridPos: Position): Promise<void> {
+		this.initPlayerGraphics();
+
+		const targetPixel = gridToPixel(targetGridPos);
+		await tween(
+			this.playerGraphics,
+			{ x: targetPixel.x, y: targetPixel.y },
+			{ duration: PLAYER_MOVE_DURATION, easing: Easing.easeOutCubic },
+		);
+	}
+
+	/**
+	 * 壁にぶつかった時のバンプアニメーション
+	 * @param direction ぶつかった方向
+	 */
+	async animatePlayerBump(direction: Direction): Promise<void> {
+		this.initPlayerGraphics();
+
+		const delta = DIRECTION_DELTA[direction];
+		const originX = this.playerGraphics.x;
+		const originY = this.playerGraphics.y;
+
+		// 壁方向に少しだけ移動
+		await tween(
+			this.playerGraphics,
+			{
+				x: originX + delta.x * BUMP_DISTANCE,
+				y: originY + delta.y * BUMP_DISTANCE,
+			},
+			{ duration: BUMP_FORWARD_DURATION, easing: Easing.easeOut },
+		);
+		// 元の位置に跳ね返る
+		await tween(
+			this.playerGraphics,
+			{ x: originX, y: originY },
+			{ duration: BUMP_BACK_DURATION, easing: Easing.easeOutCubic },
+		);
 	}
 
 	/**
@@ -112,10 +185,18 @@ export class MapRenderer {
 
 	/**
 	 * 全体を描画（マップ・プレイヤー・敵）
+	 * @param skipPlayer trueの場合、プレイヤー描画をスキップ（アニメーション中に使用）
 	 */
-	render(map: GameMap, player: Player, enemies: Enemy[]): void {
+	render(
+		map: GameMap,
+		player: Player,
+		enemies: Enemy[],
+		skipPlayer = false,
+	): void {
 		this.renderMap(map);
-		this.renderPlayer(player);
+		if (!skipPlayer) {
+			this.renderPlayer(player);
+		}
 		this.renderEnemies(enemies);
 	}
 
@@ -125,6 +206,7 @@ export class MapRenderer {
 	clear(): void {
 		this.tilesGraphics.clear();
 		this.playerGraphics.clear();
+		this.isPlayerInitialized = false;
 		this.enemiesContainer.removeChildren();
 	}
 }
