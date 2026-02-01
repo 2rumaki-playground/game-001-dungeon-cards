@@ -29,6 +29,7 @@ import {
 	TitleScreen,
 	TurnEndButton,
 } from "./ui";
+import { detectEnemyMoves } from "./ui/enemyMoveDetector";
 import { deleteSaveData, hasSaveData, loadGame } from "./utils/storage";
 
 /** 手札エリアの高さ */
@@ -118,8 +119,13 @@ function renderTitleScreen(): void {
  * ゲーム画面の描画
  * @param skipHand trueの場合、手札描画をスキップ（アニメーション中に使用）
  * @param skipPlayer trueの場合、プレイヤー描画をスキップ（移動アニメーション中に使用）
+ * @param skipEnemies trueの場合、敵描画をスキップ（敵移動アニメーション中に使用）
  */
-function renderGameScreen(skipHand = false, skipPlayer = false): void {
+function renderGameScreen(
+	skipHand = false,
+	skipPlayer = false,
+	skipEnemies = false,
+): void {
 	titleScreen.hide();
 	gameOverScreen.hide();
 	statusBar.show();
@@ -129,6 +135,7 @@ function renderGameScreen(skipHand = false, skipPlayer = false): void {
 		gameState.player,
 		gameState.enemies,
 		skipPlayer,
+		skipEnemies,
 	);
 	if (!skipHand) {
 		handRenderer.render(gameState.deck.hand, gameState.player.ap);
@@ -160,14 +167,19 @@ function renderGameOverScreen(): void {
  * 画面に応じた描画
  * @param skipHand trueの場合、手札描画をスキップ
  * @param skipPlayer trueの場合、プレイヤー描画をスキップ
+ * @param skipEnemies trueの場合、敵描画をスキップ
  */
-function render(skipHand = false, skipPlayer = false): void {
+function render(
+	skipHand = false,
+	skipPlayer = false,
+	skipEnemies = false,
+): void {
 	switch (gameState.screen) {
 		case "title":
 			renderTitleScreen();
 			break;
 		case "game":
-			renderGameScreen(skipHand, skipPlayer);
+			renderGameScreen(skipHand, skipPlayer, skipEnemies);
 			break;
 		case "gameOver":
 			renderGameOverScreen();
@@ -460,19 +472,40 @@ function setupEventHandlers(
 	// ターン終了ボタンのコールバック設定
 	turnEndButton.setOnEndTurn(async () => {
 		if (isAnimating) return; // アニメーション中は無効
+		isAnimating = true;
 
-		let next = endPlayerTurn(gameState);
-		next = executeEnemyTurn(next);
+		try {
+			let next = endPlayerTurn(gameState);
+			const enemiesBefore = next.enemies;
+			next = executeEnemyTurn(next);
+			const enemyMoves = detectEnemyMoves(enemiesBefore, next.enemies);
 
-		if (next.screen !== "gameOver") {
-			next = startPlayerTurn(next);
-			// 新しく引いたカードの枚数（ターン終了で手札は空になるため全カードが対象）
-			const newCardCount = next.deck.hand.length;
-			await updateStateWithDealAnimation(next, newCardCount);
-		} else {
-			// ゲームオーバー時は手札配布がないためアニメーションをスキップ
-			deleteSaveData();
-			updateState(next);
+			// 敵移動アニメーション
+			if (enemyMoves.length > 0) {
+				if (next.screen !== "gameOver") {
+					applyState(next);
+					render(true, false, true); // 手札・敵スキップ
+				}
+				mapRenderer.renderEnemies(next.enemies);
+				await mapRenderer.animateEnemyMoves(enemyMoves);
+			}
+
+			if (next.screen !== "gameOver") {
+				next = startPlayerTurn(next);
+				applyState(next);
+				render(true);
+				await handRenderer.renderWithAnimation(
+					gameState.deck.hand,
+					gameState.player.ap,
+					next.deck.hand.length,
+				);
+			} else {
+				deleteSaveData();
+				applyState(next);
+				render();
+			}
+		} finally {
+			isAnimating = false;
 		}
 	});
 }
