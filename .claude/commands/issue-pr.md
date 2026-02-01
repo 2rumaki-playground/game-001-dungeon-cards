@@ -53,7 +53,8 @@ Issue の内容に従い、TDD（テスト駆動開発）で実装を行って�
 - **コミット前チェック**: 各コミットの前に以下を実行し、問題があれば修正してからコミットする
   1. `pnpm format` — フォーマット適用
   2. `pnpm lint` — リントチェック
-  3. `pnpm test:run` — 全テスト通過を確認
+  3. `pnpm test:run` — ユニットテスト全通過を確認
+  4. `pnpm test:e2e` — E2Eテスト全通過を確認
 
 ### 7. 仕様の曖昧さへの対応
 
@@ -67,7 +68,7 @@ Issue の内容に従い、TDD（テスト駆動開発）で実装を行って�
 以下の形式でPRを作成してください:
 
 ```
-gh pr create --title "<type>: <日本語の説明>" --body "$(cat <<'EOF'
+gh pr create --base main --title "<type>: <日本語の説明>" --body "$(cat <<'EOF'
 ## 概要
 <変更内容の箇条書き>
 
