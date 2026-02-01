@@ -6,6 +6,7 @@ import {
 	STATUS_BAR_HEIGHT,
 } from "./constants";
 import {
+	canAttack,
 	createTitleScreenState,
 	endPlayerTurn,
 	executeAttack,
@@ -296,6 +297,28 @@ async function updateStateWithBumpAnimation(
 }
 
 /**
+ * プレイヤー攻撃ヒット時のアニメーション付きで状態を更新
+ * @param newState 新しいゲーム状態
+ * @param hitEnemyId ヒットした敵のID
+ */
+async function updateStateWithAttackAnimation(
+	newState: GameState,
+	hitEnemyId: string,
+): Promise<void> {
+	if (isAnimating) return;
+	isAnimating = true;
+
+	applyState(newState);
+
+	try {
+		render();
+		await mapRenderer.animateAttackHit(hitEnemyId);
+	} finally {
+		isAnimating = false;
+	}
+}
+
+/**
  * UIコンポーネントを初期化してステージに追加
  */
 function initializeUIComponents(
@@ -386,7 +409,16 @@ function setupEventHandlers(
 				}
 				return;
 			} else if (pendingCard.type === "attack") {
-				updateState(executeAttack(gameState, pendingCard.id, direction));
+				const attackResult = canAttack(gameState, direction);
+				const next = executeAttack(gameState, pendingCard.id, direction);
+				directionSelector.hide();
+				pendingCard = null;
+				if (attackResult.hit) {
+					await updateStateWithAttackAnimation(next, attackResult.enemyId);
+				} else {
+					updateState(next);
+				}
+				return;
 			}
 		}
 		directionSelector.hide();
@@ -430,7 +462,13 @@ function setupEventHandlers(
 					await updateStateWithBumpAnimation(next, direction);
 				}
 			} else if (card.type === "attack") {
-				updateState(executeAttack(gameState, card.id, direction));
+				const attackResult = canAttack(gameState, direction);
+				const next = executeAttack(gameState, card.id, direction);
+				if (attackResult.hit) {
+					await updateStateWithAttackAnimation(next, attackResult.enemyId);
+				} else {
+					updateState(next);
+				}
 			}
 		} else {
 			// 方向が指定されていない場合は方向選択UIを表示（フォールバック）
@@ -477,8 +515,10 @@ function setupEventHandlers(
 		try {
 			let next = endPlayerTurn(gameState);
 			const enemiesBefore = next.enemies;
+			const playerHpBefore = next.player.hp;
 			next = executeEnemyTurn(next);
 			const enemyMoves = detectEnemyMoves(enemiesBefore, next.enemies);
+			const playerWasAttacked = next.player.hp < playerHpBefore;
 
 			// 敵移動アニメーション
 			if (enemyMoves.length > 0) {
@@ -488,6 +528,13 @@ function setupEventHandlers(
 				}
 				mapRenderer.renderEnemies(next.enemies);
 				await mapRenderer.animateEnemyMoves(enemyMoves);
+			}
+
+			// 敵攻撃アニメーション
+			if (playerWasAttacked) {
+				applyState(next);
+				render();
+				await mapRenderer.animateEnemyAttackHit();
 			}
 
 			if (next.screen !== "gameOver") {

@@ -95,7 +95,7 @@ export function executeMove(
  * - 指定方向1マス先が壁タイルではない
  * - 指定方向1マス先に敵が存在する
  */
-function canAttack(
+export function canAttack(
 	state: GameState,
 	direction: Direction,
 ): { hit: false } | { hit: true; enemyId: string } {
