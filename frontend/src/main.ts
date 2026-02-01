@@ -482,18 +482,18 @@ function setupEventHandlers(
 
 			// 敵移動アニメーション
 			if (enemyMoves.length > 0) {
-				applyState(next);
-				render(true, false, true); // 手札・敵スキップ
-				mapRenderer.renderEnemies(next.enemies); // Graphics永続管理で更新
+				if (next.screen !== "gameOver") {
+					applyState(next);
+					render(true, false, true); // 手札・敵スキップ
+				}
+				mapRenderer.renderEnemies(next.enemies);
 				await mapRenderer.animateEnemyMoves(enemyMoves);
 			}
 
 			if (next.screen !== "gameOver") {
 				next = startPlayerTurn(next);
 				applyState(next);
-				// 手札以外を描画
 				render(true);
-				// 手札配布アニメーション
 				await handRenderer.renderWithAnimation(
 					gameState.deck.hand,
 					gameState.player.ap,
