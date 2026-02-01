@@ -80,9 +80,10 @@ let isAnimating = false;
 let debugLog = import.meta.env.DEV;
 
 /**
- * ゲーム状態を更新して再描画
+ * 行動ログの差分を出力してゲーム状態を反映する
+ * @param newState 新しいゲーム状態
  */
-function updateState(newState: GameState): void {
+function applyState(newState: GameState): void {
 	if (debugLog) {
 		const newEntries = newState.actionLog.length - gameState.actionLog.length;
 		for (let i = newEntries - 1; i >= 0; i--) {
@@ -90,6 +91,13 @@ function updateState(newState: GameState): void {
 		}
 	}
 	gameState = newState;
+}
+
+/**
+ * ゲーム状態を更新して再描画
+ */
+function updateState(newState: GameState): void {
+	applyState(newState);
 	render();
 }
 
@@ -180,13 +188,7 @@ async function updateStateWithDealAnimation(
 	if (isAnimating) return;
 	isAnimating = true;
 
-	if (debugLog) {
-		const newEntries = newState.actionLog.length - gameState.actionLog.length;
-		for (let i = newEntries - 1; i >= 0; i--) {
-			console.log(`[行動ログ] ${newState.actionLog[i].message}`);
-		}
-	}
-	gameState = newState;
+	applyState(newState);
 
 	try {
 		// 手札以外を描画
@@ -216,13 +218,7 @@ async function updateStateWithMoveAnimation(
 	if (isAnimating) return;
 	isAnimating = true;
 
-	if (debugLog) {
-		const newEntries = newState.actionLog.length - gameState.actionLog.length;
-		for (let i = newEntries - 1; i >= 0; i--) {
-			console.log(`[行動ログ] ${newState.actionLog[i].message}`);
-		}
-	}
-	gameState = newState;
+	applyState(newState);
 
 	try {
 		// プレイヤー以外を描画
@@ -251,13 +247,7 @@ async function updateStateWithStairsAnimation(
 		await mapRenderer.animatePlayerMove(stairsGridPos);
 
 		// 2. 状態を新しい階層に更新
-		if (debugLog) {
-			const newEntries = newState.actionLog.length - gameState.actionLog.length;
-			for (let i = newEntries - 1; i >= 0; i--) {
-				console.log(`[行動ログ] ${newState.actionLog[i].message}`);
-			}
-		}
-		gameState = newState;
+		applyState(newState);
 
 		// 3. 新しい階層を描画（手札なし）して手札配布アニメーション
 		render(true);
@@ -283,13 +273,7 @@ async function updateStateWithBumpAnimation(
 	if (isAnimating) return;
 	isAnimating = true;
 
-	if (debugLog) {
-		const newEntries = newState.actionLog.length - gameState.actionLog.length;
-		for (let i = newEntries - 1; i >= 0; i--) {
-			console.log(`[行動ログ] ${newState.actionLog[i].message}`);
-		}
-	}
-	gameState = newState;
+	applyState(newState);
 
 	try {
 		render(false, true);
