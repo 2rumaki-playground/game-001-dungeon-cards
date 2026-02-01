@@ -16,7 +16,8 @@ import {
 	startNewGame,
 	startPlayerTurn,
 } from "./game";
-import type { Card, GameState } from "./types";
+import type { Card, Direction, GameState, Position } from "./types";
+import { DIRECTION_DELTA } from "./types";
 import {
 	ActionLogRenderer,
 	DirectionSelector,
@@ -108,13 +109,19 @@ function renderTitleScreen(): void {
 /**
  * ゲーム画面の描画
  * @param skipHand trueの場合、手札描画をスキップ（アニメーション中に使用）
+ * @param skipPlayer trueの場合、プレイヤー描画をスキップ（移動アニメーション中に使用）
  */
-function renderGameScreen(skipHand = false): void {
+function renderGameScreen(skipHand = false, skipPlayer = false): void {
 	titleScreen.hide();
 	gameOverScreen.hide();
 	statusBar.show();
 	statusBar.render(gameState.player, gameState.floor);
-	mapRenderer.render(gameState.map, gameState.player, gameState.enemies);
+	mapRenderer.render(
+		gameState.map,
+		gameState.player,
+		gameState.enemies,
+		skipPlayer,
+	);
 	if (!skipHand) {
 		handRenderer.render(gameState.deck.hand, gameState.player.ap);
 	}
@@ -144,14 +151,15 @@ function renderGameOverScreen(): void {
 /**
  * 画面に応じた描画
  * @param skipHand trueの場合、手札描画をスキップ
+ * @param skipPlayer trueの場合、プレイヤー描画をスキップ
  */
-function render(skipHand = false): void {
+function render(skipHand = false, skipPlayer = false): void {
 	switch (gameState.screen) {
 		case "title":
 			renderTitleScreen();
 			break;
 		case "game":
-			renderGameScreen(skipHand);
+			renderGameScreen(skipHand, skipPlayer);
 			break;
 		case "gameOver":
 			renderGameOverScreen();
@@ -192,6 +200,101 @@ async function updateStateWithDealAnimation(
 		);
 	} finally {
 		// アニメーション完了（エラー時も確実にフラグを戻す）
+		isAnimating = false;
+	}
+}
+
+/**
+ * ゲーム状態を更新してプレイヤー移動アニメーション付きで再描画
+ * @param newState 新しいゲーム状態
+ * @param targetGridPos 移動先のグリッド座標
+ */
+async function updateStateWithMoveAnimation(
+	newState: GameState,
+	targetGridPos: Position,
+): Promise<void> {
+	if (isAnimating) return;
+	isAnimating = true;
+
+	if (debugLog) {
+		const newEntries = newState.actionLog.length - gameState.actionLog.length;
+		for (let i = newEntries - 1; i >= 0; i--) {
+			console.log(`[行動ログ] ${newState.actionLog[i].message}`);
+		}
+	}
+	gameState = newState;
+
+	try {
+		// プレイヤー以外を描画
+		render(false, true);
+		// プレイヤー移動アニメーション
+		await mapRenderer.animatePlayerMove(targetGridPos);
+	} finally {
+		isAnimating = false;
+	}
+}
+
+/**
+ * 階段への移動アニメーション後に階層遷移する
+ * @param newState 階層遷移後のゲーム状態
+ * @param stairsGridPos 階段のグリッド座標
+ */
+async function updateStateWithStairsAnimation(
+	newState: GameState,
+	stairsGridPos: Position,
+): Promise<void> {
+	if (isAnimating) return;
+	isAnimating = true;
+
+	try {
+		// 1. 現在のマップ上で階段マスへ移動アニメーション
+		await mapRenderer.animatePlayerMove(stairsGridPos);
+
+		// 2. 状態を新しい階層に更新
+		if (debugLog) {
+			const newEntries = newState.actionLog.length - gameState.actionLog.length;
+			for (let i = newEntries - 1; i >= 0; i--) {
+				console.log(`[行動ログ] ${newState.actionLog[i].message}`);
+			}
+		}
+		gameState = newState;
+
+		// 3. 新しい階層を描画（手札なし）して手札配布アニメーション
+		render(true);
+		await handRenderer.renderWithAnimation(
+			gameState.deck.hand,
+			gameState.player.ap,
+			newState.deck.hand.length,
+		);
+	} finally {
+		isAnimating = false;
+	}
+}
+
+/**
+ * 壁にぶつかった時のバンプアニメーション付きで状態を更新
+ * @param newState 新しいゲーム状態
+ * @param direction ぶつかった方向
+ */
+async function updateStateWithBumpAnimation(
+	newState: GameState,
+	direction: Direction,
+): Promise<void> {
+	if (isAnimating) return;
+	isAnimating = true;
+
+	if (debugLog) {
+		const newEntries = newState.actionLog.length - gameState.actionLog.length;
+		for (let i = newEntries - 1; i >= 0; i--) {
+			console.log(`[行動ログ] ${newState.actionLog[i].message}`);
+		}
+	}
+	gameState = newState;
+
+	try {
+		render(false, true);
+		await mapRenderer.animatePlayerBump(direction);
+	} finally {
 		isAnimating = false;
 	}
 }
@@ -264,18 +367,28 @@ function setupEventHandlers(
 		if (isAnimating) return; // アニメーション中は無効
 		if (pendingCard) {
 			if (pendingCard.type === "move") {
+				const prevPosition = gameState.player.position;
 				const prevFloor = gameState.floor;
 				const next = executeMove(gameState, pendingCard.id, direction);
-				// 階層遷移が発生した場合はアニメーション付きで描画
+				const moved =
+					next.player.position.x !== prevPosition.x ||
+					next.player.position.y !== prevPosition.y;
+				directionSelector.hide();
+				pendingCard = null;
 				if (next.floor !== prevFloor) {
-					directionSelector.hide();
-					pendingCard = null;
-					// 階層遷移時はreshuffleDeckで手札が空になった後にstartPlayerTurnで補充されるため、
-					// 手札の全枚数が新しく引いたカード枚数となる
-					await updateStateWithDealAnimation(next, next.deck.hand.length);
-					return;
+					// 階段マスへ移動アニメーション → 階層遷移
+					const stairsPos = {
+						x: prevPosition.x + DIRECTION_DELTA[direction].x,
+						y: prevPosition.y + DIRECTION_DELTA[direction].y,
+					};
+					await updateStateWithStairsAnimation(next, stairsPos);
+				} else if (moved) {
+					await updateStateWithMoveAnimation(next, next.player.position);
+				} else {
+					// 壁にぶつかった
+					await updateStateWithBumpAnimation(next, direction);
 				}
-				updateState(next);
+				return;
 			} else if (pendingCard.type === "attack") {
 				updateState(executeAttack(gameState, pendingCard.id, direction));
 			}
@@ -299,18 +412,26 @@ function setupEventHandlers(
 		} else if (direction) {
 			// 方向が指定されている場合は即座に実行
 			if (card.type === "move") {
+				const prevPosition = gameState.player.position;
 				const prevFloor = gameState.floor;
 				const next = executeMove(gameState, card.id, direction);
-				// 階層遷移が発生した場合はアニメーション付きで描画
+				const moved =
+					next.player.position.x !== prevPosition.x ||
+					next.player.position.y !== prevPosition.y;
 				if (next.floor !== prevFloor) {
-					// 階層遷移時は方向選択状態をクリア
+					// 階段マスへ移動アニメーション → 階層遷移
 					directionSelector.hide();
 					pendingCard = null;
-					// 階層遷移時はreshuffleDeckで手札が空になった後にstartPlayerTurnで補充されるため、
-					// 手札の全枚数が新しく引いたカード枚数となる
-					await updateStateWithDealAnimation(next, next.deck.hand.length);
+					const stairsPos = {
+						x: prevPosition.x + DIRECTION_DELTA[direction].x,
+						y: prevPosition.y + DIRECTION_DELTA[direction].y,
+					};
+					await updateStateWithStairsAnimation(next, stairsPos);
+				} else if (moved) {
+					await updateStateWithMoveAnimation(next, next.player.position);
 				} else {
-					updateState(next);
+					// 壁にぶつかった
+					await updateStateWithBumpAnimation(next, direction);
 				}
 			} else if (card.type === "attack") {
 				updateState(executeAttack(gameState, card.id, direction));
