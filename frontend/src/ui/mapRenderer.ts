@@ -16,6 +16,7 @@ import type {
 import { DIRECTION_DELTA } from "../types";
 import { Easing, tween } from "../utils/tween";
 import { gridToPixel } from "./coordinates";
+import type { EnemyMove } from "./enemyMoveDetector";
 
 /** プレイヤー移動アニメーションの時間（ms） */
 const PLAYER_MOVE_DURATION = 150;
@@ -28,6 +29,12 @@ const BUMP_FORWARD_DURATION = 60;
 
 /** 壁バンプアニメーションの復路時間（ms） */
 const BUMP_BACK_DURATION = 80;
+
+/** 敵移動アニメーションの時間（ms） */
+const ENEMY_MOVE_DURATION = 150;
+
+/** 敵移動アニメーションのスタッガー遅延（ms） */
+const ENEMY_MOVE_STAGGER_DELAY = 50;
 
 /**
  * タイル種別に対応する色を取得
@@ -55,6 +62,7 @@ export class MapRenderer {
 	private playerGraphics: Graphics;
 	private enemiesContainer: Container;
 	private isPlayerInitialized = false;
+	private enemyGraphicsMap: Map<string, Graphics> = new Map();
 
 	constructor() {
 		this.container = new Container();
@@ -164,40 +172,104 @@ export class MapRenderer {
 	}
 
 	/**
-	 * 敵を描画
+	 * 敵移動アニメーション
+	 * @param moves 移動情報の配列
+	 */
+	async animateEnemyMoves(moves: EnemyMove[]): Promise<void> {
+		const tweens: Promise<void>[] = [];
+
+		for (let i = 0; i < moves.length; i++) {
+			const move = moves[i];
+			const graphics = this.enemyGraphicsMap.get(move.id);
+			if (!graphics) continue;
+
+			// from位置にセット
+			const fromPixel = gridToPixel(move.from);
+			graphics.x = fromPixel.x;
+			graphics.y = fromPixel.y;
+
+			// to位置へアニメーション（スタッガー付き）
+			const toPixel = gridToPixel(move.to);
+			tweens.push(
+				tween(
+					graphics,
+					{ x: toPixel.x, y: toPixel.y },
+					{
+						duration: ENEMY_MOVE_DURATION,
+						easing: Easing.easeOutCubic,
+						delay: i * ENEMY_MOVE_STAGGER_DELAY,
+					},
+				),
+			);
+		}
+
+		await Promise.all(tweens);
+	}
+
+	/**
+	 * 敵のGraphicsを作成（ローカル座標ベース）
+	 */
+	private createEnemyGraphics(): Graphics {
+		const graphics = new Graphics();
+		const padding = 12;
+		const size = CELL_SIZE - padding * 2;
+
+		// ローカル座標でセル内に四角を描画
+		graphics.rect(padding, padding, size, size);
+		graphics.fill(COLORS.enemy);
+
+		return graphics;
+	}
+
+	/**
+	 * 敵を描画（永続管理）
 	 */
 	renderEnemies(enemies: Enemy[]): void {
-		this.enemiesContainer.removeChildren();
+		const currentIds = new Set(enemies.map((e) => e.id));
 
+		// 不要になった敵のGraphicsを削除
+		for (const [id, graphics] of this.enemyGraphicsMap) {
+			if (!currentIds.has(id)) {
+				this.enemiesContainer.removeChild(graphics);
+				graphics.destroy();
+				this.enemyGraphicsMap.delete(id);
+			}
+		}
+
+		// 各敵のGraphicsを更新または作成
 		for (const enemy of enemies) {
-			const graphics = new Graphics();
+			let graphics = this.enemyGraphicsMap.get(enemy.id);
+			if (!graphics) {
+				graphics = this.createEnemyGraphics();
+				this.enemyGraphicsMap.set(enemy.id, graphics);
+				this.enemiesContainer.addChild(graphics);
+			}
+
 			const pixelPos = gridToPixel(enemy.position);
-			const padding = 12;
-			const size = CELL_SIZE - padding * 2;
-
-			// 敵を四角で描画
-			graphics.rect(pixelPos.x + padding, pixelPos.y + padding, size, size);
-			graphics.fill(COLORS.enemy);
-
-			this.enemiesContainer.addChild(graphics);
+			graphics.x = pixelPos.x;
+			graphics.y = pixelPos.y;
 		}
 	}
 
 	/**
 	 * 全体を描画（マップ・プレイヤー・敵）
 	 * @param skipPlayer trueの場合、プレイヤー描画をスキップ（アニメーション中に使用）
+	 * @param skipEnemies trueの場合、敵描画をスキップ（敵移動アニメーション中に使用）
 	 */
 	render(
 		map: GameMap,
 		player: Player,
 		enemies: Enemy[],
 		skipPlayer = false,
+		skipEnemies = false,
 	): void {
 		this.renderMap(map);
 		if (!skipPlayer) {
 			this.renderPlayer(player);
 		}
-		this.renderEnemies(enemies);
+		if (!skipEnemies) {
+			this.renderEnemies(enemies);
+		}
 	}
 
 	/**
@@ -208,5 +280,9 @@ export class MapRenderer {
 		this.playerGraphics.clear();
 		this.isPlayerInitialized = false;
 		this.enemiesContainer.removeChildren();
+		for (const graphics of this.enemyGraphicsMap.values()) {
+			graphics.destroy();
+		}
+		this.enemyGraphicsMap.clear();
 	}
 }
