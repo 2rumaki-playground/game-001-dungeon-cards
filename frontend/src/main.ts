@@ -584,12 +584,14 @@ function setupEventHandlers(
 
 			// 敵攻撃アニメーション
 			if (playerWasAttacked) {
+				const prevHp = gameState.player.hp;
 				applyState(next);
 				// ゲームオーバー時も攻撃演出中はゲーム画面を維持（暗転後に切り替え）
 				renderGameScreen();
-				await mapRenderer.animateEnemyAttackHit(
-					ENEMY_ATTACK_DAMAGE * attackCount,
-				);
+				await Promise.all([
+					mapRenderer.animateEnemyAttackHit(ENEMY_ATTACK_DAMAGE * attackCount),
+					statusBar.animateHpChange(prevHp, next.player.hp, next.player.maxHp),
+				]);
 			}
 
 			if (next.screen !== "gameOver") {
