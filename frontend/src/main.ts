@@ -29,6 +29,7 @@ import {
 	MapRenderer,
 	StatusBar,
 	TitleScreen,
+	TurnBanner,
 	TurnEndButton,
 } from "./ui";
 import { detectEnemyMoves } from "./ui/enemyMoveDetector";
@@ -72,6 +73,9 @@ let turnEndButton: TurnEndButton;
 
 /** 行動ログレンダラー */
 let actionLogRenderer: ActionLogRenderer;
+
+/** ターンバナー */
+let turnBanner: TurnBanner;
 
 /** 方向選択待ちのカード */
 let pendingCard: Card | null = null;
@@ -377,6 +381,13 @@ function initializeUIComponents(
 	logContainer.y = 0;
 	app.stage.addChild(logContainer);
 
+	// ターンバナーを初期化（最前面に表示）
+	turnBanner = new TurnBanner(
+		mapSize.width + LOG_AREA_GAP + actionLogRenderer.getWidth(),
+		totalHeight,
+	);
+	app.stage.addChild(turnBanner.getContainer());
+
 	// 方向選択UIを初期化
 	directionSelector = new DirectionSelector();
 	const directionContainer = directionSelector.getContainer();
@@ -532,6 +543,10 @@ function setupEventHandlers(
 
 		try {
 			let next = endPlayerTurn(gameState);
+
+			// 敵ターンバナー表示
+			await turnBanner.showBanner("enemy");
+
 			const enemiesBefore = next.enemies;
 			const { state: enemyTurnState, attackCount } = executeEnemyTurn(next);
 			next = enemyTurnState;
@@ -559,6 +574,10 @@ function setupEventHandlers(
 
 			if (next.screen !== "gameOver") {
 				next = startPlayerTurn(next);
+
+				// プレイヤーターンバナー表示
+				await turnBanner.showBanner("player");
+
 				applyState(next);
 				render(true);
 				await handRenderer.renderWithAnimation(
