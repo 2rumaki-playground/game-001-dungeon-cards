@@ -27,6 +27,7 @@ import {
 	getMapPixelSize,
 	HandRenderer,
 	MapRenderer,
+	ScreenTransition,
 	StatusBar,
 	TitleScreen,
 	TurnBanner,
@@ -76,6 +77,9 @@ let actionLogRenderer: ActionLogRenderer;
 
 /** ターンバナー */
 let turnBanner: TurnBanner;
+
+/** 画面遷移トランジション */
+let screenTransition: ScreenTransition;
 
 /** 方向選択待ちのカード */
 let pendingCard: Card | null = null;
@@ -190,37 +194,6 @@ function render(
 		case "gameOver":
 			renderGameOverScreen();
 			break;
-	}
-}
-
-/**
- * ゲーム状態を更新して手札配布アニメーション付きで再描画
- * @param newState 新しいゲーム状態
- * @param newCardCount 新しく引いたカードの枚数
- */
-async function updateStateWithDealAnimation(
-	newState: GameState,
-	newCardCount: number,
-): Promise<void> {
-	// 競合状態を防ぐため、チェック後に即座にフラグを立てる
-	if (isAnimating) return;
-	isAnimating = true;
-
-	applyState(newState);
-
-	try {
-		// 手札以外を描画
-		render(true);
-
-		// 手札配布アニメーション
-		await handRenderer.renderWithAnimation(
-			gameState.deck.hand,
-			gameState.player.ap,
-			newCardCount,
-		);
-	} finally {
-		// アニメーション完了（エラー時も確実にフラグを戻す）
-		isAnimating = false;
 	}
 }
 
@@ -395,6 +368,13 @@ function initializeUIComponents(
 	directionContainer.y =
 		STATUS_BAR_HEIGHT + mapSize.height + HAND_AREA_TOP_PADDING;
 	app.stage.addChild(directionContainer);
+
+	// 画面遷移トランジションを初期化（最前面に配置）
+	screenTransition = new ScreenTransition(
+		mapSize.width + LOG_AREA_GAP + actionLogRenderer.getWidth(),
+		totalHeight,
+	);
+	app.stage.addChild(screenTransition.getContainer());
 }
 
 /**
@@ -509,16 +489,37 @@ function setupEventHandlers(
 	// タイトル画面のコールバック設定
 	titleScreen.setOnNewGame(async () => {
 		if (isAnimating) return;
-		const newState = startNewGame(gameState);
-		// 新規ゲーム開始時は全カードがアニメーション対象
-		await updateStateWithDealAnimation(newState, newState.deck.hand.length);
+		isAnimating = true;
+		try {
+			const newState = startNewGame(gameState);
+			await screenTransition.fadeTransition(() => {
+				applyState(newState);
+				// 手札はフェードイン後に配布アニメーションで表示するためスキップ
+				render(true);
+			});
+			// フェードイン後に手札配布アニメーション
+			await handRenderer.renderWithAnimation(
+				gameState.deck.hand,
+				gameState.player.ap,
+				newState.deck.hand.length,
+			);
+		} finally {
+			isAnimating = false;
+		}
 	});
 
-	titleScreen.setOnContinue(() => {
+	titleScreen.setOnContinue(async () => {
 		if (isAnimating) return;
 		const savedState = loadGame();
 		if (savedState) {
-			updateState(savedState);
+			isAnimating = true;
+			try {
+				await screenTransition.fadeTransition(() => {
+					updateState(savedState);
+				});
+			} finally {
+				isAnimating = false;
+			}
 		} else {
 			alert("セーブデータの読み込みに失敗しました。");
 			const totalWidth =
@@ -528,12 +529,19 @@ function setupEventHandlers(
 	});
 
 	// ゲームオーバー画面のコールバック設定
-	gameOverScreen.setOnReturnToTitle(() => {
-		if (isAnimating) return; // アニメーション中は無効
-		updateState(returnToTitle(gameState));
-		const totalWidth =
-			mapSize.width + LOG_AREA_GAP + actionLogRenderer.getWidth();
-		titleScreen.render(totalWidth, totalHeight, hasSaveData());
+	gameOverScreen.setOnReturnToTitle(async () => {
+		if (isAnimating) return;
+		isAnimating = true;
+		try {
+			await screenTransition.fadeTransition(() => {
+				updateState(returnToTitle(gameState));
+				const totalWidth =
+					mapSize.width + LOG_AREA_GAP + actionLogRenderer.getWidth();
+				titleScreen.render(totalWidth, totalHeight, hasSaveData());
+			});
+		} finally {
+			isAnimating = false;
+		}
 	});
 
 	// ターン終了ボタンのコールバック設定
@@ -566,7 +574,8 @@ function setupEventHandlers(
 			// 敵攻撃アニメーション
 			if (playerWasAttacked) {
 				applyState(next);
-				render();
+				// ゲームオーバー時も攻撃演出中はゲーム画面を維持（暗転後に切り替え）
+				renderGameScreen();
 				await mapRenderer.animateEnemyAttackHit(
 					ENEMY_ATTACK_DAMAGE * attackCount,
 				);
@@ -587,8 +596,9 @@ function setupEventHandlers(
 				);
 			} else {
 				deleteSaveData();
-				applyState(next);
-				render();
+				await screenTransition.fadeTransition(() => {
+					updateState(next);
+				});
 			}
 		} finally {
 			isAnimating = false;
