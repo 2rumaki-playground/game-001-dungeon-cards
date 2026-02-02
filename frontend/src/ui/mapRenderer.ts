@@ -3,7 +3,7 @@
  * PixiJSを使用してマップ・キャラクターを描画
  */
 
-import { Container, Graphics } from "pixi.js";
+import { Container, Graphics, Ticker } from "pixi.js";
 import { CELL_SIZE, COLORS } from "../constants";
 import type {
 	Direction,
@@ -35,6 +35,24 @@ const ENEMY_MOVE_DURATION = 150;
 
 /** 敵移動アニメーションのスタッガー遅延（ms） */
 const ENEMY_MOVE_STAGGER_DELAY = 50;
+
+/** 白フラッシュのフェードアウト時間（ms） */
+const FLASH_DURATION = 200;
+
+/** 白フラッシュの色 */
+const FLASH_COLOR = 0xffffff;
+
+/** 画面シェイクの時間（ms） */
+const SCREEN_SHAKE_DURATION = 200;
+
+/** 画面シェイクの振幅（px） */
+const SCREEN_SHAKE_INTENSITY = 4;
+
+/** プレイヤー被ダメージ時の点滅回数 */
+const PLAYER_BLINK_COUNT = 3;
+
+/** プレイヤー被ダメージ時の1回の点滅時間（ms） */
+const PLAYER_BLINK_INTERVAL = 80;
 
 /**
  * タイル種別に対応する色を取得
@@ -249,6 +267,106 @@ export class MapRenderer {
 			graphics.x = pixelPos.x;
 			graphics.y = pixelPos.y;
 		}
+	}
+
+	/**
+	 * 対象に白フラッシュエフェクトを適用
+	 * 白い矩形オーバーレイをフェードアウトさせる
+	 */
+	private async animateFlash(targetGraphics: Graphics): Promise<void> {
+		const parent = targetGraphics.parent;
+		if (!parent) return;
+
+		const overlay = new Graphics();
+		overlay.rect(0, 0, CELL_SIZE, CELL_SIZE);
+		overlay.fill(FLASH_COLOR);
+		overlay.x = targetGraphics.x;
+		overlay.y = targetGraphics.y;
+		parent.addChild(overlay);
+
+		await tween(overlay, { alpha: 0 }, { duration: FLASH_DURATION });
+
+		parent.removeChild(overlay);
+		overlay.destroy();
+	}
+
+	/**
+	 * 画面全体のシェイクエフェクト
+	 * コンテナのx,yをランダムにオフセットして振動させる
+	 */
+	private animateScreenShake(): Promise<void> {
+		return new Promise((resolve) => {
+			const originX = this.container.x;
+			const originY = this.container.y;
+			let elapsed = 0;
+			const ticker = Ticker.shared;
+
+			const update = (tick: Ticker): void => {
+				elapsed += tick.deltaMS;
+
+				if (elapsed >= SCREEN_SHAKE_DURATION) {
+					this.container.x = originX;
+					this.container.y = originY;
+					ticker.remove(update);
+					resolve();
+					return;
+				}
+
+				const decay = 1 - elapsed / SCREEN_SHAKE_DURATION;
+				const intensity = SCREEN_SHAKE_INTENSITY * decay;
+				this.container.x = originX + (Math.random() * 2 - 1) * intensity;
+				this.container.y = originY + (Math.random() * 2 - 1) * intensity;
+			};
+
+			ticker.add(update);
+		});
+	}
+
+	/**
+	 * プレイヤー被ダメージ時の点滅エフェクト
+	 * playerGraphicsのalphaを複数回点滅させる
+	 */
+	private async animatePlayerBlink(): Promise<void> {
+		for (let i = 0; i < PLAYER_BLINK_COUNT; i++) {
+			await tween(
+				this.playerGraphics,
+				{ alpha: 0.2 },
+				{ duration: PLAYER_BLINK_INTERVAL / 2 },
+			);
+			await tween(
+				this.playerGraphics,
+				{ alpha: 1 },
+				{ duration: PLAYER_BLINK_INTERVAL / 2 },
+			);
+		}
+		this.playerGraphics.alpha = 1;
+	}
+
+	/**
+	 * プレイヤー攻撃のヒットアニメーション
+	 * 敵タイルの白フラッシュ + 画面シェイク
+	 * @param enemyId ヒットした敵のID
+	 */
+	async animateAttackHit(enemyId: string): Promise<void> {
+		const enemyGraphics = this.enemyGraphicsMap.get(enemyId);
+		if (!enemyGraphics) return;
+
+		await Promise.all([
+			this.animateFlash(enemyGraphics),
+			this.animateScreenShake(),
+		]);
+	}
+
+	/**
+	 * 敵攻撃のヒットアニメーション
+	 * フラッシュ + シェイク完了後にプレイヤー点滅
+	 */
+	async animateEnemyAttackHit(): Promise<void> {
+		await Promise.all([
+			this.animateFlash(this.playerGraphics),
+			this.animateScreenShake(),
+		]);
+		await this.animatePlayerBlink();
 	}
 
 	/**

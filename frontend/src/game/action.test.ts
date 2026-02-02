@@ -177,8 +177,10 @@ describe("executeAttack", () => {
 				discardPile: [],
 			},
 		});
-		const result = executeAttack(state, "attack-1", "right");
+		const { state: result, hit } = executeAttack(state, "attack-1", "right");
 
+		// 攻撃ヒット
+		expect(hit).toBe(true);
 		// 敵HPが減少
 		expect(result.enemies).toHaveLength(1);
 		expect(result.enemies[0].hp).toBe(ENEMY_HP - PLAYER_ATTACK_DAMAGE);
@@ -205,8 +207,10 @@ describe("executeAttack", () => {
 				discardPile: [],
 			},
 		});
-		const result = executeAttack(state, "attack-1", "right");
+		const { state: result, hit } = executeAttack(state, "attack-1", "right");
 
+		// 攻撃ヒット
+		expect(hit).toBe(true);
 		// 敵が削除される
 		expect(result.enemies).toHaveLength(0);
 		// AP消費
@@ -224,8 +228,10 @@ describe("executeAttack", () => {
 				discardPile: [],
 			},
 		});
-		const result = executeAttack(state, "attack-1", "right");
+		const { state: result, hit } = executeAttack(state, "attack-1", "right");
 
+		// 攻撃ミス
+		expect(hit).toBe(false);
 		// AP消費
 		expect(result.player.ap).toBe(MAX_AP - CARD_COST.attack);
 		// カードが捨て札に移動
@@ -250,7 +256,7 @@ describe("executeAttack", () => {
 				discardPile: [],
 			},
 		});
-		const result = executeAttack(state, "attack-1", "up");
+		const { state: result } = executeAttack(state, "attack-1", "up");
 
 		// AP消費
 		expect(result.player.ap).toBe(MAX_AP - CARD_COST.attack);
@@ -276,7 +282,7 @@ describe("executeAttack", () => {
 				discardPile: [],
 			},
 		});
-		const result = executeAttack(state, "attack-1", "up");
+		const { state: result } = executeAttack(state, "attack-1", "up");
 
 		// AP消費
 		expect(result.player.ap).toBe(MAX_AP - CARD_COST.attack);

@@ -319,7 +319,7 @@ describe("executeEnemyTurn", () => {
 			},
 		];
 		const state = createTestState({ enemies });
-		const result = executeEnemyTurn(state);
+		const { state: result } = executeEnemyTurn(state);
 
 		// プレイヤーにダメージ
 		expect(result.player.hp).toBe(PLAYER_INITIAL_HP - ENEMY_ATTACK_DAMAGE);
@@ -339,7 +339,7 @@ describe("executeEnemyTurn", () => {
 			},
 		];
 		const state = createTestState({ enemies });
-		const result = executeEnemyTurn(state);
+		const { state: result } = executeEnemyTurn(state);
 
 		// 敵がプレイヤーに近づいた（左に1マス移動）
 		expect(result.enemies[0].position).toEqual({ x: 4, y: 3 });
@@ -363,7 +363,7 @@ describe("executeEnemyTurn", () => {
 			},
 		];
 		const state = createTestState({ enemies });
-		const result = executeEnemyTurn(state);
+		const { state: result } = executeEnemyTurn(state);
 
 		// 敵1は隣接 → 攻撃
 		expect(result.player.hp).toBe(PLAYER_INITIAL_HP - ENEMY_ATTACK_DAMAGE);
@@ -401,8 +401,8 @@ describe("executeEnemyTurn", () => {
 		// 同じシードなら同じ行動順序
 		const state1 = createTestState({ enemies, rng: new RNG(42) });
 		const state2 = createTestState({ enemies, rng: new RNG(42) });
-		const result1 = executeEnemyTurn(state1);
-		const result2 = executeEnemyTurn(state2);
+		const { state: result1 } = executeEnemyTurn(state1);
+		const { state: result2 } = executeEnemyTurn(state2);
 
 		// 同一シードなら同じ結果
 		for (let i = 0; i < result1.enemies.length; i++) {
@@ -436,7 +436,7 @@ describe("executeEnemyTurn", () => {
 			},
 			enemies,
 		});
-		const result = executeEnemyTurn(state);
+		const { state: result } = executeEnemyTurn(state);
 
 		// 四方が壁で囲まれた敵1(3,5)は移動できずその場に留まる
 		const enemy1 = result.enemies.find((e) => e.id === "enemy-1");
@@ -454,7 +454,7 @@ describe("executeEnemyTurn", () => {
 			},
 		];
 		const state = createTestState({ enemies });
-		const result = executeEnemyTurn(state);
+		const { state: result } = executeEnemyTurn(state);
 
 		// 敵はプレイヤーの位置(3,3)に移動していない
 		expect(result.enemies[0].position).not.toEqual({ x: 3, y: 3 });
@@ -498,7 +498,7 @@ describe("executeEnemyTurn", () => {
 				maxAp: MAX_AP,
 			},
 		});
-		const result = executeEnemyTurn(state);
+		const { state: result } = executeEnemyTurn(state);
 
 		expect(result.player.hp).toBe(1 - ENEMY_ATTACK_DAMAGE);
 		expect(result.screen).toBe("gameOver");
@@ -530,7 +530,7 @@ describe("executeEnemyTurn", () => {
 				maxAp: MAX_AP,
 			},
 		});
-		const result = executeEnemyTurn(state);
+		const { state: result } = executeEnemyTurn(state);
 
 		// ダメージは1回分のみ（追加ダメージなし）
 		expect(result.player.hp).toBe(1 - ENEMY_ATTACK_DAMAGE);
@@ -552,7 +552,7 @@ describe("executeEnemyTurn", () => {
 			},
 		];
 		const state = createTestState({ enemies });
-		const result = executeEnemyTurn(state);
+		const { state: result } = executeEnemyTurn(state);
 
 		expect(result.player.hp).toBe(PLAYER_INITIAL_HP - ENEMY_ATTACK_DAMAGE);
 		expect(result.screen).toBe("game");
