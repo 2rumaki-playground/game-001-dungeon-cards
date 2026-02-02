@@ -1,6 +1,6 @@
 /**
  * ターン切り替えバナー
- * ターン遷移時に「プレイヤーターン」「敵ターン」を画面中央にスライドイン表示
+ * ターン遷移時に「プレイヤーターン」「敵ターン」を1文字ずつポップイン表示
  */
 
 import { Container, Graphics, Text } from "pixi.js";
@@ -16,11 +16,17 @@ const BANNER_ALPHA = 0.85;
 /** バナーテキストのフォントサイズ */
 const BANNER_FONT_SIZE = 28;
 
-/** スライドインアニメーションの時間（ms） */
-const SLIDE_IN_DURATION = 300;
+/** 背景フェードインの時間（ms） */
+const BG_FADE_IN_DURATION = 200;
+
+/** 1文字のポップイン時間（ms） */
+const CHAR_POP_DURATION = 150;
+
+/** 文字ポップインのスタッガー遅延（ms） */
+const CHAR_STAGGER_DELAY = 50;
 
 /** 表示保持時間（ms） */
-const HOLD_DURATION = 600;
+const HOLD_DURATION = 400;
 
 /** フェードアウトアニメーションの時間（ms） */
 const FADE_OUT_DURATION = 300;
@@ -43,7 +49,7 @@ const BANNER_TEXT: Record<Turn, string> = {
 export class TurnBanner {
 	private container: Container;
 	private background: Graphics;
-	private label: Text;
+	private textContainer: Container;
 	private screenWidth: number;
 	private screenHeight: number;
 
@@ -57,16 +63,8 @@ export class TurnBanner {
 		this.background = new Graphics();
 		this.container.addChild(this.background);
 
-		this.label = new Text({
-			text: "",
-			style: {
-				fontSize: BANNER_FONT_SIZE,
-				fontWeight: "bold",
-				fill: 0xffffff,
-			},
-		});
-		this.label.anchor.set(0.5, 0.5);
-		this.container.addChild(this.label);
+		this.textContainer = new Container();
+		this.container.addChild(this.textContainer);
 	}
 
 	/**
@@ -77,35 +75,98 @@ export class TurnBanner {
 	}
 
 	/**
+	 * 1文字ずつのTextオブジェクトを生成し、横並びに配置
+	 */
+	private createCharTexts(text: string, color: number): Text[] {
+		const chars: Text[] = [];
+		// フォントサイズを文字幅として使用（日本語は全角なので概ねフォントサイズ幅）
+		const charWidth = BANNER_FONT_SIZE;
+		const totalWidth = text.length * charWidth;
+		let offsetX = -totalWidth / 2;
+
+		for (const char of text) {
+			const t = new Text({
+				text: char,
+				style: {
+					fontSize: BANNER_FONT_SIZE,
+					fontWeight: "bold",
+					fill: color,
+				},
+			});
+			t.anchor.set(0.5, 0.5);
+			t.x = offsetX + charWidth / 2;
+			t.y = 0;
+			offsetX += charWidth;
+
+			// アニメーション初期状態
+			t.scale.set(0, 0);
+			t.alpha = 0;
+
+			this.textContainer.addChild(t);
+			chars.push(t);
+		}
+
+		return chars;
+	}
+
+	/**
+	 * テキストコンテナの子要素をすべて破棄
+	 */
+	private clearCharTexts(): void {
+		for (const child of [...this.textContainer.children]) {
+			this.textContainer.removeChild(child);
+			child.destroy();
+		}
+	}
+
+	/**
 	 * ターンバナーを表示
-	 * スライドイン → 保持 → フェードアウト
+	 * 背景フェードイン → 1文字ずつポップイン → 保持 → フェードアウト
 	 */
 	async showBanner(turn: Turn): Promise<void> {
 		const colors = BANNER_COLORS[turn];
 
-		// 背景を描画
+		// 背景を描画（初期alpha=0）
 		this.background.clear();
 		this.background.rect(0, 0, this.screenWidth, BANNER_HEIGHT);
-		this.background.fill({ color: colors.bg, alpha: BANNER_ALPHA });
+		this.background.fill({ color: colors.bg });
+		this.background.alpha = 0;
 
-		// テキスト設定
-		this.label.text = BANNER_TEXT[turn];
-		this.label.style.fill = colors.text;
-		this.label.x = this.screenWidth / 2;
-		this.label.y = BANNER_HEIGHT / 2;
+		// テキストコンテナの位置設定
+		this.textContainer.x = this.screenWidth / 2;
+		this.textContainer.y = BANNER_HEIGHT / 2;
 
-		// 初期位置: 左外
+		// 文字Text生成
+		this.clearCharTexts();
+		const chars = this.createCharTexts(BANNER_TEXT[turn], colors.text);
+
+		// コンテナ位置設定
 		const centerY = (this.screenHeight - BANNER_HEIGHT) / 2;
-		this.container.x = -this.screenWidth;
+		this.container.x = 0;
 		this.container.y = centerY;
 		this.container.alpha = 1;
 		this.container.visible = true;
 
-		// スライドイン
+		// 背景フェードイン
 		await tween(
-			this.container,
-			{ x: 0 },
-			{ duration: SLIDE_IN_DURATION, easing: Easing.easeOutCubic },
+			this.background,
+			{ alpha: BANNER_ALPHA },
+			{ duration: BG_FADE_IN_DURATION, easing: Easing.easeOut },
+		);
+
+		// 文字ポップイン（スタッガー付き並列実行）
+		await Promise.all(
+			chars.map((char, i) =>
+				tween(
+					char,
+					{ scaleX: 1, scaleY: 1, alpha: 1 },
+					{
+						duration: CHAR_POP_DURATION,
+						delay: i * CHAR_STAGGER_DELAY,
+						easing: Easing.easeOutBack,
+					},
+				),
+			),
 		);
 
 		// フェードアウト（保持時間後）
@@ -121,5 +182,6 @@ export class TurnBanner {
 
 		// リセット
 		this.container.visible = false;
+		this.clearCharTexts();
 	}
 }
