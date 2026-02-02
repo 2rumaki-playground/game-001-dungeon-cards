@@ -145,7 +145,7 @@ export class HandRenderer {
 			const cost = CARD_COST[card.type];
 			const enabled = currentAp >= cost;
 			const selected = card.id === this.selectedCardId;
-			const hovered = card.id === this.hoveredCardId;
+			const hovered = enabled && card.id === this.hoveredCardId;
 			const y = hovered ? -HOVER_LIFT : 0;
 
 			const cardContainer = this.createCardView(

@@ -5,6 +5,7 @@
 import type { Container, FederatedPointerEvent } from "pixi.js";
 import { describe, expect, it, vi } from "vitest";
 import type { Card } from "../types";
+import { tween } from "../utils/tween";
 import {
 	CARD_HEIGHT,
 	CARD_WIDTH,
@@ -182,7 +183,7 @@ describe("HandRenderer ホバー・選択演出", () => {
 
 	it("無効カード（AP不足）は eventMode が static でない", () => {
 		const renderer = new HandRenderer();
-		// AP=0 で全カード無効
+		// AP=0 なので move / attack は無効（wait は有効のまま）
 		renderer.render(createTestCards(), 0);
 
 		const card0 = findCardContainer(renderer, 0);
@@ -218,5 +219,33 @@ describe("HandRenderer ホバー・選択演出", () => {
 		} as FederatedPointerEvent);
 
 		expect(callback).toHaveBeenCalledWith(cards[2]);
+	});
+
+	it("pointerdown で tween によるパルスアニメーションが実行される", async () => {
+		const renderer = new HandRenderer();
+		const cards = createTestCards();
+		renderer.setOnCardSelect(vi.fn());
+		renderer.render(cards, 10);
+
+		const mockedTween = vi.mocked(tween);
+		mockedTween.mockClear();
+
+		const card2 = findCardContainer(renderer, 2);
+		card2.emit("pointerdown", {
+			global: { x: 0, y: 0 },
+		} as FederatedPointerEvent);
+
+		// fire-and-forget の非同期パルスが完了するまで待機
+		await vi.waitFor(() => {
+			expect(mockedTween).toHaveBeenCalledTimes(2);
+		});
+
+		// 拡大（scaleX/scaleY > 1）と縮小（scaleX/scaleY = 1）の2回呼ばれる
+		expect(mockedTween.mock.calls[0][1]).toEqual(
+			expect.objectContaining({ scaleX: 1.1, scaleY: 1.1 }),
+		);
+		expect(mockedTween.mock.calls[1][1]).toEqual(
+			expect.objectContaining({ scaleX: 1, scaleY: 1 }),
+		);
 	});
 });
