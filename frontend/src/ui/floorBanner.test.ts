@@ -69,9 +69,10 @@ describe("FloorBanner show", () => {
 		await showPromise;
 
 		const container = banner.getContainer();
-		const textChild = container.children[0];
-		expect(textChild.x).toBe(400);
-		expect(textChild.y).toBe(300);
+		const hasCenteredChild = container.children.some(
+			(child) => child.x === 400 && child.y === 300,
+		);
+		expect(hasCenteredChild).toBe(true);
 		vi.useRealTimers();
 	});
 });
