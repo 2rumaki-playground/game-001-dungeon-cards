@@ -574,7 +574,8 @@ function setupEventHandlers(
 			// 敵攻撃アニメーション
 			if (playerWasAttacked) {
 				applyState(next);
-				render();
+				// ゲームオーバー時も攻撃演出中はゲーム画面を維持（暗転後に切り替え）
+				renderGameScreen();
 				await mapRenderer.animateEnemyAttackHit(
 					ENEMY_ATTACK_DAMAGE * attackCount,
 				);
