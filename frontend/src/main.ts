@@ -494,6 +494,7 @@ function setupEventHandlers(
 			const newState = startNewGame(gameState);
 			await screenTransition.fadeTransition(() => {
 				applyState(newState);
+				// 手札はフェードイン後に配布アニメーションで表示するためスキップ
 				render(true);
 			});
 			// フェードイン後に手札配布アニメーション
@@ -595,8 +596,7 @@ function setupEventHandlers(
 			} else {
 				deleteSaveData();
 				await screenTransition.fadeTransition(() => {
-					applyState(next);
-					render();
+					updateState(next);
 				});
 			}
 		} finally {
