@@ -213,13 +213,27 @@ async function updateStateWithMoveAnimation(
 	if (isAnimating) return;
 	isAnimating = true;
 
+	const prevAp = gameState.player.ap;
 	applyState(newState);
 
 	try {
 		// プレイヤー以外を描画
 		render(false, true);
-		// プレイヤー移動アニメーション
-		await mapRenderer.animatePlayerMove(targetGridPos);
+
+		// プレイヤー移動アニメーション（AP変化があればバーアニメーションも並列実行）
+		const animations: Promise<void>[] = [
+			mapRenderer.animatePlayerMove(targetGridPos),
+		];
+		if (prevAp !== newState.player.ap) {
+			animations.push(
+				statusBar.animateApChange(
+					prevAp,
+					newState.player.ap,
+					newState.player.maxAp,
+				),
+			);
+		}
+		await Promise.all(animations);
 	} finally {
 		isAnimating = false;
 	}
@@ -272,11 +286,25 @@ async function updateStateWithBumpAnimation(
 	if (isAnimating) return;
 	isAnimating = true;
 
+	const prevAp = gameState.player.ap;
 	applyState(newState);
 
 	try {
 		render(false, true);
-		await mapRenderer.animatePlayerBump(direction);
+
+		const animations: Promise<void>[] = [
+			mapRenderer.animatePlayerBump(direction),
+		];
+		if (prevAp !== newState.player.ap) {
+			animations.push(
+				statusBar.animateApChange(
+					prevAp,
+					newState.player.ap,
+					newState.player.maxAp,
+				),
+			);
+		}
+		await Promise.all(animations);
 	} finally {
 		isAnimating = false;
 	}
@@ -294,6 +322,7 @@ async function updateStateWithAttackAnimation(
 	if (isAnimating) return;
 	isAnimating = true;
 
+	const prevAp = gameState.player.ap;
 	const defeated = !newState.enemies.some((e) => e.id === hitEnemyId);
 	applyState(newState);
 
@@ -301,8 +330,20 @@ async function updateStateWithAttackAnimation(
 		// 撃破時は敵の再描画をスキップ（アニメーション用にGraphicsを保持）
 		render(false, false, defeated);
 
-		// ヒットエフェクト
-		await mapRenderer.animateAttackHit(hitEnemyId, PLAYER_ATTACK_DAMAGE);
+		// ヒットエフェクト（AP変化があればバーアニメーションも並列実行）
+		const hitAnimations: Promise<void>[] = [
+			mapRenderer.animateAttackHit(hitEnemyId, PLAYER_ATTACK_DAMAGE),
+		];
+		if (prevAp !== newState.player.ap) {
+			hitAnimations.push(
+				statusBar.animateApChange(
+					prevAp,
+					newState.player.ap,
+					newState.player.maxAp,
+				),
+			);
+		}
+		await Promise.all(hitAnimations);
 
 		// 撃破演出
 		if (defeated) {
@@ -402,7 +443,6 @@ function setupEventHandlers(
 			if (pendingCard.type === "move") {
 				const prevPosition = gameState.player.position;
 				const prevFloor = gameState.floor;
-				const prevAp = gameState.player.ap;
 				const next = executeMove(gameState, pendingCard.id, direction);
 				const moved =
 					next.player.position.x !== prevPosition.x ||
@@ -422,16 +462,8 @@ function setupEventHandlers(
 					// 壁にぶつかった
 					await updateStateWithBumpAnimation(next, direction);
 				}
-				if (prevAp !== next.player.ap) {
-					await statusBar.animateApChange(
-						prevAp,
-						next.player.ap,
-						next.player.maxAp,
-					);
-				}
 				return;
 			} else if (pendingCard.type === "attack") {
-				const prevAp = gameState.player.ap;
 				const {
 					state: next,
 					hit,
@@ -443,13 +475,6 @@ function setupEventHandlers(
 					await updateStateWithAttackAnimation(next, enemyId);
 				} else {
 					updateState(next);
-				}
-				if (prevAp !== next.player.ap) {
-					await statusBar.animateApChange(
-						prevAp,
-						next.player.ap,
-						next.player.maxAp,
-					);
 				}
 				return;
 			}
@@ -468,17 +493,8 @@ function setupEventHandlers(
 	// 方向パラメータを持つカードはクリック位置で方向が決まる
 	handRenderer.setOnCardSelect(async (card, direction) => {
 		if (isAnimating) return; // アニメーション中は無効
-		const prevAp = gameState.player.ap;
 		if (card.type === "wait") {
-			const next = executeWait(gameState, card.id);
-			updateState(next);
-			if (prevAp !== next.player.ap) {
-				await statusBar.animateApChange(
-					prevAp,
-					next.player.ap,
-					next.player.maxAp,
-				);
-			}
+			updateState(executeWait(gameState, card.id));
 		} else if (direction) {
 			// 方向が指定されている場合は即座に実行
 			if (card.type === "move") {
@@ -503,13 +519,6 @@ function setupEventHandlers(
 					// 壁にぶつかった
 					await updateStateWithBumpAnimation(next, direction);
 				}
-				if (prevAp !== next.player.ap) {
-					await statusBar.animateApChange(
-						prevAp,
-						next.player.ap,
-						next.player.maxAp,
-					);
-				}
 			} else if (card.type === "attack") {
 				const {
 					state: next,
@@ -520,13 +529,6 @@ function setupEventHandlers(
 					await updateStateWithAttackAnimation(next, enemyId);
 				} else {
 					updateState(next);
-				}
-				if (prevAp !== next.player.ap) {
-					await statusBar.animateApChange(
-						prevAp,
-						next.player.ap,
-						next.player.maxAp,
-					);
 				}
 			}
 		} else {
