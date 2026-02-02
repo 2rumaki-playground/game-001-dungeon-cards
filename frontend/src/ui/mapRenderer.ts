@@ -376,7 +376,7 @@ export class MapRenderer {
 			},
 		});
 
-		// セル中央上部に配置（テキストのアンカーを中央上に設定）
+		// セル上端にテキスト下端が来るように中央下アンカーで配置
 		text.anchor.set(0.5, 1);
 		text.x = pixelPos.x + CELL_SIZE / 2;
 		text.y = pixelPos.y;
