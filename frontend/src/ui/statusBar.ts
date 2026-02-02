@@ -5,6 +5,7 @@
 
 import { Container, Graphics, Text } from "pixi.js";
 import type { Player } from "../types";
+import { Easing, type TweenTarget, tween } from "../utils/tween";
 
 /** テキスト配置のX座標 */
 const HP_TEXT_X = 16;
@@ -40,6 +41,18 @@ const HP_LOW_THRESHOLD = 0.3;
 
 /** APバー色 */
 const AP_BAR_COLOR = 0x4488cc;
+
+/** HPダメージ時のフラッシュ色 */
+const HP_FLASH_COLOR = 0xff4444;
+
+/** バーアニメーション時間（ms） */
+const BAR_TWEEN_DURATION = 300;
+
+/** フラッシュの間隔（ms） */
+const FLASH_INTERVAL = 75;
+
+/** フラッシュの回数 */
+const FLASH_COUNT = 2;
 
 /**
  * ステータスバーレンダラー
@@ -181,6 +194,68 @@ export class StatusBar {
 		this.hpBarFill.clear();
 		this.apBarBg.clear();
 		this.apBarFill.clear();
+	}
+
+	/**
+	 * HP変化アニメーション
+	 * ダメージ時は赤点滅→バー減少、回復時はバー増加
+	 */
+	async animateHpChange(
+		fromHp: number,
+		toHp: number,
+		maxHp: number,
+	): Promise<void> {
+		if (fromHp === toHp) return;
+
+		const fromRatio = maxHp > 0 ? fromHp / maxHp : 0;
+		const toRatio = maxHp > 0 ? toHp / maxHp : 0;
+
+		// ダメージ時は赤点滅
+		if (toHp < fromHp) {
+			await this.flashHpBar();
+		}
+
+		// バー幅のtweenアニメーション
+		const dummy: TweenTarget = {
+			x: 0,
+			y: 0,
+			alpha: 0,
+			scale: { x: 1, y: 1 },
+			rotation: 0,
+		};
+
+		await tween(
+			dummy,
+			{ alpha: 1 },
+			{
+				duration: BAR_TWEEN_DURATION,
+				easing: Easing.easeOut,
+				onUpdate: (progress) => {
+					const ratio = fromRatio + (toRatio - fromRatio) * progress;
+					this.currentHpRatio = ratio;
+					this.drawHpBar(ratio);
+				},
+			},
+		);
+
+		this.currentHpRatio = toRatio;
+		this.drawHpBar(toRatio);
+	}
+
+	/**
+	 * HPバーの赤点滅
+	 */
+	private async flashHpBar(): Promise<void> {
+		for (let i = 0; i < FLASH_COUNT; i++) {
+			this.drawHpBar(this.currentHpRatio, HP_FLASH_COLOR);
+			await this.delay(FLASH_INTERVAL);
+			this.drawHpBar(this.currentHpRatio);
+			await this.delay(FLASH_INTERVAL);
+		}
+	}
+
+	private delay(ms: number): Promise<void> {
+		return new Promise((resolve) => setTimeout(resolve, ms));
 	}
 
 	/**

@@ -1,5 +1,22 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { StatusBar } from "./statusBar";
+
+// tween をモック化（即座にresolve、onUpdateをprogress=1で呼び出し）
+vi.mock("../utils/tween", () => ({
+	Easing: {
+		easeOut: (t: number) => t,
+	},
+	tween: vi.fn(
+		(
+			_target: unknown,
+			_to: unknown,
+			options?: { onUpdate?: (p: number) => void },
+		) => {
+			options?.onUpdate?.(1);
+			return Promise.resolve();
+		},
+	),
+}));
 
 describe("StatusBar", () => {
 	it("getContainerでContainerを返す", () => {
@@ -107,5 +124,51 @@ describe("StatusBar", () => {
 
 		statusBar.show();
 		expect(container.visible).toBe(true);
+	});
+
+	describe("animateHpChange", () => {
+		it("アニメーション完了後にHP比率が最終値に一致する", async () => {
+			vi.useFakeTimers();
+			const statusBar = new StatusBar();
+			statusBar.render(
+				{ position: { x: 0, y: 0 }, hp: 10, maxHp: 10, ap: 3, maxAp: 3 },
+				1,
+			);
+
+			const promise = statusBar.animateHpChange(10, 7, 10);
+			await vi.advanceTimersByTimeAsync(1000);
+			await promise;
+
+			expect(statusBar.getCurrentHpRatio()).toBeCloseTo(0.7);
+			vi.useRealTimers();
+		});
+
+		it("HP増加時はフラッシュなしでバーが変化する", async () => {
+			vi.useFakeTimers();
+			const statusBar = new StatusBar();
+			statusBar.render(
+				{ position: { x: 0, y: 0 }, hp: 5, maxHp: 10, ap: 3, maxAp: 3 },
+				1,
+			);
+
+			const promise = statusBar.animateHpChange(5, 8, 10);
+			await vi.advanceTimersByTimeAsync(1000);
+			await promise;
+
+			expect(statusBar.getCurrentHpRatio()).toBeCloseTo(0.8);
+			vi.useRealTimers();
+		});
+
+		it("値が変化しない場合は即座に完了する", async () => {
+			const statusBar = new StatusBar();
+			statusBar.render(
+				{ position: { x: 0, y: 0 }, hp: 10, maxHp: 10, ap: 3, maxAp: 3 },
+				1,
+			);
+
+			await statusBar.animateHpChange(10, 10, 10);
+
+			expect(statusBar.getCurrentHpRatio()).toBeCloseTo(1.0);
+		});
 	});
 });
