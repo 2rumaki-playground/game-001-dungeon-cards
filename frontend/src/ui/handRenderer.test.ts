@@ -2,12 +2,27 @@
  * 手札レンダラーのテスト
  */
 
-import { describe, expect, it } from "vitest";
+import type { Container, FederatedPointerEvent } from "pixi.js";
+import { describe, expect, it, vi } from "vitest";
+import type { Card } from "../types";
+import { tween } from "../utils/tween";
 import {
 	CARD_HEIGHT,
 	CARD_WIDTH,
 	getDirectionFromClickPosition,
+	HandRenderer,
 } from "./handRenderer";
+
+vi.mock("../utils/tween", () => ({
+	Easing: { easeOut: (t: number) => t, easeOutCubic: (t: number) => t },
+	tween: vi.fn((target, to) => {
+		if (to.y !== undefined) target.y = to.y;
+		if (to.scaleX !== undefined && target.scale) target.scale.x = to.scaleX;
+		if (to.scaleY !== undefined && target.scale) target.scale.y = to.scaleY;
+		if (to.alpha !== undefined) target.alpha = to.alpha;
+		return Promise.resolve();
+	}),
+}));
 
 describe("getDirectionFromClickPosition", () => {
 	// カードサイズ: 90x120 (幅x高さ)
@@ -120,5 +135,117 @@ describe("getDirectionFromClickPosition", () => {
 		it("CARD_HEIGHTは120", () => {
 			expect(CARD_HEIGHT).toBe(120);
 		});
+	});
+});
+
+describe("HandRenderer ホバー・選択演出", () => {
+	function createTestCards(): Card[] {
+		return [
+			{ id: "card-1", type: "move" },
+			{ id: "card-2", type: "attack" },
+			{ id: "card-3", type: "wait" },
+		];
+	}
+
+	function findCardContainer(renderer: HandRenderer, index: number): Container {
+		return renderer.getContainer().children[index] as Container;
+	}
+
+	it("ホバー中のカードの Y 座標が負（浮き上がり）になる", () => {
+		const renderer = new HandRenderer();
+		const cards = createTestCards();
+		renderer.render(cards, 10);
+
+		const card0 = findCardContainer(renderer, 0);
+		// pointerover をシミュレート
+		card0.emit("pointerover", {} as FederatedPointerEvent);
+
+		// render() が再呼び出しされるので、新しいカードコンテナを取得
+		const card0After = findCardContainer(renderer, 0);
+		expect(card0After.y).toBeLessThan(0);
+	});
+
+	it("pointerout でホバー解除後、Y=0 に戻る", () => {
+		const renderer = new HandRenderer();
+		const cards = createTestCards();
+		renderer.render(cards, 10);
+
+		const card0 = findCardContainer(renderer, 0);
+		card0.emit("pointerover", {} as FederatedPointerEvent);
+
+		// ホバー中のカードを取得して pointerout
+		const card0Hovered = findCardContainer(renderer, 0);
+		card0Hovered.emit("pointerout", {} as FederatedPointerEvent);
+
+		const card0After = findCardContainer(renderer, 0);
+		expect(card0After.y).toBe(0);
+	});
+
+	it("無効カード（AP不足）は eventMode が static でない", () => {
+		const renderer = new HandRenderer();
+		// AP=0 なので move / attack は無効（wait は有効のまま）
+		renderer.render(createTestCards(), 0);
+
+		const card0 = findCardContainer(renderer, 0);
+		expect(card0.eventMode).not.toBe("static");
+	});
+
+	it("ホバー中に render() を再呼び出ししてもホバー状態が維持される", () => {
+		const renderer = new HandRenderer();
+		const cards = createTestCards();
+		renderer.render(cards, 10);
+
+		const card0 = findCardContainer(renderer, 0);
+		card0.emit("pointerover", {} as FederatedPointerEvent);
+
+		// 外部から render() を再呼び出し
+		renderer.render(cards, 10);
+
+		const card0After = findCardContainer(renderer, 0);
+		expect(card0After.y).toBeLessThan(0);
+	});
+
+	it("pointerdown でカード選択コールバックが呼ばれる", () => {
+		const renderer = new HandRenderer();
+		const cards = createTestCards();
+		const callback = vi.fn();
+		renderer.setOnCardSelect(callback);
+		renderer.render(cards, 10);
+
+		// waitカード（方向なし）をクリック
+		const card2 = findCardContainer(renderer, 2);
+		card2.emit("pointerdown", {
+			global: { x: 0, y: 0 },
+		} as FederatedPointerEvent);
+
+		expect(callback).toHaveBeenCalledWith(cards[2]);
+	});
+
+	it("pointerdown で tween によるパルスアニメーションが実行される", async () => {
+		const renderer = new HandRenderer();
+		const cards = createTestCards();
+		renderer.setOnCardSelect(vi.fn());
+		renderer.render(cards, 10);
+
+		const mockedTween = vi.mocked(tween);
+		mockedTween.mockClear();
+
+		const card2 = findCardContainer(renderer, 2);
+		card2.emit("pointerdown", {
+			global: { x: 0, y: 0 },
+		} as FederatedPointerEvent);
+
+		// fire-and-forget の非同期パルスが完了するまで待機
+		await vi.waitFor(() => {
+			expect(mockedTween).toHaveBeenCalledTimes(2);
+		});
+
+		// 拡大（scaleX/scaleY > 1）と縮小（scaleX/scaleY = 1）の2回呼ばれる
+		expect(mockedTween.mock.calls[0][1]).toEqual(
+			expect.objectContaining({ scaleX: 1.1, scaleY: 1.1 }),
+		);
+		expect(mockedTween.mock.calls[1][1]).toEqual(
+			expect.objectContaining({ scaleX: 1, scaleY: 1 }),
+		);
 	});
 });
