@@ -23,6 +23,18 @@ const DEAL_ANIMATION_DELAY = 80; // カード間のディレイ（ms）
 const DECK_OFFSET_X = -300; // 山札の位置（手札コンテナからの相対X）
 const DECK_OFFSET_Y = -50; // 山札の位置（手札コンテナからの相対Y）
 
+/** ホバー時の浮き上がり距離（px） */
+const HOVER_LIFT = 8;
+
+/** 選択パルスの拡大率 */
+const PULSE_SCALE = 1.1;
+
+/** 選択パルスの拡大時間（ms） */
+const PULSE_UP_DURATION = 80;
+
+/** 選択パルスの縮小時間（ms） */
+const PULSE_DOWN_DURATION = 100;
+
 /**
  * カード内のクリック位置から方向を判定
  * カードを対角線で4分割し、クリック位置がどの領域にあるかで方向を決定
@@ -68,6 +80,7 @@ const CARD_COLORS = {
 	wait: { bg: 0x5a5a2a, border: 0x8c8c4a },
 	disabled: { bg: 0x2a2a2a, border: 0x4a4a4a },
 	selectedBorder: 0xffd700,
+	hoveredBorder: 0x88ccff,
 } as const;
 
 /** カード種別の日本語名 */
@@ -83,6 +96,9 @@ const CARD_TYPE_NAME: Record<CardType, string> = {
 export class HandRenderer {
 	private container: Container;
 	private selectedCardId: string | null = null;
+	private hoveredCardId: string | null = null;
+	private currentHand: Card[] = [];
+	private currentAp = 0;
 	private onCardSelect: ((card: Card, direction?: Direction) => void) | null =
 		null;
 
@@ -116,6 +132,8 @@ export class HandRenderer {
 	 * 手札を描画
 	 */
 	render(hand: Card[], currentAp: number): void {
+		this.currentHand = hand;
+		this.currentAp = currentAp;
 		this.container.removeChildren();
 
 		const totalWidth = hand.length * CARD_WIDTH + (hand.length - 1) * CARD_GAP;
@@ -127,8 +145,17 @@ export class HandRenderer {
 			const cost = CARD_COST[card.type];
 			const enabled = currentAp >= cost;
 			const selected = card.id === this.selectedCardId;
+			const hovered = card.id === this.hoveredCardId;
+			const y = hovered ? -HOVER_LIFT : 0;
 
-			const cardContainer = this.createCardView(card, x, 0, enabled, selected);
+			const cardContainer = this.createCardView(
+				card,
+				x,
+				y,
+				enabled,
+				selected,
+				hovered,
+			);
 			this.container.addChild(cardContainer);
 		}
 	}
@@ -146,6 +173,8 @@ export class HandRenderer {
 		currentAp: number,
 		newCardCount: number,
 	): Promise<void> {
+		this.currentHand = hand;
+		this.currentAp = currentAp;
 		this.container.removeChildren();
 
 		const totalWidth = hand.length * CARD_WIDTH + (hand.length - 1) * CARD_GAP;
@@ -174,6 +203,7 @@ export class HandRenderer {
 				targetY,
 				false,
 				selected,
+				false,
 			);
 
 			if (i >= existingCardCount) {
@@ -225,6 +255,7 @@ export class HandRenderer {
 		y: number,
 		enabled: boolean,
 		selected: boolean,
+		hovered: boolean,
 	): Container {
 		const cardContainer = new Container();
 		cardContainer.x = x;
@@ -233,7 +264,11 @@ export class HandRenderer {
 		// 背景
 		const bg = new Graphics();
 		const colors = enabled ? CARD_COLORS[card.type] : CARD_COLORS.disabled;
-		const borderColor = selected ? CARD_COLORS.selectedBorder : colors.border;
+		const borderColor = selected
+			? CARD_COLORS.selectedBorder
+			: hovered
+				? CARD_COLORS.hoveredBorder
+				: colors.border;
 		const borderWidth = selected ? 3 : 2;
 
 		bg.roundRect(0, 0, CARD_WIDTH, CARD_HEIGHT, CARD_RADIUS);
@@ -283,7 +318,21 @@ export class HandRenderer {
 		if (enabled) {
 			cardContainer.eventMode = "static";
 			cardContainer.cursor = "pointer";
+
+			cardContainer.on("pointerover", () => {
+				if (this.hoveredCardId === card.id) return;
+				this.hoveredCardId = card.id;
+				this.render(this.currentHand, this.currentAp);
+			});
+
+			cardContainer.on("pointerout", () => {
+				if (this.hoveredCardId !== card.id) return;
+				this.hoveredCardId = null;
+				this.render(this.currentHand, this.currentAp);
+			});
+
 			cardContainer.on("pointerdown", (event) => {
+				this.animateCardPulse(cardContainer);
 				// 方向パラメータを持つカードの場合、クリック位置から方向を判定
 				if (card.type === "move" || card.type === "attack") {
 					const direction = getDirectionFromClickPosition(
@@ -298,6 +347,26 @@ export class HandRenderer {
 		}
 
 		return cardContainer;
+	}
+
+	/**
+	 * カード選択時のパルスアニメーション（fire-and-forget）
+	 */
+	private async animateCardPulse(container: Container): Promise<void> {
+		try {
+			await tween(
+				container,
+				{ scaleX: PULSE_SCALE, scaleY: PULSE_SCALE },
+				{ duration: PULSE_UP_DURATION, easing: Easing.easeOut },
+			);
+			await tween(
+				container,
+				{ scaleX: 1, scaleY: 1 },
+				{ duration: PULSE_DOWN_DURATION, easing: Easing.easeOut },
+			);
+		} catch {
+			// render() でカードが破棄された場合のエラーは無視
+		}
 	}
 
 	/**
@@ -333,5 +402,6 @@ export class HandRenderer {
 	clear(): void {
 		this.container.removeChildren();
 		this.selectedCardId = null;
+		this.hoveredCardId = null;
 	}
 }
