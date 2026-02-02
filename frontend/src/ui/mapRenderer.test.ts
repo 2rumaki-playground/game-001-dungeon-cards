@@ -10,15 +10,32 @@ vi.mock("../utils/tween", () => ({
 	Easing: {
 		easeOut: (t: number) => t,
 		easeOutCubic: (t: number) => t,
+		easeInOut: (t: number) => t,
 	},
 	tween: vi.fn(
 		(
-			target: { alpha?: number; x?: number; y?: number },
-			to: { alpha?: number; x?: number; y?: number },
+			target: {
+				alpha?: number;
+				x?: number;
+				y?: number;
+				scale?: { x: number; y: number };
+				rotation?: number;
+			},
+			to: {
+				alpha?: number;
+				x?: number;
+				y?: number;
+				scaleX?: number;
+				scaleY?: number;
+				rotation?: number;
+			},
 		) => {
 			if (to.alpha !== undefined) target.alpha = to.alpha;
 			if (to.x !== undefined) target.x = to.x;
 			if (to.y !== undefined) target.y = to.y;
+			if (to.scaleX !== undefined && target.scale) target.scale.x = to.scaleX;
+			if (to.scaleY !== undefined && target.scale) target.scale.y = to.scaleY;
+			if (to.rotation !== undefined) target.rotation = to.rotation;
 			return Promise.resolve();
 		},
 	),
@@ -225,5 +242,64 @@ describe("MapRenderer 攻撃エフェクト", () => {
 		// シェイク完了後にコンテナ座標が元に戻ること
 		expect(container.x).toBe(originalX);
 		expect(container.y).toBe(originalY);
+	});
+});
+
+describe("MapRenderer 敵撃破アニメーション", () => {
+	it("animateEnemyDefeatが正常に完了する", async () => {
+		const renderer = new MapRenderer();
+		const map = createTestMap();
+		const enemies = [{ id: "e1", position: { x: 1, y: 1 }, hp: 3, maxHp: 3 }];
+		const player = {
+			position: { x: 0, y: 0 },
+			hp: 10,
+			maxHp: 10,
+			ap: 3,
+			maxAp: 3,
+		};
+		renderer.render(map, player, enemies);
+
+		await expect(renderer.animateEnemyDefeat("e1")).resolves.toBeUndefined();
+	});
+
+	it("撃破アニメーション完了後に敵Graphicsが削除される", async () => {
+		const renderer = new MapRenderer();
+		const map = createTestMap();
+		const enemies = [{ id: "e1", position: { x: 1, y: 1 }, hp: 3, maxHp: 3 }];
+		const player = {
+			position: { x: 0, y: 0 },
+			hp: 10,
+			maxHp: 10,
+			ap: 3,
+			maxAp: 3,
+		};
+		renderer.render(map, player, enemies);
+
+		// enemiesContainerに敵Graphicsが存在すること
+		const container = renderer.getContainer();
+		const enemiesContainer = container.children[1];
+		expect(enemiesContainer.children.length).toBe(1);
+
+		await renderer.animateEnemyDefeat("e1");
+
+		// 撃破後、敵Graphicsが削除されていること
+		expect(enemiesContainer.children.length).toBe(0);
+	});
+
+	it("存在しない敵IDでanimateEnemyDefeatを呼んでもエラーにならない", async () => {
+		const renderer = new MapRenderer();
+		const map = createTestMap();
+		const player = {
+			position: { x: 0, y: 0 },
+			hp: 10,
+			maxHp: 10,
+			ap: 3,
+			maxAp: 3,
+		};
+		renderer.render(map, player, []);
+
+		await expect(
+			renderer.animateEnemyDefeat("nonexistent"),
+		).resolves.toBeUndefined();
 	});
 });
