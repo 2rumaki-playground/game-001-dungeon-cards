@@ -213,13 +213,27 @@ async function updateStateWithMoveAnimation(
 	if (isAnimating) return;
 	isAnimating = true;
 
+	const prevAp = gameState.player.ap;
 	applyState(newState);
 
 	try {
 		// プレイヤー以外を描画
 		render(false, true);
-		// プレイヤー移動アニメーション
-		await mapRenderer.animatePlayerMove(targetGridPos);
+
+		// プレイヤー移動アニメーション（AP変化があればバーアニメーションも並列実行）
+		const animations: Promise<void>[] = [
+			mapRenderer.animatePlayerMove(targetGridPos),
+		];
+		if (prevAp !== newState.player.ap) {
+			animations.push(
+				statusBar.animateApChange(
+					prevAp,
+					newState.player.ap,
+					newState.player.maxAp,
+				),
+			);
+		}
+		await Promise.all(animations);
 	} finally {
 		isAnimating = false;
 	}
@@ -272,11 +286,25 @@ async function updateStateWithBumpAnimation(
 	if (isAnimating) return;
 	isAnimating = true;
 
+	const prevAp = gameState.player.ap;
 	applyState(newState);
 
 	try {
 		render(false, true);
-		await mapRenderer.animatePlayerBump(direction);
+
+		const animations: Promise<void>[] = [
+			mapRenderer.animatePlayerBump(direction),
+		];
+		if (prevAp !== newState.player.ap) {
+			animations.push(
+				statusBar.animateApChange(
+					prevAp,
+					newState.player.ap,
+					newState.player.maxAp,
+				),
+			);
+		}
+		await Promise.all(animations);
 	} finally {
 		isAnimating = false;
 	}
@@ -294,6 +322,7 @@ async function updateStateWithAttackAnimation(
 	if (isAnimating) return;
 	isAnimating = true;
 
+	const prevAp = gameState.player.ap;
 	const defeated = !newState.enemies.some((e) => e.id === hitEnemyId);
 	applyState(newState);
 
@@ -301,8 +330,20 @@ async function updateStateWithAttackAnimation(
 		// 撃破時は敵の再描画をスキップ（アニメーション用にGraphicsを保持）
 		render(false, false, defeated);
 
-		// ヒットエフェクト
-		await mapRenderer.animateAttackHit(hitEnemyId, PLAYER_ATTACK_DAMAGE);
+		// ヒットエフェクト（AP変化があればバーアニメーションも並列実行）
+		const hitAnimations: Promise<void>[] = [
+			mapRenderer.animateAttackHit(hitEnemyId, PLAYER_ATTACK_DAMAGE),
+		];
+		if (prevAp !== newState.player.ap) {
+			hitAnimations.push(
+				statusBar.animateApChange(
+					prevAp,
+					newState.player.ap,
+					newState.player.maxAp,
+				),
+			);
+		}
+		await Promise.all(hitAnimations);
 
 		// 撃破演出
 		if (defeated) {
@@ -584,12 +625,14 @@ function setupEventHandlers(
 
 			// 敵攻撃アニメーション
 			if (playerWasAttacked) {
+				const prevHp = gameState.player.hp;
 				applyState(next);
 				// ゲームオーバー時も攻撃演出中はゲーム画面を維持（暗転後に切り替え）
 				renderGameScreen();
-				await mapRenderer.animateEnemyAttackHit(
-					ENEMY_ATTACK_DAMAGE * attackCount,
-				);
+				await Promise.all([
+					mapRenderer.animateEnemyAttackHit(ENEMY_ATTACK_DAMAGE * attackCount),
+					statusBar.animateHpChange(prevHp, next.player.hp, next.player.maxHp),
+				]);
 			}
 
 			if (next.screen !== "gameOver") {

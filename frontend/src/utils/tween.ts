@@ -64,6 +64,76 @@ export interface TweenOptions {
 	onUpdate?: (progress: number) => void;
 }
 
+/** tweenValueオプション */
+export interface TweenValueOptions {
+	/** アニメーション時間（ミリ秒） */
+	duration: number;
+	/** イージング関数（デフォルト: easeOut） */
+	easing?: EasingFunction;
+	/** 遅延時間（ミリ秒） */
+	delay?: number;
+	/** フレームごとのコールバック（eased progressを受け取る） */
+	onUpdate: (progress: number) => void;
+	/** 完了時のコールバック */
+	onComplete?: () => void;
+}
+
+/**
+ * 値補間のみのTweenアニメーション
+ * TweenTargetを使わず、onUpdateにeased progressを渡す
+ */
+export function tweenValue(options: TweenValueOptions): Promise<void> {
+	return new Promise((resolve, reject) => {
+		const {
+			duration,
+			easing = Easing.easeOut,
+			delay = 0,
+			onUpdate,
+			onComplete,
+		} = options;
+
+		if (duration <= 0) {
+			try {
+				onUpdate(1);
+				onComplete?.();
+				resolve();
+			} catch (error) {
+				reject(error);
+			}
+			return;
+		}
+
+		let elapsed = -delay;
+		const ticker = Ticker.shared;
+
+		const update = (tick: Ticker): void => {
+			try {
+				elapsed += tick.deltaMS;
+
+				if (elapsed < 0) {
+					return;
+				}
+
+				const progress = Math.min(elapsed / duration, 1);
+				const easedProgress = easing(progress);
+
+				onUpdate(easedProgress);
+
+				if (progress >= 1) {
+					ticker.remove(update);
+					onComplete?.();
+					resolve();
+				}
+			} catch (error) {
+				ticker.remove(update);
+				reject(error);
+			}
+		};
+
+		ticker.add(update);
+	});
+}
+
 /**
  * 単一オブジェクトのTweenアニメーション
  * @param target アニメーション対象
