@@ -309,11 +309,22 @@ async function updateStateWithAttackAnimation(
 	if (isAnimating) return;
 	isAnimating = true;
 
+	const defeated = !newState.enemies.some((e) => e.id === hitEnemyId);
 	applyState(newState);
 
 	try {
-		render();
+		// 撃破時は敵の再描画をスキップ（アニメーション用にGraphicsを保持）
+		render(false, false, defeated);
+
+		// ヒットエフェクト
 		await mapRenderer.animateAttackHit(hitEnemyId, PLAYER_ATTACK_DAMAGE);
+
+		// 撃破演出
+		if (defeated) {
+			await mapRenderer.animateEnemyDefeat(hitEnemyId);
+			// 撃破後、敵描画を反映
+			render();
+		}
 	} finally {
 		isAnimating = false;
 	}

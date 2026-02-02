@@ -66,6 +66,12 @@ const DAMAGE_POPUP_RISE = 24;
 /** ダメージポップアップのアニメーション時間（ms） */
 const DAMAGE_POPUP_DURATION = 600;
 
+/** 敵撃破アニメーションの時間（ms） */
+const DEFEAT_DURATION = 400;
+
+/** 敵撃破アニメーションの回転量（180度） */
+const DEFEAT_ROTATION = Math.PI;
+
 /**
  * タイル種別に対応する色を取得
  */
@@ -410,6 +416,33 @@ export class MapRenderer {
 			this.animateScreenShake(),
 			...(enemyGridPos ? [this.animateDamagePopup(enemyGridPos, damage)] : []),
 		]);
+	}
+
+	/**
+	 * 敵撃破アニメーション
+	 * 縮小 + 透明化 + 回転の複合アニメーションで消滅演出
+	 * @param enemyId 撃破された敵のID
+	 */
+	async animateEnemyDefeat(enemyId: string): Promise<void> {
+		const graphics = this.enemyGraphicsMap.get(enemyId);
+		if (!graphics) return;
+
+		// pivotを中心に設定し、座標を補正
+		graphics.pivot.set(CELL_SIZE / 2, CELL_SIZE / 2);
+		graphics.x += CELL_SIZE / 2;
+		graphics.y += CELL_SIZE / 2;
+
+		await tween(
+			graphics,
+			{ scaleX: 0, scaleY: 0, alpha: 0, rotation: DEFEAT_ROTATION },
+			{ duration: DEFEAT_DURATION, easing: Easing.easeInOut },
+		);
+
+		// Graphics削除
+		this.enemiesContainer.removeChild(graphics);
+		graphics.destroy();
+		this.enemyGraphicsMap.delete(enemyId);
+		this.enemyGridPosMap.delete(enemyId);
 	}
 
 	/**
