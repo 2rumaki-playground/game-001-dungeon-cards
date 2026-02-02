@@ -3,7 +3,7 @@
  * PixiJSを使用してマップ・キャラクターを描画
  */
 
-import { Container, Graphics, Ticker } from "pixi.js";
+import { Container, Graphics, Text, Ticker } from "pixi.js";
 import { CELL_SIZE, COLORS } from "../constants";
 import type {
 	Direction,
@@ -54,6 +54,18 @@ const PLAYER_BLINK_COUNT = 3;
 /** プレイヤー被ダメージ時の1回の点滅時間（ms） */
 const PLAYER_BLINK_INTERVAL = 80;
 
+/** ダメージポップアップの色（赤） */
+const DAMAGE_POPUP_COLOR = 0xff4444;
+
+/** ダメージポップアップのフォントサイズ */
+const DAMAGE_POPUP_FONT_SIZE = 20;
+
+/** ダメージポップアップの上昇距離（px） */
+const DAMAGE_POPUP_RISE = 24;
+
+/** ダメージポップアップのアニメーション時間（ms） */
+const DAMAGE_POPUP_DURATION = 600;
+
 /**
  * タイル種別に対応する色を取得
  */
@@ -81,6 +93,8 @@ export class MapRenderer {
 	private enemiesContainer: Container;
 	private isPlayerInitialized = false;
 	private enemyGraphicsMap: Map<string, Graphics> = new Map();
+	private playerGridPos: Position = { x: 0, y: 0 };
+	private enemyGridPosMap: Map<string, Position> = new Map();
 
 	constructor() {
 		this.container = new Container();
@@ -141,6 +155,7 @@ export class MapRenderer {
 	renderPlayer(player: Player): void {
 		this.initPlayerGraphics();
 
+		this.playerGridPos = player.position;
 		const pixelPos = gridToPixel(player.position);
 		this.playerGraphics.x = pixelPos.x;
 		this.playerGraphics.y = pixelPos.y;
@@ -251,6 +266,7 @@ export class MapRenderer {
 				this.enemiesContainer.removeChild(graphics);
 				graphics.destroy();
 				this.enemyGraphicsMap.delete(id);
+				this.enemyGridPosMap.delete(id);
 			}
 		}
 
@@ -263,6 +279,7 @@ export class MapRenderer {
 				this.enemiesContainer.addChild(graphics);
 			}
 
+			this.enemyGridPosMap.set(enemy.id, enemy.position);
 			const pixelPos = gridToPixel(enemy.position);
 			graphics.x = pixelPos.x;
 			graphics.y = pixelPos.y;
@@ -343,28 +360,68 @@ export class MapRenderer {
 	}
 
 	/**
-	 * プレイヤー攻撃のヒットアニメーション
-	 * 敵タイルの白フラッシュ + 画面シェイク
-	 * @param enemyId ヒットした敵のID
+	 * ダメージ数値ポップアップアニメーション
+	 * 対象セルの中央上部に赤字で「-N」を表示し、上昇しながらフェードアウト
+	 * @param gridPos 対象のグリッド座標
+	 * @param damage ダメージ量
 	 */
-	async animateAttackHit(enemyId: string): Promise<void> {
+	async animateDamagePopup(gridPos: Position, damage: number): Promise<void> {
+		const pixelPos = gridToPixel(gridPos);
+		const text = new Text({
+			text: `-${damage}`,
+			style: {
+				fontSize: DAMAGE_POPUP_FONT_SIZE,
+				fontWeight: "bold",
+				fill: DAMAGE_POPUP_COLOR,
+			},
+		});
+
+		// セル中央上部に配置（テキストのアンカーを中央上に設定）
+		text.anchor.set(0.5, 1);
+		text.x = pixelPos.x + CELL_SIZE / 2;
+		text.y = pixelPos.y;
+
+		this.container.addChild(text);
+
+		await tween(
+			text,
+			{ y: text.y - DAMAGE_POPUP_RISE, alpha: 0 },
+			{ duration: DAMAGE_POPUP_DURATION },
+		);
+
+		this.container.removeChild(text);
+		text.destroy();
+	}
+
+	/**
+	 * プレイヤー攻撃のヒットアニメーション
+	 * 敵タイルの白フラッシュ + 画面シェイク + ダメージポップアップ
+	 * @param enemyId ヒットした敵のID
+	 * @param damage ダメージ量
+	 */
+	async animateAttackHit(enemyId: string, damage: number): Promise<void> {
 		const enemyGraphics = this.enemyGraphicsMap.get(enemyId);
 		if (!enemyGraphics) return;
+
+		const enemyGridPos = this.enemyGridPosMap.get(enemyId);
 
 		await Promise.all([
 			this.animateFlash(enemyGraphics),
 			this.animateScreenShake(),
+			...(enemyGridPos ? [this.animateDamagePopup(enemyGridPos, damage)] : []),
 		]);
 	}
 
 	/**
 	 * 敵攻撃のヒットアニメーション
-	 * フラッシュ + シェイク完了後にプレイヤー点滅
+	 * フラッシュ + シェイク + ダメージポップアップ完了後にプレイヤー点滅
+	 * @param damage ダメージ量
 	 */
-	async animateEnemyAttackHit(): Promise<void> {
+	async animateEnemyAttackHit(damage: number): Promise<void> {
 		await Promise.all([
 			this.animateFlash(this.playerGraphics),
 			this.animateScreenShake(),
+			this.animateDamagePopup(this.playerGridPos, damage),
 		]);
 		await this.animatePlayerBlink();
 	}
@@ -402,5 +459,6 @@ export class MapRenderer {
 			graphics.destroy();
 		}
 		this.enemyGraphicsMap.clear();
+		this.enemyGridPosMap.clear();
 	}
 }

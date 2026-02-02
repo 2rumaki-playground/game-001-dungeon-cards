@@ -59,6 +59,79 @@ function createTestMap() {
 	return map;
 }
 
+describe("MapRenderer ダメージポップアップ", () => {
+	it("animateDamagePopupが正常に完了する", async () => {
+		const renderer = new MapRenderer();
+		const map = createTestMap();
+		const player = {
+			position: { x: 0, y: 0 },
+			hp: 10,
+			maxHp: 10,
+			ap: 3,
+			maxAp: 3,
+		};
+		renderer.render(map, player, []);
+
+		await expect(
+			renderer.animateDamagePopup({ x: 1, y: 1 }, 1),
+		).resolves.toBeUndefined();
+	});
+
+	it("ポップアップ完了後にTextが破棄されている", async () => {
+		const renderer = new MapRenderer();
+		const map = createTestMap();
+		const player = {
+			position: { x: 0, y: 0 },
+			hp: 10,
+			maxHp: 10,
+			ap: 3,
+			maxAp: 3,
+		};
+		renderer.render(map, player, []);
+
+		const container = renderer.getContainer();
+		const childCountBefore = container.children.length;
+
+		await renderer.animateDamagePopup({ x: 2, y: 2 }, 1);
+
+		// ポップアップ完了後、子要素が増えていないこと（Textが破棄されている）
+		expect(container.children.length).toBe(childCountBefore);
+	});
+
+	it("animateAttackHitでダメージポップアップも表示される", async () => {
+		const renderer = new MapRenderer();
+		const map = createTestMap();
+		const enemies = [{ id: "e1", position: { x: 1, y: 0 }, hp: 3, maxHp: 3 }];
+		const player = {
+			position: { x: 0, y: 0 },
+			hp: 10,
+			maxHp: 10,
+			ap: 3,
+			maxAp: 3,
+		};
+		renderer.render(map, player, enemies);
+
+		// ダメージ値付きで呼び出しても正常に完了すること
+		await expect(renderer.animateAttackHit("e1", 1)).resolves.toBeUndefined();
+	});
+
+	it("animateEnemyAttackHitでダメージポップアップも表示される", async () => {
+		const renderer = new MapRenderer();
+		const map = createTestMap();
+		const player = {
+			position: { x: 0, y: 0 },
+			hp: 10,
+			maxHp: 10,
+			ap: 3,
+			maxAp: 3,
+		};
+		renderer.render(map, player, []);
+
+		// ダメージ値付きで呼び出しても正常に完了すること
+		await expect(renderer.animateEnemyAttackHit(1)).resolves.toBeUndefined();
+	});
+});
+
 describe("MapRenderer 攻撃エフェクト", () => {
 	it("animateAttackHitが正常に完了する", async () => {
 		const renderer = new MapRenderer();
@@ -74,7 +147,7 @@ describe("MapRenderer 攻撃エフェクト", () => {
 		renderer.render(map, player, enemies);
 
 		// 敵e1に対する攻撃エフェクトが正常に完了すること
-		await expect(renderer.animateAttackHit("e1")).resolves.toBeUndefined();
+		await expect(renderer.animateAttackHit("e1", 1)).resolves.toBeUndefined();
 	});
 
 	it("存在しない敵IDでanimateAttackHitを呼んでも正常に完了する", async () => {
@@ -90,7 +163,7 @@ describe("MapRenderer 攻撃エフェクト", () => {
 		renderer.render(map, player, []);
 
 		await expect(
-			renderer.animateAttackHit("nonexistent"),
+			renderer.animateAttackHit("nonexistent", 1),
 		).resolves.toBeUndefined();
 	});
 
@@ -107,7 +180,7 @@ describe("MapRenderer 攻撃エフェクト", () => {
 		renderer.render(map, player, []);
 
 		// 敵攻撃エフェクトが正常に完了すること
-		await expect(renderer.animateEnemyAttackHit()).resolves.toBeUndefined();
+		await expect(renderer.animateEnemyAttackHit(1)).resolves.toBeUndefined();
 	});
 
 	it("animateEnemyAttackHit完了後にプレイヤーのalphaが1に戻る", async () => {
@@ -122,7 +195,7 @@ describe("MapRenderer 攻撃エフェクト", () => {
 		};
 		renderer.render(map, player, []);
 
-		await renderer.animateEnemyAttackHit();
+		await renderer.animateEnemyAttackHit(1);
 
 		// コンテナ内のプレイヤーグラフィックス（3番目の子要素）のalphaが1であること
 		const container = renderer.getContainer();
@@ -147,7 +220,7 @@ describe("MapRenderer 攻撃エフェクト", () => {
 		const originalX = container.x;
 		const originalY = container.y;
 
-		await renderer.animateAttackHit("e1");
+		await renderer.animateAttackHit("e1", 1);
 
 		// シェイク完了後にコンテナ座標が元に戻ること
 		expect(container.x).toBe(originalX);

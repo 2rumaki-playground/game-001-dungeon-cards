@@ -1,8 +1,10 @@
 import { Application } from "pixi.js";
 import {
 	COLORS,
+	ENEMY_ATTACK_DAMAGE,
 	LOG_AREA_GAP,
 	LOG_AREA_WIDTH,
+	PLAYER_ATTACK_DAMAGE,
 	STATUS_BAR_HEIGHT,
 } from "./constants";
 import {
@@ -311,7 +313,7 @@ async function updateStateWithAttackAnimation(
 
 	try {
 		render();
-		await mapRenderer.animateAttackHit(hitEnemyId);
+		await mapRenderer.animateAttackHit(hitEnemyId, PLAYER_ATTACK_DAMAGE);
 	} finally {
 		isAnimating = false;
 	}
@@ -539,7 +541,9 @@ function setupEventHandlers(
 			if (playerWasAttacked) {
 				applyState(next);
 				render();
-				await mapRenderer.animateEnemyAttackHit();
+				await mapRenderer.animateEnemyAttackHit(
+					ENEMY_ATTACK_DAMAGE * attackCount,
+				);
 			}
 
 			if (next.screen !== "gameOver") {
