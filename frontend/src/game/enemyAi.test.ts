@@ -370,10 +370,11 @@ describe("executeEnemyTurn", () => {
 		// 敵2は離れている → 移動
 		const enemy2 = result.enemies.find((e) => e.id === "enemy-2");
 		expect(enemy2).toBeDefined();
+		if (!enemy2) return;
 		// プレイヤー(3,3)に近づいた
 		const originalDist = Math.abs(1 - 3) + Math.abs(1 - 3); // 4
 		const newDist =
-			Math.abs(enemy2!.position.x - 3) + Math.abs(enemy2!.position.y - 3);
+			Math.abs(enemy2.position.x - 3) + Math.abs(enemy2.position.y - 3);
 		expect(newDist).toBeLessThan(originalDist);
 	});
 
@@ -441,7 +442,8 @@ describe("executeEnemyTurn", () => {
 		// 四方が壁で囲まれた敵1(3,5)は移動できずその場に留まる
 		const enemy1 = result.enemies.find((e) => e.id === "enemy-1");
 		expect(enemy1).toBeDefined();
-		expect(enemy1!.position).toEqual({ x: 3, y: 5 });
+		if (!enemy1) return;
+		expect(enemy1.position).toEqual({ x: 3, y: 5 });
 	});
 
 	it("プレイヤーがいるマスへは移動しない（隣接時は攻撃する）", () => {

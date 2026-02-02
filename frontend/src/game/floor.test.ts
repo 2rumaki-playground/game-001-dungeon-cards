@@ -190,7 +190,7 @@ describe("transitionFloor", () => {
 		expect(storage.saveGame).toHaveBeenCalledWith(result);
 
 		// 念のため、保存された状態が期待通りか確認（例：階層が進んでいるか）
-		const savedState = (storage.saveGame as any).mock.calls[0][0] as GameState;
+		const savedState = vi.mocked(storage.saveGame).mock.calls[0][0];
 		expect(savedState.floor).toBe(6);
 	});
 });
