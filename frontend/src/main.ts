@@ -23,6 +23,7 @@ import { DIRECTION_DELTA } from "./types";
 import {
 	ActionLogRenderer,
 	DirectionSelector,
+	FloorBanner,
 	GameOverScreen,
 	getMapPixelSize,
 	HandRenderer,
@@ -80,6 +81,9 @@ let turnBanner: TurnBanner;
 
 /** 画面遷移トランジション */
 let screenTransition: ScreenTransition;
+
+/** 階層遷移バナー */
+let floorBanner: FloorBanner;
 
 /** 方向選択待ちのカード */
 let pendingCard: Card | null = null;
@@ -237,11 +241,15 @@ async function updateStateWithStairsAnimation(
 		// 1. 現在のマップ上で階段マスへ移動アニメーション
 		await mapRenderer.animatePlayerMove(stairsGridPos);
 
-		// 2. 状態を新しい階層に更新
-		applyState(newState);
+		// 2. フェードトランジション（暗転中に階層バナー表示 + 状態更新）
+		await screenTransition.fadeTransition(async () => {
+			await floorBanner.show(newState.floor);
+			applyState(newState);
+			render(true);
+			await floorBanner.hide();
+		});
 
-		// 3. 新しい階層を描画（手札なし）して手札配布アニメーション
-		render(true);
+		// 3. フェードイン後に手札配布アニメーション
 		await handRenderer.renderWithAnimation(
 			gameState.deck.hand,
 			gameState.player.ap,
@@ -370,11 +378,14 @@ function initializeUIComponents(
 	app.stage.addChild(directionContainer);
 
 	// 画面遷移トランジションを初期化（最前面に配置）
-	screenTransition = new ScreenTransition(
-		mapSize.width + LOG_AREA_GAP + actionLogRenderer.getWidth(),
-		totalHeight,
-	);
+	const totalWidth =
+		mapSize.width + LOG_AREA_GAP + actionLogRenderer.getWidth();
+	screenTransition = new ScreenTransition(totalWidth, totalHeight);
 	app.stage.addChild(screenTransition.getContainer());
+
+	// 階層遷移バナーを初期化（トランジションオーバーレイの上に配置）
+	floorBanner = new FloorBanner(totalWidth, totalHeight);
+	screenTransition.getContainer().addChild(floorBanner.getContainer());
 }
 
 /**

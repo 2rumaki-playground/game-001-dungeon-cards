@@ -5,6 +5,7 @@
 export * from "./actionLogRenderer";
 export * from "./coordinates";
 export * from "./directionSelector";
+export * from "./floorBanner";
 export * from "./gameOverScreen";
 export * from "./handRenderer";
 export * from "./mapRenderer";
