@@ -254,6 +254,45 @@ export class StatusBar {
 		}
 	}
 
+	/**
+	 * AP変化アニメーション
+	 */
+	async animateApChange(
+		fromAp: number,
+		toAp: number,
+		maxAp: number,
+	): Promise<void> {
+		if (fromAp === toAp) return;
+
+		const fromRatio = maxAp > 0 ? fromAp / maxAp : 0;
+		const toRatio = maxAp > 0 ? toAp / maxAp : 0;
+
+		const dummy: TweenTarget = {
+			x: 0,
+			y: 0,
+			alpha: 0,
+			scale: { x: 1, y: 1 },
+			rotation: 0,
+		};
+
+		await tween(
+			dummy,
+			{ alpha: 1 },
+			{
+				duration: BAR_TWEEN_DURATION,
+				easing: Easing.easeOut,
+				onUpdate: (progress) => {
+					const ratio = fromRatio + (toRatio - fromRatio) * progress;
+					this.currentApRatio = ratio;
+					this.drawApBar(ratio);
+				},
+			},
+		);
+
+		this.currentApRatio = toRatio;
+		this.drawApBar(toRatio);
+	}
+
 	private delay(ms: number): Promise<void> {
 		return new Promise((resolve) => setTimeout(resolve, ms));
 	}

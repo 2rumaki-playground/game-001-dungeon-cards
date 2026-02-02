@@ -171,4 +171,42 @@ describe("StatusBar", () => {
 			expect(statusBar.getCurrentHpRatio()).toBeCloseTo(1.0);
 		});
 	});
+
+	describe("animateApChange", () => {
+		it("アニメーション完了後にAP比率が最終値に一致する", async () => {
+			const statusBar = new StatusBar();
+			statusBar.render(
+				{ position: { x: 0, y: 0 }, hp: 10, maxHp: 10, ap: 3, maxAp: 3 },
+				1,
+			);
+
+			await statusBar.animateApChange(3, 1, 3);
+
+			expect(statusBar.getCurrentApRatio()).toBeCloseTo(1 / 3);
+		});
+
+		it("AP増加時もバーが変化する", async () => {
+			const statusBar = new StatusBar();
+			statusBar.render(
+				{ position: { x: 0, y: 0 }, hp: 10, maxHp: 10, ap: 1, maxAp: 3 },
+				1,
+			);
+
+			await statusBar.animateApChange(1, 3, 3);
+
+			expect(statusBar.getCurrentApRatio()).toBeCloseTo(1.0);
+		});
+
+		it("値が変化しない場合は即座に完了する", async () => {
+			const statusBar = new StatusBar();
+			statusBar.render(
+				{ position: { x: 0, y: 0 }, hp: 10, maxHp: 10, ap: 3, maxAp: 3 },
+				1,
+			);
+
+			await statusBar.animateApChange(3, 3, 3);
+
+			expect(statusBar.getCurrentApRatio()).toBeCloseTo(1.0);
+		});
+	});
 });
