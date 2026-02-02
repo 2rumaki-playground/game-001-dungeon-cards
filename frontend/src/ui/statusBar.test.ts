@@ -16,6 +16,10 @@ vi.mock("../utils/tween", () => ({
 			return Promise.resolve();
 		},
 	),
+	tweenValue: vi.fn((options?: { onUpdate?: (p: number) => void }) => {
+		options?.onUpdate?.(1);
+		return Promise.resolve();
+	}),
 }));
 
 describe("StatusBar", () => {
@@ -159,6 +163,32 @@ describe("StatusBar", () => {
 			vi.useRealTimers();
 		});
 
+		it("アニメーション中にHPテキストも補間更新される", async () => {
+			vi.useFakeTimers();
+			const statusBar = new StatusBar();
+			statusBar.render(
+				{ position: { x: 0, y: 0 }, hp: 10, maxHp: 10, ap: 3, maxAp: 3 },
+				1,
+			);
+
+			const promise = statusBar.animateHpChange(10, 7, 10);
+			await vi.advanceTimersByTimeAsync(1000);
+			await promise;
+
+			const container = statusBar.getContainer();
+			const texts = container.children.filter(
+				(child) =>
+					"text" in child &&
+					typeof (child as { text: unknown }).text === "string",
+			);
+			const hpText = texts.find((t) =>
+				((t as unknown as { text: string }).text as string).startsWith("HP:"),
+			) as unknown as { text: string };
+
+			expect(hpText.text).toBe("HP: 7/10");
+			vi.useRealTimers();
+		});
+
 		it("値が変化しない場合は即座に完了する", async () => {
 			const statusBar = new StatusBar();
 			statusBar.render(
@@ -195,6 +225,28 @@ describe("StatusBar", () => {
 			await statusBar.animateApChange(1, 3, 3);
 
 			expect(statusBar.getCurrentApRatio()).toBeCloseTo(1.0);
+		});
+
+		it("アニメーション中にAPテキストも補間更新される", async () => {
+			const statusBar = new StatusBar();
+			statusBar.render(
+				{ position: { x: 0, y: 0 }, hp: 10, maxHp: 10, ap: 3, maxAp: 3 },
+				1,
+			);
+
+			await statusBar.animateApChange(3, 1, 3);
+
+			const container = statusBar.getContainer();
+			const texts = container.children.filter(
+				(child) =>
+					"text" in child &&
+					typeof (child as { text: unknown }).text === "string",
+			);
+			const apText = texts.find((t) =>
+				((t as unknown as { text: string }).text as string).startsWith("AP:"),
+			) as unknown as { text: string };
+
+			expect(apText.text).toBe("AP: 1/3");
 		});
 
 		it("値が変化しない場合は即座に完了する", async () => {

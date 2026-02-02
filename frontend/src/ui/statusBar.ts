@@ -5,7 +5,7 @@
 
 import { Container, Graphics, Text } from "pixi.js";
 import type { Player } from "../types";
-import { Easing, type TweenTarget, tween } from "../utils/tween";
+import { Easing, tweenValue } from "../utils/tween";
 
 /** テキスト配置のX座標 */
 const HP_TEXT_X = 16;
@@ -215,31 +215,18 @@ export class StatusBar {
 			await this.flashHpBar();
 		}
 
-		// バー幅のtweenアニメーション
-		const dummy: TweenTarget = {
-			x: 0,
-			y: 0,
-			alpha: 0,
-			scale: { x: 1, y: 1 },
-			rotation: 0,
-		};
-
-		await tween(
-			dummy,
-			{ alpha: 1 },
-			{
-				duration: BAR_TWEEN_DURATION,
-				easing: Easing.easeOut,
-				onUpdate: (progress) => {
-					const ratio = fromRatio + (toRatio - fromRatio) * progress;
-					this.currentHpRatio = ratio;
-					this.drawHpBar(ratio);
-				},
+		// バー幅とテキストのtweenアニメーション
+		await tweenValue({
+			duration: BAR_TWEEN_DURATION,
+			easing: Easing.easeOut,
+			onUpdate: (progress) => {
+				const ratio = fromRatio + (toRatio - fromRatio) * progress;
+				const currentHp = Math.round(fromHp + (toHp - fromHp) * progress);
+				this.currentHpRatio = ratio;
+				this.hpText.text = `HP: ${currentHp}/${maxHp}`;
+				this.drawHpBar(ratio);
 			},
-		);
-
-		this.currentHpRatio = toRatio;
-		this.drawHpBar(toRatio);
+		});
 	}
 
 	/**
@@ -267,30 +254,17 @@ export class StatusBar {
 		const fromRatio = maxAp > 0 ? fromAp / maxAp : 0;
 		const toRatio = maxAp > 0 ? toAp / maxAp : 0;
 
-		const dummy: TweenTarget = {
-			x: 0,
-			y: 0,
-			alpha: 0,
-			scale: { x: 1, y: 1 },
-			rotation: 0,
-		};
-
-		await tween(
-			dummy,
-			{ alpha: 1 },
-			{
-				duration: BAR_TWEEN_DURATION,
-				easing: Easing.easeOut,
-				onUpdate: (progress) => {
-					const ratio = fromRatio + (toRatio - fromRatio) * progress;
-					this.currentApRatio = ratio;
-					this.drawApBar(ratio);
-				},
+		await tweenValue({
+			duration: BAR_TWEEN_DURATION,
+			easing: Easing.easeOut,
+			onUpdate: (progress) => {
+				const ratio = fromRatio + (toRatio - fromRatio) * progress;
+				const currentAp = Math.round(fromAp + (toAp - fromAp) * progress);
+				this.currentApRatio = ratio;
+				this.apText.text = `AP: ${currentAp}/${maxAp}`;
+				this.drawApBar(ratio);
 			},
-		);
-
-		this.currentApRatio = toRatio;
-		this.drawApBar(toRatio);
+		});
 	}
 
 	private delay(ms: number): Promise<void> {
