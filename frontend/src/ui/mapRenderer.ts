@@ -359,14 +359,14 @@ export class MapRenderer {
 
 	/**
 	 * 敵攻撃のヒットアニメーション
-	 * プレイヤーの白フラッシュ + 画面シェイク + プレイヤー点滅
+	 * フラッシュ + シェイク完了後にプレイヤー点滅
 	 */
 	async animateEnemyAttackHit(): Promise<void> {
 		await Promise.all([
 			this.animateFlash(this.playerGraphics),
 			this.animateScreenShake(),
-			this.animatePlayerBlink(),
 		]);
+		await this.animatePlayerBlink();
 	}
 
 	/**

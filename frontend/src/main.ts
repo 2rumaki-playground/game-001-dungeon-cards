@@ -6,7 +6,6 @@ import {
 	STATUS_BAR_HEIGHT,
 } from "./constants";
 import {
-	canAttack,
 	createTitleScreenState,
 	endPlayerTurn,
 	executeAttack,
@@ -409,12 +408,15 @@ function setupEventHandlers(
 				}
 				return;
 			} else if (pendingCard.type === "attack") {
-				const attackResult = canAttack(gameState, direction);
-				const next = executeAttack(gameState, pendingCard.id, direction);
+				const {
+					state: next,
+					hit,
+					enemyId,
+				} = executeAttack(gameState, pendingCard.id, direction);
 				directionSelector.hide();
 				pendingCard = null;
-				if (attackResult.hit) {
-					await updateStateWithAttackAnimation(next, attackResult.enemyId);
+				if (hit && enemyId) {
+					await updateStateWithAttackAnimation(next, enemyId);
 				} else {
 					updateState(next);
 				}
@@ -462,10 +464,13 @@ function setupEventHandlers(
 					await updateStateWithBumpAnimation(next, direction);
 				}
 			} else if (card.type === "attack") {
-				const attackResult = canAttack(gameState, direction);
-				const next = executeAttack(gameState, card.id, direction);
-				if (attackResult.hit) {
-					await updateStateWithAttackAnimation(next, attackResult.enemyId);
+				const {
+					state: next,
+					hit,
+					enemyId,
+				} = executeAttack(gameState, card.id, direction);
+				if (hit && enemyId) {
+					await updateStateWithAttackAnimation(next, enemyId);
 				} else {
 					updateState(next);
 				}
@@ -515,10 +520,10 @@ function setupEventHandlers(
 		try {
 			let next = endPlayerTurn(gameState);
 			const enemiesBefore = next.enemies;
-			const playerHpBefore = next.player.hp;
-			next = executeEnemyTurn(next);
+			const { state: enemyTurnState, attackCount } = executeEnemyTurn(next);
+			next = enemyTurnState;
 			const enemyMoves = detectEnemyMoves(enemiesBefore, next.enemies);
-			const playerWasAttacked = next.player.hp < playerHpBefore;
+			const playerWasAttacked = attackCount > 0;
 
 			// 敵移動アニメーション
 			if (enemyMoves.length > 0) {

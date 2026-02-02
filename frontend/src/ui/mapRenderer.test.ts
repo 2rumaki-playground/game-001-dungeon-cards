@@ -28,18 +28,13 @@ vi.mock("../utils/tween", () => ({
 vi.mock("pixi.js", async () => {
 	const actual = await vi.importActual<typeof import("pixi.js")>("pixi.js");
 
-	let tickerCallbacks: Array<(tick: { deltaMS: number }) => void> = [];
-
 	const MockTicker = {
 		shared: {
 			add: (fn: (tick: { deltaMS: number }) => void) => {
-				tickerCallbacks.push(fn);
 				// シェイクを即完了させるため、duration分の時間を一気に進める
 				fn({ deltaMS: 300 });
 			},
-			remove: (fn: (tick: { deltaMS: number }) => void) => {
-				tickerCallbacks = tickerCallbacks.filter((cb) => cb !== fn);
-			},
+			remove: () => {},
 		},
 	};
 

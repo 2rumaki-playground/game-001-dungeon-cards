@@ -106,6 +106,12 @@ export function pickMoveDirection(
 	return bestDirection;
 }
 
+/** 敵ターン実行結果 */
+export type EnemyTurnResult = {
+	state: GameState;
+	attackCount: number;
+};
+
 /**
  * 敵ターン全体の実行
  *
@@ -114,12 +120,13 @@ export function pickMoveDirection(
  *    - プレイヤーに隣接 → 攻撃
  *    - それ以外 → プレイヤーに近づく移動
  */
-export function executeEnemyTurn(state: GameState): GameState {
+export function executeEnemyTurn(state: GameState): EnemyTurnResult {
 	// RNGをcloneして入力stateを変更しない
 	const rng = state.rng.clone();
 	const order = rng.shuffle(state.enemies.map((_e, i) => i));
 
 	let next = { ...state, enemies: state.enemies.map((e) => ({ ...e })), rng };
+	let attackCount = 0;
 
 	for (const idx of order) {
 		// プレイヤーが死亡していたら残りの敵は行動しない
@@ -131,6 +138,7 @@ export function executeEnemyTurn(state: GameState): GameState {
 			// 攻撃
 			next = applyDamageToPlayer(next, ENEMY_ATTACK_DAMAGE);
 			next = addActionLog(next, "敵が攻撃した");
+			attackCount++;
 		} else {
 			// 移動
 			const dir = pickMoveDirection(next, enemy);
@@ -158,5 +166,5 @@ export function executeEnemyTurn(state: GameState): GameState {
 	// プレイヤー死亡判定
 	next = checkGameOver(next);
 
-	return next;
+	return { state: next, attackCount };
 }

@@ -95,7 +95,7 @@ export function executeMove(
  * - 指定方向1マス先が壁タイルではない
  * - 指定方向1マス先に敵が存在する
  */
-export function canAttack(
+function canAttack(
 	state: GameState,
 	direction: Direction,
 ): { hit: false } | { hit: true; enemyId: string } {
@@ -124,17 +124,25 @@ export function canAttack(
 	return { hit: true, enemyId: enemy.id };
 }
 
+/** 攻撃実行結果 */
+export type AttackResult = {
+	state: GameState;
+	hit: boolean;
+	enemyId?: string;
+};
+
 /**
  * 攻撃カード使用時のプレイヤー攻撃処理
  *
  * 成功/失敗に関わらずAP消費・カード使用を行う。
  * 成功時は敵にダメージ、HP0以下で敵を削除。
+ * 攻撃のヒット情報を含む結果を返す。
  */
 export function executeAttack(
 	state: GameState,
 	cardId: string,
 	direction: Direction,
-): GameState {
+): AttackResult {
 	// AP消費
 	let next = updatePlayer(state, (p) => ({
 		...p,
@@ -147,13 +155,13 @@ export function executeAttack(
 	// 攻撃判定
 	const result = canAttack(state, direction);
 	if (!result.hit) {
-		return addActionLog(next, "攻撃できなかった");
+		return { state: addActionLog(next, "攻撃できなかった"), hit: false };
 	}
 
 	// 敵にダメージ（HP0以下で自動除去）
 	next = applyDamageToEnemy(next, result.enemyId, PLAYER_ATTACK_DAMAGE);
 
-	return next;
+	return { state: next, hit: true, enemyId: result.enemyId };
 }
 
 /**
