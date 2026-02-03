@@ -3,6 +3,16 @@ import { LOG_AREA_WIDTH } from "../constants";
 import type { ActionLogEntry } from "../types";
 import { ActionLogRenderer } from "./actionLogRenderer";
 
+function getLogEntry(
+	container: { children: unknown[] },
+	index: number,
+): { text: string; visible: boolean } {
+	return container.children[2 + index] as unknown as {
+		text: string;
+		visible: boolean;
+	};
+}
+
 describe("ActionLogRenderer", () => {
 	it("getContainerでContainerを返す", () => {
 		const renderer = new ActionLogRenderer(400);
@@ -28,18 +38,9 @@ describe("ActionLogRenderer", () => {
 
 		const container = renderer.getContainer();
 		// children[0] = 背景, children[1] = タイトル, children[2]以降 = ログテキスト
-		const logText1 = container.children[2] as unknown as {
-			text: string;
-			visible: boolean;
-		};
-		const logText2 = container.children[3] as unknown as {
-			text: string;
-			visible: boolean;
-		};
-		const logText3 = container.children[4] as unknown as {
-			text: string;
-			visible: boolean;
-		};
+		const logText1 = getLogEntry(container, 0);
+		const logText2 = getLogEntry(container, 1);
+		const logText3 = getLogEntry(container, 2);
 
 		expect(logText1.text).toBe("プレイヤーが移動した");
 		expect(logText1.visible).toBe(true);
@@ -62,10 +63,7 @@ describe("ActionLogRenderer", () => {
 		const container = renderer.getContainer();
 		// 最初の15件のみ表示される
 		for (let i = 0; i < 15; i++) {
-			const logText = container.children[2 + i] as unknown as {
-				text: string;
-				visible: boolean;
-			};
+			const logText = getLogEntry(container, i);
 			expect(logText.text).toBe(`ログ${i + 1}`);
 			expect(logText.visible).toBe(true);
 		}
@@ -81,10 +79,7 @@ describe("ActionLogRenderer", () => {
 		renderer.clear();
 
 		const container = renderer.getContainer();
-		const logText1 = container.children[2] as unknown as {
-			text: string;
-			visible: boolean;
-		};
+		const logText1 = getLogEntry(container, 0);
 
 		expect(logText1.text).toBe("");
 		expect(logText1.visible).toBe(false);
