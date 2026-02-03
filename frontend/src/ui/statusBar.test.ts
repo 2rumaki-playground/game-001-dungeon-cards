@@ -4,6 +4,7 @@ import {
 	createTweenValueMock,
 	mockEasing,
 } from "../test-utils/mockTween";
+import { findTextByPrefix, getTexts } from "../test-utils/pixiTestHelper";
 import { StatusBar } from "./statusBar";
 
 vi.mock("../utils/tween", () => ({
@@ -33,25 +34,10 @@ describe("StatusBar", () => {
 		statusBar.render(player, 5);
 
 		const container = statusBar.getContainer();
-		const texts = container.children.filter(
-			(child) =>
-				"text" in child &&
-				typeof (child as { text: unknown }).text === "string",
-		);
 
-		const hpText = texts.find((t) =>
-			((t as unknown as { text: string }).text as string).startsWith("HP:"),
-		) as unknown as { text: string };
-		const apText = texts.find((t) =>
-			((t as unknown as { text: string }).text as string).startsWith("AP:"),
-		) as unknown as { text: string };
-		const floorText = texts.find((t) =>
-			((t as unknown as { text: string }).text as string).startsWith("階層:"),
-		) as unknown as { text: string };
-
-		expect(hpText.text).toBe("HP: 7/10");
-		expect(apText.text).toBe("AP: 2/3");
-		expect(floorText.text).toBe("階層: 5");
+		expect(findTextByPrefix(container, "HP:").text).toBe("HP: 7/10");
+		expect(findTextByPrefix(container, "AP:").text).toBe("AP: 2/3");
+		expect(findTextByPrefix(container, "階層:").text).toBe("階層: 5");
 	});
 
 	it("renderでHPバーが正しい比率で描画される", () => {
@@ -95,14 +81,10 @@ describe("StatusBar", () => {
 		statusBar.clear();
 
 		const container = statusBar.getContainer();
-		const texts = container.children.filter(
-			(child) =>
-				"text" in child &&
-				typeof (child as { text: unknown }).text === "string",
-		);
+		const texts = getTexts(container);
 
 		for (const t of texts) {
-			expect((t as unknown as { text: string }).text).toBe("");
+			expect(t.text).toBe("");
 		}
 
 		expect(statusBar.getCurrentHpRatio()).toBe(0);
@@ -166,16 +148,8 @@ describe("StatusBar", () => {
 			await promise;
 
 			const container = statusBar.getContainer();
-			const texts = container.children.filter(
-				(child) =>
-					"text" in child &&
-					typeof (child as { text: unknown }).text === "string",
-			);
-			const hpText = texts.find((t) =>
-				((t as unknown as { text: string }).text as string).startsWith("HP:"),
-			) as unknown as { text: string };
 
-			expect(hpText.text).toBe("HP: 7/10");
+			expect(findTextByPrefix(container, "HP:").text).toBe("HP: 7/10");
 			vi.useRealTimers();
 		});
 
@@ -227,16 +201,8 @@ describe("StatusBar", () => {
 			await statusBar.animateApChange(3, 1, 3);
 
 			const container = statusBar.getContainer();
-			const texts = container.children.filter(
-				(child) =>
-					"text" in child &&
-					typeof (child as { text: unknown }).text === "string",
-			);
-			const apText = texts.find((t) =>
-				((t as unknown as { text: string }).text as string).startsWith("AP:"),
-			) as unknown as { text: string };
 
-			expect(apText.text).toBe("AP: 1/3");
+			expect(findTextByPrefix(container, "AP:").text).toBe("AP: 1/3");
 		});
 
 		it("値が変化しない場合は即座に完了する", async () => {
