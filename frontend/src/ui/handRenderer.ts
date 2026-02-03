@@ -311,7 +311,11 @@ export class HandRenderer {
 		cardContainer.addChild(costText);
 
 		// 方向カードには方向ヒントを表示
-		if (card.type === "move" || card.type === "attack") {
+		if (
+			card.type === "move" ||
+			card.type === "attack" ||
+			card.type === "strong_attack"
+		) {
 			const arrowColor = enabled ? 0x888888 : 0x444444;
 			this.addDirectionHints(cardContainer, arrowColor);
 		}
@@ -336,7 +340,11 @@ export class HandRenderer {
 			cardContainer.on("pointerdown", (event) => {
 				this.animateCardPulse(cardContainer);
 				// 方向パラメータを持つカードの場合、クリック位置から方向を判定
-				if (card.type === "move" || card.type === "attack") {
+				if (
+					card.type === "move" ||
+					card.type === "attack" ||
+					card.type === "strong_attack"
+				) {
 					const direction = getDirectionFromClickPosition(
 						event.global.x - cardContainer.getGlobalPosition().x,
 						event.global.y - cardContainer.getGlobalPosition().y,
