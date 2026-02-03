@@ -1,0 +1,111 @@
+/**
+ * ゲーム画面の描画関数群
+ */
+
+import { LOG_AREA_GAP, STATUS_BAR_HEIGHT } from "../constants";
+import type { GameContext } from "../gameContext";
+import type { GameState } from "../types";
+import { getMapPixelSize } from "./coordinates";
+import { HAND_AREA_HEIGHT } from "./layout";
+
+/**
+ * 行動ログの差分を出力してゲーム状態を反映する
+ */
+export function applyState(ctx: GameContext, newState: GameState): void {
+	if (ctx.debugLog) {
+		const newEntries = newState.actionLog.length - ctx.state.actionLog.length;
+		for (let i = newEntries - 1; i >= 0; i--) {
+			console.log(`[行動ログ] ${newState.actionLog[i].message}`);
+		}
+	}
+	ctx.state = newState;
+}
+
+/**
+ * ゲーム状態を更新して再描画
+ */
+export function updateState(ctx: GameContext, newState: GameState): void {
+	applyState(ctx, newState);
+	render(ctx);
+}
+
+/**
+ * タイトル画面の描画
+ */
+function renderTitleScreen(ctx: GameContext): void {
+	ctx.ui.titleScreen.show();
+	ctx.ui.gameOverScreen.hide();
+	ctx.ui.statusBar.hide();
+	ctx.ui.turnEndButton.hide();
+	ctx.ui.actionLogRenderer.hide();
+	ctx.ui.mapRenderer.clear();
+	ctx.ui.handRenderer.clear();
+}
+
+/**
+ * ゲーム画面の描画
+ */
+export function renderGameScreen(
+	ctx: GameContext,
+	skipHand = false,
+	skipPlayer = false,
+	skipEnemies = false,
+): void {
+	ctx.ui.titleScreen.hide();
+	ctx.ui.gameOverScreen.hide();
+	ctx.ui.statusBar.show();
+	ctx.ui.statusBar.render(ctx.state.player, ctx.state.floor);
+	ctx.ui.mapRenderer.render(
+		ctx.state.map,
+		ctx.state.player,
+		ctx.state.enemies,
+		skipPlayer,
+		skipEnemies,
+	);
+	if (!skipHand) {
+		ctx.ui.handRenderer.render(ctx.state.deck.hand, ctx.state.player.ap);
+	}
+	ctx.ui.turnEndButton.show();
+	ctx.ui.turnEndButton.render(ctx.state.turn);
+	ctx.ui.actionLogRenderer.show();
+	ctx.ui.actionLogRenderer.render(ctx.state.actionLog);
+}
+
+/**
+ * ゲームオーバー画面の描画
+ */
+function renderGameOverScreen(ctx: GameContext): void {
+	ctx.ui.titleScreen.hide();
+	ctx.ui.statusBar.hide();
+	ctx.ui.turnEndButton.hide();
+	ctx.ui.actionLogRenderer.hide();
+	ctx.ui.mapRenderer.clear();
+	ctx.ui.handRenderer.clear();
+	const size = getMapPixelSize();
+	const width = size.width + LOG_AREA_GAP + ctx.ui.actionLogRenderer.getWidth();
+	const height = size.height + HAND_AREA_HEIGHT + STATUS_BAR_HEIGHT;
+	ctx.ui.gameOverScreen.render(ctx.state.floor, width, height);
+	ctx.ui.gameOverScreen.show();
+}
+
+/**
+ * 画面に応じた描画
+ */
+export function render(
+	ctx: GameContext,
+	skipHand = false,
+	skipPlayer = false,
+	skipEnemies = false,
+): void {
+	switch (ctx.state.screen) {
+		case "title":
+			renderTitleScreen(ctx);
+			break;
+		case "game":
+			renderGameScreen(ctx, skipHand, skipPlayer, skipEnemies);
+			break;
+		case "gameOver":
+			renderGameOverScreen(ctx);
+			break;
+	}
+}

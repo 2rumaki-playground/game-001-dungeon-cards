@@ -1,0 +1,42 @@
+/**
+ * アプリケーション全体の共有状態とUIコンポーネント参照
+ */
+
+import type { Card, GameState } from "./types";
+import type {
+	ActionLogRenderer,
+	DirectionSelector,
+	FloorBanner,
+	GameOverScreen,
+	HandRenderer,
+	MapRenderer,
+	ScreenTransition,
+	StatusBar,
+	TitleScreen,
+	TurnBanner,
+	TurnEndButton,
+} from "./ui";
+
+/** UIコンポーネント参照 */
+export interface UIComponents {
+	titleScreen: TitleScreen;
+	gameOverScreen: GameOverScreen;
+	statusBar: StatusBar;
+	mapRenderer: MapRenderer;
+	handRenderer: HandRenderer;
+	directionSelector: DirectionSelector;
+	turnEndButton: TurnEndButton;
+	actionLogRenderer: ActionLogRenderer;
+	turnBanner: TurnBanner;
+	screenTransition: ScreenTransition;
+	floorBanner: FloorBanner;
+}
+
+/** アプリケーションの共有状態 */
+export interface GameContext {
+	state: GameState;
+	isAnimating: boolean;
+	pendingCard: Card | null;
+	debugLog: boolean;
+	ui: UIComponents;
+}
