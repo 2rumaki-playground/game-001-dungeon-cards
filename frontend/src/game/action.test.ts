@@ -17,6 +17,7 @@ import type { Enemy } from "../types";
 import {
 	executeAttack,
 	executeMove,
+	executeRush,
 	executeStrongAttack,
 	executeWait,
 } from "./action";
@@ -488,6 +489,254 @@ describe("executeStrongAttack", () => {
 		executeStrongAttack(state, "strong-1", "right");
 
 		expect(state.enemies[0].hp).toBe(originalEnemyHp);
+		expect(state.player.ap).toBe(originalAp);
+		expect(state.deck.hand).toHaveLength(1);
+	});
+});
+
+describe("executeRush", () => {
+	it("2マス移動成功（床→床）: 位置2マス先・AP消費・カード捨て札移動", () => {
+		const state = createTestState({
+			player: {
+				position: { x: 3, y: 3 },
+				hp: PLAYER_INITIAL_HP,
+				maxHp: PLAYER_INITIAL_HP,
+				ap: MAX_AP,
+				maxAp: MAX_AP,
+			},
+			deck: {
+				drawPile: [],
+				hand: [{ id: "rush-1", type: "rush" }],
+				discardPile: [],
+			},
+		});
+		const {
+			state: result,
+			movedDistance,
+			floorTransitioned,
+		} = executeRush(state, "rush-1", "right");
+
+		expect(result.player.position).toEqual({ x: 5, y: 3 });
+		expect(result.player.ap).toBe(MAX_AP - CARD_COST.rush);
+		expect(result.deck.hand).toHaveLength(0);
+		expect(result.deck.discardPile).toHaveLength(1);
+		expect(result.deck.discardPile[0].id).toBe("rush-1");
+		expect(movedDistance).toBe(2);
+		expect(floorTransitioned).toBe(false);
+	});
+
+	it("1マス目で壁: 移動なし・AP消費・カード捨て札移動", () => {
+		const state = createTestState({
+			player: {
+				position: { x: 1, y: 1 },
+				hp: PLAYER_INITIAL_HP,
+				maxHp: PLAYER_INITIAL_HP,
+				ap: MAX_AP,
+				maxAp: MAX_AP,
+			},
+			deck: {
+				drawPile: [],
+				hand: [{ id: "rush-1", type: "rush" }],
+				discardPile: [],
+			},
+		});
+		const { state: result, movedDistance } = executeRush(state, "rush-1", "up");
+
+		expect(result.player.position).toEqual({ x: 1, y: 1 });
+		expect(result.player.ap).toBe(MAX_AP - CARD_COST.rush);
+		expect(result.deck.hand).toHaveLength(0);
+		expect(result.deck.discardPile).toHaveLength(1);
+		expect(movedDistance).toBe(0);
+	});
+
+	it("1マス目でマップ外: 移動なし・AP消費", () => {
+		const state = createTestState({
+			player: {
+				position: { x: 0, y: 0 },
+				hp: PLAYER_INITIAL_HP,
+				maxHp: PLAYER_INITIAL_HP,
+				ap: MAX_AP,
+				maxAp: MAX_AP,
+			},
+			deck: {
+				drawPile: [],
+				hand: [{ id: "rush-1", type: "rush" }],
+				discardPile: [],
+			},
+		});
+		const { state: result, movedDistance } = executeRush(state, "rush-1", "up");
+
+		expect(result.player.position).toEqual({ x: 0, y: 0 });
+		expect(result.player.ap).toBe(MAX_AP - CARD_COST.rush);
+		expect(movedDistance).toBe(0);
+	});
+
+	it("1マス目で敵: 移動なし・AP消費", () => {
+		const enemies: Enemy[] = [
+			{
+				id: "enemy-1",
+				position: { x: 4, y: 3 },
+				hp: ENEMY_HP,
+				maxHp: ENEMY_HP,
+			},
+		];
+		const state = createTestState({
+			enemies,
+			deck: {
+				drawPile: [],
+				hand: [{ id: "rush-1", type: "rush" }],
+				discardPile: [],
+			},
+		});
+		const { state: result, movedDistance } = executeRush(
+			state,
+			"rush-1",
+			"right",
+		);
+
+		expect(result.player.position).toEqual({ x: 3, y: 3 });
+		expect(result.player.ap).toBe(MAX_AP - CARD_COST.rush);
+		expect(movedDistance).toBe(0);
+	});
+
+	it("1マス目で階段: 階層遷移が発生する", () => {
+		const map = createTestMap();
+		map[3][4] = { type: "stairs" };
+
+		const state = createTestState({
+			map,
+			floor: 1,
+			deck: {
+				drawPile: [],
+				hand: [{ id: "rush-1", type: "rush" }],
+				discardPile: [],
+			},
+		});
+		const {
+			state: result,
+			movedDistance,
+			floorTransitioned,
+		} = executeRush(state, "rush-1", "right");
+
+		expect(result.floor).toBe(2);
+		expect(result.enemies).toHaveLength(ENEMY_COUNT);
+		expect(movedDistance).toBe(1);
+		expect(floorTransitioned).toBe(true);
+	});
+
+	it("2マス目で壁: 1マス停止・AP消費", () => {
+		const map = createTestMap();
+		map[3][5] = { type: "wall" };
+
+		const state = createTestState({
+			map,
+			player: {
+				position: { x: 3, y: 3 },
+				hp: PLAYER_INITIAL_HP,
+				maxHp: PLAYER_INITIAL_HP,
+				ap: MAX_AP,
+				maxAp: MAX_AP,
+			},
+			deck: {
+				drawPile: [],
+				hand: [{ id: "rush-1", type: "rush" }],
+				discardPile: [],
+			},
+		});
+		const { state: result, movedDistance } = executeRush(
+			state,
+			"rush-1",
+			"right",
+		);
+
+		expect(result.player.position).toEqual({ x: 4, y: 3 });
+		expect(result.player.ap).toBe(MAX_AP - CARD_COST.rush);
+		expect(movedDistance).toBe(1);
+	});
+
+	it("2マス目で敵: 1マス停止・AP消費", () => {
+		const enemies: Enemy[] = [
+			{
+				id: "enemy-1",
+				position: { x: 5, y: 3 },
+				hp: ENEMY_HP,
+				maxHp: ENEMY_HP,
+			},
+		];
+		const state = createTestState({
+			enemies,
+			player: {
+				position: { x: 3, y: 3 },
+				hp: PLAYER_INITIAL_HP,
+				maxHp: PLAYER_INITIAL_HP,
+				ap: MAX_AP,
+				maxAp: MAX_AP,
+			},
+			deck: {
+				drawPile: [],
+				hand: [{ id: "rush-1", type: "rush" }],
+				discardPile: [],
+			},
+		});
+		const { state: result, movedDistance } = executeRush(
+			state,
+			"rush-1",
+			"right",
+		);
+
+		expect(result.player.position).toEqual({ x: 4, y: 3 });
+		expect(result.player.ap).toBe(MAX_AP - CARD_COST.rush);
+		expect(movedDistance).toBe(1);
+	});
+
+	it("2マス目で階段: 階層遷移が発生する", () => {
+		const map = createTestMap();
+		map[3][5] = { type: "stairs" };
+
+		const state = createTestState({
+			map,
+			floor: 1,
+			player: {
+				position: { x: 3, y: 3 },
+				hp: PLAYER_INITIAL_HP,
+				maxHp: PLAYER_INITIAL_HP,
+				ap: MAX_AP,
+				maxAp: MAX_AP,
+			},
+			deck: {
+				drawPile: [],
+				hand: [{ id: "rush-1", type: "rush" }],
+				discardPile: [],
+			},
+		});
+		const {
+			state: result,
+			movedDistance,
+			floorTransitioned,
+			intermediatePosition,
+		} = executeRush(state, "rush-1", "right");
+
+		expect(result.floor).toBe(2);
+		expect(result.enemies).toHaveLength(ENEMY_COUNT);
+		expect(movedDistance).toBe(2);
+		expect(floorTransitioned).toBe(true);
+		expect(intermediatePosition).toEqual({ x: 4, y: 3 });
+	});
+
+	it("元のGameStateが変更されない（イミュータブル）", () => {
+		const state = createTestState({
+			deck: {
+				drawPile: [],
+				hand: [{ id: "rush-1", type: "rush" }],
+				discardPile: [],
+			},
+		});
+		const originalPosition = { ...state.player.position };
+		const originalAp = state.player.ap;
+
+		executeRush(state, "rush-1", "right");
+
+		expect(state.player.position).toEqual(originalPosition);
 		expect(state.player.ap).toBe(originalAp);
 		expect(state.deck.hand).toHaveLength(1);
 	});

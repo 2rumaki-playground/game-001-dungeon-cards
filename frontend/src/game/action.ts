@@ -198,6 +198,103 @@ export function executeStrongAttack(
 	return { state: next, hit: true, enemyId: result.enemyId };
 }
 
+/** 突進実行結果 */
+export type RushResult = {
+	state: GameState;
+	/** 移動したマス数（0, 1, 2） */
+	movedDistance: number;
+	/** 階段による階層遷移が発生したか */
+	floorTransitioned: boolean;
+	/** 階層遷移前に移動した位置（アニメーション用） */
+	intermediatePosition?: { x: number; y: number };
+};
+
+/**
+ * 突進カード使用時のプレイヤー移動処理
+ *
+ * 成功/失敗に関わらずAP消費・カード使用を行う。
+ * 最大2マスまで指定方向に移動を試みる。
+ * - 1マス目で壁/マップ外/敵がある場合: 移動なし
+ * - 1マス目で階段: 階層遷移
+ * - 2マス目で壁/敵がある場合: 1マス停止
+ * - 2マス目で階段: 1マス移動後に階層遷移
+ */
+export function executeRush(
+	state: GameState,
+	cardId: string,
+	direction: Direction,
+): RushResult {
+	const delta = DIRECTION_DELTA[direction];
+
+	// AP消費
+	let next = updatePlayer(state, (p) => ({
+		...p,
+		ap: p.ap - CARD_COST.rush,
+	}));
+
+	// カードを捨て札へ
+	next = setDeck(next, playCard(next.deck, cardId));
+
+	// 1マス目移動判定
+	if (!canMove(state, direction)) {
+		return {
+			state: addActionLog(next, "突進できなかった"),
+			movedDistance: 0,
+			floorTransitioned: false,
+		};
+	}
+
+	// 1マス目位置更新
+	const pos1x = state.player.position.x + delta.x;
+	const pos1y = state.player.position.y + delta.y;
+	next = updatePlayer(next, (p) => ({
+		...p,
+		position: { x: pos1x, y: pos1y },
+	}));
+
+	// 1マス目階段判定
+	if (state.map[pos1y][pos1x].type === "stairs") {
+		return {
+			state: transitionFloor(next),
+			movedDistance: 1,
+			floorTransitioned: true,
+		};
+	}
+
+	// 2マス目移動判定（位置更新済みのnextを使う）
+	if (!canMove(next, direction)) {
+		return {
+			state: addActionLog(next, "突進した"),
+			movedDistance: 1,
+			floorTransitioned: false,
+		};
+	}
+
+	// 2マス目位置更新
+	const pos2x = pos1x + delta.x;
+	const pos2y = pos1y + delta.y;
+	next = updatePlayer(next, (p) => ({
+		...p,
+		position: { x: pos2x, y: pos2y },
+	}));
+
+	// 2マス目階段判定
+	if (next.map[pos2y][pos2x].type === "stairs") {
+		return {
+			state: transitionFloor(next),
+			movedDistance: 2,
+			floorTransitioned: true,
+			intermediatePosition: { x: pos1x, y: pos1y },
+		};
+	}
+
+	return {
+		state: addActionLog(next, "突進した"),
+		movedDistance: 2,
+		floorTransitioned: false,
+	};
+}
+
 /**
  * 待機カード使用時の処理
  *
