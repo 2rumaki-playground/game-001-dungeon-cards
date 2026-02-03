@@ -18,7 +18,8 @@ import {
 	startNewGame,
 	startPlayerTurn,
 } from "./game";
-import type { Card, Direction, GameState, Position } from "./types";
+import type { GameContext, UIComponents } from "./gameContext";
+import type { Direction, GameState, Position } from "./types";
 import { DIRECTION_DELTA } from "./types";
 import {
 	ActionLogRenderer,
@@ -35,77 +36,29 @@ import {
 	TurnEndButton,
 } from "./ui";
 import { detectEnemyMoves } from "./ui/enemyMoveDetector";
+import {
+	BUTTON_BOTTOM_MARGIN,
+	BUTTON_HEIGHT,
+	HAND_AREA_HEIGHT,
+	HAND_AREA_TOP_PADDING,
+} from "./ui/layout";
 import { deleteSaveData, hasSaveData, loadGame } from "./utils/storage";
 
-/** 手札エリアの高さ */
-const HAND_AREA_HEIGHT = 200;
-
-/** 手札エリア上部のパディング */
-const HAND_AREA_TOP_PADDING = 20;
-
-/** ターン終了ボタンの高さ */
-const BUTTON_HEIGHT = 36;
-
-/** ターン終了ボタン下部のマージン */
-const BUTTON_BOTTOM_MARGIN = 12;
-
-/** 現在のゲーム状態 */
-let gameState: GameState;
-
-/** タイトル画面 */
-let titleScreen: TitleScreen;
-
-/** ゲームオーバー画面 */
-let gameOverScreen: GameOverScreen;
-
-/** ステータスバー */
-let statusBar: StatusBar;
-
-/** マップレンダラー */
-let mapRenderer: MapRenderer;
-
-/** 手札レンダラー */
-let handRenderer: HandRenderer;
-
-/** 方向選択UI */
-let directionSelector: DirectionSelector;
-
-/** ターン終了ボタン */
-let turnEndButton: TurnEndButton;
-
-/** 行動ログレンダラー */
-let actionLogRenderer: ActionLogRenderer;
-
-/** ターンバナー */
-let turnBanner: TurnBanner;
-
-/** 画面遷移トランジション */
-let screenTransition: ScreenTransition;
-
-/** 階層遷移バナー */
-let floorBanner: FloorBanner;
-
-/** 方向選択待ちのカード */
-let pendingCard: Card | null = null;
-
-/** アニメーション中フラグ（UI操作を無効化） */
-let isAnimating = false;
-
-/** デバッグログの有効/無効（コンソールから切替可能） */
-let debugLog = import.meta.env.DEV;
+/** アプリケーションコンテキスト */
+let ctx: GameContext;
 
 /**
  * 行動ログの差分を出力してゲーム状態を反映する
  * @param newState 新しいゲーム状態
  */
 function applyState(newState: GameState): void {
-	if (debugLog) {
-		const newEntries = newState.actionLog.length - gameState.actionLog.length;
+	if (ctx.debugLog) {
+		const newEntries = newState.actionLog.length - ctx.state.actionLog.length;
 		for (let i = newEntries - 1; i >= 0; i--) {
 			console.log(`[行動ログ] ${newState.actionLog[i].message}`);
 		}
 	}
-	gameState = newState;
+	ctx.state = newState;
 }
 
 /**
@@ -120,13 +73,13 @@ function updateState(newState: GameState): void {
  * タイトル画面の描画
  */
 function renderTitleScreen(): void {
-	titleScreen.show();
-	gameOverScreen.hide();
-	statusBar.hide();
-	turnEndButton.hide();
-	actionLogRenderer.hide();
-	mapRenderer.clear();
-	handRenderer.clear();
+	ctx.ui.titleScreen.show();
+	ctx.ui.gameOverScreen.hide();
+	ctx.ui.statusBar.hide();
+	ctx.ui.turnEndButton.hide();
+	ctx.ui.actionLogRenderer.hide();
+	ctx.ui.mapRenderer.clear();
+	ctx.ui.handRenderer.clear();
 }
 
 /**
@@ -140,41 +93,41 @@ function renderGameScreen(
 	skipPlayer = false,
 	skipEnemies = false,
 ): void {
-	titleScreen.hide();
-	gameOverScreen.hide();
-	statusBar.show();
-	statusBar.render(gameState.player, gameState.floor);
-	mapRenderer.render(
-		gameState.map,
-		gameState.player,
-		gameState.enemies,
+	ctx.ui.titleScreen.hide();
+	ctx.ui.gameOverScreen.hide();
+	ctx.ui.statusBar.show();
+	ctx.ui.statusBar.render(ctx.state.player, ctx.state.floor);
+	ctx.ui.mapRenderer.render(
+		ctx.state.map,
+		ctx.state.player,
+		ctx.state.enemies,
 		skipPlayer,
 		skipEnemies,
 	);
 	if (!skipHand) {
-		handRenderer.render(gameState.deck.hand, gameState.player.ap);
+		ctx.ui.handRenderer.render(ctx.state.deck.hand, ctx.state.player.ap);
 	}
-	turnEndButton.show();
-	turnEndButton.render(gameState.turn);
-	actionLogRenderer.show();
-	actionLogRenderer.render(gameState.actionLog);
+	ctx.ui.turnEndButton.show();
+	ctx.ui.turnEndButton.render(ctx.state.turn);
+	ctx.ui.actionLogRenderer.show();
+	ctx.ui.actionLogRenderer.render(ctx.state.actionLog);
 }
 
 /**
  * ゲームオーバー画面の描画
  */
 function renderGameOverScreen(): void {
-	titleScreen.hide();
-	statusBar.hide();
-	turnEndButton.hide();
-	actionLogRenderer.hide();
-	mapRenderer.clear();
-	handRenderer.clear();
+	ctx.ui.titleScreen.hide();
+	ctx.ui.statusBar.hide();
+	ctx.ui.turnEndButton.hide();
+	ctx.ui.actionLogRenderer.hide();
+	ctx.ui.mapRenderer.clear();
+	ctx.ui.handRenderer.clear();
 	const size = getMapPixelSize();
-	const width = size.width + LOG_AREA_GAP + actionLogRenderer.getWidth();
+	const width = size.width + LOG_AREA_GAP + ctx.ui.actionLogRenderer.getWidth();
 	const height = size.height + HAND_AREA_HEIGHT + STATUS_BAR_HEIGHT;
-	gameOverScreen.render(gameState.floor, width, height);
-	gameOverScreen.show();
+	ctx.ui.gameOverScreen.render(ctx.state.floor, width, height);
+	ctx.ui.gameOverScreen.show();
 }
 
 /**
@@ -188,7 +141,7 @@ function render(
 	skipPlayer = false,
 	skipEnemies = false,
 ): void {
-	switch (gameState.screen) {
+	switch (ctx.state.screen) {
 		case "title":
 			renderTitleScreen();
 			break;
@@ -210,10 +163,10 @@ async function updateStateWithMoveAnimation(
 	newState: GameState,
 	targetGridPos: Position,
 ): Promise<void> {
-	if (isAnimating) return;
-	isAnimating = true;
+	if (ctx.isAnimating) return;
+	ctx.isAnimating = true;
 
-	const prevAp = gameState.player.ap;
+	const prevAp = ctx.state.player.ap;
 	applyState(newState);
 
 	try {
@@ -222,11 +175,11 @@ async function updateStateWithMoveAnimation(
 
 		// プレイヤー移動アニメーション（AP変化があればバーアニメーションも並列実行）
 		const animations: Promise<void>[] = [
-			mapRenderer.animatePlayerMove(targetGridPos),
+			ctx.ui.mapRenderer.animatePlayerMove(targetGridPos),
 		];
 		if (prevAp !== newState.player.ap) {
 			animations.push(
-				statusBar.animateApChange(
+				ctx.ui.statusBar.animateApChange(
 					prevAp,
 					newState.player.ap,
 					newState.player.maxAp,
@@ -235,7 +188,7 @@ async function updateStateWithMoveAnimation(
 		}
 		await Promise.all(animations);
 	} finally {
-		isAnimating = false;
+		ctx.isAnimating = false;
 	}
 }
 
@@ -248,29 +201,29 @@ async function updateStateWithStairsAnimation(
 	newState: GameState,
 	stairsGridPos: Position,
 ): Promise<void> {
-	if (isAnimating) return;
-	isAnimating = true;
+	if (ctx.isAnimating) return;
+	ctx.isAnimating = true;
 
 	try {
 		// 1. 現在のマップ上で階段マスへ移動アニメーション
-		await mapRenderer.animatePlayerMove(stairsGridPos);
+		await ctx.ui.mapRenderer.animatePlayerMove(stairsGridPos);
 
 		// 2. フェードトランジション（暗転中に階層バナー表示 + 状態更新）
-		await screenTransition.fadeTransition(async () => {
-			await floorBanner.show(newState.floor);
+		await ctx.ui.screenTransition.fadeTransition(async () => {
+			await ctx.ui.floorBanner.show(newState.floor);
 			applyState(newState);
 			render(true);
-			await floorBanner.hide();
+			await ctx.ui.floorBanner.hide();
 		});
 
 		// 3. フェードイン後に手札配布アニメーション
-		await handRenderer.renderWithAnimation(
-			gameState.deck.hand,
-			gameState.player.ap,
+		await ctx.ui.handRenderer.renderWithAnimation(
+			ctx.state.deck.hand,
+			ctx.state.player.ap,
 			newState.deck.hand.length,
 		);
 	} finally {
-		isAnimating = false;
+		ctx.isAnimating = false;
 	}
 }
 
@@ -283,21 +236,21 @@ async function updateStateWithBumpAnimation(
 	newState: GameState,
 	direction: Direction,
 ): Promise<void> {
-	if (isAnimating) return;
-	isAnimating = true;
+	if (ctx.isAnimating) return;
+	ctx.isAnimating = true;
 
-	const prevAp = gameState.player.ap;
+	const prevAp = ctx.state.player.ap;
 	applyState(newState);
 
 	try {
 		render(false, true);
 
 		const animations: Promise<void>[] = [
-			mapRenderer.animatePlayerBump(direction),
+			ctx.ui.mapRenderer.animatePlayerBump(direction),
 		];
 		if (prevAp !== newState.player.ap) {
 			animations.push(
-				statusBar.animateApChange(
+				ctx.ui.statusBar.animateApChange(
 					prevAp,
 					newState.player.ap,
 					newState.player.maxAp,
@@ -306,7 +259,7 @@ async function updateStateWithBumpAnimation(
 		}
 		await Promise.all(animations);
 	} finally {
-		isAnimating = false;
+		ctx.isAnimating = false;
 	}
 }
 
@@ -319,10 +272,10 @@ async function updateStateWithAttackAnimation(
 	newState: GameState,
 	hitEnemyId: string,
 ): Promise<void> {
-	if (isAnimating) return;
-	isAnimating = true;
+	if (ctx.isAnimating) return;
+	ctx.isAnimating = true;
 
-	const prevAp = gameState.player.ap;
+	const prevAp = ctx.state.player.ap;
 	const defeated = !newState.enemies.some((e) => e.id === hitEnemyId);
 	applyState(newState);
 
@@ -332,11 +285,11 @@ async function updateStateWithAttackAnimation(
 
 		// ヒットエフェクト（AP変化があればバーアニメーションも並列実行）
 		const hitAnimations: Promise<void>[] = [
-			mapRenderer.animateAttackHit(hitEnemyId, PLAYER_ATTACK_DAMAGE),
+			ctx.ui.mapRenderer.animateAttackHit(hitEnemyId, PLAYER_ATTACK_DAMAGE),
 		];
 		if (prevAp !== newState.player.ap) {
 			hitAnimations.push(
-				statusBar.animateApChange(
+				ctx.ui.statusBar.animateApChange(
 					prevAp,
 					newState.player.ap,
 					newState.player.maxAp,
@@ -347,12 +300,12 @@ async function updateStateWithAttackAnimation(
 
 		// 撃破演出
 		if (defeated) {
-			await mapRenderer.animateEnemyDefeat(hitEnemyId);
+			await ctx.ui.mapRenderer.animateEnemyDefeat(hitEnemyId);
 			// 撃破後、敵描画を反映
 			render();
 		}
 	} finally {
-		isAnimating = false;
+		ctx.isAnimating = false;
 	}
 }
 
@@ -363,70 +316,73 @@ function initializeUIComponents(
 	app: Application,
 	mapSize: { width: number; height: number },
 	totalHeight: number,
-): void {
-	// タイトル画面を初期化
-	titleScreen = new TitleScreen();
+): UIComponents {
+	const titleScreen = new TitleScreen();
 	app.stage.addChild(titleScreen.getContainer());
 
-	// ゲームオーバー画面を初期化
-	gameOverScreen = new GameOverScreen();
+	const gameOverScreen = new GameOverScreen();
 	app.stage.addChild(gameOverScreen.getContainer());
 
-	// ステータスバーを初期化
-	statusBar = new StatusBar();
+	const statusBar = new StatusBar();
 	app.stage.addChild(statusBar.getContainer());
 
-	// マップレンダラーを初期化
-	mapRenderer = new MapRenderer();
+	const mapRenderer = new MapRenderer();
 	const mapContainer = mapRenderer.getContainer();
 	mapContainer.y = STATUS_BAR_HEIGHT;
 	app.stage.addChild(mapContainer);
 
-	// 手札レンダラーを初期化
-	handRenderer = new HandRenderer();
+	const handRenderer = new HandRenderer();
 	const handContainer = handRenderer.getContainer();
 	handContainer.x = mapSize.width / 2;
 	handContainer.y = STATUS_BAR_HEIGHT + mapSize.height + HAND_AREA_TOP_PADDING;
 	app.stage.addChild(handContainer);
 
-	// ターン終了ボタンを初期化
-	turnEndButton = new TurnEndButton();
+	const turnEndButton = new TurnEndButton();
 	const turnEndContainer = turnEndButton.getContainer();
 	turnEndContainer.x = mapSize.width - 136;
 	turnEndContainer.y = totalHeight - BUTTON_HEIGHT - BUTTON_BOTTOM_MARGIN;
 	app.stage.addChild(turnEndContainer);
 
-	// 行動ログレンダラーを初期化
-	actionLogRenderer = new ActionLogRenderer(totalHeight);
+	const actionLogRenderer = new ActionLogRenderer(totalHeight);
 	const logContainer = actionLogRenderer.getContainer();
 	logContainer.x = mapSize.width + LOG_AREA_GAP;
 	logContainer.y = 0;
 	app.stage.addChild(logContainer);
 
-	// ターンバナーを初期化（最前面に表示）
-	turnBanner = new TurnBanner(
+	const turnBanner = new TurnBanner(
 		mapSize.width + LOG_AREA_GAP + actionLogRenderer.getWidth(),
 		totalHeight,
 	);
 	app.stage.addChild(turnBanner.getContainer());
 
-	// 方向選択UIを初期化
-	directionSelector = new DirectionSelector();
+	const directionSelector = new DirectionSelector();
 	const directionContainer = directionSelector.getContainer();
 	directionContainer.x = mapSize.width / 2;
 	directionContainer.y =
 		STATUS_BAR_HEIGHT + mapSize.height + HAND_AREA_TOP_PADDING;
 	app.stage.addChild(directionContainer);
 
-	// 画面遷移トランジションを初期化（最前面に配置）
 	const totalWidth =
 		mapSize.width + LOG_AREA_GAP + actionLogRenderer.getWidth();
-	screenTransition = new ScreenTransition(totalWidth, totalHeight);
+	const screenTransition = new ScreenTransition(totalWidth, totalHeight);
 	app.stage.addChild(screenTransition.getContainer());
 
-	// 階層遷移バナーを初期化（トランジションオーバーレイの上に配置）
-	floorBanner = new FloorBanner(totalWidth, totalHeight);
+	const floorBanner = new FloorBanner(totalWidth, totalHeight);
 	screenTransition.getContainer().addChild(floorBanner.getContainer());
+
+	return {
+		titleScreen,
+		gameOverScreen,
+		statusBar,
+		mapRenderer,
+		handRenderer,
+		directionSelector,
+		turnEndButton,
+		actionLogRenderer,
+		turnBanner,
+		screenTransition,
+		floorBanner,
+	};
 }
 
 /**
@@ -436,14 +392,14 @@ async function handleMoveCardExecution(
 	cardId: string,
 	direction: Direction,
 ): Promise<void> {
-	const prevPosition = gameState.player.position;
-	const prevFloor = gameState.floor;
-	const next = executeMove(gameState, cardId, direction);
+	const prevPosition = ctx.state.player.position;
+	const prevFloor = ctx.state.floor;
+	const next = executeMove(ctx.state, cardId, direction);
 	const moved =
 		next.player.position.x !== prevPosition.x ||
 		next.player.position.y !== prevPosition.y;
-	directionSelector.hide();
-	pendingCard = null;
+	ctx.ui.directionSelector.hide();
+	ctx.pendingCard = null;
 	if (next.floor !== prevFloor) {
 		const stairsPos = {
 			x: prevPosition.x + DIRECTION_DELTA[direction].x,
@@ -468,9 +424,9 @@ async function handleAttackCardExecution(
 		state: next,
 		hit,
 		enemyId,
-	} = executeAttack(gameState, cardId, direction);
-	directionSelector.hide();
-	pendingCard = null;
+	} = executeAttack(ctx.state, cardId, direction);
+	ctx.ui.directionSelector.hide();
+	ctx.pendingCard = null;
 	if (hit && enemyId) {
 		await updateStateWithAttackAnimation(next, enemyId);
 	} else {
@@ -486,34 +442,34 @@ function setupEventHandlers(
 	totalHeight: number,
 ): void {
 	// 方向選択UIのコールバック設定
-	directionSelector.setOnDirectionSelect(async (direction) => {
-		if (isAnimating) return; // アニメーション中は無効
-		if (pendingCard) {
-			if (pendingCard.type === "move") {
-				await handleMoveCardExecution(pendingCard.id, direction);
+	ctx.ui.directionSelector.setOnDirectionSelect(async (direction) => {
+		if (ctx.isAnimating) return; // アニメーション中は無効
+		if (ctx.pendingCard) {
+			if (ctx.pendingCard.type === "move") {
+				await handleMoveCardExecution(ctx.pendingCard.id, direction);
 				return;
 			}
-			if (pendingCard.type === "attack") {
-				await handleAttackCardExecution(pendingCard.id, direction);
+			if (ctx.pendingCard.type === "attack") {
+				await handleAttackCardExecution(ctx.pendingCard.id, direction);
 				return;
 			}
 		}
-		directionSelector.hide();
-		pendingCard = null;
+		ctx.ui.directionSelector.hide();
+		ctx.pendingCard = null;
 	});
 
-	directionSelector.setOnCancel(() => {
-		if (isAnimating) return; // アニメーション中は無効
-		directionSelector.hide();
-		pendingCard = null;
+	ctx.ui.directionSelector.setOnCancel(() => {
+		if (ctx.isAnimating) return; // アニメーション中は無効
+		ctx.ui.directionSelector.hide();
+		ctx.pendingCard = null;
 	});
 
 	// 手札選択のコールバック設定
 	// 方向パラメータを持つカードはクリック位置で方向が決まる
-	handRenderer.setOnCardSelect(async (card, direction) => {
-		if (isAnimating) return; // アニメーション中は無効
+	ctx.ui.handRenderer.setOnCardSelect(async (card, direction) => {
+		if (ctx.isAnimating) return; // アニメーション中は無効
 		if (card.type === "wait") {
-			updateState(executeWait(gameState, card.id));
+			updateState(executeWait(ctx.state, card.id));
 		} else if (direction) {
 			// 方向が指定されている場合は即座に実行
 			if (card.type === "move") {
@@ -523,79 +479,79 @@ function setupEventHandlers(
 			}
 		} else {
 			// 方向が指定されていない場合は方向選択UIを表示（フォールバック）
-			pendingCard = card;
-			directionSelector.show();
+			ctx.pendingCard = card;
+			ctx.ui.directionSelector.show();
 		}
 	});
 
 	// タイトル画面のコールバック設定
-	titleScreen.setOnNewGame(async () => {
-		if (isAnimating) return;
-		isAnimating = true;
+	ctx.ui.titleScreen.setOnNewGame(async () => {
+		if (ctx.isAnimating) return;
+		ctx.isAnimating = true;
 		try {
-			const newState = startNewGame(gameState);
-			await screenTransition.fadeTransition(() => {
+			const newState = startNewGame(ctx.state);
+			await ctx.ui.screenTransition.fadeTransition(() => {
 				applyState(newState);
 				// 手札はフェードイン後に配布アニメーションで表示するためスキップ
 				render(true);
 			});
 			// フェードイン後に手札配布アニメーション
-			await handRenderer.renderWithAnimation(
-				gameState.deck.hand,
-				gameState.player.ap,
+			await ctx.ui.handRenderer.renderWithAnimation(
+				ctx.state.deck.hand,
+				ctx.state.player.ap,
 				newState.deck.hand.length,
 			);
 		} finally {
-			isAnimating = false;
+			ctx.isAnimating = false;
 		}
 	});
 
-	titleScreen.setOnContinue(async () => {
-		if (isAnimating) return;
+	ctx.ui.titleScreen.setOnContinue(async () => {
+		if (ctx.isAnimating) return;
 		const savedState = loadGame();
 		if (savedState) {
-			isAnimating = true;
+			ctx.isAnimating = true;
 			try {
-				await screenTransition.fadeTransition(() => {
+				await ctx.ui.screenTransition.fadeTransition(() => {
 					updateState(savedState);
 				});
 			} finally {
-				isAnimating = false;
+				ctx.isAnimating = false;
 			}
 		} else {
 			alert("セーブデータの読み込みに失敗しました。");
 			const totalWidth =
-				mapSize.width + LOG_AREA_GAP + actionLogRenderer.getWidth();
-			titleScreen.render(totalWidth, totalHeight, hasSaveData());
+				mapSize.width + LOG_AREA_GAP + ctx.ui.actionLogRenderer.getWidth();
+			ctx.ui.titleScreen.render(totalWidth, totalHeight, hasSaveData());
 		}
 	});
 
 	// ゲームオーバー画面のコールバック設定
-	gameOverScreen.setOnReturnToTitle(async () => {
-		if (isAnimating) return;
-		isAnimating = true;
+	ctx.ui.gameOverScreen.setOnReturnToTitle(async () => {
+		if (ctx.isAnimating) return;
+		ctx.isAnimating = true;
 		try {
-			await screenTransition.fadeTransition(() => {
-				updateState(returnToTitle(gameState));
+			await ctx.ui.screenTransition.fadeTransition(() => {
+				updateState(returnToTitle(ctx.state));
 				const totalWidth =
-					mapSize.width + LOG_AREA_GAP + actionLogRenderer.getWidth();
-				titleScreen.render(totalWidth, totalHeight, hasSaveData());
+					mapSize.width + LOG_AREA_GAP + ctx.ui.actionLogRenderer.getWidth();
+				ctx.ui.titleScreen.render(totalWidth, totalHeight, hasSaveData());
 			});
 		} finally {
-			isAnimating = false;
+			ctx.isAnimating = false;
 		}
 	});
 
 	// ターン終了ボタンのコールバック設定
-	turnEndButton.setOnEndTurn(async () => {
-		if (isAnimating) return; // アニメーション中は無効
-		isAnimating = true;
+	ctx.ui.turnEndButton.setOnEndTurn(async () => {
+		if (ctx.isAnimating) return; // アニメーション中は無効
+		ctx.isAnimating = true;
 
 		try {
-			let next = endPlayerTurn(gameState);
+			let next = endPlayerTurn(ctx.state);
 
 			// 敵ターンバナー表示
-			await turnBanner.showBanner("enemy");
+			await ctx.ui.turnBanner.showBanner("enemy");
 
 			const enemiesBefore = next.enemies;
 			const { state: enemyTurnState, attackCount } = executeEnemyTurn(next);
@@ -609,19 +565,25 @@ function setupEventHandlers(
 					applyState(next);
 					render(true, false, true); // 手札・敵スキップ
 				}
-				mapRenderer.renderEnemies(next.enemies);
-				await mapRenderer.animateEnemyMoves(enemyMoves);
+				ctx.ui.mapRenderer.renderEnemies(next.enemies);
+				await ctx.ui.mapRenderer.animateEnemyMoves(enemyMoves);
 			}
 
 			// 敵攻撃アニメーション
 			if (playerWasAttacked) {
-				const prevHp = gameState.player.hp;
+				const prevHp = ctx.state.player.hp;
 				applyState(next);
 				// ゲームオーバー時も攻撃演出中はゲーム画面を維持（暗転後に切り替え）
 				renderGameScreen();
 				await Promise.all([
-					mapRenderer.animateEnemyAttackHit(ENEMY_ATTACK_DAMAGE * attackCount),
-					statusBar.animateHpChange(prevHp, next.player.hp, next.player.maxHp),
+					ctx.ui.mapRenderer.animateEnemyAttackHit(
+						ENEMY_ATTACK_DAMAGE * attackCount,
+					),
+					ctx.ui.statusBar.animateHpChange(
+						prevHp,
+						next.player.hp,
+						next.player.maxHp,
+					),
 				]);
 			}
 
@@ -629,23 +591,23 @@ function setupEventHandlers(
 				next = startPlayerTurn(next);
 
 				// プレイヤーターンバナー表示
-				await turnBanner.showBanner("player");
+				await ctx.ui.turnBanner.showBanner("player");
 
 				applyState(next);
 				render(true);
-				await handRenderer.renderWithAnimation(
-					gameState.deck.hand,
-					gameState.player.ap,
+				await ctx.ui.handRenderer.renderWithAnimation(
+					ctx.state.deck.hand,
+					ctx.state.player.ap,
 					next.deck.hand.length,
 				);
 			} else {
 				deleteSaveData();
-				await screenTransition.fadeTransition(() => {
+				await ctx.ui.screenTransition.fadeTransition(() => {
 					updateState(next);
 				});
 			}
 		} finally {
-			isAnimating = false;
+			ctx.isAnimating = false;
 		}
 	});
 }
@@ -659,12 +621,12 @@ function setupDebugGlobals(): void {
 		updateState: typeof updateState;
 		debugLog: boolean;
 	};
-	debugWindow.gameState = gameState;
+	debugWindow.gameState = ctx.state;
 	debugWindow.updateState = updateState;
 	Object.defineProperty(debugWindow, "debugLog", {
-		get: () => debugLog,
+		get: () => ctx.debugLog,
 		set: (v: boolean) => {
-			debugLog = v;
+			ctx.debugLog = v;
 		},
 	});
 }
@@ -682,17 +644,22 @@ async function main() {
 
 	document.body.appendChild(app.canvas);
 
-	// UIコンポーネントの初期化
-	initializeUIComponents(app, mapSize, totalHeight);
+	// コンテキスト初期化
+	ctx = {
+		state: createTitleScreenState(),
+		isAnimating: false,
+		pendingCard: null,
+		debugLog: import.meta.env.DEV,
+		ui: initializeUIComponents(app, mapSize, totalHeight),
+	};
 
 	// イベントハンドラの設定
 	setupEventHandlers(mapSize, totalHeight);
 
-	// タイトル画面状態で初期化
-	gameState = createTitleScreenState();
+	// タイトル画面を描画
 	const totalWidth =
-		mapSize.width + LOG_AREA_GAP + actionLogRenderer.getWidth();
-	titleScreen.render(totalWidth, totalHeight, hasSaveData());
+		mapSize.width + LOG_AREA_GAP + ctx.ui.actionLogRenderer.getWidth();
+	ctx.ui.titleScreen.render(totalWidth, totalHeight, hasSaveData());
 	render();
 
 	// デバッグ用グローバル変数の設定
