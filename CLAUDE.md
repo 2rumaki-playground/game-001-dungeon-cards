@@ -8,7 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 仕様ドキュメント構成
 
-すべての仕様は `docs/spec/v1/` 配下で管理（MVP仕様は `docs/spec/mvp/` に履歴として保存）：
+すべての仕様は `docs/spec/` 配下で管理：
 
 | ファイル | 役割 |
 |----------|------|
