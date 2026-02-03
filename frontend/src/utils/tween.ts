@@ -60,7 +60,7 @@ export interface TweenOptions {
 	delay?: number;
 	/** 完了時のコールバック */
 	onComplete?: () => void;
-	/** フレームごとのコールバック */
+	/** フレームごとのコールバック（eased progressを受け取る） */
 	onUpdate?: (progress: number) => void;
 }
 
@@ -221,7 +221,7 @@ export function tween(
 						from.rotation + (to.rotation - from.rotation) * easedProgress;
 				}
 
-				onUpdate?.(progress);
+				onUpdate?.(easedProgress);
 
 				if (progress >= 1) {
 					ticker.remove(update);
