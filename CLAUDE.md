@@ -4,11 +4,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## プロジェクト概要
 
-「タイル制ローグライク × デッキ構築」ゲームのMVP（Minimum Viable Product）開発。
+「タイル制ローグライク × デッキ構築」ゲーム開発。
 
 ## 仕様ドキュメント構成
 
-すべての仕様は `docs/spec/mvp/` 配下で管理：
+すべての仕様は `docs/spec/` 配下で管理：
 
 | ファイル | 役割 |
 |----------|------|
@@ -19,10 +19,6 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 | `vision.md` | ゲームのビジョン・コンセプト |
 
 ## 開発方針
-
-### MVP優先
-- プレイ可能な最小構成を最短で作る
-- 演出・拡張・バランス調整はスコープ外
 
 ### 最小差分
 - 必要な範囲だけ変更
