@@ -37,6 +37,12 @@ import {
 } from "./ui";
 import { detectEnemyMoves } from "./ui/enemyMoveDetector";
 import {
+	applyState,
+	render,
+	renderGameScreen,
+	updateState,
+} from "./ui/gameRenderer";
+import {
 	BUTTON_BOTTOM_MARGIN,
 	BUTTON_HEIGHT,
 	HAND_AREA_HEIGHT,
@@ -46,113 +52,6 @@ import { deleteSaveData, hasSaveData, loadGame } from "./utils/storage";
 
 /** アプリケーションコンテキスト */
 let ctx: GameContext;
-
-/**
- * 行動ログの差分を出力してゲーム状態を反映する
- * @param newState 新しいゲーム状態
- */
-function applyState(newState: GameState): void {
-	if (ctx.debugLog) {
-		const newEntries = newState.actionLog.length - ctx.state.actionLog.length;
-		for (let i = newEntries - 1; i >= 0; i--) {
-			console.log(`[行動ログ] ${newState.actionLog[i].message}`);
-		}
-	}
-	ctx.state = newState;
-}
-
-/**
- * ゲーム状態を更新して再描画
- */
-function updateState(newState: GameState): void {
-	applyState(newState);
-	render();
-}
-
-/**
- * タイトル画面の描画
- */
-function renderTitleScreen(): void {
-	ctx.ui.titleScreen.show();
-	ctx.ui.gameOverScreen.hide();
-	ctx.ui.statusBar.hide();
-	ctx.ui.turnEndButton.hide();
-	ctx.ui.actionLogRenderer.hide();
-	ctx.ui.mapRenderer.clear();
-	ctx.ui.handRenderer.clear();
-}
-
-/**
- * ゲーム画面の描画
- * @param skipHand trueの場合、手札描画をスキップ（アニメーション中に使用）
- * @param skipPlayer trueの場合、プレイヤー描画をスキップ（移動アニメーション中に使用）
- * @param skipEnemies trueの場合、敵描画をスキップ（敵移動アニメーション中に使用）
- */
-function renderGameScreen(
-	skipHand = false,
-	skipPlayer = false,
-	skipEnemies = false,
-): void {
-	ctx.ui.titleScreen.hide();
-	ctx.ui.gameOverScreen.hide();
-	ctx.ui.statusBar.show();
-	ctx.ui.statusBar.render(ctx.state.player, ctx.state.floor);
-	ctx.ui.mapRenderer.render(
-		ctx.state.map,
-		ctx.state.player,
-		ctx.state.enemies,
-		skipPlayer,
-		skipEnemies,
-	);
-	if (!skipHand) {
-		ctx.ui.handRenderer.render(ctx.state.deck.hand, ctx.state.player.ap);
-	}
-	ctx.ui.turnEndButton.show();
-	ctx.ui.turnEndButton.render(ctx.state.turn);
-	ctx.ui.actionLogRenderer.show();
-	ctx.ui.actionLogRenderer.render(ctx.state.actionLog);
-}
-
-/**
- * ゲームオーバー画面の描画
- */
-function renderGameOverScreen(): void {
-	ctx.ui.titleScreen.hide();
-	ctx.ui.statusBar.hide();
-	ctx.ui.turnEndButton.hide();
-	ctx.ui.actionLogRenderer.hide();
-	ctx.ui.mapRenderer.clear();
-	ctx.ui.handRenderer.clear();
-	const size = getMapPixelSize();
-	const width = size.width + LOG_AREA_GAP + ctx.ui.actionLogRenderer.getWidth();
-	const height = size.height + HAND_AREA_HEIGHT + STATUS_BAR_HEIGHT;
-	ctx.ui.gameOverScreen.render(ctx.state.floor, width, height);
-	ctx.ui.gameOverScreen.show();
-}
-
-/**
- * 画面に応じた描画
- * @param skipHand trueの場合、手札描画をスキップ
- * @param skipPlayer trueの場合、プレイヤー描画をスキップ
- * @param skipEnemies trueの場合、敵描画をスキップ
- */
-function render(
-	skipHand = false,
-	skipPlayer = false,
-	skipEnemies = false,
-): void {
-	switch (ctx.state.screen) {
-		case "title":
-			renderTitleScreen();
-			break;
-		case "game":
-			renderGameScreen(skipHand, skipPlayer, skipEnemies);
-			break;
-		case "gameOver":
-			renderGameOverScreen();
-			break;
-	}
-}
 
 /**
  * ゲーム状態を更新してプレイヤー移動アニメーション付きで再描画
@@ -167,11 +66,11 @@ async function updateStateWithMoveAnimation(
 	ctx.isAnimating = true;
 
 	const prevAp = ctx.state.player.ap;
-	applyState(newState);
+	applyState(ctx, newState);
 
 	try {
 		// プレイヤー以外を描画
-		render(false, true);
+		render(ctx, false, true);
 
 		// プレイヤー移動アニメーション（AP変化があればバーアニメーションも並列実行）
 		const animations: Promise<void>[] = [
@@ -211,8 +110,8 @@ async function updateStateWithStairsAnimation(
 		// 2. フェードトランジション（暗転中に階層バナー表示 + 状態更新）
 		await ctx.ui.screenTransition.fadeTransition(async () => {
 			await ctx.ui.floorBanner.show(newState.floor);
-			applyState(newState);
-			render(true);
+			applyState(ctx, newState);
+			render(ctx, true);
 			await ctx.ui.floorBanner.hide();
 		});
 
@@ -240,10 +139,10 @@ async function updateStateWithBumpAnimation(
 	ctx.isAnimating = true;
 
 	const prevAp = ctx.state.player.ap;
-	applyState(newState);
+	applyState(ctx, newState);
 
 	try {
-		render(false, true);
+		render(ctx, false, true);
 
 		const animations: Promise<void>[] = [
 			ctx.ui.mapRenderer.animatePlayerBump(direction),
@@ -277,11 +176,11 @@ async function updateStateWithAttackAnimation(
 
 	const prevAp = ctx.state.player.ap;
 	const defeated = !newState.enemies.some((e) => e.id === hitEnemyId);
-	applyState(newState);
+	applyState(ctx, newState);
 
 	try {
 		// 撃破時は敵の再描画をスキップ（アニメーション用にGraphicsを保持）
-		render(false, false, defeated);
+		render(ctx, false, false, defeated);
 
 		// ヒットエフェクト（AP変化があればバーアニメーションも並列実行）
 		const hitAnimations: Promise<void>[] = [
@@ -302,7 +201,7 @@ async function updateStateWithAttackAnimation(
 		if (defeated) {
 			await ctx.ui.mapRenderer.animateEnemyDefeat(hitEnemyId);
 			// 撃破後、敵描画を反映
-			render();
+			render(ctx);
 		}
 	} finally {
 		ctx.isAnimating = false;
@@ -430,7 +329,7 @@ async function handleAttackCardExecution(
 	if (hit && enemyId) {
 		await updateStateWithAttackAnimation(next, enemyId);
 	} else {
-		updateState(next);
+		updateState(ctx, next);
 	}
 }
 
@@ -469,7 +368,7 @@ function setupEventHandlers(
 	ctx.ui.handRenderer.setOnCardSelect(async (card, direction) => {
 		if (ctx.isAnimating) return; // アニメーション中は無効
 		if (card.type === "wait") {
-			updateState(executeWait(ctx.state, card.id));
+			updateState(ctx, executeWait(ctx.state, card.id));
 		} else if (direction) {
 			// 方向が指定されている場合は即座に実行
 			if (card.type === "move") {
@@ -491,9 +390,9 @@ function setupEventHandlers(
 		try {
 			const newState = startNewGame(ctx.state);
 			await ctx.ui.screenTransition.fadeTransition(() => {
-				applyState(newState);
+				applyState(ctx, newState);
 				// 手札はフェードイン後に配布アニメーションで表示するためスキップ
-				render(true);
+				render(ctx, true);
 			});
 			// フェードイン後に手札配布アニメーション
 			await ctx.ui.handRenderer.renderWithAnimation(
@@ -513,7 +412,7 @@ function setupEventHandlers(
 			ctx.isAnimating = true;
 			try {
 				await ctx.ui.screenTransition.fadeTransition(() => {
-					updateState(savedState);
+					updateState(ctx, savedState);
 				});
 			} finally {
 				ctx.isAnimating = false;
@@ -532,7 +431,7 @@ function setupEventHandlers(
 		ctx.isAnimating = true;
 		try {
 			await ctx.ui.screenTransition.fadeTransition(() => {
-				updateState(returnToTitle(ctx.state));
+				updateState(ctx, returnToTitle(ctx.state));
 				const totalWidth =
 					mapSize.width + LOG_AREA_GAP + ctx.ui.actionLogRenderer.getWidth();
 				ctx.ui.titleScreen.render(totalWidth, totalHeight, hasSaveData());
@@ -562,8 +461,8 @@ function setupEventHandlers(
 			// 敵移動アニメーション
 			if (enemyMoves.length > 0) {
 				if (next.screen !== "gameOver") {
-					applyState(next);
-					render(true, false, true); // 手札・敵スキップ
+					applyState(ctx, next);
+					render(ctx, true, false, true); // 手札・敵スキップ
 				}
 				ctx.ui.mapRenderer.renderEnemies(next.enemies);
 				await ctx.ui.mapRenderer.animateEnemyMoves(enemyMoves);
@@ -572,9 +471,9 @@ function setupEventHandlers(
 			// 敵攻撃アニメーション
 			if (playerWasAttacked) {
 				const prevHp = ctx.state.player.hp;
-				applyState(next);
+				applyState(ctx, next);
 				// ゲームオーバー時も攻撃演出中はゲーム画面を維持（暗転後に切り替え）
-				renderGameScreen();
+				renderGameScreen(ctx);
 				await Promise.all([
 					ctx.ui.mapRenderer.animateEnemyAttackHit(
 						ENEMY_ATTACK_DAMAGE * attackCount,
@@ -593,8 +492,8 @@ function setupEventHandlers(
 				// プレイヤーターンバナー表示
 				await ctx.ui.turnBanner.showBanner("player");
 
-				applyState(next);
-				render(true);
+				applyState(ctx, next);
+				render(ctx, true);
 				await ctx.ui.handRenderer.renderWithAnimation(
 					ctx.state.deck.hand,
 					ctx.state.player.ap,
@@ -603,7 +502,7 @@ function setupEventHandlers(
 			} else {
 				deleteSaveData();
 				await ctx.ui.screenTransition.fadeTransition(() => {
-					updateState(next);
+					updateState(ctx, next);
 				});
 			}
 		} finally {
@@ -660,7 +559,7 @@ async function main() {
 	const totalWidth =
 		mapSize.width + LOG_AREA_GAP + ctx.ui.actionLogRenderer.getWidth();
 	ctx.ui.titleScreen.render(totalWidth, totalHeight, hasSaveData());
-	render();
+	render(ctx);
 
 	// デバッグ用グローバル変数の設定
 	setupDebugGlobals();
