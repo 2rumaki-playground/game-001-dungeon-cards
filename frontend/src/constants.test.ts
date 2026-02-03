@@ -7,6 +7,7 @@ import {
 	MAP_HEIGHT,
 	MAP_WIDTH,
 	PLAYER_STRONG_ATTACK_DAMAGE,
+	RUSH_MAX_DISTANCE,
 	STAIRS_COUNT,
 	TOTAL_DECK_SIZE,
 } from "./constants";
@@ -17,10 +18,19 @@ describe("constants", () => {
 	});
 
 	it("初期デッキの内訳が正しい", () => {
-		expect(INITIAL_DECK.moveCards).toBe(8); // TODO: 突進カード実装(#169)時に6へ変更
+		expect(INITIAL_DECK.moveCards).toBe(6);
 		expect(INITIAL_DECK.attackCards).toBe(6);
 		expect(INITIAL_DECK.strongAttackCards).toBe(2);
+		expect(INITIAL_DECK.rushCards).toBe(2);
 		expect(INITIAL_DECK.waitCards).toBe(2);
+	});
+
+	it("突進カードのAPコストが2", () => {
+		expect(CARD_COST.rush).toBe(2);
+	});
+
+	it("突進カードの最大移動距離が2", () => {
+		expect(RUSH_MAX_DISTANCE).toBe(2);
 	});
 
 	it("強攻撃カードのAPコストが2", () => {
