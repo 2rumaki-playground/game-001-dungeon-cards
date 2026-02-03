@@ -3,26 +3,12 @@
  */
 
 import { describe, expect, it, vi } from "vitest";
+import { createTweenMock, mockEasing } from "../test-utils/mockTween";
 import { ScreenTransition } from "./screenTransition";
 
-// tween をモック化（即座にresolve、対象プロパティを適用）
 vi.mock("../utils/tween", () => ({
-	Easing: {
-		easeInOut: (t: number) => t,
-	},
-	tween: vi.fn(
-		(
-			target: {
-				alpha?: number;
-			},
-			to: {
-				alpha?: number;
-			},
-		) => {
-			if (to.alpha !== undefined) target.alpha = to.alpha;
-			return Promise.resolve();
-		},
-	),
+	Easing: mockEasing,
+	tween: createTweenMock(),
 }));
 
 describe("ScreenTransition コンストラクタ", () => {

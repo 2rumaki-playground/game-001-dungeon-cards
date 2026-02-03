@@ -2,12 +2,14 @@ import { describe, expect, it } from "vitest";
 import {
 	ENEMY_ATTACK_DAMAGE,
 	ENEMY_HP,
-	MAP_HEIGHT,
-	MAP_WIDTH,
 	MAX_AP,
 	PLAYER_INITIAL_HP,
 } from "../constants";
-import type { Enemy, GameMap, GameState, Tile } from "../types";
+import {
+	createTestMap,
+	createTestState,
+} from "../test-utils/createTestFixtures";
+import type { Enemy } from "../types";
 import { RNG } from "../utils/rng";
 import {
 	executeEnemyTurn,
@@ -15,52 +17,6 @@ import {
 	manhattanDistance,
 	pickMoveDirection,
 } from "./enemyAi";
-
-/**
- * テスト用の7x7マップを生成（外周壁・内側床）
- */
-function createTestMap(): GameMap {
-	const map: GameMap = [];
-	for (let y = 0; y < MAP_HEIGHT; y++) {
-		const row: Tile[] = [];
-		for (let x = 0; x < MAP_WIDTH; x++) {
-			const isBoundary =
-				x === 0 || y === 0 || x === MAP_WIDTH - 1 || y === MAP_HEIGHT - 1;
-			row.push({ type: isBoundary ? "wall" : "floor" });
-		}
-		map.push(row);
-	}
-	return map;
-}
-
-/**
- * テスト用のGameStateを生成
- */
-function createTestState(overrides?: Partial<GameState>): GameState {
-	const map = createTestMap();
-	return {
-		screen: "game",
-		turn: "enemy",
-		floor: 1,
-		map,
-		player: {
-			position: { x: 3, y: 3 },
-			hp: PLAYER_INITIAL_HP,
-			maxHp: PLAYER_INITIAL_HP,
-			ap: MAX_AP,
-			maxAp: MAX_AP,
-		},
-		enemies: [],
-		deck: {
-			drawPile: [],
-			hand: [],
-			discardPile: [],
-		},
-		actionLog: [],
-		rng: new RNG(12345),
-		...overrides,
-	};
-}
 
 describe("isAdjacent", () => {
 	it("上方向に隣接している場合trueを返す", () => {
@@ -318,7 +274,7 @@ describe("executeEnemyTurn", () => {
 				maxHp: ENEMY_HP,
 			},
 		];
-		const state = createTestState({ enemies });
+		const state = createTestState({ turn: "enemy", enemies });
 		const { state: result } = executeEnemyTurn(state);
 
 		// プレイヤーにダメージ
@@ -338,7 +294,7 @@ describe("executeEnemyTurn", () => {
 				maxHp: ENEMY_HP,
 			},
 		];
-		const state = createTestState({ enemies });
+		const state = createTestState({ turn: "enemy", enemies });
 		const { state: result } = executeEnemyTurn(state);
 
 		// 敵がプレイヤーに近づいた（左に1マス移動）
@@ -362,7 +318,7 @@ describe("executeEnemyTurn", () => {
 				maxHp: ENEMY_HP,
 			},
 		];
-		const state = createTestState({ enemies });
+		const state = createTestState({ turn: "enemy", enemies });
 		const { state: result } = executeEnemyTurn(state);
 
 		// 敵1は隣接 → 攻撃
@@ -400,8 +356,16 @@ describe("executeEnemyTurn", () => {
 			},
 		];
 		// 同じシードなら同じ行動順序
-		const state1 = createTestState({ enemies, rng: new RNG(42) });
-		const state2 = createTestState({ enemies, rng: new RNG(42) });
+		const state1 = createTestState({
+			turn: "enemy",
+			enemies,
+			rng: new RNG(42),
+		});
+		const state2 = createTestState({
+			turn: "enemy",
+			enemies,
+			rng: new RNG(42),
+		});
 		const { state: result1 } = executeEnemyTurn(state1);
 		const { state: result2 } = executeEnemyTurn(state2);
 
@@ -427,6 +391,7 @@ describe("executeEnemyTurn", () => {
 			},
 		];
 		const state = createTestState({
+			turn: "enemy",
 			map,
 			player: {
 				position: { x: 1, y: 1 },
@@ -455,7 +420,7 @@ describe("executeEnemyTurn", () => {
 				maxHp: ENEMY_HP,
 			},
 		];
-		const state = createTestState({ enemies });
+		const state = createTestState({ turn: "enemy", enemies });
 		const { state: result } = executeEnemyTurn(state);
 
 		// 敵はプレイヤーの位置(3,3)に移動していない
@@ -471,7 +436,7 @@ describe("executeEnemyTurn", () => {
 				maxHp: ENEMY_HP,
 			},
 		];
-		const state = createTestState({ enemies });
+		const state = createTestState({ turn: "enemy", enemies });
 		const originalPlayerHp = state.player.hp;
 		const originalEnemyPos = { ...state.enemies[0].position };
 
@@ -491,6 +456,7 @@ describe("executeEnemyTurn", () => {
 			},
 		];
 		const state = createTestState({
+			turn: "enemy",
 			enemies,
 			player: {
 				position: { x: 3, y: 3 },
@@ -523,6 +489,7 @@ describe("executeEnemyTurn", () => {
 			},
 		];
 		const state = createTestState({
+			turn: "enemy",
 			enemies,
 			player: {
 				position: { x: 3, y: 3 },
@@ -553,7 +520,7 @@ describe("executeEnemyTurn", () => {
 				maxHp: ENEMY_HP,
 			},
 		];
-		const state = createTestState({ enemies });
+		const state = createTestState({ turn: "enemy", enemies });
 		const { state: result } = executeEnemyTurn(state);
 
 		expect(result.player.hp).toBe(PLAYER_INITIAL_HP - ENEMY_ATTACK_DAMAGE);
@@ -569,10 +536,10 @@ describe("executeEnemyTurn", () => {
 				maxHp: ENEMY_HP,
 			},
 		];
-		const state = createTestState({ enemies });
+		const state = createTestState({ turn: "enemy", enemies });
 		const rngBefore = state.rng.random();
 
-		const state2 = createTestState({ enemies });
+		const state2 = createTestState({ turn: "enemy", enemies });
 		executeEnemyTurn(state2);
 		const rngAfter = state2.rng.random();
 
