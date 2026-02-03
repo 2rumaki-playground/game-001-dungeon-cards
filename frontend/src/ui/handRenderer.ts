@@ -316,7 +316,8 @@ export class HandRenderer {
 		if (
 			card.type === "move" ||
 			card.type === "attack" ||
-			card.type === "strong_attack"
+			card.type === "strong_attack" ||
+			card.type === "rush"
 		) {
 			const arrowColor = enabled ? 0x888888 : 0x444444;
 			this.addDirectionHints(cardContainer, arrowColor);
@@ -345,7 +346,8 @@ export class HandRenderer {
 				if (
 					card.type === "move" ||
 					card.type === "attack" ||
-					card.type === "strong_attack"
+					card.type === "strong_attack" ||
+					card.type === "rush"
 				) {
 					const direction = getDirectionFromClickPosition(
 						event.global.x - cardContainer.getGlobalPosition().x,

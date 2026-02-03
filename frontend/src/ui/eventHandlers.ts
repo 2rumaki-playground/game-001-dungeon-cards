@@ -8,6 +8,7 @@ import {
 	executeAttack,
 	executeEnemyTurn,
 	executeMove,
+	executeRush,
 	executeStrongAttack,
 	executeWait,
 	returnToTitle,
@@ -20,6 +21,7 @@ import { DIRECTION_DELTA } from "../types";
 import { deleteSaveData, hasSaveData, loadGame } from "../utils/storage";
 import { detectEnemyMoves } from "./enemyMoveDetector";
 import {
+	animateRushWithStairs,
 	updateStateWithAttackAnimation,
 	updateStateWithBumpAnimation,
 	updateStateWithMoveAnimation,
@@ -106,6 +108,51 @@ async function handleStrongAttackCardExecution(
 }
 
 /**
+ * 突進カードの実行と対応するアニメーション
+ */
+async function handleRushCardExecution(
+	ctx: GameContext,
+	cardId: string,
+	direction: Direction,
+): Promise<void> {
+	const prevPosition = ctx.state.player.position;
+	const result = executeRush(ctx.state, cardId, direction);
+	ctx.ui.directionSelector.hide();
+	ctx.pendingCard = null;
+
+	if (result.movedDistance === 0) {
+		// 移動失敗: バンプアニメーション
+		await updateStateWithBumpAnimation(ctx, result.state, direction);
+	} else if (result.floorTransitioned && result.movedDistance === 1) {
+		// 1マス目が階段: 階段アニメーション
+		const stairsPos = {
+			x: prevPosition.x + DIRECTION_DELTA[direction].x,
+			y: prevPosition.y + DIRECTION_DELTA[direction].y,
+		};
+		await updateStateWithStairsAnimation(ctx, result.state, stairsPos);
+	} else if (result.floorTransitioned && result.intermediatePosition) {
+		// 2マス目が階段: 2段階移動→階層遷移アニメーション
+		const stairsPos = {
+			x: result.intermediatePosition.x + DIRECTION_DELTA[direction].x,
+			y: result.intermediatePosition.y + DIRECTION_DELTA[direction].y,
+		};
+		await animateRushWithStairs(
+			ctx,
+			result.state,
+			result.intermediatePosition,
+			stairsPos,
+		);
+	} else {
+		// 通常移動(1or2マス): 最終位置へ直接移動アニメーション
+		await updateStateWithMoveAnimation(
+			ctx,
+			result.state,
+			result.state.player.position,
+		);
+	}
+}
+
+/**
  * イベントハンドラを設定
  */
 export function setupEventHandlers(
@@ -133,6 +180,10 @@ export function setupEventHandlers(
 				);
 				return;
 			}
+			if (ctx.pendingCard.type === "rush") {
+				await handleRushCardExecution(ctx, ctx.pendingCard.id, direction);
+				return;
+			}
 		}
 		ctx.ui.directionSelector.hide();
 		ctx.pendingCard = null;
@@ -158,6 +209,8 @@ export function setupEventHandlers(
 				await handleAttackCardExecution(ctx, card.id, direction);
 			} else if (card.type === "strong_attack") {
 				await handleStrongAttackCardExecution(ctx, card.id, direction);
+			} else if (card.type === "rush") {
+				await handleRushCardExecution(ctx, card.id, direction);
 			}
 		} else {
 			// 方向が指定されていない場合は方向選択UIを表示（フォールバック）
