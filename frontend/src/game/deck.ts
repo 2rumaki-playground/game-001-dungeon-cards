@@ -39,6 +39,7 @@ export function createInitialDeck(rng: RNG): Card[] {
 	const cards: Card[] = [
 		...createCards("move", INITIAL_DECK.moveCards),
 		...createCards("attack", INITIAL_DECK.attackCards),
+		...createCards("strong_attack", INITIAL_DECK.strongAttackCards),
 		...createCards("wait", INITIAL_DECK.waitCards),
 	];
 	return rng.shuffle(cards);

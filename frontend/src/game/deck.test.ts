@@ -25,14 +25,16 @@ describe("deck", () => {
 			expect(deck).toHaveLength(TOTAL_DECK_SIZE);
 		});
 
-		it("移動カード8枚、攻撃カード8枚、待機カード2枚を含む", () => {
+		it("移動カード8枚、攻撃カード6枚、強攻撃カード2枚、待機カード2枚を含む", () => {
 			const rng = new RNG(SEED);
 			const deck = createInitialDeck(rng);
 			const moveCards = deck.filter((c) => c.type === "move");
 			const attackCards = deck.filter((c) => c.type === "attack");
+			const strongAttackCards = deck.filter((c) => c.type === "strong_attack");
 			const waitCards = deck.filter((c) => c.type === "wait");
 			expect(moveCards).toHaveLength(INITIAL_DECK.moveCards);
 			expect(attackCards).toHaveLength(INITIAL_DECK.attackCards);
+			expect(strongAttackCards).toHaveLength(INITIAL_DECK.strongAttackCards);
 			expect(waitCards).toHaveLength(INITIAL_DECK.waitCards);
 		});
 

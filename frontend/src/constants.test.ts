@@ -1,10 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
+	CARD_COST,
 	ENEMY_COUNT,
 	FLOOR_TILE_COUNT,
 	INITIAL_DECK,
 	MAP_HEIGHT,
 	MAP_WIDTH,
+	PLAYER_STRONG_ATTACK_DAMAGE,
 	STAIRS_COUNT,
 	TOTAL_DECK_SIZE,
 } from "./constants";
@@ -15,9 +17,18 @@ describe("constants", () => {
 	});
 
 	it("初期デッキの内訳が正しい", () => {
-		expect(INITIAL_DECK.moveCards).toBe(8);
-		expect(INITIAL_DECK.attackCards).toBe(8);
+		expect(INITIAL_DECK.moveCards).toBe(8); // TODO: 突進カード実装(#169)時に6へ変更
+		expect(INITIAL_DECK.attackCards).toBe(6);
+		expect(INITIAL_DECK.strongAttackCards).toBe(2);
 		expect(INITIAL_DECK.waitCards).toBe(2);
+	});
+
+	it("強攻撃カードのAPコストが2", () => {
+		expect(CARD_COST.strong_attack).toBe(2);
+	});
+
+	it("強攻撃カードのダメージが3", () => {
+		expect(PLAYER_STRONG_ATTACK_DAMAGE).toBe(3);
 	});
 
 	it("マップサイズが正しい", () => {

@@ -10,18 +10,23 @@ export const HAND_LIMIT = 5;
 
 // デッキ構成
 export const INITIAL_DECK = {
-	moveCards: 8,
-	attackCards: 8,
+	moveCards: 8, // TODO: 突進カード実装(#169)時に6へ変更
+	attackCards: 6,
+	strongAttackCards: 2,
 	waitCards: 2,
 } as const;
 
 export const TOTAL_DECK_SIZE =
-	INITIAL_DECK.moveCards + INITIAL_DECK.attackCards + INITIAL_DECK.waitCards;
+	INITIAL_DECK.moveCards +
+	INITIAL_DECK.attackCards +
+	INITIAL_DECK.strongAttackCards +
+	INITIAL_DECK.waitCards;
 
 // カードAPコスト
 export const CARD_COST = {
 	move: 1,
 	attack: 1,
+	strong_attack: 2,
 	wait: 0,
 } as const;
 
@@ -29,6 +34,7 @@ export const CARD_COST = {
 export const PLAYER_INITIAL_HP = 10;
 export const ENEMY_HP = 3;
 export const PLAYER_ATTACK_DAMAGE = 1;
+export const PLAYER_STRONG_ATTACK_DAMAGE = 3;
 export const ENEMY_ATTACK_DAMAGE = 1;
 
 // 階層
