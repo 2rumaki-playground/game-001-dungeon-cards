@@ -430,6 +430,55 @@ function initializeUIComponents(
 }
 
 /**
+ * 移動カードの実行と対応するアニメーション
+ */
+async function handleMoveCardExecution(
+	cardId: string,
+	direction: Direction,
+): Promise<void> {
+	const prevPosition = gameState.player.position;
+	const prevFloor = gameState.floor;
+	const next = executeMove(gameState, cardId, direction);
+	const moved =
+		next.player.position.x !== prevPosition.x ||
+		next.player.position.y !== prevPosition.y;
+	directionSelector.hide();
+	pendingCard = null;
+	if (next.floor !== prevFloor) {
+		const stairsPos = {
+			x: prevPosition.x + DIRECTION_DELTA[direction].x,
+			y: prevPosition.y + DIRECTION_DELTA[direction].y,
+		};
+		await updateStateWithStairsAnimation(next, stairsPos);
+	} else if (moved) {
+		await updateStateWithMoveAnimation(next, next.player.position);
+	} else {
+		await updateStateWithBumpAnimation(next, direction);
+	}
+}
+
+/**
+ * 攻撃カードの実行と対応するアニメーション
+ */
+async function handleAttackCardExecution(
+	cardId: string,
+	direction: Direction,
+): Promise<void> {
+	const {
+		state: next,
+		hit,
+		enemyId,
+	} = executeAttack(gameState, cardId, direction);
+	directionSelector.hide();
+	pendingCard = null;
+	if (hit && enemyId) {
+		await updateStateWithAttackAnimation(next, enemyId);
+	} else {
+		updateState(next);
+	}
+}
+
+/**
  * イベントハンドラを設定
  */
 function setupEventHandlers(
@@ -441,41 +490,11 @@ function setupEventHandlers(
 		if (isAnimating) return; // アニメーション中は無効
 		if (pendingCard) {
 			if (pendingCard.type === "move") {
-				const prevPosition = gameState.player.position;
-				const prevFloor = gameState.floor;
-				const next = executeMove(gameState, pendingCard.id, direction);
-				const moved =
-					next.player.position.x !== prevPosition.x ||
-					next.player.position.y !== prevPosition.y;
-				directionSelector.hide();
-				pendingCard = null;
-				if (next.floor !== prevFloor) {
-					// 階段マスへ移動アニメーション → 階層遷移
-					const stairsPos = {
-						x: prevPosition.x + DIRECTION_DELTA[direction].x,
-						y: prevPosition.y + DIRECTION_DELTA[direction].y,
-					};
-					await updateStateWithStairsAnimation(next, stairsPos);
-				} else if (moved) {
-					await updateStateWithMoveAnimation(next, next.player.position);
-				} else {
-					// 壁にぶつかった
-					await updateStateWithBumpAnimation(next, direction);
-				}
+				await handleMoveCardExecution(pendingCard.id, direction);
 				return;
-			} else if (pendingCard.type === "attack") {
-				const {
-					state: next,
-					hit,
-					enemyId,
-				} = executeAttack(gameState, pendingCard.id, direction);
-				directionSelector.hide();
-				pendingCard = null;
-				if (hit && enemyId) {
-					await updateStateWithAttackAnimation(next, enemyId);
-				} else {
-					updateState(next);
-				}
+			}
+			if (pendingCard.type === "attack") {
+				await handleAttackCardExecution(pendingCard.id, direction);
 				return;
 			}
 		}
@@ -498,38 +517,9 @@ function setupEventHandlers(
 		} else if (direction) {
 			// 方向が指定されている場合は即座に実行
 			if (card.type === "move") {
-				const prevPosition = gameState.player.position;
-				const prevFloor = gameState.floor;
-				const next = executeMove(gameState, card.id, direction);
-				const moved =
-					next.player.position.x !== prevPosition.x ||
-					next.player.position.y !== prevPosition.y;
-				if (next.floor !== prevFloor) {
-					// 階段マスへ移動アニメーション → 階層遷移
-					directionSelector.hide();
-					pendingCard = null;
-					const stairsPos = {
-						x: prevPosition.x + DIRECTION_DELTA[direction].x,
-						y: prevPosition.y + DIRECTION_DELTA[direction].y,
-					};
-					await updateStateWithStairsAnimation(next, stairsPos);
-				} else if (moved) {
-					await updateStateWithMoveAnimation(next, next.player.position);
-				} else {
-					// 壁にぶつかった
-					await updateStateWithBumpAnimation(next, direction);
-				}
+				await handleMoveCardExecution(card.id, direction);
 			} else if (card.type === "attack") {
-				const {
-					state: next,
-					hit,
-					enemyId,
-				} = executeAttack(gameState, card.id, direction);
-				if (hit && enemyId) {
-					await updateStateWithAttackAnimation(next, enemyId);
-				} else {
-					updateState(next);
-				}
+				await handleAttackCardExecution(card.id, direction);
 			}
 		} else {
 			// 方向が指定されていない場合は方向選択UIを表示（フォールバック）
