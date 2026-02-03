@@ -7,13 +7,19 @@ import {
 	MAX_AP,
 	PLAYER_ATTACK_DAMAGE,
 	PLAYER_INITIAL_HP,
+	PLAYER_STRONG_ATTACK_DAMAGE,
 } from "../constants";
 import {
 	createTestMap,
 	createTestState,
 } from "../test-utils/createTestFixtures";
 import type { Enemy } from "../types";
-import { executeAttack, executeMove, executeWait } from "./action";
+import {
+	executeAttack,
+	executeMove,
+	executeStrongAttack,
+	executeWait,
+} from "./action";
 
 describe("executeMove", () => {
 	it("床タイルへの移動成功: 位置更新・AP消費・カード捨て札移動・行動ログ", () => {
@@ -355,5 +361,134 @@ describe("executeWait", () => {
 		expect(state.player.ap).toBe(originalAp);
 		expect(state.deck.hand).toHaveLength(1);
 		expect(state.deck.discardPile).toHaveLength(0);
+	});
+});
+
+describe("executeStrongAttack", () => {
+	it("攻撃成功: 敵HP3が0になり倒される・AP2消費・カード捨て札移動", () => {
+		const enemies: Enemy[] = [
+			{
+				id: "enemy-1",
+				position: { x: 4, y: 3 },
+				hp: ENEMY_HP,
+				maxHp: ENEMY_HP,
+			},
+		];
+		const state = createTestState({
+			enemies,
+			deck: {
+				drawPile: [],
+				hand: [{ id: "strong-1", type: "strong_attack" }],
+				discardPile: [],
+			},
+		});
+		const { state: result, hit } = executeStrongAttack(
+			state,
+			"strong-1",
+			"right",
+		);
+
+		expect(hit).toBe(true);
+		// ENEMY_HP(3) - PLAYER_STRONG_ATTACK_DAMAGE(3) = 0 → 敵は倒される
+		expect(result.enemies).toHaveLength(0);
+		expect(result.player.ap).toBe(MAX_AP - CARD_COST.strong_attack);
+		expect(result.deck.hand).toHaveLength(0);
+		expect(result.deck.discardPile).toHaveLength(1);
+		expect(result.deck.discardPile[0].id).toBe("strong-1");
+		expect(result.actionLog[0].message).toBe("敵を倒した");
+	});
+
+	it("攻撃成功（敵HPが3超過）: ダメージ3適用・敵生存", () => {
+		const enemies: Enemy[] = [
+			{ id: "enemy-1", position: { x: 4, y: 3 }, hp: 5, maxHp: 5 },
+		];
+		const state = createTestState({
+			enemies,
+			deck: {
+				drawPile: [],
+				hand: [{ id: "strong-1", type: "strong_attack" }],
+				discardPile: [],
+			},
+		});
+		const { state: result, hit } = executeStrongAttack(
+			state,
+			"strong-1",
+			"right",
+		);
+
+		expect(hit).toBe(true);
+		expect(result.enemies).toHaveLength(1);
+		expect(result.enemies[0].hp).toBe(5 - PLAYER_STRONG_ATTACK_DAMAGE);
+		expect(result.player.ap).toBe(MAX_AP - CARD_COST.strong_attack);
+	});
+
+	it("攻撃不成立（敵がいない方向）: AP2消費・カード捨て札移動・失敗ログ", () => {
+		const state = createTestState({
+			enemies: [],
+			deck: {
+				drawPile: [],
+				hand: [{ id: "strong-1", type: "strong_attack" }],
+				discardPile: [],
+			},
+		});
+		const { state: result, hit } = executeStrongAttack(
+			state,
+			"strong-1",
+			"right",
+		);
+
+		expect(hit).toBe(false);
+		expect(result.player.ap).toBe(MAX_AP - CARD_COST.strong_attack);
+		expect(result.deck.hand).toHaveLength(0);
+		expect(result.deck.discardPile).toHaveLength(1);
+		expect(result.actionLog[0].message).toBe("強攻撃できなかった");
+	});
+
+	it("攻撃不成立（壁方向）: AP2消費・失敗ログ", () => {
+		const state = createTestState({
+			player: {
+				position: { x: 1, y: 1 },
+				hp: PLAYER_INITIAL_HP,
+				maxHp: PLAYER_INITIAL_HP,
+				ap: MAX_AP,
+				maxAp: MAX_AP,
+			},
+			deck: {
+				drawPile: [],
+				hand: [{ id: "strong-1", type: "strong_attack" }],
+				discardPile: [],
+			},
+		});
+		const { state: result } = executeStrongAttack(state, "strong-1", "up");
+
+		expect(result.player.ap).toBe(MAX_AP - CARD_COST.strong_attack);
+		expect(result.actionLog[0].message).toBe("強攻撃できなかった");
+	});
+
+	it("元のGameStateが変更されない（イミュータブル）", () => {
+		const enemies: Enemy[] = [
+			{
+				id: "enemy-1",
+				position: { x: 4, y: 3 },
+				hp: ENEMY_HP,
+				maxHp: ENEMY_HP,
+			},
+		];
+		const state = createTestState({
+			enemies,
+			deck: {
+				drawPile: [],
+				hand: [{ id: "strong-1", type: "strong_attack" }],
+				discardPile: [],
+			},
+		});
+		const originalEnemyHp = state.enemies[0].hp;
+		const originalAp = state.player.ap;
+
+		executeStrongAttack(state, "strong-1", "right");
+
+		expect(state.enemies[0].hp).toBe(originalEnemyHp);
+		expect(state.player.ap).toBe(originalAp);
+		expect(state.deck.hand).toHaveLength(1);
 	});
 });

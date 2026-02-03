@@ -8,6 +8,7 @@ import {
 	MAP_HEIGHT,
 	MAP_WIDTH,
 	PLAYER_ATTACK_DAMAGE,
+	PLAYER_STRONG_ATTACK_DAMAGE,
 } from "../constants";
 import type { Direction, GameState } from "../types";
 import { DIRECTION_DELTA } from "../types";
@@ -160,6 +161,39 @@ export function executeAttack(
 
 	// 敵にダメージ（HP0以下で自動除去）
 	next = applyDamageToEnemy(next, result.enemyId, PLAYER_ATTACK_DAMAGE);
+
+	return { state: next, hit: true, enemyId: result.enemyId };
+}
+
+/**
+ * 強攻撃カード使用時のプレイヤー攻撃処理
+ *
+ * 成功/失敗に関わらずAP消費・カード使用を行う。
+ * 成功時は敵に大ダメージ、HP0以下で敵を削除。
+ * 攻撃のヒット情報を含む結果を返す。
+ */
+export function executeStrongAttack(
+	state: GameState,
+	cardId: string,
+	direction: Direction,
+): AttackResult {
+	// AP消費
+	let next = updatePlayer(state, (p) => ({
+		...p,
+		ap: p.ap - CARD_COST.strong_attack,
+	}));
+
+	// カードを捨て札へ
+	next = setDeck(next, playCard(next.deck, cardId));
+
+	// 攻撃判定
+	const result = canAttack(state, direction);
+	if (!result.hit) {
+		return { state: addActionLog(next, "強攻撃できなかった"), hit: false };
+	}
+
+	// 敵にダメージ（HP0以下で自動除去）
+	next = applyDamageToEnemy(next, result.enemyId, PLAYER_STRONG_ATTACK_DAMAGE);
 
 	return { state: next, hit: true, enemyId: result.enemyId };
 }
