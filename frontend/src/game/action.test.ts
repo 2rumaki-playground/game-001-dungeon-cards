@@ -4,63 +4,26 @@ import {
 	ENEMY_COUNT,
 	ENEMY_HP,
 	MAP_HEIGHT,
-	MAP_WIDTH,
 	MAX_AP,
 	PLAYER_ATTACK_DAMAGE,
+	PLAYER_INITIAL_HP,
 } from "../constants";
-import type { Enemy, GameMap, GameState, Tile } from "../types";
-import { RNG } from "../utils/rng";
+import {
+	createTestMap,
+	createTestState,
+} from "../test-utils/createTestFixtures";
+import type { Enemy } from "../types";
 import { executeAttack, executeMove, executeWait } from "./action";
-
-/**
- * テスト用の7x7マップを生成（外周壁・内側床）
- */
-function createTestMap(): GameMap {
-	const map: GameMap = [];
-	for (let y = 0; y < MAP_HEIGHT; y++) {
-		const row: Tile[] = [];
-		for (let x = 0; x < MAP_WIDTH; x++) {
-			const isBoundary =
-				x === 0 || y === 0 || x === MAP_WIDTH - 1 || y === MAP_HEIGHT - 1;
-			row.push({ type: isBoundary ? "wall" : "floor" });
-		}
-		map.push(row);
-	}
-	return map;
-}
-
-/**
- * テスト用のGameStateを生成
- */
-function createTestState(overrides?: Partial<GameState>): GameState {
-	const map = createTestMap();
-	return {
-		screen: "game",
-		turn: "player",
-		floor: 1,
-		map,
-		player: {
-			position: { x: 3, y: 3 },
-			hp: 10,
-			maxHp: 10,
-			ap: MAX_AP,
-			maxAp: MAX_AP,
-		},
-		enemies: [],
-		deck: {
-			drawPile: [],
-			hand: [{ id: "move-1", type: "move" }],
-			discardPile: [],
-		},
-		actionLog: [],
-		rng: new RNG(12345),
-		...overrides,
-	};
-}
 
 describe("executeMove", () => {
 	it("床タイルへの移動成功: 位置更新・AP消費・カード捨て札移動・行動ログ", () => {
-		const state = createTestState();
+		const state = createTestState({
+			deck: {
+				drawPile: [],
+				hand: [{ id: "move-1", type: "move" }],
+				discardPile: [],
+			},
+		});
 		const result = executeMove(state, "move-1", "right");
 
 		// 位置が更新される
@@ -80,10 +43,15 @@ describe("executeMove", () => {
 		const state = createTestState({
 			player: {
 				position: { x: 1, y: 1 },
-				hp: 10,
-				maxHp: 10,
+				hp: PLAYER_INITIAL_HP,
+				maxHp: PLAYER_INITIAL_HP,
 				ap: MAX_AP,
 				maxAp: MAX_AP,
+			},
+			deck: {
+				drawPile: [],
+				hand: [{ id: "move-1", type: "move" }],
+				discardPile: [],
 			},
 		});
 		const result = executeMove(state, "move-1", "up");
@@ -103,7 +71,14 @@ describe("executeMove", () => {
 		const enemies: Enemy[] = [
 			{ id: "enemy-1", position: { x: 4, y: 3 }, hp: 3, maxHp: 3 },
 		];
-		const state = createTestState({ enemies });
+		const state = createTestState({
+			enemies,
+			deck: {
+				drawPile: [],
+				hand: [{ id: "move-1", type: "move" }],
+				discardPile: [],
+			},
+		});
 		const result = executeMove(state, "move-1", "right");
 
 		// 位置が変更されない
@@ -120,7 +95,15 @@ describe("executeMove", () => {
 		// (4,3)を階段タイルに設定
 		map[3][4] = { type: "stairs" };
 
-		const state = createTestState({ map, floor: 1 });
+		const state = createTestState({
+			map,
+			floor: 1,
+			deck: {
+				drawPile: [],
+				hand: [{ id: "move-1", type: "move" }],
+				discardPile: [],
+			},
+		});
 		const result = executeMove(state, "move-1", "right");
 
 		// 階層が +1
@@ -140,14 +123,27 @@ describe("executeMove", () => {
 		const map = createTestMap();
 		map[3][4] = { type: "stairs" };
 
-		const state = createTestState({ map });
+		const state = createTestState({
+			map,
+			deck: {
+				drawPile: [],
+				hand: [{ id: "move-1", type: "move" }],
+				discardPile: [],
+			},
+		});
 		const result = executeMove(state, "move-1", "right");
 
 		expect(result.turn).toBe("player");
 	});
 
 	it("元のGameStateが変更されない（イミュータブル）", () => {
-		const state = createTestState();
+		const state = createTestState({
+			deck: {
+				drawPile: [],
+				hand: [{ id: "move-1", type: "move" }],
+				discardPile: [],
+			},
+		});
 		const originalPosition = { ...state.player.position };
 		const originalAp = state.player.ap;
 
@@ -245,8 +241,8 @@ describe("executeAttack", () => {
 		const state = createTestState({
 			player: {
 				position: { x: 1, y: 1 },
-				hp: 10,
-				maxHp: 10,
+				hp: PLAYER_INITIAL_HP,
+				maxHp: PLAYER_INITIAL_HP,
 				ap: MAX_AP,
 				maxAp: MAX_AP,
 			},
@@ -271,8 +267,8 @@ describe("executeAttack", () => {
 		const state = createTestState({
 			player: {
 				position: { x: 0, y: 0 },
-				hp: 10,
-				maxHp: 10,
+				hp: PLAYER_INITIAL_HP,
+				maxHp: PLAYER_INITIAL_HP,
 				ap: MAX_AP,
 				maxAp: MAX_AP,
 			},

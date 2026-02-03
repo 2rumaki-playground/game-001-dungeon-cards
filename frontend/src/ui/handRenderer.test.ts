@@ -4,6 +4,7 @@
 
 import type { Container, FederatedPointerEvent } from "pixi.js";
 import { describe, expect, it, vi } from "vitest";
+import { createTweenMock, mockEasing } from "../test-utils/mockTween";
 import type { Card } from "../types";
 import { tween } from "../utils/tween";
 import {
@@ -14,14 +15,8 @@ import {
 } from "./handRenderer";
 
 vi.mock("../utils/tween", () => ({
-	Easing: { easeOut: (t: number) => t, easeOutCubic: (t: number) => t },
-	tween: vi.fn((target, to) => {
-		if (to.y !== undefined) target.y = to.y;
-		if (to.scaleX !== undefined && target.scale) target.scale.x = to.scaleX;
-		if (to.scaleY !== undefined && target.scale) target.scale.y = to.scaleY;
-		if (to.alpha !== undefined) target.alpha = to.alpha;
-		return Promise.resolve();
-	}),
+	Easing: mockEasing,
+	tween: createTweenMock(),
 }));
 
 describe("getDirectionFromClickPosition", () => {

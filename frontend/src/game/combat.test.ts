@@ -2,66 +2,18 @@ import { describe, expect, it } from "vitest";
 import {
 	ENEMY_ATTACK_DAMAGE,
 	ENEMY_HP,
-	MAP_HEIGHT,
-	MAP_WIDTH,
 	MAX_AP,
 	PLAYER_ATTACK_DAMAGE,
 	PLAYER_INITIAL_HP,
 } from "../constants";
-import type { Enemy, GameMap, GameState, Tile } from "../types";
-import { RNG } from "../utils/rng";
+import { createTestState } from "../test-utils/createTestFixtures";
+import type { Enemy } from "../types";
 import {
 	applyDamageToEnemy,
 	applyDamageToPlayer,
 	checkGameOver,
 	isDefeated,
 } from "./combat";
-
-/**
- * テスト用の7x7マップを生成（外周壁・内側床）
- */
-function createTestMap(): GameMap {
-	const map: GameMap = [];
-	for (let y = 0; y < MAP_HEIGHT; y++) {
-		const row: Tile[] = [];
-		for (let x = 0; x < MAP_WIDTH; x++) {
-			const isBoundary =
-				x === 0 || y === 0 || x === MAP_WIDTH - 1 || y === MAP_HEIGHT - 1;
-			row.push({ type: isBoundary ? "wall" : "floor" });
-		}
-		map.push(row);
-	}
-	return map;
-}
-
-/**
- * テスト用のGameStateを生成
- */
-function createTestState(overrides?: Partial<GameState>): GameState {
-	const map = createTestMap();
-	return {
-		screen: "game",
-		turn: "player",
-		floor: 1,
-		map,
-		player: {
-			position: { x: 3, y: 3 },
-			hp: PLAYER_INITIAL_HP,
-			maxHp: PLAYER_INITIAL_HP,
-			ap: MAX_AP,
-			maxAp: MAX_AP,
-		},
-		enemies: [],
-		deck: {
-			drawPile: [],
-			hand: [],
-			discardPile: [],
-		},
-		actionLog: [],
-		rng: new RNG(12345),
-		...overrides,
-	};
-}
 
 describe("isDefeated", () => {
 	it("HP0の場合trueを返す", () => {

@@ -3,38 +3,12 @@
  */
 
 import { describe, expect, it, vi } from "vitest";
+import { createTweenMock, mockEasing } from "../test-utils/mockTween";
 import { TurnBanner } from "./turnBanner";
 
-// tween をモック化（即座にresolve、対象プロパティを適用）
 vi.mock("../utils/tween", () => ({
-	Easing: {
-		easeOut: (t: number) => t,
-		easeOutBack: (t: number) => t,
-	},
-	tween: vi.fn(
-		(
-			target: {
-				alpha?: number;
-				x?: number;
-				y?: number;
-				scale?: { x: number; y: number };
-			},
-			to: {
-				alpha?: number;
-				x?: number;
-				y?: number;
-				scaleX?: number;
-				scaleY?: number;
-			},
-		) => {
-			if (to.alpha !== undefined) target.alpha = to.alpha;
-			if (to.x !== undefined) target.x = to.x;
-			if (to.y !== undefined) target.y = to.y;
-			if (to.scaleX !== undefined && target.scale) target.scale.x = to.scaleX;
-			if (to.scaleY !== undefined && target.scale) target.scale.y = to.scaleY;
-			return Promise.resolve();
-		},
-	),
+	Easing: mockEasing,
+	tween: createTweenMock(),
 }));
 
 describe("TurnBanner コンストラクタ", () => {

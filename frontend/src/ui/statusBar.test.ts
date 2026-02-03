@@ -1,25 +1,15 @@
 import { describe, expect, it, vi } from "vitest";
+import {
+	createTweenMock,
+	createTweenValueMock,
+	mockEasing,
+} from "../test-utils/mockTween";
 import { StatusBar } from "./statusBar";
 
-// tween をモック化（即座にresolve、onUpdateをprogress=1で呼び出し）
 vi.mock("../utils/tween", () => ({
-	Easing: {
-		easeOut: (t: number) => t,
-	},
-	tween: vi.fn(
-		(
-			_target: unknown,
-			_to: unknown,
-			options?: { onUpdate?: (p: number) => void },
-		) => {
-			options?.onUpdate?.(1);
-			return Promise.resolve();
-		},
-	),
-	tweenValue: vi.fn((options?: { onUpdate?: (p: number) => void }) => {
-		options?.onUpdate?.(1);
-		return Promise.resolve();
-	}),
+	Easing: mockEasing,
+	tween: createTweenMock(),
+	tweenValue: createTweenValueMock(),
 }));
 
 describe("StatusBar", () => {

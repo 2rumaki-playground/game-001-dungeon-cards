@@ -3,42 +3,12 @@
  */
 
 import { describe, expect, it, vi } from "vitest";
+import { createTweenMock, mockEasing } from "../test-utils/mockTween";
 import { MapRenderer } from "./mapRenderer";
 
-// tween をモック化（即座にresolve、対象プロパティを適用）
 vi.mock("../utils/tween", () => ({
-	Easing: {
-		easeOut: (t: number) => t,
-		easeOutCubic: (t: number) => t,
-		easeInOut: (t: number) => t,
-	},
-	tween: vi.fn(
-		(
-			target: {
-				alpha?: number;
-				x?: number;
-				y?: number;
-				scale?: { x: number; y: number };
-				rotation?: number;
-			},
-			to: {
-				alpha?: number;
-				x?: number;
-				y?: number;
-				scaleX?: number;
-				scaleY?: number;
-				rotation?: number;
-			},
-		) => {
-			if (to.alpha !== undefined) target.alpha = to.alpha;
-			if (to.x !== undefined) target.x = to.x;
-			if (to.y !== undefined) target.y = to.y;
-			if (to.scaleX !== undefined && target.scale) target.scale.x = to.scaleX;
-			if (to.scaleY !== undefined && target.scale) target.scale.y = to.scaleY;
-			if (to.rotation !== undefined) target.rotation = to.rotation;
-			return Promise.resolve();
-		},
-	),
+	Easing: mockEasing,
+	tween: createTweenMock(),
 }));
 
 // Ticker をモック化（addされたコールバックを即座に実行して完了）
