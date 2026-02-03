@@ -8,6 +8,7 @@ import {
 	executeAttack,
 	executeEnemyTurn,
 	executeMove,
+	executeStrongAttack,
 	executeWait,
 	returnToTitle,
 	startNewGame,
@@ -83,6 +84,28 @@ async function handleAttackCardExecution(
 }
 
 /**
+ * 強攻撃カードの実行と対応するアニメーション
+ */
+async function handleStrongAttackCardExecution(
+	ctx: GameContext,
+	cardId: string,
+	direction: Direction,
+): Promise<void> {
+	const {
+		state: next,
+		hit,
+		enemyId,
+	} = executeStrongAttack(ctx.state, cardId, direction);
+	ctx.ui.directionSelector.hide();
+	ctx.pendingCard = null;
+	if (hit && enemyId) {
+		await updateStateWithAttackAnimation(ctx, next, enemyId);
+	} else {
+		updateState(ctx, next);
+	}
+}
+
+/**
  * イベントハンドラを設定
  */
 export function setupEventHandlers(
@@ -100,6 +123,14 @@ export function setupEventHandlers(
 			}
 			if (ctx.pendingCard.type === "attack") {
 				await handleAttackCardExecution(ctx, ctx.pendingCard.id, direction);
+				return;
+			}
+			if (ctx.pendingCard.type === "strong_attack") {
+				await handleStrongAttackCardExecution(
+					ctx,
+					ctx.pendingCard.id,
+					direction,
+				);
 				return;
 			}
 		}
@@ -125,6 +156,8 @@ export function setupEventHandlers(
 				await handleMoveCardExecution(ctx, card.id, direction);
 			} else if (card.type === "attack") {
 				await handleAttackCardExecution(ctx, card.id, direction);
+			} else if (card.type === "strong_attack") {
+				await handleStrongAttackCardExecution(ctx, card.id, direction);
 			}
 		} else {
 			// 方向が指定されていない場合は方向選択UIを表示（フォールバック）
