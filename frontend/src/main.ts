@@ -4,7 +4,6 @@ import {
 	ENEMY_ATTACK_DAMAGE,
 	LOG_AREA_GAP,
 	LOG_AREA_WIDTH,
-	PLAYER_ATTACK_DAMAGE,
 	STATUS_BAR_HEIGHT,
 } from "./constants";
 import {
@@ -19,7 +18,7 @@ import {
 	startPlayerTurn,
 } from "./game";
 import type { GameContext, UIComponents } from "./gameContext";
-import type { Direction, GameState, Position } from "./types";
+import type { Direction, GameState } from "./types";
 import { DIRECTION_DELTA } from "./types";
 import {
 	ActionLogRenderer,
@@ -37,6 +36,12 @@ import {
 } from "./ui";
 import { detectEnemyMoves } from "./ui/enemyMoveDetector";
 import {
+	updateStateWithAttackAnimation,
+	updateStateWithBumpAnimation,
+	updateStateWithMoveAnimation,
+	updateStateWithStairsAnimation,
+} from "./ui/gameAnimations";
+import {
 	applyState,
 	render,
 	renderGameScreen,
@@ -52,161 +57,6 @@ import { deleteSaveData, hasSaveData, loadGame } from "./utils/storage";
 
 /** アプリケーションコンテキスト */
 let ctx: GameContext;
-
-/**
- * ゲーム状態を更新してプレイヤー移動アニメーション付きで再描画
- * @param newState 新しいゲーム状態
- * @param targetGridPos 移動先のグリッド座標
- */
-async function updateStateWithMoveAnimation(
-	newState: GameState,
-	targetGridPos: Position,
-): Promise<void> {
-	if (ctx.isAnimating) return;
-	ctx.isAnimating = true;
-
-	const prevAp = ctx.state.player.ap;
-	applyState(ctx, newState);
-
-	try {
-		// プレイヤー以外を描画
-		render(ctx, false, true);
-
-		// プレイヤー移動アニメーション（AP変化があればバーアニメーションも並列実行）
-		const animations: Promise<void>[] = [
-			ctx.ui.mapRenderer.animatePlayerMove(targetGridPos),
-		];
-		if (prevAp !== newState.player.ap) {
-			animations.push(
-				ctx.ui.statusBar.animateApChange(
-					prevAp,
-					newState.player.ap,
-					newState.player.maxAp,
-				),
-			);
-		}
-		await Promise.all(animations);
-	} finally {
-		ctx.isAnimating = false;
-	}
-}
-
-/**
- * 階段への移動アニメーション後に階層遷移する
- * @param newState 階層遷移後のゲーム状態
- * @param stairsGridPos 階段のグリッド座標
- */
-async function updateStateWithStairsAnimation(
-	newState: GameState,
-	stairsGridPos: Position,
-): Promise<void> {
-	if (ctx.isAnimating) return;
-	ctx.isAnimating = true;
-
-	try {
-		// 1. 現在のマップ上で階段マスへ移動アニメーション
-		await ctx.ui.mapRenderer.animatePlayerMove(stairsGridPos);
-
-		// 2. フェードトランジション（暗転中に階層バナー表示 + 状態更新）
-		await ctx.ui.screenTransition.fadeTransition(async () => {
-			await ctx.ui.floorBanner.show(newState.floor);
-			applyState(ctx, newState);
-			render(ctx, true);
-			await ctx.ui.floorBanner.hide();
-		});
-
-		// 3. フェードイン後に手札配布アニメーション
-		await ctx.ui.handRenderer.renderWithAnimation(
-			ctx.state.deck.hand,
-			ctx.state.player.ap,
-			newState.deck.hand.length,
-		);
-	} finally {
-		ctx.isAnimating = false;
-	}
-}
-
-/**
- * 壁にぶつかった時のバンプアニメーション付きで状態を更新
- * @param newState 新しいゲーム状態
- * @param direction ぶつかった方向
- */
-async function updateStateWithBumpAnimation(
-	newState: GameState,
-	direction: Direction,
-): Promise<void> {
-	if (ctx.isAnimating) return;
-	ctx.isAnimating = true;
-
-	const prevAp = ctx.state.player.ap;
-	applyState(ctx, newState);
-
-	try {
-		render(ctx, false, true);
-
-		const animations: Promise<void>[] = [
-			ctx.ui.mapRenderer.animatePlayerBump(direction),
-		];
-		if (prevAp !== newState.player.ap) {
-			animations.push(
-				ctx.ui.statusBar.animateApChange(
-					prevAp,
-					newState.player.ap,
-					newState.player.maxAp,
-				),
-			);
-		}
-		await Promise.all(animations);
-	} finally {
-		ctx.isAnimating = false;
-	}
-}
-
-/**
- * プレイヤー攻撃ヒット時のアニメーション付きで状態を更新
- * @param newState 新しいゲーム状態
- * @param hitEnemyId ヒットした敵のID
- */
-async function updateStateWithAttackAnimation(
-	newState: GameState,
-	hitEnemyId: string,
-): Promise<void> {
-	if (ctx.isAnimating) return;
-	ctx.isAnimating = true;
-
-	const prevAp = ctx.state.player.ap;
-	const defeated = !newState.enemies.some((e) => e.id === hitEnemyId);
-	applyState(ctx, newState);
-
-	try {
-		// 撃破時は敵の再描画をスキップ（アニメーション用にGraphicsを保持）
-		render(ctx, false, false, defeated);
-
-		// ヒットエフェクト（AP変化があればバーアニメーションも並列実行）
-		const hitAnimations: Promise<void>[] = [
-			ctx.ui.mapRenderer.animateAttackHit(hitEnemyId, PLAYER_ATTACK_DAMAGE),
-		];
-		if (prevAp !== newState.player.ap) {
-			hitAnimations.push(
-				ctx.ui.statusBar.animateApChange(
-					prevAp,
-					newState.player.ap,
-					newState.player.maxAp,
-				),
-			);
-		}
-		await Promise.all(hitAnimations);
-
-		// 撃破演出
-		if (defeated) {
-			await ctx.ui.mapRenderer.animateEnemyDefeat(hitEnemyId);
-			// 撃破後、敵描画を反映
-			render(ctx);
-		}
-	} finally {
-		ctx.isAnimating = false;
-	}
-}
 
 /**
  * UIコンポーネントを初期化してステージに追加
@@ -304,11 +154,11 @@ async function handleMoveCardExecution(
 			x: prevPosition.x + DIRECTION_DELTA[direction].x,
 			y: prevPosition.y + DIRECTION_DELTA[direction].y,
 		};
-		await updateStateWithStairsAnimation(next, stairsPos);
+		await updateStateWithStairsAnimation(ctx, next, stairsPos);
 	} else if (moved) {
-		await updateStateWithMoveAnimation(next, next.player.position);
+		await updateStateWithMoveAnimation(ctx, next, next.player.position);
 	} else {
-		await updateStateWithBumpAnimation(next, direction);
+		await updateStateWithBumpAnimation(ctx, next, direction);
 	}
 }
 
@@ -327,7 +177,7 @@ async function handleAttackCardExecution(
 	ctx.ui.directionSelector.hide();
 	ctx.pendingCard = null;
 	if (hit && enemyId) {
-		await updateStateWithAttackAnimation(next, enemyId);
+		await updateStateWithAttackAnimation(ctx, next, enemyId);
 	} else {
 		updateState(ctx, next);
 	}
