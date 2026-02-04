@@ -7,6 +7,7 @@
 - 全体像・思想：[vision.md](./vision.md)
 - ルール本体：[rules.md](./rules.md)（最重要）
 - カード仕様：[cards.md](./cards.md)
+- 敵タイプ仕様：[enemies.md](./enemies.md)
 - 用語定義：[glossary.md](./glossary.md)
 - 定数・前提：[constants.md](./constants.md)（**数値の正典**）
 
