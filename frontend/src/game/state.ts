@@ -5,6 +5,7 @@
 
 import {
 	ENEMY_PARAMS,
+	getEnemyComposition,
 	INITIAL_FLOOR,
 	MAX_AP,
 	PLAYER_INITIAL_HP,
@@ -42,6 +43,26 @@ export function createEnemiesFromPositions(
 		hp,
 		maxHp: hp,
 	}));
+}
+
+/**
+ * 階層に応じた敵リストを生成
+ */
+export function createEnemiesForFloor(
+	positions: Position[],
+	floor: number,
+): Enemy[] {
+	const composition = getEnemyComposition(floor);
+	const types: EnemyType[] = [
+		...Array<EnemyType>(composition.normal).fill("normal"),
+		...Array<EnemyType>(composition.heavy).fill("heavy"),
+		...Array<EnemyType>(composition.scout).fill("scout"),
+	];
+	return positions.map((position, index) => {
+		const type = types[index] ?? "normal";
+		const { hp } = ENEMY_PARAMS[type];
+		return { id: `enemy-${index + 1}`, type, position, hp, maxHp: hp };
+	});
 }
 
 /**
@@ -106,7 +127,7 @@ export function createInitialGameState(seed?: number): GameState {
 		floor: INITIAL_FLOOR,
 		map,
 		player: { ...initialPlayer, position: player },
-		enemies: createEnemiesFromPositions(enemies),
+		enemies: createEnemiesForFloor(enemies, INITIAL_FLOOR),
 		deck: createEmptyDeckState(),
 		actionLog: [],
 		rng,

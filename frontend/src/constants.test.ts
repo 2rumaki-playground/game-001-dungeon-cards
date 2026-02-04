@@ -2,10 +2,12 @@ import { describe, expect, it } from "vitest";
 import {
 	CARD_COST,
 	ENEMY_ATTACK_DAMAGE,
+	ENEMY_COMPOSITION_TABLE,
 	ENEMY_COUNT,
 	ENEMY_HP,
 	ENEMY_PARAMS,
 	FLOOR_TILE_COUNT,
+	getEnemyComposition,
 	INITIAL_DECK,
 	MAP_HEIGHT,
 	MAP_WIDTH,
@@ -76,6 +78,44 @@ describe("constants", () => {
 		it("旧定数がENEMY_PARAMS.normalと一致する", () => {
 			expect(ENEMY_HP).toBe(ENEMY_PARAMS.normal.hp);
 			expect(ENEMY_ATTACK_DAMAGE).toBe(ENEMY_PARAMS.normal.attackDamage);
+		});
+	});
+
+	describe("getEnemyComposition", () => {
+		it("階層1-2: normal×3", () => {
+			expect(getEnemyComposition(1)).toEqual({ normal: 3, heavy: 0, scout: 0 });
+			expect(getEnemyComposition(2)).toEqual({ normal: 3, heavy: 0, scout: 0 });
+		});
+
+		it("階層3-4: normal×2 + scout×1", () => {
+			expect(getEnemyComposition(3)).toEqual({ normal: 2, heavy: 0, scout: 1 });
+			expect(getEnemyComposition(4)).toEqual({ normal: 2, heavy: 0, scout: 1 });
+		});
+
+		it("階層5-6: normal×2 + heavy×1", () => {
+			expect(getEnemyComposition(5)).toEqual({ normal: 2, heavy: 1, scout: 0 });
+			expect(getEnemyComposition(6)).toEqual({ normal: 2, heavy: 1, scout: 0 });
+		});
+
+		it("階層7-8: normal×1 + heavy×1 + scout×1", () => {
+			expect(getEnemyComposition(7)).toEqual({ normal: 1, heavy: 1, scout: 1 });
+			expect(getEnemyComposition(8)).toEqual({ normal: 1, heavy: 1, scout: 1 });
+		});
+
+		it("階層9+: heavy×1 + scout×2", () => {
+			expect(getEnemyComposition(9)).toEqual({ normal: 0, heavy: 1, scout: 2 });
+			expect(getEnemyComposition(10)).toEqual({
+				normal: 0,
+				heavy: 1,
+				scout: 2,
+			});
+		});
+
+		it("全エントリの合計がENEMY_COUNTと一致", () => {
+			for (const entry of ENEMY_COMPOSITION_TABLE) {
+				const { normal, heavy, scout } = entry.composition;
+				expect(normal + heavy + scout).toBe(ENEMY_COUNT);
+			}
 		});
 	});
 });

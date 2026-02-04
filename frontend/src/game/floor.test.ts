@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
 	ENEMY_COUNT,
 	ENEMY_HP,
+	ENEMY_PARAMS,
 	HAND_LIMIT,
 	MAP_HEIGHT,
 	MAP_WIDTH,
@@ -186,6 +187,32 @@ describe("transitionFloor", () => {
 		expect(state.floor).toBe(originalFloor);
 		expect(state.player.hp).toBe(originalHp);
 		expect(state.player.position).toEqual(originalPosition);
+	});
+
+	it("階層5遷移時にheavy敵が含まれる", () => {
+		const state = createTestState({ floor: 4 });
+		const result = transitionFloor(state);
+
+		expect(result.floor).toBe(5);
+		expect(result.enemies).toHaveLength(ENEMY_COUNT);
+		const heavyEnemies = result.enemies.filter((e) => e.type === "heavy");
+		expect(heavyEnemies).toHaveLength(1);
+		expect(heavyEnemies[0].hp).toBe(ENEMY_PARAMS.heavy.hp);
+		expect(heavyEnemies[0].maxHp).toBe(ENEMY_PARAMS.heavy.hp);
+	});
+
+	it("階層9遷移時にscout×2 + heavy×1の構成になる", () => {
+		const state = createTestState({ floor: 8 });
+		const result = transitionFloor(state);
+
+		expect(result.floor).toBe(9);
+		expect(result.enemies).toHaveLength(ENEMY_COUNT);
+		const scoutEnemies = result.enemies.filter((e) => e.type === "scout");
+		const heavyEnemies = result.enemies.filter((e) => e.type === "heavy");
+		const normalEnemies = result.enemies.filter((e) => e.type === "normal");
+		expect(scoutEnemies).toHaveLength(2);
+		expect(heavyEnemies).toHaveLength(1);
+		expect(normalEnemies).toHaveLength(0);
 	});
 
 	it("saveGame が呼び出され、更新後の状態が保存される", () => {
