@@ -4,7 +4,12 @@
  */
 
 import { Container, Graphics, Text } from "pixi.js";
-import { CARD_COST } from "../constants";
+import {
+	CARD_COST,
+	PLAYER_ATTACK_DAMAGE,
+	PLAYER_STRONG_ATTACK_DAMAGE,
+	RUSH_MAX_DISTANCE,
+} from "../constants";
 import type { Card, CardType, Direction } from "../types";
 import { Easing, tween } from "../utils/tween";
 
@@ -77,13 +82,31 @@ export function getDirectionFromClickPosition(
 const CARD_COLORS = {
 	move: { bg: 0x2a5a8c, border: 0x4a8cca },
 	attack: { bg: 0x8c2a2a, border: 0xca4a4a },
-	strong_attack: { bg: 0x8c5a2a, border: 0xca8a4a },
+	strong_attack: { bg: 0x7a3a6a, border: 0xaa5a9a },
 	rush: { bg: 0x2a6a3a, border: 0x4aaa5a },
-	wait: { bg: 0x5a5a2a, border: 0x8c8c4a },
+	wait: { bg: 0x4a4a4a, border: 0x6a6a6a },
 	disabled: { bg: 0x2a2a2a, border: 0x4a4a4a },
 	selectedBorder: 0xffd700,
 	hoveredBorder: 0x88ccff,
 } as const;
+
+/** カード種別シンボル */
+const CARD_TYPE_SYMBOL: Record<CardType, string> = {
+	move: "👟",
+	attack: "⚔",
+	strong_attack: "🔥",
+	rush: "💨",
+	wait: "⏳",
+};
+
+/** カード効果テキスト */
+const CARD_EFFECT_TEXT: Record<CardType, string> = {
+	move: "1マス移動",
+	attack: `${PLAYER_ATTACK_DAMAGE}ダメージ`,
+	strong_attack: `${PLAYER_STRONG_ATTACK_DAMAGE}ダメージ`,
+	rush: `${RUSH_MAX_DISTANCE}マス移動`,
+	wait: "-",
+};
 
 /** カード種別の日本語名 */
 const CARD_TYPE_NAME: Record<CardType, string> = {
@@ -282,6 +305,20 @@ export class HandRenderer {
 
 		cardContainer.addChild(bg);
 
+		// シンボル
+		const symbolText = new Text({
+			text: CARD_TYPE_SYMBOL[card.type],
+			style: {
+				fontSize: 18,
+				fontFamily: "sans-serif",
+				fill: enabled ? 0xffffff : 0x888888,
+			},
+		});
+		symbolText.anchor.set(0.5, 0);
+		symbolText.x = CARD_WIDTH / 2;
+		symbolText.y = 12;
+		cardContainer.addChild(symbolText);
+
 		// カード名
 		const nameText = new Text({
 			text: CARD_TYPE_NAME[card.type],
@@ -294,23 +331,45 @@ export class HandRenderer {
 		});
 		nameText.anchor.set(0.5, 0);
 		nameText.x = CARD_WIDTH / 2;
-		nameText.y = 30;
+		nameText.y = 34;
 		cardContainer.addChild(nameText);
 
 		// APコスト
 		const cost = CARD_COST[card.type];
+		const costFill = !enabled
+			? 0x666666
+			: cost >= 2
+				? 0xffaa44
+				: cost === 0
+					? 0x666666
+					: 0xcccccc;
 		const costText = new Text({
-			text: `AP: ${cost}`,
+			text: cost > 0 ? `AP: ${cost}` : "",
 			style: {
 				fontSize: 13,
 				fontFamily: "sans-serif",
-				fill: enabled ? 0xcccccc : 0x666666,
+				fill: costFill,
+				fontWeight: cost >= 2 ? "bold" : "normal",
 			},
 		});
 		costText.anchor.set(0.5, 0);
 		costText.x = CARD_WIDTH / 2;
-		costText.y = 70;
+		costText.y = 56;
 		cardContainer.addChild(costText);
+
+		// 効果テキスト
+		const effectText = new Text({
+			text: CARD_EFFECT_TEXT[card.type],
+			style: {
+				fontSize: 11,
+				fontFamily: "sans-serif",
+				fill: enabled ? 0xaaaaaa : 0x555555,
+			},
+		});
+		effectText.anchor.set(0.5, 0);
+		effectText.x = CARD_WIDTH / 2;
+		effectText.y = 74;
+		cardContainer.addChild(effectText);
 
 		// 方向カードには方向ヒントを表示
 		if (
