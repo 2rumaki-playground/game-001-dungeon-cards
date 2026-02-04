@@ -58,7 +58,15 @@ function createTestState(overrides?: Partial<GameState>): GameState {
 			ap: 1,
 			maxAp: MAX_AP,
 		},
-		enemies: [{ id: "enemy-1", position: { x: 2, y: 2 }, hp: 3, maxHp: 3 }],
+		enemies: [
+			{
+				id: "enemy-1",
+				position: { x: 2, y: 2 },
+				hp: 3,
+				maxHp: 3,
+				type: "normal",
+			},
+		],
 		deck: createInitialDeckState(rng),
 		actionLog: [],
 		rng,

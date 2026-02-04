@@ -88,7 +88,15 @@ describe("MapRenderer ダメージポップアップ", () => {
 	it("animateAttackHitでダメージポップアップも表示される", async () => {
 		const renderer = new MapRenderer();
 		const map = createTestMap();
-		const enemies = [{ id: "e1", position: { x: 1, y: 0 }, hp: 3, maxHp: 3 }];
+		const enemies = [
+			{
+				id: "e1",
+				position: { x: 1, y: 0 },
+				hp: 3,
+				maxHp: 3,
+				type: "normal" as const,
+			},
+		];
 		const player = {
 			position: { x: 0, y: 0 },
 			hp: 10,
@@ -123,7 +131,15 @@ describe("MapRenderer 攻撃エフェクト", () => {
 	it("animateAttackHitが正常に完了する", async () => {
 		const renderer = new MapRenderer();
 		const map = createTestMap();
-		const enemies = [{ id: "e1", position: { x: 1, y: 0 }, hp: 3, maxHp: 3 }];
+		const enemies = [
+			{
+				id: "e1",
+				position: { x: 1, y: 0 },
+				hp: 3,
+				maxHp: 3,
+				type: "normal" as const,
+			},
+		];
 		const player = {
 			position: { x: 0, y: 0 },
 			hp: 10,
@@ -193,7 +209,15 @@ describe("MapRenderer 攻撃エフェクト", () => {
 	it("animateAttackHit完了後にコンテナの座標が元に戻る", async () => {
 		const renderer = new MapRenderer();
 		const map = createTestMap();
-		const enemies = [{ id: "e1", position: { x: 1, y: 0 }, hp: 3, maxHp: 3 }];
+		const enemies = [
+			{
+				id: "e1",
+				position: { x: 1, y: 0 },
+				hp: 3,
+				maxHp: 3,
+				type: "normal" as const,
+			},
+		];
 		const player = {
 			position: { x: 0, y: 0 },
 			hp: 10,
@@ -219,7 +243,15 @@ describe("MapRenderer 敵撃破アニメーション", () => {
 	it("animateEnemyDefeatが正常に完了する", async () => {
 		const renderer = new MapRenderer();
 		const map = createTestMap();
-		const enemies = [{ id: "e1", position: { x: 1, y: 1 }, hp: 3, maxHp: 3 }];
+		const enemies = [
+			{
+				id: "e1",
+				position: { x: 1, y: 1 },
+				hp: 3,
+				maxHp: 3,
+				type: "normal" as const,
+			},
+		];
 		const player = {
 			position: { x: 0, y: 0 },
 			hp: 10,
@@ -235,7 +267,15 @@ describe("MapRenderer 敵撃破アニメーション", () => {
 	it("撃破アニメーション完了後に敵Graphicsが削除される", async () => {
 		const renderer = new MapRenderer();
 		const map = createTestMap();
-		const enemies = [{ id: "e1", position: { x: 1, y: 1 }, hp: 3, maxHp: 3 }];
+		const enemies = [
+			{
+				id: "e1",
+				position: { x: 1, y: 1 },
+				hp: 3,
+				maxHp: 3,
+				type: "normal" as const,
+			},
+		];
 		const player = {
 			position: { x: 0, y: 0 },
 			hp: 10,

@@ -3,7 +3,7 @@ import type { Enemy } from "../types";
 import { detectEnemyMoves } from "./enemyMoveDetector";
 
 function makeEnemy(id: string, x: number, y: number, hp = 3, maxHp = 3): Enemy {
-	return { id, position: { x, y }, hp, maxHp };
+	return { id, position: { x, y }, hp, maxHp, type: "normal" as const };
 }
 
 describe("detectEnemyMoves", () => {
