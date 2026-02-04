@@ -4,7 +4,12 @@
  */
 
 import { Container, Graphics, Text } from "pixi.js";
-import { CARD_COST } from "../constants";
+import {
+	CARD_COST,
+	PLAYER_ATTACK_DAMAGE,
+	PLAYER_STRONG_ATTACK_DAMAGE,
+	RUSH_MAX_DISTANCE,
+} from "../constants";
 import type { Card, CardType, Direction } from "../types";
 import { Easing, tween } from "../utils/tween";
 
@@ -86,7 +91,7 @@ const CARD_COLORS = {
 } as const;
 
 /** カード種別シンボル */
-export const CARD_TYPE_SYMBOL: Record<CardType, string> = {
+const CARD_TYPE_SYMBOL: Record<CardType, string> = {
 	move: "👟",
 	attack: "⚔",
 	strong_attack: "🔥",
@@ -95,11 +100,11 @@ export const CARD_TYPE_SYMBOL: Record<CardType, string> = {
 };
 
 /** カード効果テキスト */
-export const CARD_EFFECT_TEXT: Record<CardType, string> = {
+const CARD_EFFECT_TEXT: Record<CardType, string> = {
 	move: "1マス移動",
-	attack: "1ダメージ",
-	strong_attack: "3ダメージ",
-	rush: "2マス移動",
+	attack: `${PLAYER_ATTACK_DAMAGE}ダメージ`,
+	strong_attack: `${PLAYER_STRONG_ATTACK_DAMAGE}ダメージ`,
+	rush: `${RUSH_MAX_DISTANCE}マス移動`,
 	wait: "-",
 };
 
