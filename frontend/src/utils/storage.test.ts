@@ -91,6 +91,47 @@ describe("storage", () => {
 		warnSpy.mockRestore();
 	});
 
+	it("should add default type to enemies without type field (backward compatibility)", () => {
+		const state = createTitleScreenState(42);
+		const saveData = {
+			...state,
+			screen: "game",
+			enemies: [
+				{ id: "e1", position: { x: 1, y: 1 }, hp: 3, maxHp: 3 },
+				{ id: "e2", position: { x: 2, y: 2 }, hp: 5, maxHp: 5 },
+			],
+			rng: state.rng.serialize(),
+		};
+		localStorageMock.setItem("dungeon-cards-save", JSON.stringify(saveData));
+
+		const loaded = loadGame();
+		expect(loaded).not.toBeNull();
+		if (loaded) {
+			for (const enemy of loaded.enemies) {
+				expect(enemy.type).toBe("normal");
+			}
+		}
+	});
+
+	it("should preserve existing type field on enemies", () => {
+		const state = createTitleScreenState(42);
+		const saveData = {
+			...state,
+			screen: "game",
+			enemies: [
+				{ id: "e1", position: { x: 1, y: 1 }, hp: 5, maxHp: 5, type: "heavy" },
+			],
+			rng: state.rng.serialize(),
+		};
+		localStorageMock.setItem("dungeon-cards-save", JSON.stringify(saveData));
+
+		const loaded = loadGame();
+		expect(loaded).not.toBeNull();
+		if (loaded) {
+			expect(loaded.enemies[0].type).toBe("heavy");
+		}
+	});
+
 	it("should return null if screen is invalid", () => {
 		const validState = createTitleScreenState();
 		const invalidState = {
