@@ -9,6 +9,7 @@ import {
 	MAP_WIDTH,
 	PLAYER_ATTACK_DAMAGE,
 	PLAYER_STRONG_ATTACK_DAMAGE,
+	RUSH_MAX_DISTANCE,
 } from "../constants";
 import type { Direction, GameState } from "../types";
 import { DIRECTION_DELTA } from "../types";
@@ -196,6 +197,91 @@ export function executeStrongAttack(
 	next = applyDamageToEnemy(next, result.enemyId, PLAYER_STRONG_ATTACK_DAMAGE);
 
 	return { state: next, hit: true, enemyId: result.enemyId };
+}
+
+/** 突進実行結果 */
+export type RushResult = {
+	state: GameState;
+	/** 移動したマス数（0, 1, 2） */
+	movedDistance: number;
+	/** 階段による階層遷移が発生したか */
+	floorTransitioned: boolean;
+	/** 階層遷移前に移動した位置（アニメーション用） */
+	intermediatePosition?: { x: number; y: number };
+};
+
+/**
+ * 突進カード使用時のプレイヤー移動処理
+ *
+ * 成功/失敗に関わらずAP消費・カード使用を行う。
+ * 最大2マスまで指定方向に移動を試みる。
+ * - 1マス目で壁/マップ外/敵がある場合: 移動なし
+ * - 1マス目で階段: 階層遷移
+ * - 2マス目で壁/敵がある場合: 1マス停止
+ * - 2マス目で階段: 1マス移動後に階層遷移
+ */
+export function executeRush(
+	state: GameState,
+	cardId: string,
+	direction: Direction,
+): RushResult {
+	const delta = DIRECTION_DELTA[direction];
+
+	// AP消費
+	let next = updatePlayer(state, (p) => ({
+		...p,
+		ap: p.ap - CARD_COST.rush,
+	}));
+
+	// カードを捨て札へ
+	next = setDeck(next, playCard(next.deck, cardId));
+
+	let movedDistance = 0;
+	let intermediatePosition: { x: number; y: number } | undefined;
+
+	for (let step = 0; step < RUSH_MAX_DISTANCE; step++) {
+		if (!canMove(next, direction)) {
+			break;
+		}
+
+		// 2マス目以降の移動前に中間位置を記録（アニメーション用）
+		if (movedDistance > 0) {
+			intermediatePosition = { ...next.player.position };
+		}
+
+		// 位置更新
+		const nx = next.player.position.x + delta.x;
+		const ny = next.player.position.y + delta.y;
+		next = updatePlayer(next, (p) => ({
+			...p,
+			position: { x: nx, y: ny },
+		}));
+		movedDistance++;
+
+		// 階段判定
+		if (next.map[ny][nx].type === "stairs") {
+			return {
+				state: transitionFloor(next),
+				movedDistance,
+				floorTransitioned: true,
+				intermediatePosition,
+			};
+		}
+	}
+
+	if (movedDistance === 0) {
+		return {
+			state: addActionLog(next, "突進できなかった"),
+			movedDistance: 0,
+			floorTransitioned: false,
+		};
+	}
+
+	return {
+		state: addActionLog(next, "突進した"),
+		movedDistance,
+		floorTransitioned: false,
+	};
 }
 
 /**

@@ -114,6 +114,45 @@ export async function updateStateWithBumpAnimation(
 }
 
 /**
+ * 突進で2マス目が階段の場合のアニメーション
+ * 1マス目への移動→2マス目（階段）への移動→フェードトランジション→階層遷移
+ */
+export async function animateRushWithStairs(
+	ctx: GameContext,
+	newState: GameState,
+	intermediatePos: Position,
+	stairsPos: Position,
+): Promise<void> {
+	if (ctx.isAnimating) return;
+	ctx.isAnimating = true;
+
+	try {
+		// 1. 中間位置（1マス目）へ移動アニメーション
+		await ctx.ui.mapRenderer.animatePlayerMove(intermediatePos);
+
+		// 2. 階段位置（2マス目）へ移動アニメーション
+		await ctx.ui.mapRenderer.animatePlayerMove(stairsPos);
+
+		// 3. フェードトランジション（暗転中に階層バナー表示 + 状態更新）
+		await ctx.ui.screenTransition.fadeTransition(async () => {
+			await ctx.ui.floorBanner.show(newState.floor);
+			applyState(ctx, newState);
+			render(ctx, true);
+			await ctx.ui.floorBanner.hide();
+		});
+
+		// 4. フェードイン後に手札配布アニメーション
+		await ctx.ui.handRenderer.renderWithAnimation(
+			ctx.state.deck.hand,
+			ctx.state.player.ap,
+			newState.deck.hand.length,
+		);
+	} finally {
+		ctx.isAnimating = false;
+	}
+}
+
+/**
  * プレイヤー攻撃ヒット時のアニメーション付きで状態を更新
  */
 export async function updateStateWithAttackAnimation(

@@ -78,6 +78,7 @@ const CARD_COLORS = {
 	move: { bg: 0x2a5a8c, border: 0x4a8cca },
 	attack: { bg: 0x8c2a2a, border: 0xca4a4a },
 	strong_attack: { bg: 0x8c5a2a, border: 0xca8a4a },
+	rush: { bg: 0x2a6a3a, border: 0x4aaa5a },
 	wait: { bg: 0x5a5a2a, border: 0x8c8c4a },
 	disabled: { bg: 0x2a2a2a, border: 0x4a4a4a },
 	selectedBorder: 0xffd700,
@@ -89,6 +90,7 @@ const CARD_TYPE_NAME: Record<CardType, string> = {
 	move: "移動",
 	attack: "攻撃",
 	strong_attack: "強攻撃",
+	rush: "突進",
 	wait: "待機",
 };
 
@@ -314,7 +316,8 @@ export class HandRenderer {
 		if (
 			card.type === "move" ||
 			card.type === "attack" ||
-			card.type === "strong_attack"
+			card.type === "strong_attack" ||
+			card.type === "rush"
 		) {
 			const arrowColor = enabled ? 0x888888 : 0x444444;
 			this.addDirectionHints(cardContainer, arrowColor);
@@ -343,7 +346,8 @@ export class HandRenderer {
 				if (
 					card.type === "move" ||
 					card.type === "attack" ||
-					card.type === "strong_attack"
+					card.type === "strong_attack" ||
+					card.type === "rush"
 				) {
 					const direction = getDirectionFromClickPosition(
 						event.global.x - cardContainer.getGlobalPosition().x,
