@@ -3,7 +3,7 @@
  * @see docs/spec/mvp/rules.md
  */
 
-import { ENEMY_ATTACK_DAMAGE, MAP_HEIGHT, MAP_WIDTH } from "../constants";
+import { ENEMY_PARAMS, MAP_HEIGHT, MAP_WIDTH } from "../constants";
 import type { Direction, Enemy, GameState, Position } from "../types";
 import { DIRECTION_DELTA } from "../types";
 import { applyDamageToPlayer, checkGameOver, isDefeated } from "./combat";
@@ -106,10 +106,68 @@ export function pickMoveDirection(
 	return bestDirection;
 }
 
+/**
+ * タイプ別の敵移動処理
+ *
+ * moveDistance=0: 移動しない（heavy）
+ * moveDistance=1: 1マス移動（normal）
+ * moveDistance=2: 2段階移動（scout）
+ *   - 1マス目移動失敗 → 即終了
+ *   - 1マス目移動後に隣接 → 2マス目スキップ
+ *   - 2マス目移動失敗 → 1マス目の位置で停止
+ */
+function moveEnemyByType(
+	state: GameState,
+	enemy: Enemy,
+	moveDistance: number,
+): GameState {
+	if (moveDistance === 0) {
+		return addActionLog(state, "敵は動けなかった");
+	}
+
+	let next = state;
+	for (let step = 0; step < moveDistance; step++) {
+		const currentEnemy = next.enemies.find((e) => e.id === enemy.id);
+		if (!currentEnemy) break;
+
+		// 移動後に隣接している場合、残りの移動をスキップ
+		if (step > 0 && isAdjacent(currentEnemy.position, next.player.position)) {
+			break;
+		}
+
+		const dir = pickMoveDirection(next, currentEnemy);
+		if (dir) {
+			const delta = DIRECTION_DELTA[dir];
+			const newEnemies = next.enemies.map((e) =>
+				e.id === enemy.id
+					? {
+							...e,
+							position: {
+								x: e.position.x + delta.x,
+								y: e.position.y + delta.y,
+							},
+						}
+					: e,
+			);
+			next = setEnemies(next, newEnemies);
+			if (step === 0) {
+				next = addActionLog(next, "敵が移動した");
+			}
+		} else {
+			if (step === 0) {
+				next = addActionLog(next, "敵は動けなかった");
+			}
+			break;
+		}
+	}
+
+	return next;
+}
+
 /** 敵ターン実行結果 */
 export type EnemyTurnResult = {
 	state: GameState;
-	attackCount: number;
+	totalDamage: number;
 };
 
 /**
@@ -126,45 +184,28 @@ export function executeEnemyTurn(state: GameState): EnemyTurnResult {
 	const order = rng.shuffle(state.enemies.map((_e, i) => i));
 
 	let next = { ...state, enemies: state.enemies.map((e) => ({ ...e })), rng };
-	let attackCount = 0;
+	let totalDamage = 0;
 
 	for (const idx of order) {
 		// プレイヤーが死亡していたら残りの敵は行動しない
 		if (isDefeated(next.player.hp)) break;
 
 		const enemy = next.enemies[idx];
+		const params = ENEMY_PARAMS[enemy.type];
 
 		if (isAdjacent(enemy.position, next.player.position)) {
 			// 攻撃
-			next = applyDamageToPlayer(next, ENEMY_ATTACK_DAMAGE);
+			next = applyDamageToPlayer(next, params.attackDamage);
 			next = addActionLog(next, "敵が攻撃した");
-			attackCount++;
+			totalDamage += params.attackDamage;
 		} else {
 			// 移動
-			const dir = pickMoveDirection(next, enemy);
-			if (dir) {
-				const delta = DIRECTION_DELTA[dir];
-				const newEnemies = next.enemies.map((e) =>
-					e.id === enemy.id
-						? {
-								...e,
-								position: {
-									x: e.position.x + delta.x,
-									y: e.position.y + delta.y,
-								},
-							}
-						: e,
-				);
-				next = setEnemies(next, newEnemies);
-				next = addActionLog(next, "敵が移動した");
-			} else {
-				next = addActionLog(next, "敵は動けなかった");
-			}
+			next = moveEnemyByType(next, enemy, params.moveDistance);
 		}
 	}
 
 	// プレイヤー死亡判定
 	next = checkGameOver(next);
 
-	return { state: next, attackCount };
+	return { state: next, totalDamage };
 }

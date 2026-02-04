@@ -2,7 +2,7 @@
  * イベントハンドラ設定
  */
 
-import { ENEMY_ATTACK_DAMAGE, LOG_AREA_GAP } from "../constants";
+import { LOG_AREA_GAP } from "../constants";
 import {
 	endPlayerTurn,
 	executeAttack,
@@ -289,10 +289,10 @@ export function setupEventHandlers(
 			await ctx.ui.turnBanner.showBanner("enemy");
 
 			const enemiesBefore = next.enemies;
-			const { state: enemyTurnState, attackCount } = executeEnemyTurn(next);
+			const { state: enemyTurnState, totalDamage } = executeEnemyTurn(next);
 			next = enemyTurnState;
 			const enemyMoves = detectEnemyMoves(enemiesBefore, next.enemies);
-			const playerWasAttacked = attackCount > 0;
+			const playerWasAttacked = totalDamage > 0;
 
 			// 敵移動アニメーション
 			if (enemyMoves.length > 0) {
@@ -311,9 +311,7 @@ export function setupEventHandlers(
 				// ゲームオーバー時も攻撃演出中はゲーム画面を維持（暗転後に切り替え）
 				renderGameScreen(ctx);
 				await Promise.all([
-					ctx.ui.mapRenderer.animateEnemyAttackHit(
-						ENEMY_ATTACK_DAMAGE * attackCount,
-					),
+					ctx.ui.mapRenderer.animateEnemyAttackHit(totalDamage),
 					ctx.ui.statusBar.animateHpChange(
 						prevHp,
 						next.player.hp,
