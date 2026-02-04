@@ -17,10 +17,16 @@ export type Player = {
 };
 
 /**
+ * 敵タイプ
+ */
+export type EnemyType = "normal" | "heavy" | "scout";
+
+/**
  * 敵
  */
 export type Enemy = {
 	id: string;
+	type: EnemyType;
 	position: Position;
 	hp: number;
 	maxHp: number;

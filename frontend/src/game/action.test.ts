@@ -167,6 +167,7 @@ describe("executeAttack", () => {
 		const enemies: Enemy[] = [
 			{
 				id: "enemy-1",
+				type: "normal",
 				position: { x: 4, y: 3 },
 				hp: ENEMY_HP,
 				maxHp: ENEMY_HP,
@@ -300,6 +301,7 @@ describe("executeAttack", () => {
 		const enemies: Enemy[] = [
 			{
 				id: "enemy-1",
+				type: "normal",
 				position: { x: 4, y: 3 },
 				hp: ENEMY_HP,
 				maxHp: ENEMY_HP,
@@ -370,6 +372,7 @@ describe("executeStrongAttack", () => {
 		const enemies: Enemy[] = [
 			{
 				id: "enemy-1",
+				type: "normal",
 				position: { x: 4, y: 3 },
 				hp: ENEMY_HP,
 				maxHp: ENEMY_HP,
@@ -470,6 +473,7 @@ describe("executeStrongAttack", () => {
 		const enemies: Enemy[] = [
 			{
 				id: "enemy-1",
+				type: "normal",
 				position: { x: 4, y: 3 },
 				hp: ENEMY_HP,
 				maxHp: ENEMY_HP,
@@ -575,6 +579,7 @@ describe("executeRush", () => {
 		const enemies: Enemy[] = [
 			{
 				id: "enemy-1",
+				type: "normal",
 				position: { x: 4, y: 3 },
 				hp: ENEMY_HP,
 				maxHp: ENEMY_HP,
@@ -658,6 +663,7 @@ describe("executeRush", () => {
 		const enemies: Enemy[] = [
 			{
 				id: "enemy-1",
+				type: "normal",
 				position: { x: 5, y: 3 },
 				hp: ENEMY_HP,
 				maxHp: ENEMY_HP,

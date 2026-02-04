@@ -75,6 +75,7 @@ describe("pickMoveDirection", () => {
 		});
 		const enemy: Enemy = {
 			id: "enemy-1",
+			type: "normal",
 			position: { x: 3, y: 3 },
 			hp: ENEMY_HP,
 			maxHp: ENEMY_HP,
@@ -94,6 +95,7 @@ describe("pickMoveDirection", () => {
 		});
 		const enemy: Enemy = {
 			id: "enemy-1",
+			type: "normal",
 			position: { x: 3, y: 3 },
 			hp: ENEMY_HP,
 			maxHp: ENEMY_HP,
@@ -113,6 +115,7 @@ describe("pickMoveDirection", () => {
 		});
 		const enemy: Enemy = {
 			id: "enemy-1",
+			type: "normal",
 			position: { x: 3, y: 3 },
 			hp: ENEMY_HP,
 			maxHp: ENEMY_HP,
@@ -133,6 +136,7 @@ describe("pickMoveDirection", () => {
 		});
 		const enemy: Enemy = {
 			id: "enemy-1",
+			type: "normal",
 			position: { x: 3, y: 3 },
 			hp: ENEMY_HP,
 			maxHp: ENEMY_HP,
@@ -154,6 +158,7 @@ describe("pickMoveDirection", () => {
 		});
 		const enemy: Enemy = {
 			id: "enemy-1",
+			type: "normal",
 			position: { x: 1, y: 1 },
 			hp: ENEMY_HP,
 			maxHp: ENEMY_HP,
@@ -167,6 +172,7 @@ describe("pickMoveDirection", () => {
 		const enemies: Enemy[] = [
 			{
 				id: "enemy-2",
+				type: "normal",
 				position: { x: 3, y: 2 },
 				hp: ENEMY_HP,
 				maxHp: ENEMY_HP,
@@ -184,6 +190,7 @@ describe("pickMoveDirection", () => {
 		});
 		const enemy: Enemy = {
 			id: "enemy-1",
+			type: "normal",
 			position: { x: 3, y: 3 },
 			hp: ENEMY_HP,
 			maxHp: ENEMY_HP,
@@ -208,6 +215,7 @@ describe("pickMoveDirection", () => {
 		});
 		const enemy: Enemy = {
 			id: "enemy-1",
+			type: "normal",
 			position: { x: 3, y: 3 },
 			hp: ENEMY_HP,
 			maxHp: ENEMY_HP,
@@ -221,24 +229,28 @@ describe("pickMoveDirection", () => {
 		const enemies: Enemy[] = [
 			{
 				id: "enemy-2",
+				type: "normal",
 				position: { x: 3, y: 2 },
 				hp: ENEMY_HP,
 				maxHp: ENEMY_HP,
 			},
 			{
 				id: "enemy-3",
+				type: "normal",
 				position: { x: 3, y: 4 },
 				hp: ENEMY_HP,
 				maxHp: ENEMY_HP,
 			},
 			{
 				id: "enemy-4",
+				type: "normal",
 				position: { x: 2, y: 3 },
 				hp: ENEMY_HP,
 				maxHp: ENEMY_HP,
 			},
 			{
 				id: "enemy-5",
+				type: "normal",
 				position: { x: 4, y: 3 },
 				hp: ENEMY_HP,
 				maxHp: ENEMY_HP,
@@ -256,6 +268,7 @@ describe("pickMoveDirection", () => {
 		});
 		const enemy: Enemy = {
 			id: "enemy-1",
+			type: "normal",
 			position: { x: 3, y: 3 },
 			hp: ENEMY_HP,
 			maxHp: ENEMY_HP,
@@ -269,6 +282,7 @@ describe("executeEnemyTurn", () => {
 		const enemies: Enemy[] = [
 			{
 				id: "enemy-1",
+				type: "normal",
 				position: { x: 4, y: 3 },
 				hp: ENEMY_HP,
 				maxHp: ENEMY_HP,
@@ -289,6 +303,7 @@ describe("executeEnemyTurn", () => {
 		const enemies: Enemy[] = [
 			{
 				id: "enemy-1",
+				type: "normal",
 				position: { x: 5, y: 3 },
 				hp: ENEMY_HP,
 				maxHp: ENEMY_HP,
@@ -307,12 +322,14 @@ describe("executeEnemyTurn", () => {
 		const enemies: Enemy[] = [
 			{
 				id: "enemy-1",
+				type: "normal",
 				position: { x: 4, y: 3 },
 				hp: ENEMY_HP,
 				maxHp: ENEMY_HP,
 			},
 			{
 				id: "enemy-2",
+				type: "normal",
 				position: { x: 1, y: 1 },
 				hp: ENEMY_HP,
 				maxHp: ENEMY_HP,
@@ -338,18 +355,21 @@ describe("executeEnemyTurn", () => {
 		const enemies: Enemy[] = [
 			{
 				id: "enemy-1",
+				type: "normal",
 				position: { x: 5, y: 5 },
 				hp: ENEMY_HP,
 				maxHp: ENEMY_HP,
 			},
 			{
 				id: "enemy-2",
+				type: "normal",
 				position: { x: 1, y: 5 },
 				hp: ENEMY_HP,
 				maxHp: ENEMY_HP,
 			},
 			{
 				id: "enemy-3",
+				type: "normal",
 				position: { x: 5, y: 1 },
 				hp: ENEMY_HP,
 				maxHp: ENEMY_HP,
@@ -385,6 +405,7 @@ describe("executeEnemyTurn", () => {
 		const enemies: Enemy[] = [
 			{
 				id: "enemy-1",
+				type: "normal",
 				position: { x: 3, y: 5 },
 				hp: ENEMY_HP,
 				maxHp: ENEMY_HP,
@@ -415,6 +436,7 @@ describe("executeEnemyTurn", () => {
 		const enemies: Enemy[] = [
 			{
 				id: "enemy-1",
+				type: "normal",
 				position: { x: 4, y: 3 },
 				hp: ENEMY_HP,
 				maxHp: ENEMY_HP,
@@ -431,6 +453,7 @@ describe("executeEnemyTurn", () => {
 		const enemies: Enemy[] = [
 			{
 				id: "enemy-1",
+				type: "normal",
 				position: { x: 4, y: 3 },
 				hp: ENEMY_HP,
 				maxHp: ENEMY_HP,
@@ -450,6 +473,7 @@ describe("executeEnemyTurn", () => {
 		const enemies: Enemy[] = [
 			{
 				id: "enemy-1",
+				type: "normal",
 				position: { x: 4, y: 3 },
 				hp: ENEMY_HP,
 				maxHp: ENEMY_HP,
@@ -477,12 +501,14 @@ describe("executeEnemyTurn", () => {
 		const enemies: Enemy[] = [
 			{
 				id: "enemy-1",
+				type: "normal",
 				position: { x: 4, y: 3 },
 				hp: ENEMY_HP,
 				maxHp: ENEMY_HP,
 			},
 			{
 				id: "enemy-2",
+				type: "normal",
 				position: { x: 2, y: 3 },
 				hp: ENEMY_HP,
 				maxHp: ENEMY_HP,
@@ -515,6 +541,7 @@ describe("executeEnemyTurn", () => {
 		const enemies: Enemy[] = [
 			{
 				id: "enemy-1",
+				type: "normal",
 				position: { x: 4, y: 3 },
 				hp: ENEMY_HP,
 				maxHp: ENEMY_HP,
@@ -531,6 +558,7 @@ describe("executeEnemyTurn", () => {
 		const enemies: Enemy[] = [
 			{
 				id: "enemy-1",
+				type: "normal",
 				position: { x: 5, y: 3 },
 				hp: ENEMY_HP,
 				maxHp: ENEMY_HP,

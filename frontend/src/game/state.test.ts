@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
 	ENEMY_COUNT,
 	ENEMY_HP,
+	ENEMY_PARAMS,
 	HAND_LIMIT,
 	INITIAL_FLOOR,
 	MAP_HEIGHT,
@@ -13,6 +14,7 @@ import {
 	addActionLog,
 	changeScreen,
 	changeTurn,
+	createEnemiesFromPositions,
 	createInitialGameState,
 	createInitialPlayer,
 	createTitleScreenState,
@@ -32,6 +34,32 @@ describe("state", () => {
 			expect(player.maxHp).toBe(PLAYER_INITIAL_HP);
 			expect(player.ap).toBe(MAX_AP);
 			expect(player.maxAp).toBe(MAX_AP);
+		});
+	});
+
+	describe("createEnemiesFromPositions", () => {
+		it("タイプ未指定時はnormalになる", () => {
+			const positions = [{ x: 1, y: 1 }];
+			const enemies = createEnemiesFromPositions(positions);
+			expect(enemies[0].type).toBe("normal");
+			expect(enemies[0].hp).toBe(ENEMY_PARAMS.normal.hp);
+			expect(enemies[0].maxHp).toBe(ENEMY_PARAMS.normal.hp);
+		});
+
+		it("heavyタイプ指定時に対応HPが設定される", () => {
+			const positions = [{ x: 2, y: 2 }];
+			const enemies = createEnemiesFromPositions(positions, "heavy");
+			expect(enemies[0].type).toBe("heavy");
+			expect(enemies[0].hp).toBe(ENEMY_PARAMS.heavy.hp);
+			expect(enemies[0].maxHp).toBe(ENEMY_PARAMS.heavy.hp);
+		});
+
+		it("scoutタイプ指定時に対応HPが設定される", () => {
+			const positions = [{ x: 3, y: 3 }];
+			const enemies = createEnemiesFromPositions(positions, "scout");
+			expect(enemies[0].type).toBe("scout");
+			expect(enemies[0].hp).toBe(ENEMY_PARAMS.scout.hp);
+			expect(enemies[0].maxHp).toBe(ENEMY_PARAMS.scout.hp);
 		});
 	});
 
@@ -167,8 +195,8 @@ describe("state", () => {
 		it("敵を更新", () => {
 			const state = createTitleScreenState(12345);
 			state.enemies = [
-				{ id: "e1", position: { x: 1, y: 1 }, hp: 3, maxHp: 3 },
-				{ id: "e2", position: { x: 2, y: 2 }, hp: 3, maxHp: 3 },
+				{ id: "e1", type: "normal", position: { x: 1, y: 1 }, hp: 3, maxHp: 3 },
+				{ id: "e2", type: "normal", position: { x: 2, y: 2 }, hp: 3, maxHp: 3 },
 			];
 			const newState = updateEnemy(state, "e1", (e) => ({ ...e, hp: 1 }));
 			expect(newState.enemies[0].hp).toBe(1);
@@ -178,8 +206,8 @@ describe("state", () => {
 		it("敵を削除", () => {
 			const state = createTitleScreenState(12345);
 			state.enemies = [
-				{ id: "e1", position: { x: 1, y: 1 }, hp: 3, maxHp: 3 },
-				{ id: "e2", position: { x: 2, y: 2 }, hp: 3, maxHp: 3 },
+				{ id: "e1", type: "normal", position: { x: 1, y: 1 }, hp: 3, maxHp: 3 },
+				{ id: "e2", type: "normal", position: { x: 2, y: 2 }, hp: 3, maxHp: 3 },
 			];
 			const newState = removeEnemy(state, "e1");
 			expect(newState.enemies.length).toBe(1);
