@@ -9,6 +9,7 @@ import {
 	MAP_WIDTH,
 	PLAYER_ATTACK_DAMAGE,
 	PLAYER_STRONG_ATTACK_DAMAGE,
+	RUSH_MAX_DISTANCE,
 } from "../constants";
 import type { Direction, GameState } from "../types";
 import { DIRECTION_DELTA } from "../types";
@@ -235,8 +236,40 @@ export function executeRush(
 	// カードを捨て札へ
 	next = setDeck(next, playCard(next.deck, cardId));
 
-	// 1マス目移動判定
-	if (!canMove(state, direction)) {
+	let movedDistance = 0;
+	let intermediatePosition: { x: number; y: number } | undefined;
+
+	for (let step = 0; step < RUSH_MAX_DISTANCE; step++) {
+		if (!canMove(next, direction)) {
+			break;
+		}
+
+		// 2マス目以降の移動前に中間位置を記録（アニメーション用）
+		if (movedDistance > 0) {
+			intermediatePosition = { ...next.player.position };
+		}
+
+		// 位置更新
+		const nx = next.player.position.x + delta.x;
+		const ny = next.player.position.y + delta.y;
+		next = updatePlayer(next, (p) => ({
+			...p,
+			position: { x: nx, y: ny },
+		}));
+		movedDistance++;
+
+		// 階段判定
+		if (next.map[ny][nx].type === "stairs") {
+			return {
+				state: transitionFloor(next),
+				movedDistance,
+				floorTransitioned: true,
+				intermediatePosition,
+			};
+		}
+	}
+
+	if (movedDistance === 0) {
 		return {
 			state: addActionLog(next, "突進できなかった"),
 			movedDistance: 0,
@@ -244,53 +277,9 @@ export function executeRush(
 		};
 	}
 
-	// 1マス目位置更新
-	const pos1x = state.player.position.x + delta.x;
-	const pos1y = state.player.position.y + delta.y;
-	next = updatePlayer(next, (p) => ({
-		...p,
-		position: { x: pos1x, y: pos1y },
-	}));
-
-	// 1マス目階段判定
-	if (state.map[pos1y][pos1x].type === "stairs") {
-		return {
-			state: transitionFloor(next),
-			movedDistance: 1,
-			floorTransitioned: true,
-		};
-	}
-
-	// 2マス目移動判定（位置更新済みのnextを使う）
-	if (!canMove(next, direction)) {
-		return {
-			state: addActionLog(next, "突進した"),
-			movedDistance: 1,
-			floorTransitioned: false,
-		};
-	}
-
-	// 2マス目位置更新
-	const pos2x = pos1x + delta.x;
-	const pos2y = pos1y + delta.y;
-	next = updatePlayer(next, (p) => ({
-		...p,
-		position: { x: pos2x, y: pos2y },
-	}));
-
-	// 2マス目階段判定
-	if (next.map[pos2y][pos2x].type === "stairs") {
-		return {
-			state: transitionFloor(next),
-			movedDistance: 2,
-			floorTransitioned: true,
-			intermediatePosition: { x: pos1x, y: pos1y },
-		};
-	}
-
 	return {
 		state: addActionLog(next, "突進した"),
-		movedDistance: 2,
+		movedDistance,
 		floorTransitioned: false,
 	};
 }
