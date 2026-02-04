@@ -76,7 +76,13 @@ describe("executeMove", () => {
 
 	it("敵がいるマスへの移動失敗: 位置変更なし・AP消費", () => {
 		const enemies: Enemy[] = [
-			{ id: "enemy-1", position: { x: 4, y: 3 }, hp: 3, maxHp: 3 },
+			{
+				id: "enemy-1",
+				position: { x: 4, y: 3 },
+				hp: 3,
+				maxHp: 3,
+				type: "normal",
+			},
 		];
 		const state = createTestState({
 			enemies,
@@ -167,6 +173,7 @@ describe("executeAttack", () => {
 		const enemies: Enemy[] = [
 			{
 				id: "enemy-1",
+				type: "normal",
 				position: { x: 4, y: 3 },
 				hp: ENEMY_HP,
 				maxHp: ENEMY_HP,
@@ -200,7 +207,13 @@ describe("executeAttack", () => {
 
 	it("攻撃成功（敵HP0で死亡）: 敵がenemiesから削除される", () => {
 		const enemies: Enemy[] = [
-			{ id: "enemy-1", position: { x: 4, y: 3 }, hp: 1, maxHp: ENEMY_HP },
+			{
+				id: "enemy-1",
+				position: { x: 4, y: 3 },
+				hp: 1,
+				maxHp: ENEMY_HP,
+				type: "normal",
+			},
 		];
 		const state = createTestState({
 			enemies,
@@ -300,6 +313,7 @@ describe("executeAttack", () => {
 		const enemies: Enemy[] = [
 			{
 				id: "enemy-1",
+				type: "normal",
 				position: { x: 4, y: 3 },
 				hp: ENEMY_HP,
 				maxHp: ENEMY_HP,
@@ -370,6 +384,7 @@ describe("executeStrongAttack", () => {
 		const enemies: Enemy[] = [
 			{
 				id: "enemy-1",
+				type: "normal",
 				position: { x: 4, y: 3 },
 				hp: ENEMY_HP,
 				maxHp: ENEMY_HP,
@@ -401,7 +416,13 @@ describe("executeStrongAttack", () => {
 
 	it("攻撃成功（敵HPが3超過）: ダメージ3適用・敵生存", () => {
 		const enemies: Enemy[] = [
-			{ id: "enemy-1", position: { x: 4, y: 3 }, hp: 5, maxHp: 5 },
+			{
+				id: "enemy-1",
+				position: { x: 4, y: 3 },
+				hp: 5,
+				maxHp: 5,
+				type: "normal",
+			},
 		];
 		const state = createTestState({
 			enemies,
@@ -470,6 +491,7 @@ describe("executeStrongAttack", () => {
 		const enemies: Enemy[] = [
 			{
 				id: "enemy-1",
+				type: "normal",
 				position: { x: 4, y: 3 },
 				hp: ENEMY_HP,
 				maxHp: ENEMY_HP,
@@ -575,6 +597,7 @@ describe("executeRush", () => {
 		const enemies: Enemy[] = [
 			{
 				id: "enemy-1",
+				type: "normal",
 				position: { x: 4, y: 3 },
 				hp: ENEMY_HP,
 				maxHp: ENEMY_HP,
@@ -658,6 +681,7 @@ describe("executeRush", () => {
 		const enemies: Enemy[] = [
 			{
 				id: "enemy-1",
+				type: "normal",
 				position: { x: 5, y: 3 },
 				hp: ENEMY_HP,
 				maxHp: ENEMY_HP,

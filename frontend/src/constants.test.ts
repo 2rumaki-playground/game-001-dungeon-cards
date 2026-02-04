@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
 	CARD_COST,
+	ENEMY_ATTACK_DAMAGE,
 	ENEMY_COUNT,
+	ENEMY_HP,
+	ENEMY_PARAMS,
 	FLOOR_TILE_COUNT,
 	INITIAL_DECK,
 	MAP_HEIGHT,
@@ -49,5 +52,30 @@ describe("constants", () => {
 	it("床タイル数がプレイヤー+階段+敵の配置に十分", () => {
 		const requiredTiles = 1 + STAIRS_COUNT + ENEMY_COUNT; // プレイヤー1 + 階段1 + 敵3 = 5
 		expect(FLOOR_TILE_COUNT).toBeGreaterThanOrEqual(requiredTiles);
+	});
+
+	describe("ENEMY_PARAMS", () => {
+		it("通常敵のパラメータが正しい", () => {
+			expect(ENEMY_PARAMS.normal.hp).toBe(3);
+			expect(ENEMY_PARAMS.normal.attackDamage).toBe(1);
+			expect(ENEMY_PARAMS.normal.moveDistance).toBe(1);
+		});
+
+		it("重装敵のパラメータが正しい", () => {
+			expect(ENEMY_PARAMS.heavy.hp).toBe(5);
+			expect(ENEMY_PARAMS.heavy.attackDamage).toBe(2);
+			expect(ENEMY_PARAMS.heavy.moveDistance).toBe(0);
+		});
+
+		it("俊敏敵のパラメータが正しい", () => {
+			expect(ENEMY_PARAMS.scout.hp).toBe(2);
+			expect(ENEMY_PARAMS.scout.attackDamage).toBe(1);
+			expect(ENEMY_PARAMS.scout.moveDistance).toBe(2);
+		});
+
+		it("旧定数がENEMY_PARAMS.normalと一致する", () => {
+			expect(ENEMY_HP).toBe(ENEMY_PARAMS.normal.hp);
+			expect(ENEMY_ATTACK_DAMAGE).toBe(ENEMY_PARAMS.normal.attackDamage);
+		});
 	});
 });

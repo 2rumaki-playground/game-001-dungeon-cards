@@ -38,6 +38,7 @@ describe("applyDamageToEnemy", () => {
 		const enemies: Enemy[] = [
 			{
 				id: "enemy-1",
+				type: "normal",
 				position: { x: 4, y: 3 },
 				hp: ENEMY_HP,
 				maxHp: ENEMY_HP,
@@ -53,6 +54,7 @@ describe("applyDamageToEnemy", () => {
 		const enemies: Enemy[] = [
 			{
 				id: "enemy-1",
+				type: "normal",
 				position: { x: 4, y: 3 },
 				hp: 1,
 				maxHp: ENEMY_HP,
@@ -68,6 +70,7 @@ describe("applyDamageToEnemy", () => {
 		const enemies: Enemy[] = [
 			{
 				id: "enemy-1",
+				type: "normal",
 				position: { x: 4, y: 3 },
 				hp: 1,
 				maxHp: ENEMY_HP,
@@ -84,6 +87,7 @@ describe("applyDamageToEnemy", () => {
 		const enemies: Enemy[] = [
 			{
 				id: "enemy-1",
+				type: "normal",
 				position: { x: 4, y: 3 },
 				hp: ENEMY_HP,
 				maxHp: ENEMY_HP,
@@ -100,12 +104,14 @@ describe("applyDamageToEnemy", () => {
 		const enemies: Enemy[] = [
 			{
 				id: "enemy-1",
+				type: "normal",
 				position: { x: 4, y: 3 },
 				hp: ENEMY_HP,
 				maxHp: ENEMY_HP,
 			},
 			{
 				id: "enemy-2",
+				type: "normal",
 				position: { x: 2, y: 3 },
 				hp: ENEMY_HP,
 				maxHp: ENEMY_HP,
@@ -135,6 +141,7 @@ describe("applyDamageToEnemy", () => {
 		const enemies: Enemy[] = [
 			{
 				id: "enemy-1",
+				type: "normal",
 				position: { x: 4, y: 3 },
 				hp: ENEMY_HP,
 				maxHp: ENEMY_HP,

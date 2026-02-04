@@ -38,10 +38,19 @@ export const RUSH_MAX_DISTANCE = 2;
 
 // 戦闘
 export const PLAYER_INITIAL_HP = 10;
-export const ENEMY_HP = 3;
 export const PLAYER_ATTACK_DAMAGE = 1;
 export const PLAYER_STRONG_ATTACK_DAMAGE = 3;
-export const ENEMY_ATTACK_DAMAGE = 1;
+
+// 敵タイプ別パラメータ
+export const ENEMY_PARAMS = {
+	normal: { hp: 3, attackDamage: 1, moveDistance: 1 },
+	heavy: { hp: 5, attackDamage: 2, moveDistance: 0 },
+	scout: { hp: 2, attackDamage: 1, moveDistance: 2 },
+} as const;
+
+// 後方互換（通常敵のパラメータ）
+export const ENEMY_HP = ENEMY_PARAMS.normal.hp;
+export const ENEMY_ATTACK_DAMAGE = ENEMY_PARAMS.normal.attackDamage;
 
 // 階層
 export const INITIAL_FLOOR = 1;

@@ -4,7 +4,7 @@
  */
 
 import {
-	ENEMY_HP,
+	ENEMY_PARAMS,
 	INITIAL_FLOOR,
 	MAX_AP,
 	PLAYER_INITIAL_HP,
@@ -13,6 +13,7 @@ import type {
 	ActionLogEntry,
 	DeckState,
 	Enemy,
+	EnemyType,
 	GameMap,
 	GameState,
 	Player,
@@ -29,12 +30,17 @@ const cloneRng = (rng: RNG): RNG => rng.clone();
 /**
  * 座標リストから敵リストを生成
  */
-export function createEnemiesFromPositions(positions: Position[]): Enemy[] {
+export function createEnemiesFromPositions(
+	positions: Position[],
+	type: EnemyType = "normal",
+): Enemy[] {
+	const { hp } = ENEMY_PARAMS[type];
 	return positions.map((position, index) => ({
 		id: `enemy-${index + 1}`,
+		type,
 		position,
-		hp: ENEMY_HP,
-		maxHp: ENEMY_HP,
+		hp,
+		maxHp: hp,
 	}));
 }
 

@@ -60,8 +60,17 @@ export function loadGame(): GameState | null {
 			return null;
 		}
 
+		// 旧セーブデータの後方互換: type未設定の敵に"normal"を補完
+		const enemies = Array.isArray(data.enemies)
+			? data.enemies.map((e: Record<string, unknown>) => ({
+					...e,
+					type: e.type ?? "normal",
+				}))
+			: data.enemies;
+
 		return {
 			...data,
+			enemies,
 			rng: RNG.deserialize(data.rng),
 		};
 	} catch (e) {
