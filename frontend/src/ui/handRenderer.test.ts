@@ -2,10 +2,11 @@
  * 手札レンダラーのテスト
  */
 
-import type { Container, FederatedPointerEvent } from "pixi.js";
+import type { Container, FederatedPointerEvent, Text } from "pixi.js";
 import { describe, expect, it, vi } from "vitest";
+import { CARD_COST } from "../constants";
 import { createTweenMock, mockEasing } from "../test-utils/mockTween";
-import type { Card } from "../types";
+import type { Card, CardType } from "../types";
 import { tween } from "../utils/tween";
 import {
 	CARD_HEIGHT,
@@ -242,5 +243,102 @@ describe("HandRenderer ホバー・選択演出", () => {
 		expect(mockedTween.mock.calls[1][1]).toEqual(
 			expect.objectContaining({ scaleX: 1, scaleY: 1 }),
 		);
+	});
+});
+
+describe("カード種別ビジュアル差別化", () => {
+	const allCardTypes: CardType[] = [
+		"move",
+		"attack",
+		"strong_attack",
+		"rush",
+		"wait",
+	];
+
+	function renderSingleCard(type: CardType): Container {
+		const renderer = new HandRenderer();
+		const cards: Card[] = [{ id: `card-${type}`, type }];
+		renderer.render(cards, 10);
+		return renderer.getContainer().children[0] as Container;
+	}
+
+	function getTextChildren(container: Container): Text[] {
+		return container.children.filter(
+			(child) =>
+				"text" in child &&
+				typeof (child as { text: unknown }).text === "string",
+		) as unknown as Text[];
+	}
+
+	describe("シンボル表示", () => {
+		it.each([
+			["move", "👟"],
+			["attack", "⚔"],
+			["strong_attack", "🔥"],
+			["rush", "💨"],
+			["wait", "⏳"],
+		] as [
+			CardType,
+			string,
+		][])("%s カードにシンボル %s が表示される", (type, expectedSymbol) => {
+			const cardContainer = renderSingleCard(type);
+			const texts = getTextChildren(cardContainer);
+			const symbolText = texts.find((t) => t.text === expectedSymbol);
+			expect(symbolText).toBeDefined();
+		});
+	});
+
+	describe("効果テキスト表示", () => {
+		it.each([
+			["move", "1マス移動"],
+			["attack", "1ダメージ"],
+			["strong_attack", "3ダメージ"],
+			["rush", "2マス移動"],
+			["wait", "-"],
+		] as [
+			CardType,
+			string,
+		][])("%s カードに効果テキスト「%s」が表示される", (type, expectedEffect) => {
+			const cardContainer = renderSingleCard(type);
+			const texts = getTextChildren(cardContainer);
+			const effectText = texts.find((t) => t.text === expectedEffect);
+			expect(effectText).toBeDefined();
+		});
+	});
+
+	describe("APコスト表示強化", () => {
+		it("コスト2のカードはAPコストが強調色で表示される", () => {
+			for (const type of allCardTypes) {
+				const cost = CARD_COST[type];
+				if (cost < 2) continue;
+				const cardContainer = renderSingleCard(type);
+				const texts = getTextChildren(cardContainer);
+				const costText = texts.find((t) => t.text === `AP: ${cost}`);
+				expect(costText).toBeDefined();
+				// style.fillは強調色 0xffaa44
+				const style = (costText as Text).style;
+				expect(style.fill).toBe(0xffaa44);
+			}
+		});
+
+		it("コスト0の待機カードはAPコストが非表示になる", () => {
+			const cardContainer = renderSingleCard("wait");
+			const texts = getTextChildren(cardContainer);
+			const costText = texts.find((t) => t.text.startsWith("AP:"));
+			expect(costText).toBeUndefined();
+		});
+
+		it("コスト1のカードは通常色で表示される", () => {
+			for (const type of allCardTypes) {
+				const cost = CARD_COST[type];
+				if (cost !== 1) continue;
+				const cardContainer = renderSingleCard(type);
+				const texts = getTextChildren(cardContainer);
+				const costText = texts.find((t) => t.text === `AP: ${cost}`);
+				expect(costText).toBeDefined();
+				const style = (costText as Text).style;
+				expect(style.fill).toBe(0xcccccc);
+			}
+		});
 	});
 });
