@@ -9,7 +9,7 @@ import { reshuffleDeck } from "./deck";
 import { generateMapPlacement } from "./map";
 import {
 	addActionLog,
-	createEnemiesFromPositions,
+	createEnemiesForFloor,
 	setDeck,
 	setEnemies,
 	setFloor,
@@ -45,8 +45,8 @@ export function transitionFloor(state: GameState): GameState {
 		position: player,
 	}));
 
-	// 4. 敵を新マップの配置で初期化
-	next = setEnemies(next, createEnemiesFromPositions(enemies));
+	// 4. 敵を新マップの配置で初期化（階層に応じたタイプ構成）
+	next = setEnemies(next, createEnemiesForFloor(enemies, next.floor));
 
 	// 5. デッキをリセット・シャッフル
 	next = setDeck(next, reshuffleDeck(next.deck, next.rng));

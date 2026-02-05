@@ -14,6 +14,7 @@ import {
 	addActionLog,
 	changeScreen,
 	changeTurn,
+	createEnemiesForFloor,
 	createEnemiesFromPositions,
 	createInitialGameState,
 	createInitialPlayer,
@@ -60,6 +61,46 @@ describe("state", () => {
 			expect(enemies[0].type).toBe("scout");
 			expect(enemies[0].hp).toBe(ENEMY_PARAMS.scout.hp);
 			expect(enemies[0].maxHp).toBe(ENEMY_PARAMS.scout.hp);
+		});
+	});
+
+	describe("createEnemiesForFloor", () => {
+		const positions = [
+			{ x: 1, y: 1 },
+			{ x: 2, y: 2 },
+			{ x: 3, y: 3 },
+		];
+
+		it("階層1: normal×3", () => {
+			const enemies = createEnemiesForFloor(positions, 1);
+			expect(enemies).toHaveLength(3);
+			expect(enemies.every((e) => e.type === "normal")).toBe(true);
+			expect(enemies.every((e) => e.hp === ENEMY_PARAMS.normal.hp)).toBe(true);
+		});
+
+		it("階層3: normal×2 + scout×1", () => {
+			const enemies = createEnemiesForFloor(positions, 3);
+			expect(enemies[0].type).toBe("normal");
+			expect(enemies[1].type).toBe("normal");
+			expect(enemies[2].type).toBe("scout");
+			expect(enemies[2].hp).toBe(ENEMY_PARAMS.scout.hp);
+		});
+
+		it("階層5: normal×2 + heavy×1", () => {
+			const enemies = createEnemiesForFloor(positions, 5);
+			expect(enemies[0].type).toBe("normal");
+			expect(enemies[1].type).toBe("normal");
+			expect(enemies[2].type).toBe("heavy");
+			expect(enemies[2].hp).toBe(ENEMY_PARAMS.heavy.hp);
+		});
+
+		it("各敵にIDと座標が設定される", () => {
+			const enemies = createEnemiesForFloor(positions, 5);
+			expect(enemies[0].id).toBe("enemy-1");
+			expect(enemies[1].id).toBe("enemy-2");
+			expect(enemies[2].id).toBe("enemy-3");
+			expect(enemies[0].position).toEqual({ x: 1, y: 1 });
+			expect(enemies[2].position).toEqual({ x: 3, y: 3 });
 		});
 	});
 

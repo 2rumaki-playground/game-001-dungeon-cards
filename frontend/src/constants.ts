@@ -61,6 +61,30 @@ export const MAP_HEIGHT = 7;
 export const STAIRS_COUNT = 1;
 export const ENEMY_COUNT = 3;
 
+// 階層別敵構成
+export type EnemyComposition = {
+	normal: number;
+	heavy: number;
+	scout: number;
+};
+
+export const ENEMY_COMPOSITION_TABLE: {
+	maxFloor: number;
+	composition: EnemyComposition;
+}[] = [
+	{ maxFloor: 2, composition: { normal: 3, heavy: 0, scout: 0 } },
+	{ maxFloor: 4, composition: { normal: 2, heavy: 0, scout: 1 } },
+	{ maxFloor: 6, composition: { normal: 2, heavy: 1, scout: 0 } },
+	{ maxFloor: 8, composition: { normal: 1, heavy: 1, scout: 1 } },
+	{ maxFloor: Infinity, composition: { normal: 0, heavy: 1, scout: 2 } },
+];
+
+export function getEnemyComposition(floor: number): EnemyComposition {
+	const entry = ENEMY_COMPOSITION_TABLE.find((e) => floor <= e.maxFloor);
+	// 最後のエントリがInfinityなので必ずマッチする
+	return (entry as (typeof ENEMY_COMPOSITION_TABLE)[number]).composition;
+}
+
 // 行動ログ
 export const ACTION_LOG_LIMIT = 50;
 
