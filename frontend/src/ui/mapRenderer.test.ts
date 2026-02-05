@@ -239,6 +239,178 @@ describe("MapRenderer 攻撃エフェクト", () => {
 	});
 });
 
+describe("MapRenderer タイプ別敵描画", () => {
+	it("Normal敵が描画できる", async () => {
+		const renderer = new MapRenderer();
+		const map = createTestMap();
+		const enemies = [
+			{
+				id: "e-normal",
+				position: { x: 1, y: 1 },
+				hp: 3,
+				maxHp: 3,
+				type: "normal" as const,
+			},
+		];
+		const player = {
+			position: { x: 0, y: 0 },
+			hp: 10,
+			maxHp: 10,
+			ap: 3,
+			maxAp: 3,
+		};
+		renderer.render(map, player, enemies);
+
+		const container = renderer.getContainer();
+		const enemiesContainer = container.children[1];
+		expect(enemiesContainer.children.length).toBe(1);
+	});
+
+	it("Heavy敵が描画できる", async () => {
+		const renderer = new MapRenderer();
+		const map = createTestMap();
+		const enemies = [
+			{
+				id: "e-heavy",
+				position: { x: 2, y: 2 },
+				hp: 5,
+				maxHp: 5,
+				type: "heavy" as const,
+			},
+		];
+		const player = {
+			position: { x: 0, y: 0 },
+			hp: 10,
+			maxHp: 10,
+			ap: 3,
+			maxAp: 3,
+		};
+		renderer.render(map, player, enemies);
+
+		const container = renderer.getContainer();
+		const enemiesContainer = container.children[1];
+		expect(enemiesContainer.children.length).toBe(1);
+	});
+
+	it("Scout敵が描画できる", async () => {
+		const renderer = new MapRenderer();
+		const map = createTestMap();
+		const enemies = [
+			{
+				id: "e-scout",
+				position: { x: 3, y: 3 },
+				hp: 2,
+				maxHp: 2,
+				type: "scout" as const,
+			},
+		];
+		const player = {
+			position: { x: 0, y: 0 },
+			hp: 10,
+			maxHp: 10,
+			ap: 3,
+			maxAp: 3,
+		};
+		renderer.render(map, player, enemies);
+
+		const container = renderer.getContainer();
+		const enemiesContainer = container.children[1];
+		expect(enemiesContainer.children.length).toBe(1);
+	});
+
+	it("全タイプの敵が同時に描画できる", async () => {
+		const renderer = new MapRenderer();
+		const map = createTestMap();
+		const enemies = [
+			{
+				id: "e-normal",
+				position: { x: 1, y: 1 },
+				hp: 3,
+				maxHp: 3,
+				type: "normal" as const,
+			},
+			{
+				id: "e-heavy",
+				position: { x: 2, y: 2 },
+				hp: 5,
+				maxHp: 5,
+				type: "heavy" as const,
+			},
+			{
+				id: "e-scout",
+				position: { x: 3, y: 3 },
+				hp: 2,
+				maxHp: 2,
+				type: "scout" as const,
+			},
+		];
+		const player = {
+			position: { x: 0, y: 0 },
+			hp: 10,
+			maxHp: 10,
+			ap: 3,
+			maxAp: 3,
+		};
+		renderer.render(map, player, enemies);
+
+		const container = renderer.getContainer();
+		const enemiesContainer = container.children[1];
+		expect(enemiesContainer.children.length).toBe(3);
+	});
+
+	it("Heavy敵の撃破アニメーションが正常に完了する", async () => {
+		const renderer = new MapRenderer();
+		const map = createTestMap();
+		const enemies = [
+			{
+				id: "e-heavy",
+				position: { x: 1, y: 1 },
+				hp: 5,
+				maxHp: 5,
+				type: "heavy" as const,
+			},
+		];
+		const player = {
+			position: { x: 0, y: 0 },
+			hp: 10,
+			maxHp: 10,
+			ap: 3,
+			maxAp: 3,
+		};
+		renderer.render(map, player, enemies);
+
+		await expect(
+			renderer.animateEnemyDefeat("e-heavy"),
+		).resolves.toBeUndefined();
+	});
+
+	it("Scout敵の攻撃ヒットアニメーションが正常に完了する", async () => {
+		const renderer = new MapRenderer();
+		const map = createTestMap();
+		const enemies = [
+			{
+				id: "e-scout",
+				position: { x: 1, y: 0 },
+				hp: 2,
+				maxHp: 2,
+				type: "scout" as const,
+			},
+		];
+		const player = {
+			position: { x: 0, y: 0 },
+			hp: 10,
+			maxHp: 10,
+			ap: 3,
+			maxAp: 3,
+		};
+		renderer.render(map, player, enemies);
+
+		await expect(
+			renderer.animateAttackHit("e-scout", 1),
+		).resolves.toBeUndefined();
+	});
+});
+
 describe("MapRenderer 敵撃破アニメーション", () => {
 	it("animateEnemyDefeatが正常に完了する", async () => {
 		const renderer = new MapRenderer();

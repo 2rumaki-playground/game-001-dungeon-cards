@@ -109,5 +109,10 @@ export const COLORS = {
 	stairs: 0x4a6a4a,
 	// キャラクター
 	player: 0x4a8cca,
+	// 敵タイプ別カラー
+	enemyNormal: 0xca4a4a,
+	enemyHeavy: 0x8855aa,
+	enemyScout: 0x88cc44,
+	// 後方互換（通常敵カラー）
 	enemy: 0xca4a4a,
 } as const;
