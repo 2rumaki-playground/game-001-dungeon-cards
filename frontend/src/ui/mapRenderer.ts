@@ -14,6 +14,7 @@ import type {
 	TileType,
 } from "../types";
 import { DIRECTION_DELTA } from "../types";
+import type { EnemyType } from "../types/character";
 import { Easing, tween } from "../utils/tween";
 import { gridToPixel } from "./coordinates";
 import type { EnemyMove } from "./enemyMoveDetector";
@@ -71,6 +72,13 @@ const DEFEAT_DURATION = 400;
 
 /** 敵撃破アニメーションの回転量（180度） */
 const DEFEAT_ROTATION = Math.PI;
+
+/** 敵タイプ別パディング（セルサイズからの余白） */
+const ENEMY_PADDING = {
+	normal: 12, // 標準サイズ
+	heavy: 8, // 大きめ（パディング小）
+	scout: 16, // 小さめ（パディング大）
+} as const;
 
 /**
  * タイル種別に対応する色を取得
@@ -246,16 +254,34 @@ export class MapRenderer {
 	}
 
 	/**
-	 * 敵のGraphicsを作成（ローカル座標ベース）
+	 * 敵タイプに応じた色を取得
 	 */
-	private createEnemyGraphics(): Graphics {
+	private getEnemyColor(type: EnemyType): number {
+		switch (type) {
+			case "normal":
+				return COLORS.enemyNormal;
+			case "heavy":
+				return COLORS.enemyHeavy;
+			case "scout":
+				return COLORS.enemyScout;
+			default:
+				return COLORS.enemyNormal;
+		}
+	}
+
+	/**
+	 * 敵のGraphicsを作成（ローカル座標ベース）
+	 * @param type 敵タイプ
+	 */
+	private createEnemyGraphics(type: EnemyType): Graphics {
 		const graphics = new Graphics();
-		const padding = 12;
+		const padding = ENEMY_PADDING[type];
 		const size = CELL_SIZE - padding * 2;
+		const color = this.getEnemyColor(type);
 
 		// ローカル座標でセル内に四角を描画
 		graphics.rect(padding, padding, size, size);
-		graphics.fill(COLORS.enemy);
+		graphics.fill(color);
 
 		return graphics;
 	}
@@ -280,7 +306,7 @@ export class MapRenderer {
 		for (const enemy of enemies) {
 			let graphics = this.enemyGraphicsMap.get(enemy.id);
 			if (!graphics) {
-				graphics = this.createEnemyGraphics();
+				graphics = this.createEnemyGraphics(enemy.type);
 				this.enemyGraphicsMap.set(enemy.id, graphics);
 				this.enemiesContainer.addChild(graphics);
 			}
