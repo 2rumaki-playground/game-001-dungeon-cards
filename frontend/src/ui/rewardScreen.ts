@@ -212,25 +212,72 @@ export class RewardScreen {
 
 		// スクロール可能なカード一覧
 		const listStartY = 90;
-		const maxVisible = Math.floor(
-			REMOVE_LIST_MAX_HEIGHT / (REMOVE_CARD_HEIGHT + REMOVE_CARD_GAP),
-		);
-		const visibleCards = deckCards.slice(0, maxVisible);
 		const listWidth = 240;
 		const listX = (screenWidth - listWidth) / 2;
+		const totalListHeight =
+			deckCards.length * (REMOVE_CARD_HEIGHT + REMOVE_CARD_GAP);
 
-		for (let i = 0; i < visibleCards.length; i++) {
-			const card = visibleCards[i];
-			const y = listStartY + i * (REMOVE_CARD_HEIGHT + REMOVE_CARD_GAP);
-			const item = this.createRemoveCardItem(card, listX, y, listWidth);
-			this.container.addChild(item);
+		// スクロールコンテナ
+		const scrollContainer = new Container();
+		for (let i = 0; i < deckCards.length; i++) {
+			const card = deckCards[i];
+			const y = i * (REMOVE_CARD_HEIGHT + REMOVE_CARD_GAP);
+			const item = this.createRemoveCardItem(card, 0, y, listWidth);
+			scrollContainer.addChild(item);
+		}
+		scrollContainer.x = listX;
+		scrollContainer.y = listStartY;
+
+		// リスト表示領域をマスクで制限
+		const visibleHeight = Math.min(REMOVE_LIST_MAX_HEIGHT, totalListHeight);
+		const maskGraphics = new Graphics();
+		maskGraphics.rect(listX, listStartY, listWidth, visibleHeight);
+		maskGraphics.fill(0xffffff);
+		scrollContainer.mask = maskGraphics;
+		this.container.addChild(maskGraphics);
+		this.container.addChild(scrollContainer);
+
+		// ドラッグスクロール
+		if (totalListHeight > REMOVE_LIST_MAX_HEIGHT) {
+			const scrollArea = new Graphics();
+			scrollArea.rect(listX, listStartY, listWidth, visibleHeight);
+			scrollArea.fill({ color: 0x000000, alpha: 0.01 });
+			scrollArea.eventMode = "static";
+			scrollArea.cursor = "grab";
+
+			let isDragging = false;
+			let lastY = 0;
+			const minScrollY = listStartY - (totalListHeight - visibleHeight);
+			const maxScrollY = listStartY;
+
+			scrollArea.on("pointerdown", (e) => {
+				isDragging = true;
+				lastY = e.globalY;
+				scrollArea.cursor = "grabbing";
+			});
+			scrollArea.on("pointermove", (e) => {
+				if (!isDragging) return;
+				const dy = e.globalY - lastY;
+				lastY = e.globalY;
+				scrollContainer.y = Math.max(
+					minScrollY,
+					Math.min(maxScrollY, scrollContainer.y + dy),
+				);
+			});
+			scrollArea.on("pointerup", () => {
+				isDragging = false;
+				scrollArea.cursor = "grab";
+			});
+			scrollArea.on("pointerupoutside", () => {
+				isDragging = false;
+				scrollArea.cursor = "grab";
+			});
+
+			this.container.addChild(scrollArea);
 		}
 
 		// キャンセルボタン
-		const cancelY =
-			listStartY +
-			visibleCards.length * (REMOVE_CARD_HEIGHT + REMOVE_CARD_GAP) +
-			10;
+		const cancelY = listStartY + visibleHeight + 10;
 		const cancelButton = this.createButton(
 			"スキップ",
 			screenWidth / 2 - BUTTON_WIDTH / 2,
