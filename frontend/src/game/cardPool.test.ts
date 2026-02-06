@@ -108,6 +108,13 @@ describe("cardPool", () => {
 			expect(choices).toEqual([]);
 		});
 
+		it("負のcountでエラーを投げる", () => {
+			const rng = new RNG(42);
+			expect(() => generateRewardChoices(rng, -1)).toThrow(
+				"Cannot generate negative count: -1",
+			);
+		});
+
 		it("シード固定で再現性がある", () => {
 			const choices1 = generateRewardChoices(new RNG(42), 5);
 			const choices2 = generateRewardChoices(new RNG(42), 5);
