@@ -49,12 +49,12 @@ describe("cardPool", () => {
 		});
 
 		it("シード固定で再現性がある", () => {
-			const results1 = Array.from({ length: 10 }, () =>
-				rollRarity(new RNG(123)),
-			);
-			const results2 = Array.from({ length: 10 }, () =>
-				rollRarity(new RNG(123)),
-			);
+			const rng1 = new RNG(123);
+			const results1 = Array.from({ length: 10 }, () => rollRarity(rng1));
+
+			const rng2 = new RNG(123);
+			const results2 = Array.from({ length: 10 }, () => rollRarity(rng2));
+
 			expect(results1).toEqual(results2);
 		});
 
