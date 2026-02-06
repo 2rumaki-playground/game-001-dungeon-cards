@@ -9,6 +9,11 @@
 export type CardType = "move" | "attack" | "strong_attack" | "rush" | "wait";
 
 /**
+ * カードレアリティ
+ */
+export type Rarity = "common" | "uncommon" | "rare";
+
+/**
  * カード
  */
 export type Card = {

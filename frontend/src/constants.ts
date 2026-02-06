@@ -1,7 +1,9 @@
 /**
  * ゲーム定数
- * @see docs/spec/mvp/constants.md
+ * @see docs/spec/constants.md
  */
+
+import type { CardType, Rarity } from "./types";
 
 // 行動関連
 export const MAX_AP = 3;
@@ -84,6 +86,27 @@ export function getEnemyComposition(floor: number): EnemyComposition {
 	// 最後のエントリがInfinityなので必ずマッチする
 	return (entry as (typeof ENEMY_COMPOSITION_TABLE)[number]).composition;
 }
+
+// デッキ構築（v1.2）
+export const DECK_MAX_SIZE = 30;
+export const DECK_MIN_SIZE = 10;
+export const CARD_REMOVAL_CHANCE = 0.3;
+
+// カードレアリティ（正典: docs/spec/constants.md）
+export const CARD_RARITY: Record<CardType, Rarity> = {
+	move: "common",
+	attack: "common",
+	wait: "common",
+	strong_attack: "uncommon",
+	rush: "rare",
+};
+
+// レアリティ出現率（正典: docs/spec/constants.md）
+export const RARITY_WEIGHTS: Record<Rarity, number> = {
+	common: 70,
+	uncommon: 25,
+	rare: 5,
+};
 
 // 行動ログ
 export const ACTION_LOG_LIMIT = 50;
