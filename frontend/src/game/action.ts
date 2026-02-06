@@ -15,7 +15,6 @@ import type { Direction, GameState } from "../types";
 import { DIRECTION_DELTA } from "../types";
 import { applyDamageToEnemy } from "./combat";
 import { playCard } from "./deck";
-import { transitionFloor } from "./floor";
 import { addActionLog, setDeck, updatePlayer } from "./state";
 
 /**
@@ -44,17 +43,25 @@ function canMove(state: GameState, direction: Direction): boolean {
 	return true;
 }
 
+/** 移動実行結果 */
+export type MoveResult = {
+	state: GameState;
+	/** 階段に到達したか */
+	reachedStairs: boolean;
+};
+
 /**
  * 移動カード使用時のプレイヤー移動処理
  *
  * 成功/失敗に関わらずAP消費・カード使用を行う。
  * 成功時は位置更新、失敗時はログのみ。
+ * 階段到達時は階層遷移を行わず、フラグで通知する。
  */
 export function executeMove(
 	state: GameState,
 	cardId: string,
 	direction: Direction,
-): GameState {
+): MoveResult {
 	// AP消費
 	let next = updatePlayer(state, (p) => ({
 		...p,
@@ -66,7 +73,10 @@ export function executeMove(
 
 	// 移動判定
 	if (!canMove(state, direction)) {
-		return addActionLog(next, "移動できなかった");
+		return {
+			state: addActionLog(next, "移動できなかった"),
+			reachedStairs: false,
+		};
 	}
 
 	// 位置更新
@@ -81,12 +91,12 @@ export function executeMove(
 
 	next = addActionLog(next, "移動した");
 
-	// 階段判定
+	// 階段判定（遷移はUI層で行う）
 	if (state.map[ny][nx].type === "stairs") {
-		return transitionFloor(next);
+		return { state: next, reachedStairs: true };
 	}
 
-	return next;
+	return { state: next, reachedStairs: false };
 }
 
 /**
@@ -204,9 +214,9 @@ export type RushResult = {
 	state: GameState;
 	/** 移動したマス数（0, 1, 2） */
 	movedDistance: number;
-	/** 階段による階層遷移が発生したか */
-	floorTransitioned: boolean;
-	/** 階層遷移前に移動した位置（アニメーション用） */
+	/** 階段に到達したか */
+	reachedStairs: boolean;
+	/** 階段到達前に移動した位置（アニメーション用） */
 	intermediatePosition?: { x: number; y: number };
 };
 
@@ -258,12 +268,12 @@ export function executeRush(
 		}));
 		movedDistance++;
 
-		// 階段判定
+		// 階段判定（遷移はUI層で行う）
 		if (next.map[ny][nx].type === "stairs") {
 			return {
-				state: transitionFloor(next),
+				state: next,
 				movedDistance,
-				floorTransitioned: true,
+				reachedStairs: true,
 				intermediatePosition,
 			};
 		}
@@ -273,14 +283,14 @@ export function executeRush(
 		return {
 			state: addActionLog(next, "突進できなかった"),
 			movedDistance: 0,
-			floorTransitioned: false,
+			reachedStairs: false,
 		};
 	}
 
 	return {
 		state: addActionLog(next, "突進した"),
 		movedDistance,
-		floorTransitioned: false,
+		reachedStairs: false,
 	};
 }
 
