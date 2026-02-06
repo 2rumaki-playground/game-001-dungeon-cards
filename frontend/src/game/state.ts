@@ -110,6 +110,8 @@ export function createTitleScreenState(seed?: number): GameState {
 		deck: createEmptyDeckState(),
 		actionLog: [],
 		rng: new RNG(seed),
+		defeatedEnemyCount: 0,
+		rewardState: null,
 	};
 }
 
@@ -131,6 +133,8 @@ export function createInitialGameState(seed?: number): GameState {
 		deck: createEmptyDeckState(),
 		actionLog: [],
 		rng,
+		defeatedEnemyCount: 0,
+		rewardState: null,
 	};
 }
 

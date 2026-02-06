@@ -44,6 +44,7 @@ export function applyDamageToEnemy(
 	const target = next.enemies.find((e) => e.id === enemyId);
 	if (target && isDefeated(target.hp)) {
 		next = removeEnemy(next, enemyId);
+		next = { ...next, defeatedEnemyCount: next.defeatedEnemyCount + 1 };
 		return addActionLog(next, "敵を倒した");
 	}
 

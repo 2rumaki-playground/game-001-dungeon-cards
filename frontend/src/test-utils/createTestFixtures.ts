@@ -44,6 +44,8 @@ export function createTestState(overrides?: Partial<GameState>): GameState {
 		},
 		actionLog: [],
 		rng: new RNG(12345),
+		defeatedEnemyCount: 0,
+		rewardState: null,
 		...overrides,
 	};
 }

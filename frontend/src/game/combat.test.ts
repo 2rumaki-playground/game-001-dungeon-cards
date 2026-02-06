@@ -154,6 +154,39 @@ describe("applyDamageToEnemy", () => {
 
 		expect(state.enemies[0].hp).toBe(originalHp);
 	});
+
+	it("敵撃破時にdefeatedEnemyCountがインクリメントされる", () => {
+		const enemies: Enemy[] = [
+			{
+				id: "enemy-1",
+				type: "normal",
+				position: { x: 4, y: 3 },
+				hp: 1,
+				maxHp: ENEMY_HP,
+			},
+		];
+		const state = createTestState({ enemies });
+		expect(state.defeatedEnemyCount).toBe(0);
+
+		const result = applyDamageToEnemy(state, "enemy-1", PLAYER_ATTACK_DAMAGE);
+		expect(result.defeatedEnemyCount).toBe(1);
+	});
+
+	it("ダメージのみ（非撃破）ではdefeatedEnemyCountが変わらない", () => {
+		const enemies: Enemy[] = [
+			{
+				id: "enemy-1",
+				type: "normal",
+				position: { x: 4, y: 3 },
+				hp: ENEMY_HP,
+				maxHp: ENEMY_HP,
+			},
+		];
+		const state = createTestState({ enemies });
+		const result = applyDamageToEnemy(state, "enemy-1", PLAYER_ATTACK_DAMAGE);
+
+		expect(result.defeatedEnemyCount).toBe(0);
+	});
 });
 
 describe("applyDamageToPlayer", () => {
