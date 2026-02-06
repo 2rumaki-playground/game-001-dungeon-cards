@@ -43,6 +43,11 @@ export function rollRarity(rng: RNG): Rarity {
 export function drawRewardCard(rng: RNG): CardType {
 	const rarity = rollRarity(rng);
 	const candidates = getCardTypesByRarity(rarity);
+	if (candidates.length === 0) {
+		throw new Error(
+			`drawRewardCard: rarity "${rarity}" で選択可能なカードがありません`,
+		);
+	}
 	return rng.pick(candidates);
 }
 
