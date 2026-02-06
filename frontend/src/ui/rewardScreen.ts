@@ -120,10 +120,11 @@ export class RewardScreen {
 	): void {
 		this.container.removeChildren();
 
-		// 半透明オーバーレイ
+		// 半透明オーバーレイ（背面UIへのポインタ入力を吸収）
 		const overlay = new Graphics();
 		overlay.rect(0, 0, screenWidth, screenHeight);
 		overlay.fill({ color: 0x000000, alpha: 0.7 });
+		overlay.eventMode = "static";
 		this.container.addChild(overlay);
 
 		// タイトル
@@ -173,10 +174,11 @@ export class RewardScreen {
 	): void {
 		this.container.removeChildren();
 
-		// 半透明オーバーレイ
+		// 半透明オーバーレイ（背面UIへのポインタ入力を吸収）
 		const overlay = new Graphics();
 		overlay.rect(0, 0, screenWidth, screenHeight);
 		overlay.fill({ color: 0x000000, alpha: 0.7 });
+		overlay.eventMode = "static";
 		this.container.addChild(overlay);
 
 		// タイトル

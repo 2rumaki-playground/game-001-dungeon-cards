@@ -92,8 +92,10 @@ function renderGameOverScreen(ctx: GameContext): void {
  * 報酬画面の描画（ゲーム画面の上にオーバーレイ）
  */
 function renderRewardScreen(ctx: GameContext): void {
-	// ゲーム画面を背景として描画
-	renderGameScreen(ctx);
+	// ゲーム画面を背景として描画（手札は非表示）
+	renderGameScreen(ctx, true);
+	ctx.ui.turnEndButton.hide();
+	ctx.ui.handRenderer.clear();
 	// 報酬画面をオーバーレイ
 	ctx.ui.rewardScreen.show();
 }
