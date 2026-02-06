@@ -119,7 +119,21 @@ describe("cardPool", () => {
 		it("負のcountでエラーを投げる", () => {
 			const rng = new RNG(42);
 			expect(() => generateRewardChoices(rng, -1)).toThrow(
-				"Cannot generate negative count: -1",
+				"count must be a non-negative integer: -1",
+			);
+		});
+
+		it("小数のcountでエラーを投げる", () => {
+			const rng = new RNG(42);
+			expect(() => generateRewardChoices(rng, 2.5)).toThrow(
+				"count must be a non-negative integer: 2.5",
+			);
+		});
+
+		it("NaNのcountでエラーを投げる", () => {
+			const rng = new RNG(42);
+			expect(() => generateRewardChoices(rng, NaN)).toThrow(
+				"count must be a non-negative integer: NaN",
 			);
 		});
 

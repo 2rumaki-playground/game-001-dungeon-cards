@@ -55,8 +55,8 @@ export function drawRewardCard(rng: RNG): CardType {
  * 報酬カードの選択肢を生成する（重複許容）
  */
 export function generateRewardChoices(rng: RNG, count: number): CardType[] {
-	if (count < 0) {
-		throw new Error(`Cannot generate negative count: ${count}`);
+	if (!Number.isInteger(count) || count < 0) {
+		throw new Error(`count must be a non-negative integer: ${count}`);
 	}
 	const choices: CardType[] = [];
 	for (let i = 0; i < count; i++) {
