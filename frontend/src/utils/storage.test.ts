@@ -132,6 +132,25 @@ describe("storage", () => {
 		}
 	});
 
+	it("should sanitize invalid defeatedEnemyCount to 0", () => {
+		const state = createTitleScreenState(42);
+		const invalidCounts = ["abc", null, undefined, -1, NaN, Infinity];
+
+		for (const count of invalidCounts) {
+			const saveData = {
+				...state,
+				screen: "game",
+				defeatedEnemyCount: count,
+				rng: state.rng.serialize(),
+			};
+			localStorageMock.setItem("dungeon-cards-save", JSON.stringify(saveData));
+
+			const loaded = loadGame();
+			expect(loaded).not.toBeNull();
+			expect(loaded?.defeatedEnemyCount).toBe(0);
+		}
+	});
+
 	it("should return null if screen is invalid", () => {
 		const validState = createTitleScreenState();
 		const invalidState = {

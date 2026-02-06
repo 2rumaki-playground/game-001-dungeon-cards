@@ -75,7 +75,12 @@ export function loadGame(): GameState | null {
 			...data,
 			enemies,
 			rng: RNG.deserialize(data.rng),
-			defeatedEnemyCount: data.defeatedEnemyCount ?? 0,
+			defeatedEnemyCount:
+				typeof data.defeatedEnemyCount === "number" &&
+				Number.isFinite(data.defeatedEnemyCount) &&
+				data.defeatedEnemyCount >= 0
+					? data.defeatedEnemyCount
+					: 0,
 			rewardState: null,
 		};
 	} catch (e) {
