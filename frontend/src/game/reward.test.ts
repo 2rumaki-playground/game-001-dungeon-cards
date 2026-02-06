@@ -50,8 +50,6 @@ describe("createRewardState", () => {
 		expect(reward?.choices).toHaveLength(1);
 		expect(reward?.selectedCards).toHaveLength(1);
 		expect(reward?.selectedCards[0]).toBeNull();
-		expect(reward?.phase).toBe("select");
-		expect(reward?.replacingIndex).toBeNull();
 	});
 
 	it("撃破数3の場合、3つの選択肢を持つRewardStateを返す", () => {

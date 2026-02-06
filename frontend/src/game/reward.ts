@@ -23,13 +23,12 @@ export function getTotalDeckSize(deck: DeckState): number {
 export function createRewardState(state: GameState): RewardState | null {
 	if (state.defeatedEnemyCount <= 0) return null;
 
-	const choices = generateRewardChoices(state.rng, state.defeatedEnemyCount);
+	const rng = state.rng.clone();
+	const choices = generateRewardChoices(rng, state.defeatedEnemyCount);
 
 	return {
 		choices,
 		selectedCards: new Array(choices.length).fill(null),
-		phase: "select",
-		replacingIndex: null,
 	};
 }
 
@@ -43,6 +42,7 @@ export function addRewardCardToDeck(
 	const newCard = createCard(cardType);
 	return {
 		...state,
+		rng: state.rng.clone(),
 		deck: {
 			...state.deck,
 			drawPile: [...state.deck.drawPile, newCard],
@@ -59,6 +59,7 @@ export function removeCardFromDeck(
 ): GameState {
 	return {
 		...state,
+		rng: state.rng.clone(),
 		deck: {
 			drawPile: state.deck.drawPile.filter((c) => c.id !== cardId),
 			hand: state.deck.hand.filter((c) => c.id !== cardId),

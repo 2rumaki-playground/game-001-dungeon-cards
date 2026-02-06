@@ -22,10 +22,6 @@ export type RewardState = {
 	choices: CardType[];
 	/** 各選択肢の決定結果（null=未選択） */
 	selectedCards: (CardType | null)[];
-	/** 通常選択 or 入れ替えモード */
-	phase: "select" | "replace";
-	/** 入れ替え対象の選択肢インデックス */
-	replacingIndex: number | null;
 };
 
 /**
