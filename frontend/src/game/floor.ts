@@ -55,7 +55,12 @@ export function transitionFloor(state: GameState): GameState {
 	next = startPlayerTurn(next);
 
 	// 7. 撃破カウント・報酬状態をリセット
-	next = { ...next, defeatedEnemyCount: 0, rewardState: null };
+	next = {
+		...next,
+		rng: next.rng.clone(),
+		defeatedEnemyCount: 0,
+		rewardState: null,
+	};
 
 	// 8. 行動ログに記録
 	next = addActionLog(next, `${next.floor}階に到達した`);
