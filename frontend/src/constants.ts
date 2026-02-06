@@ -1,6 +1,6 @@
 /**
  * ゲーム定数
- * @see docs/spec/mvp/constants.md
+ * @see docs/spec/constants.md
  */
 
 import type { CardType, Rarity } from "./types";
