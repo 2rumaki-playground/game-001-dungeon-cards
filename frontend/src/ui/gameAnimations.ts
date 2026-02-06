@@ -92,6 +92,7 @@ async function executeRewardFlow(
 
 	if (needsReplacement) {
 		// 入れ替えモード（仕様準拠）: まず除去カード選択→その後報酬カード選択→追加
+		// スキップ時は除去も追加も行わない（デッキ枚数不変）
 		// @see docs/spec/deckbuilding.md「デッキ上限到達時の入手」
 		const removeResult = await showRemoveCardSelection(
 			ctx,
@@ -100,6 +101,7 @@ async function executeRewardFlow(
 			screenHeight,
 		);
 		if (removeResult !== null) {
+			const beforeRemove = current;
 			current = removeCardFromDeck(current, removeResult);
 			// 除去後に報酬カード選択
 			const selectedIndex = await showRewardCardSelection(
@@ -113,6 +115,9 @@ async function executeRewardFlow(
 					current,
 					result.rewardState.choices[selectedIndex],
 				);
+			} else {
+				// 報酬スキップ時は除去もロールバック（仕様: 枚数不変）
+				current = beforeRemove;
 			}
 		}
 	} else {
