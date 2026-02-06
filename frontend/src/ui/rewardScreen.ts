@@ -75,7 +75,6 @@ const RARITY_NAME: Record<Rarity, string> = {
 };
 
 /** 除去モードのカード一覧設定 */
-const REMOVE_CARD_WIDTH = 80;
 const REMOVE_CARD_HEIGHT = 28;
 const REMOVE_CARD_GAP = 4;
 const REMOVE_LIST_MAX_HEIGHT = 300;

@@ -1,8 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { DECK_MAX_SIZE } from "../constants";
 import { createTestState } from "../test-utils/createTestFixtures";
 import type { Card } from "../types";
-import { RNG } from "../utils/rng";
 import { resetCardIdCounter } from "./deck";
 import {
 	addRewardCardToDeck,
@@ -49,11 +47,11 @@ describe("createRewardState", () => {
 		const reward = createRewardState(state);
 
 		expect(reward).not.toBeNull();
-		expect(reward!.choices).toHaveLength(1);
-		expect(reward!.selectedCards).toHaveLength(1);
-		expect(reward!.selectedCards[0]).toBeNull();
-		expect(reward!.phase).toBe("select");
-		expect(reward!.replacingIndex).toBeNull();
+		expect(reward?.choices).toHaveLength(1);
+		expect(reward?.selectedCards).toHaveLength(1);
+		expect(reward?.selectedCards[0]).toBeNull();
+		expect(reward?.phase).toBe("select");
+		expect(reward?.replacingIndex).toBeNull();
 	});
 
 	it("撃破数3の場合、3つの選択肢を持つRewardStateを返す", () => {
@@ -61,8 +59,8 @@ describe("createRewardState", () => {
 		const reward = createRewardState(state);
 
 		expect(reward).not.toBeNull();
-		expect(reward!.choices).toHaveLength(3);
-		expect(reward!.selectedCards).toHaveLength(3);
+		expect(reward?.choices).toHaveLength(3);
+		expect(reward?.selectedCards).toHaveLength(3);
 	});
 
 	it("シード固定で再現性がある", () => {
@@ -72,7 +70,7 @@ describe("createRewardState", () => {
 		const reward1 = createRewardState(state1);
 		const reward2 = createRewardState(state2);
 
-		expect(reward1!.choices).toEqual(reward2!.choices);
+		expect(reward1?.choices).toEqual(reward2?.choices);
 	});
 });
 

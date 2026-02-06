@@ -43,14 +43,17 @@ async function handleMoveCardExecution(
 	direction: Direction,
 ): Promise<void> {
 	const prevPosition = ctx.state.player.position;
-	const prevFloor = ctx.state.floor;
-	const next = executeMove(ctx.state, cardId, direction);
+	const { state: next, reachedStairs } = executeMove(
+		ctx.state,
+		cardId,
+		direction,
+	);
 	const moved =
 		next.player.position.x !== prevPosition.x ||
 		next.player.position.y !== prevPosition.y;
 	ctx.ui.directionSelector.hide();
 	ctx.pendingCard = null;
-	if (next.floor !== prevFloor) {
+	if (reachedStairs) {
 		const stairsPos = {
 			x: prevPosition.x + DIRECTION_DELTA[direction].x,
 			y: prevPosition.y + DIRECTION_DELTA[direction].y,
@@ -123,14 +126,14 @@ async function handleRushCardExecution(
 	if (result.movedDistance === 0) {
 		// 移動失敗: バンプアニメーション
 		await updateStateWithBumpAnimation(ctx, result.state, direction);
-	} else if (result.floorTransitioned && result.movedDistance === 1) {
+	} else if (result.reachedStairs && result.movedDistance === 1) {
 		// 1マス目が階段: 階段アニメーション
 		const stairsPos = {
 			x: prevPosition.x + DIRECTION_DELTA[direction].x,
 			y: prevPosition.y + DIRECTION_DELTA[direction].y,
 		};
 		await updateStateWithStairsAnimation(ctx, result.state, stairsPos);
-	} else if (result.floorTransitioned && result.intermediatePosition) {
+	} else if (result.reachedStairs && result.intermediatePosition) {
 		// 2マス目が階段: 2段階移動→階層遷移アニメーション
 		const stairsPos = {
 			x: result.intermediatePosition.x + DIRECTION_DELTA[direction].x,

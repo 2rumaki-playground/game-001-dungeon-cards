@@ -71,6 +71,8 @@ function createTestState(overrides?: Partial<GameState>): GameState {
 		deck: createInitialDeckState(rng),
 		actionLog: [],
 		rng,
+		defeatedEnemyCount: 0,
+		rewardState: null,
 		...overrides,
 	};
 }
