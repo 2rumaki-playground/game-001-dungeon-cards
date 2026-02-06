@@ -112,12 +112,7 @@ export class RewardScreen {
 	/**
 	 * 報酬選択画面を描画
 	 */
-	render(
-		choices: CardType[],
-		selectedCards: (CardType | null)[],
-		screenWidth: number,
-		screenHeight: number,
-	): void {
+	render(choices: CardType[], screenWidth: number, screenHeight: number): void {
 		this.container.removeChildren();
 
 		// 半透明オーバーレイ（背面UIへのポインタ入力を吸収）
@@ -150,15 +145,8 @@ export class RewardScreen {
 		const cardY = 80;
 
 		for (let i = 0; i < choices.length; i++) {
-			const isSelected = selectedCards[i] !== null;
 			const cardX = startX + i * (REWARD_CARD_WIDTH + REWARD_CARD_GAP);
-			const cardContainer = this.createRewardCard(
-				choices[i],
-				cardX,
-				cardY,
-				i,
-				isSelected,
-			);
+			const cardContainer = this.createRewardCard(choices[i], cardX, cardY, i);
 			this.container.addChild(cardContainer);
 		}
 	}
@@ -168,7 +156,6 @@ export class RewardScreen {
 	 */
 	renderRemoveSelection(
 		deckCards: Card[],
-		rewardCardType: CardType,
 		screenWidth: number,
 		screenHeight: number,
 	): void {
@@ -196,22 +183,8 @@ export class RewardScreen {
 		title.y = 30;
 		this.container.addChild(title);
 
-		// 獲得予定カードの表示
-		const previewText = new Text({
-			text: `獲得: ${CARD_TYPE_NAME[rewardCardType]}`,
-			style: {
-				fontSize: 16,
-				fontFamily: "sans-serif",
-				fill: 0xaaaaaa,
-			},
-		});
-		previewText.anchor.set(0.5);
-		previewText.x = screenWidth / 2;
-		previewText.y = 60;
-		this.container.addChild(previewText);
-
 		// スクロール可能なカード一覧
-		const listStartY = 90;
+		const listStartY = 60;
 		const listWidth = 240;
 		const listX = (screenWidth - listWidth) / 2;
 		const totalListHeight =
@@ -300,7 +273,6 @@ export class RewardScreen {
 		x: number,
 		y: number,
 		index: number,
-		isSelected: boolean,
 	): Container {
 		const cardContainer = new Container();
 		cardContainer.x = x;
@@ -319,7 +291,7 @@ export class RewardScreen {
 			REWARD_CARD_HEIGHT,
 			REWARD_CARD_RADIUS,
 		);
-		bg.fill(isSelected ? 0x333333 : colors.bg);
+		bg.fill(colors.bg);
 		bg.roundRect(
 			0,
 			0,
@@ -327,7 +299,7 @@ export class RewardScreen {
 			REWARD_CARD_HEIGHT,
 			REWARD_CARD_RADIUS,
 		);
-		bg.stroke({ color: isSelected ? 0x555555 : colors.border, width: 2 });
+		bg.stroke({ color: colors.border, width: 2 });
 		cardContainer.addChild(bg);
 
 		// レアリティバー
@@ -342,7 +314,7 @@ export class RewardScreen {
 			style: {
 				fontSize: 22,
 				fontFamily: "sans-serif",
-				fill: isSelected ? 0x666666 : 0xffffff,
+				fill: 0xffffff,
 			},
 		});
 		symbol.anchor.set(0.5, 0);
@@ -356,7 +328,7 @@ export class RewardScreen {
 			style: {
 				fontSize: 16,
 				fontFamily: "sans-serif",
-				fill: isSelected ? 0x666666 : 0xffffff,
+				fill: 0xffffff,
 				fontWeight: "bold",
 			},
 		});
@@ -386,7 +358,7 @@ export class RewardScreen {
 			style: {
 				fontSize: 12,
 				fontFamily: "sans-serif",
-				fill: isSelected ? 0x444444 : 0xcccccc,
+				fill: 0xcccccc,
 			},
 		});
 		costText.anchor.set(0.5, 0);
@@ -400,7 +372,7 @@ export class RewardScreen {
 			style: {
 				fontSize: 11,
 				fontFamily: "sans-serif",
-				fill: isSelected ? 0x444444 : 0xaaaaaa,
+				fill: 0xaaaaaa,
 			},
 		});
 		effect.anchor.set(0.5, 0);
@@ -408,43 +380,27 @@ export class RewardScreen {
 		effect.y = 94;
 		cardContainer.addChild(effect);
 
-		if (!isSelected) {
-			// 選択ボタン
-			const selectBtn = this.createButton(
-				"選択",
-				(REWARD_CARD_WIDTH - BUTTON_WIDTH) / 2,
-				118,
-				0x2a7a2a,
-				0x4aaa4a,
-				() => this.onCardSelect?.(index),
-			);
-			cardContainer.addChild(selectBtn);
+		// 選択ボタン
+		const selectBtn = this.createButton(
+			"選択",
+			(REWARD_CARD_WIDTH - BUTTON_WIDTH) / 2,
+			118,
+			0x2a7a2a,
+			0x4aaa4a,
+			() => this.onCardSelect?.(index),
+		);
+		cardContainer.addChild(selectBtn);
 
-			// スキップボタン
-			const skipBtn = this.createButton(
-				"スキップ",
-				(REWARD_CARD_WIDTH - BUTTON_WIDTH) / 2,
-				118 + BUTTON_HEIGHT + 4,
-				0x555555,
-				0x777777,
-				() => this.onSkip?.(index),
-			);
-			cardContainer.addChild(skipBtn);
-		} else {
-			// 選択済みマーク
-			const doneText = new Text({
-				text: "✓ 選択済み",
-				style: {
-					fontSize: 12,
-					fontFamily: "sans-serif",
-					fill: 0x44aa44,
-				},
-			});
-			doneText.anchor.set(0.5, 0);
-			doneText.x = REWARD_CARD_WIDTH / 2;
-			doneText.y = 130;
-			cardContainer.addChild(doneText);
-		}
+		// スキップボタン
+		const skipBtn = this.createButton(
+			"スキップ",
+			(REWARD_CARD_WIDTH - BUTTON_WIDTH) / 2,
+			118 + BUTTON_HEIGHT + 4,
+			0x555555,
+			0x777777,
+			() => this.onSkip?.(index),
+		);
+		cardContainer.addChild(skipBtn);
 
 		return cardContainer;
 	}

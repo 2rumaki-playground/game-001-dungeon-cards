@@ -34,19 +34,10 @@ describe("RewardScreen", () => {
 	describe("render", () => {
 		it("選択肢分のカードが描画される", () => {
 			const screen = new RewardScreen();
-			screen.render(["move", "attack"], [null, null], 600, 400);
+			screen.render(["move", "attack"], 600, 400);
 
 			// オーバーレイ + タイトル + カード2枚 = 4つの子要素
 			const container = screen.getContainer();
-			expect(container.children.length).toBe(4);
-		});
-
-		it("選択済みカードは選択ボタンが表示されない", () => {
-			const screen = new RewardScreen();
-			screen.render(["move", "attack"], ["move", null], 600, 400);
-
-			const container = screen.getContainer();
-			// オーバーレイ + タイトル + カード2枚 = 4
 			expect(container.children.length).toBe(4);
 		});
 	});
@@ -56,7 +47,7 @@ describe("RewardScreen", () => {
 			const screen = new RewardScreen();
 			const callback = vi.fn();
 			screen.setOnCardSelect(callback);
-			screen.render(["move"], [null], 600, 400);
+			screen.render(["move"], 600, 400);
 
 			// カードコンテナ内の選択ボタンを探してクリック
 			const container = screen.getContainer();
@@ -78,7 +69,7 @@ describe("RewardScreen", () => {
 			const screen = new RewardScreen();
 			const callback = vi.fn();
 			screen.setOnSkip(callback);
-			screen.render(["move"], [null], 600, 400);
+			screen.render(["move"], 600, 400);
 
 			const container = screen.getContainer();
 			const cardContainer = container.children[2];
@@ -102,7 +93,7 @@ describe("RewardScreen", () => {
 
 		it("除去選択画面が描画される", () => {
 			const screen = new RewardScreen();
-			screen.renderRemoveSelection(testCards, "strong_attack", 600, 400);
+			screen.renderRemoveSelection(testCards, 600, 400);
 
 			const container = screen.getContainer();
 			// 子要素が生成されている
@@ -113,7 +104,7 @@ describe("RewardScreen", () => {
 			const screen = new RewardScreen();
 			const callback = vi.fn();
 			screen.setOnRemoveCard(callback);
-			screen.renderRemoveSelection(testCards, "strong_attack", 600, 400);
+			screen.renderRemoveSelection(testCards, 600, 400);
 
 			const container = screen.getContainer();
 			// コンテナの子要素を再帰的に探索して除去ボタンを見つける
@@ -146,7 +137,7 @@ describe("RewardScreen", () => {
 			const screen = new RewardScreen();
 			const callback = vi.fn();
 			screen.setOnSkip(callback);
-			screen.renderRemoveSelection(testCards, "strong_attack", 600, 400);
+			screen.renderRemoveSelection(testCards, 600, 400);
 
 			const container = screen.getContainer();
 			// スキップボタンはcontainer直下のinteractive要素

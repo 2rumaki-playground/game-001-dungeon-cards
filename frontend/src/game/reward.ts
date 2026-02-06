@@ -19,16 +19,19 @@ export function getTotalDeckSize(deck: DeckState): number {
  *
  * - 撃破数0ならnullを返す（報酬なし）
  * - それ以外は撃破数分の選択肢を生成
+ * - RNGの消費状態を反映した更新済みGameStateも返す
  */
-export function createRewardState(state: GameState): RewardState | null {
+export function createRewardState(
+	state: GameState,
+): { rewardState: RewardState; updatedState: GameState } | null {
 	if (state.defeatedEnemyCount <= 0) return null;
 
 	const rng = state.rng.clone();
 	const choices = generateRewardChoices(rng, state.defeatedEnemyCount);
 
 	return {
-		choices,
-		selectedCards: new Array(choices.length).fill(null),
+		rewardState: { choices },
+		updatedState: { ...state, rng },
 	};
 }
 

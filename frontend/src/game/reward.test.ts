@@ -44,31 +44,37 @@ describe("createRewardState", () => {
 
 	it("撃破数1の場合、1つの選択肢を持つRewardStateを返す", () => {
 		const state = createTestState({ defeatedEnemyCount: 1 });
-		const reward = createRewardState(state);
+		const result = createRewardState(state);
 
-		expect(reward).not.toBeNull();
-		expect(reward?.choices).toHaveLength(1);
-		expect(reward?.selectedCards).toHaveLength(1);
-		expect(reward?.selectedCards[0]).toBeNull();
+		expect(result).not.toBeNull();
+		expect(result?.rewardState.choices).toHaveLength(1);
 	});
 
 	it("撃破数3の場合、3つの選択肢を持つRewardStateを返す", () => {
 		const state = createTestState({ defeatedEnemyCount: 3 });
-		const reward = createRewardState(state);
+		const result = createRewardState(state);
 
-		expect(reward).not.toBeNull();
-		expect(reward?.choices).toHaveLength(3);
-		expect(reward?.selectedCards).toHaveLength(3);
+		expect(result).not.toBeNull();
+		expect(result?.rewardState.choices).toHaveLength(3);
 	});
 
 	it("シード固定で再現性がある", () => {
 		const state1 = createTestState({ defeatedEnemyCount: 3 });
 		const state2 = createTestState({ defeatedEnemyCount: 3 });
 
-		const reward1 = createRewardState(state1);
-		const reward2 = createRewardState(state2);
+		const result1 = createRewardState(state1);
+		const result2 = createRewardState(state2);
 
-		expect(reward1?.choices).toEqual(reward2?.choices);
+		expect(result1?.rewardState.choices).toEqual(result2?.rewardState.choices);
+	});
+
+	it("RNG消費状態がupdatedStateに反映される", () => {
+		const state = createTestState({ defeatedEnemyCount: 2 });
+		const result = createRewardState(state);
+
+		expect(result).not.toBeNull();
+		// RNGが消費されているため、元のstateと異なるRNGになる
+		expect(result?.updatedState.rng).not.toBe(state.rng);
 	});
 });
 

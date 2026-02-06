@@ -20,8 +20,6 @@ export type Screen = "title" | "game" | "gameOver" | "reward";
 export type RewardState = {
 	/** 撃破数分のカード選択肢 */
 	choices: CardType[];
-	/** 各選択肢の決定結果（null=未選択） */
-	selectedCards: (CardType | null)[];
 };
 
 /**

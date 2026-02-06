@@ -67,13 +67,13 @@ async function executeRewardFlow(
 	ctx: GameContext,
 	state: GameState,
 ): Promise<GameState> {
-	const rewardState = createRewardState(state);
-	if (!rewardState) return state;
+	const result = createRewardState(state);
+	if (!result) return state;
 
 	let current: GameState = {
-		...state,
+		...result.updatedState,
 		screen: "reward" as const,
-		rewardState,
+		rewardState: result.rewardState,
 	};
 
 	// 報酬画面に遷移した状態を適用してから描画する
@@ -91,27 +91,27 @@ async function executeRewardFlow(
 	const needsReplacement = getTotalDeckSize(current.deck) >= DECK_MAX_SIZE;
 
 	if (needsReplacement) {
-		// 入れ替えモード: 選択肢から1枚選択→除去カード選択→追加
-		const selectedIndex = await showRewardCardSelection(
+		// 入れ替えモード（仕様準拠）: まず除去カード選択→その後報酬カード選択→追加
+		// @see docs/spec/deckbuilding.md「デッキ上限到達時の入手」
+		const removeResult = await showRemoveCardSelection(
 			ctx,
-			rewardState.choices,
+			current,
 			screenWidth,
 			screenHeight,
 		);
-		if (selectedIndex !== null) {
-			// 除去カード選択
-			const removeResult = await showRemoveCardSelection(
+		if (removeResult !== null) {
+			current = removeCardFromDeck(current, removeResult);
+			// 除去後に報酬カード選択
+			const selectedIndex = await showRewardCardSelection(
 				ctx,
-				current,
-				rewardState.choices[selectedIndex],
+				result.rewardState.choices,
 				screenWidth,
 				screenHeight,
 			);
-			if (removeResult !== null) {
-				current = removeCardFromDeck(current, removeResult);
+			if (selectedIndex !== null) {
 				current = addRewardCardToDeck(
 					current,
-					rewardState.choices[selectedIndex],
+					result.rewardState.choices[selectedIndex],
 				);
 			}
 		}
@@ -119,14 +119,14 @@ async function executeRewardFlow(
 		// 通常モード: 選択肢から1枚選択 or スキップ
 		const selectedIndex = await showRewardCardSelection(
 			ctx,
-			rewardState.choices,
+			result.rewardState.choices,
 			screenWidth,
 			screenHeight,
 		);
 		if (selectedIndex !== null) {
 			current = addRewardCardToDeck(
 				current,
-				rewardState.choices[selectedIndex],
+				result.rewardState.choices[selectedIndex],
 			);
 		}
 	}
@@ -148,15 +148,7 @@ function showRewardCardSelection(
 	screenHeight: number,
 ): Promise<number | null> {
 	return new Promise((resolve) => {
-		const selectedCards: (CardType | null)[] = new Array(choices.length).fill(
-			null,
-		);
-		ctx.ui.rewardScreen.render(
-			choices,
-			selectedCards,
-			screenWidth,
-			screenHeight,
-		);
+		ctx.ui.rewardScreen.render(choices, screenWidth, screenHeight);
 		ctx.ui.rewardScreen.show();
 
 		ctx.ui.rewardScreen.setOnCardSelect((index) => {
@@ -175,7 +167,6 @@ function showRewardCardSelection(
 function showRemoveCardSelection(
 	ctx: GameContext,
 	state: GameState,
-	rewardCardType: CardType,
 	screenWidth: number,
 	screenHeight: number,
 ): Promise<string | null> {
@@ -188,7 +179,6 @@ function showRemoveCardSelection(
 
 		ctx.ui.rewardScreen.renderRemoveSelection(
 			allCards,
-			rewardCardType,
 			screenWidth,
 			screenHeight,
 		);
