@@ -3,6 +3,7 @@
  * @see docs/spec/mvp/rules.md - セーブとログ
  */
 
+import { ENEMY_COUNT } from "../constants";
 import type { GameState } from "../types";
 import { RNG } from "./rng";
 
@@ -79,7 +80,7 @@ export function loadGame(): GameState | null {
 				typeof data.defeatedEnemyCount === "number" &&
 				Number.isFinite(data.defeatedEnemyCount) &&
 				data.defeatedEnemyCount >= 0
-					? data.defeatedEnemyCount
+					? Math.min(data.defeatedEnemyCount, ENEMY_COUNT)
 					: 0,
 			rewardState: null,
 		};

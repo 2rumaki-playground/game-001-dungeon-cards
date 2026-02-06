@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { ENEMY_COUNT } from "../constants";
 import { createTitleScreenState } from "../game/state";
 import { deleteSaveData, hasSaveData, loadGame, saveGame } from "./storage";
 
@@ -149,6 +150,21 @@ describe("storage", () => {
 			expect(loaded).not.toBeNull();
 			expect(loaded?.defeatedEnemyCount).toBe(0);
 		}
+	});
+
+	it("should clamp defeatedEnemyCount to ENEMY_COUNT", () => {
+		const state = createTitleScreenState(42);
+		const saveData = {
+			...state,
+			screen: "game",
+			defeatedEnemyCount: 999,
+			rng: state.rng.serialize(),
+		};
+		localStorageMock.setItem("dungeon-cards-save", JSON.stringify(saveData));
+
+		const loaded = loadGame();
+		expect(loaded).not.toBeNull();
+		expect(loaded?.defeatedEnemyCount).toBe(ENEMY_COUNT);
 	});
 
 	it("should return null if screen is invalid", () => {
