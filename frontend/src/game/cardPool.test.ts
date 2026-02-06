@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { CARD_RARITY } from "../constants";
+import { CARD_RARITY, RARITY_WEIGHTS } from "../constants";
 import type { CardType, Rarity } from "../types";
 import { RNG } from "../utils/rng";
 import {
@@ -58,7 +58,7 @@ describe("cardPool", () => {
 			expect(results1).toEqual(results2);
 		});
 
-		it("1000回試行でコモン≈70%, アンコモン≈25%, レア≈5%（許容±5%）", () => {
+		it("1000回試行でRARITY_WEIGHTSに基づく期待分布に従う（許容±5%）", () => {
 			const rng = new RNG(42);
 			const counts: Record<Rarity, number> = {
 				common: 0,
@@ -66,17 +66,25 @@ describe("cardPool", () => {
 				rare: 0,
 			};
 			const trials = 1000;
+			const totalWeight = Object.values(RARITY_WEIGHTS).reduce(
+				(sum, w) => sum + w,
+				0,
+			);
+			const tolerance = 0.05;
 
 			for (let i = 0; i < trials; i++) {
 				counts[rollRarity(rng)]++;
 			}
 
-			expect(counts.common / trials).toBeGreaterThanOrEqual(0.65);
-			expect(counts.common / trials).toBeLessThanOrEqual(0.75);
-			expect(counts.uncommon / trials).toBeGreaterThanOrEqual(0.2);
-			expect(counts.uncommon / trials).toBeLessThanOrEqual(0.3);
-			expect(counts.rare / trials).toBeGreaterThanOrEqual(0.0);
-			expect(counts.rare / trials).toBeLessThanOrEqual(0.1);
+			for (const [rarity, weight] of Object.entries(RARITY_WEIGHTS) as [
+				Rarity,
+				number,
+			][]) {
+				const expected = weight / totalWeight;
+				const actual = counts[rarity] / trials;
+				expect(actual).toBeGreaterThanOrEqual(expected - tolerance);
+				expect(actual).toBeLessThanOrEqual(expected + tolerance);
+			}
 		});
 	});
 
