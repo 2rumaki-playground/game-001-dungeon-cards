@@ -50,7 +50,10 @@ export function loadGame(): GameState | null {
 			return null;
 		}
 
-		// screen の検証
+		// screen の検証（reward画面はgameに復帰）
+		if (data.screen === "reward") {
+			data.screen = "game";
+		}
 		if (
 			data.screen !== "title" &&
 			data.screen !== "game" &&
@@ -72,6 +75,8 @@ export function loadGame(): GameState | null {
 			...data,
 			enemies,
 			rng: RNG.deserialize(data.rng),
+			defeatedEnemyCount: data.defeatedEnemyCount ?? 0,
+			rewardState: null,
 		};
 	} catch (e) {
 		console.error("Failed to load save data", e);
