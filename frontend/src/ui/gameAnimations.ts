@@ -6,6 +6,7 @@ import {
 	DECK_MAX_SIZE,
 	LOG_AREA_GAP,
 	PLAYER_ATTACK_DAMAGE,
+	STATUS_BAR_HEIGHT,
 } from "../constants";
 import {
 	addRewardCardToDeck,
@@ -16,6 +17,7 @@ import {
 } from "../game";
 import type { GameContext } from "../gameContext";
 import type { CardType, Direction, GameState, Position } from "../types";
+import { getMapPixelSize } from "./coordinates";
 import { applyState, render } from "./gameRenderer";
 import { HAND_AREA_HEIGHT } from "./layout";
 
@@ -80,13 +82,11 @@ async function executeRewardFlow(
 	applyState(ctx, current);
 	render(ctx);
 
-	const mapSize = ctx.ui.mapRenderer.getContainer().parent
-		? { width: ctx.ui.mapRenderer.getContainer().width, height: 0 }
-		: { width: 480, height: 0 };
+	const mapPixelSize = getMapPixelSize();
 	const screenWidth =
-		mapSize.width + LOG_AREA_GAP + ctx.ui.actionLogRenderer.getWidth();
+		mapPixelSize.width + LOG_AREA_GAP + ctx.ui.actionLogRenderer.getWidth();
 	const screenHeight =
-		ctx.ui.mapRenderer.getContainer().parent?.height ?? HAND_AREA_HEIGHT + 400;
+		mapPixelSize.height + HAND_AREA_HEIGHT + STATUS_BAR_HEIGHT;
 
 	const needsReplacement = getTotalDeckSize(current.deck) >= DECK_MAX_SIZE;
 
