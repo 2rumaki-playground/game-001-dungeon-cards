@@ -59,8 +59,9 @@ export async function updateStateWithMoveAnimation(
 /**
  * 報酬フローを実行する
  *
- * 撃破数に応じた報酬カード選択画面を表示し、
- * ユーザーの選択が完了するまで待機する。
+ * 撃破数に応じた報酬カード選択肢を全て表示し、
+ * ユーザーが1枚選択（またはスキップ）するまで待機する。
+ * @see docs/spec/deckbuilding.md「報酬画面」
  */
 async function executeRewardFlow(
 	ctx: GameContext,
@@ -75,6 +76,10 @@ async function executeRewardFlow(
 		rewardState,
 	};
 
+	// 報酬画面に遷移した状態を適用してから描画する
+	applyState(ctx, current);
+	render(ctx);
+
 	const mapSize = ctx.ui.mapRenderer.getContainer().parent
 		? { width: ctx.ui.mapRenderer.getContainer().width, height: 0 }
 		: { width: 480, height: 0 };
@@ -83,47 +88,47 @@ async function executeRewardFlow(
 	const screenHeight =
 		ctx.ui.mapRenderer.getContainer().parent?.height ?? HAND_AREA_HEIGHT + 400;
 
-	// 各選択肢を順次処理
-	for (let i = 0; i < rewardState.choices.length; i++) {
-		const needsReplacement = getTotalDeckSize(current.deck) >= DECK_MAX_SIZE;
+	const needsReplacement = getTotalDeckSize(current.deck) >= DECK_MAX_SIZE;
 
-		if (needsReplacement) {
-			// 入れ替えモード: まず除去カード選択
+	if (needsReplacement) {
+		// 入れ替えモード: 選択肢から1枚選択→除去カード選択→追加
+		const selectedIndex = await showRewardCardSelection(
+			ctx,
+			rewardState.choices,
+			screenWidth,
+			screenHeight,
+		);
+		if (selectedIndex !== null) {
+			// 除去カード選択
 			const removeResult = await showRemoveCardSelection(
 				ctx,
 				current,
-				rewardState.choices[i],
+				rewardState.choices[selectedIndex],
 				screenWidth,
 				screenHeight,
 			);
-			if (removeResult === null) {
-				// スキップ
-				continue;
-			}
-			// カード除去
-			current = removeCardFromDeck(current, removeResult);
-			// 報酬カード追加
-			current = addRewardCardToDeck(current, rewardState.choices[i]);
-		} else {
-			// 通常モード: 選択 or スキップ
-			const selected = await showRewardCardSelection(
-				ctx,
-				current,
-				rewardState,
-				i,
-				screenWidth,
-				screenHeight,
-			);
-			if (selected) {
-				current = addRewardCardToDeck(current, rewardState.choices[i]);
-				rewardState.selectedCards[i] = rewardState.choices[i];
+			if (removeResult !== null) {
+				current = removeCardFromDeck(current, removeResult);
+				current = addRewardCardToDeck(
+					current,
+					rewardState.choices[selectedIndex],
+				);
 			}
 		}
-
-		// 状態を更新して再描画
-		current = { ...current, rewardState: { ...rewardState } };
-		applyState(ctx, current);
-		render(ctx);
+	} else {
+		// 通常モード: 選択肢から1枚選択 or スキップ
+		const selectedIndex = await showRewardCardSelection(
+			ctx,
+			rewardState.choices,
+			screenWidth,
+			screenHeight,
+		);
+		if (selectedIndex !== null) {
+			current = addRewardCardToDeck(
+				current,
+				rewardState.choices[selectedIndex],
+			);
+		}
 	}
 
 	// 報酬完了: ゲーム画面に戻す
@@ -132,37 +137,34 @@ async function executeRewardFlow(
 
 /**
  * 報酬カード選択をPromiseで待機する
+ *
+ * 全選択肢を表示し、ユーザーが1枚選択するかスキップするまで待機する。
+ * @returns 選択されたカードのインデックス（スキップ時はnull）
  */
 function showRewardCardSelection(
 	ctx: GameContext,
-	_state: GameState,
-	rewardState: {
-		choices: CardType[];
-		selectedCards: (CardType | null)[];
-	},
-	currentIndex: number,
+	choices: CardType[],
 	screenWidth: number,
 	screenHeight: number,
-): Promise<boolean> {
+): Promise<number | null> {
 	return new Promise((resolve) => {
+		const selectedCards: (CardType | null)[] = new Array(choices.length).fill(
+			null,
+		);
 		ctx.ui.rewardScreen.render(
-			rewardState.choices,
-			rewardState.selectedCards,
+			choices,
+			selectedCards,
 			screenWidth,
 			screenHeight,
 		);
 		ctx.ui.rewardScreen.show();
 
 		ctx.ui.rewardScreen.setOnCardSelect((index) => {
-			if (index === currentIndex) {
-				resolve(true);
-			}
+			resolve(index);
 		});
 
-		ctx.ui.rewardScreen.setOnSkip((index) => {
-			if (index === currentIndex) {
-				resolve(false);
-			}
+		ctx.ui.rewardScreen.setOnSkip(() => {
+			resolve(null);
 		});
 	});
 }
