@@ -20,7 +20,7 @@ export function resetCardIdCounter(): void {
 /**
  * カードを1枚生成
  */
-function createCard(type: CardType): Card {
+export function createCard(type: CardType): Card {
 	cardIdCounter++;
 	return { id: `card-${cardIdCounter}`, type };
 }
