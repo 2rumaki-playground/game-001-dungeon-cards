@@ -89,6 +89,16 @@ function renderGameOverScreen(ctx: GameContext): void {
 }
 
 /**
+ * 報酬画面の描画（ゲーム画面の上にオーバーレイ）
+ */
+function renderRewardScreen(ctx: GameContext): void {
+	// ゲーム画面を背景として描画
+	renderGameScreen(ctx);
+	// 報酬画面をオーバーレイ
+	ctx.ui.rewardScreen.show();
+}
+
+/**
  * 画面に応じた描画
  */
 export function render(
@@ -97,6 +107,7 @@ export function render(
 	skipPlayer = false,
 	skipEnemies = false,
 ): void {
+	ctx.ui.rewardScreen.hide();
 	switch (ctx.state.screen) {
 		case "title":
 			renderTitleScreen(ctx);
@@ -106,6 +117,9 @@ export function render(
 			break;
 		case "gameOver":
 			renderGameOverScreen(ctx);
+			break;
+		case "reward":
+			renderRewardScreen(ctx);
 			break;
 	}
 }
