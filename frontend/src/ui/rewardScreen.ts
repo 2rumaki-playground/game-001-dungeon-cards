@@ -188,7 +188,10 @@ export class RewardScreen {
 		const listWidth = 240;
 		const listX = (screenWidth - listWidth) / 2;
 		const totalListHeight =
-			deckCards.length * (REMOVE_CARD_HEIGHT + REMOVE_CARD_GAP);
+			deckCards.length === 0
+				? 0
+				: deckCards.length * REMOVE_CARD_HEIGHT +
+					(deckCards.length - 1) * REMOVE_CARD_GAP;
 
 		// スクロールコンテナ
 		const scrollContainer = new Container();
