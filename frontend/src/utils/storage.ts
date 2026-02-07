@@ -3,7 +3,7 @@
  * @see docs/spec/mvp/rules.md - セーブとログ
  */
 
-import { ENEMY_COUNT } from "../constants";
+import { getEnemyCount, INITIAL_FLOOR } from "../constants";
 import { initCardIdCounterFromDeck } from "../game/deck";
 import type { GameState } from "../types";
 import { RNG } from "./rng";
@@ -42,6 +42,9 @@ export function loadGame(): GameState | null {
 		// 必須プロパティの検証
 		if (
 			typeof data.floor !== "number" ||
+			!Number.isFinite(data.floor) ||
+			!Number.isInteger(data.floor) ||
+			data.floor < INITIAL_FLOOR ||
 			!data.player ||
 			typeof data.player.hp !== "number" || // 最低限の構造チェック
 			!data.rng ||
@@ -82,7 +85,10 @@ export function loadGame(): GameState | null {
 				typeof data.defeatedEnemyCount === "number" &&
 				Number.isFinite(data.defeatedEnemyCount) &&
 				data.defeatedEnemyCount >= 0
-					? Math.min(Math.floor(data.defeatedEnemyCount), ENEMY_COUNT)
+					? Math.min(
+							Math.floor(data.defeatedEnemyCount),
+							getEnemyCount(data.floor),
+						)
 					: 0,
 			rewardState: null,
 		};

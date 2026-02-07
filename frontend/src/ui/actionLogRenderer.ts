@@ -128,6 +128,14 @@ export class ActionLogRenderer {
 	}
 
 	/**
+	 * 高さ変更に対応
+	 */
+	resize(height: number): void {
+		this.height = height;
+		this.drawBackground();
+	}
+
+	/**
 	 * 表示
 	 */
 	show(): void {

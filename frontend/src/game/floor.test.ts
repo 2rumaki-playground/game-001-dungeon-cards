@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
-	BSP_MIN_PARTITION_SIZE,
-	ENEMY_COUNT,
 	ENEMY_HP,
 	ENEMY_PARAMS,
+	getEnemyCount,
+	getMapSize,
 	HAND_LIMIT,
 	MAX_AP,
 	TOTAL_DECK_SIZE,
@@ -92,13 +92,10 @@ describe("transitionFloor", () => {
 		const state = createTestState();
 		const result = transitionFloor(state);
 
-		// マップが存在し、正しいサイズ
-		expect(result.map.length).toBeGreaterThanOrEqual(
-			BSP_MIN_PARTITION_SIZE + 2,
-		);
-		// すべての行が同じ幅であること
+		const expectedSize = getMapSize(result.floor);
+		expect(result.map.length).toBe(expectedSize.height);
 		for (const row of result.map) {
-			expect(row.length).toBe(result.map[0].length);
+			expect(row.length).toBe(expectedSize.width);
 		}
 	});
 
@@ -118,11 +115,12 @@ describe("transitionFloor", () => {
 		expect(result.player.maxHp).toBe(10);
 	});
 
-	it("敵が新規配置される（ENEMY_COUNT体）", () => {
+	it("敵が新規配置される（階層に応じた体数）", () => {
 		const state = createTestState();
 		const result = transitionFloor(state);
 
-		expect(result.enemies).toHaveLength(ENEMY_COUNT);
+		expect(result.enemies).toHaveLength(getEnemyCount(result.floor));
+		// 階層2はnormal×3なので全員normalのHPを持つ
 		for (const enemy of result.enemies) {
 			expect(enemy.hp).toBe(ENEMY_HP);
 			expect(enemy.maxHp).toBe(ENEMY_HP);
@@ -200,7 +198,7 @@ describe("transitionFloor", () => {
 		const result = transitionFloor(state);
 
 		expect(result.floor).toBe(5);
-		expect(result.enemies).toHaveLength(ENEMY_COUNT);
+		expect(result.enemies).toHaveLength(getEnemyCount(5));
 		const heavyEnemies = result.enemies.filter((e) => e.type === "heavy");
 		expect(heavyEnemies).toHaveLength(1);
 		expect(heavyEnemies[0].hp).toBe(ENEMY_PARAMS.heavy.hp);
@@ -212,13 +210,23 @@ describe("transitionFloor", () => {
 		const result = transitionFloor(state);
 
 		expect(result.floor).toBe(9);
-		expect(result.enemies).toHaveLength(ENEMY_COUNT);
+		expect(result.enemies).toHaveLength(getEnemyCount(9));
 		const scoutEnemies = result.enemies.filter((e) => e.type === "scout");
 		const heavyEnemies = result.enemies.filter((e) => e.type === "heavy");
-		const normalEnemies = result.enemies.filter((e) => e.type === "normal");
+		// 構成テーブルはheavy×1 + scout×2 = 3体分のタイプ比率
+		// 4体目以降はすべてnormal
 		expect(scoutEnemies).toHaveLength(2);
 		expect(heavyEnemies).toHaveLength(1);
-		expect(normalEnemies).toHaveLength(0);
+	});
+
+	it("階層2→3遷移でマップサイズが9x9から11x11に拡大する", () => {
+		const state = createTestState({ floor: 2 });
+		const result = transitionFloor(state);
+
+		expect(result.floor).toBe(3);
+		expect(result.map.length).toBe(11);
+		expect(result.map[0].length).toBe(11);
+		expect(result.enemies).toHaveLength(getEnemyCount(3));
 	});
 
 	it("saveGame が呼び出され、更新後の状態が保存される", () => {

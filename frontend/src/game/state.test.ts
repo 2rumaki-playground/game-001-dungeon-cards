@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
-	BSP_MIN_PARTITION_SIZE,
-	ENEMY_COUNT,
 	ENEMY_HP,
 	ENEMY_PARAMS,
+	getEnemyCount,
+	getMapSize,
 	HAND_LIMIT,
 	INITIAL_FLOOR,
 	MAX_AP,
@@ -103,6 +103,42 @@ describe("state", () => {
 			expect(enemies[0].position).toEqual({ x: 1, y: 1 });
 			expect(enemies[2].position).toEqual({ x: 3, y: 3 });
 		});
+
+		it("4体以上: 構成テーブルの3体 + 残りはnormal", () => {
+			const positions4 = [
+				{ x: 1, y: 1 },
+				{ x: 2, y: 2 },
+				{ x: 3, y: 3 },
+				{ x: 4, y: 4 },
+			];
+			// 階層3: normal×2 + scout×1 → 4体目はnormal
+			const enemies = createEnemiesForFloor(positions4, 3);
+			expect(enemies).toHaveLength(4);
+			expect(enemies[0].type).toBe("normal");
+			expect(enemies[1].type).toBe("normal");
+			expect(enemies[2].type).toBe("scout");
+			expect(enemies[3].type).toBe("normal");
+		});
+
+		it("6体: 構成テーブルの3体 + 残り3体はすべてnormal", () => {
+			const positions6 = [
+				{ x: 1, y: 1 },
+				{ x: 2, y: 2 },
+				{ x: 3, y: 3 },
+				{ x: 4, y: 4 },
+				{ x: 5, y: 5 },
+				{ x: 1, y: 5 },
+			];
+			// 階層7: normal×1 + heavy×1 + scout×1 → 残り3体はnormal
+			const enemies = createEnemiesForFloor(positions6, 7);
+			expect(enemies).toHaveLength(6);
+			expect(enemies[0].type).toBe("normal");
+			expect(enemies[1].type).toBe("heavy");
+			expect(enemies[2].type).toBe("scout");
+			expect(enemies[3].type).toBe("normal");
+			expect(enemies[4].type).toBe("normal");
+			expect(enemies[5].type).toBe("normal");
+		});
 	});
 
 	describe("createTitleScreenState", () => {
@@ -124,17 +160,16 @@ describe("state", () => {
 	describe("createInitialGameState", () => {
 		it("ゲーム画面の初期状態を作成", () => {
 			const state = createInitialGameState(12345);
+			const expectedSize = getMapSize(INITIAL_FLOOR);
 			expect(state.screen).toBe("game");
 			expect(state.turn).toBe("player");
 			expect(state.floor).toBe(INITIAL_FLOOR);
 			expect(state.rng.seed).toBe(12345);
-			expect(state.map.length).toBeGreaterThanOrEqual(
-				BSP_MIN_PARTITION_SIZE + 2,
-			);
+			expect(state.map.length).toBe(expectedSize.height);
 			for (const row of state.map) {
-				expect(row.length).toBe(state.map[0].length);
+				expect(row.length).toBe(expectedSize.width);
 			}
-			expect(state.enemies.length).toBe(ENEMY_COUNT);
+			expect(state.enemies.length).toBe(getEnemyCount(INITIAL_FLOOR));
 			for (const enemy of state.enemies) {
 				expect(enemy.hp).toBe(ENEMY_HP);
 				expect(enemy.maxHp).toBe(ENEMY_HP);
@@ -164,13 +199,12 @@ describe("state", () => {
 		it("マップと敵が初期化される", () => {
 			const titleState = createTitleScreenState(12345);
 			const gameState = startNewGame(titleState);
-			expect(gameState.map.length).toBeGreaterThanOrEqual(
-				BSP_MIN_PARTITION_SIZE + 2,
-			);
+			const expectedSize = getMapSize(INITIAL_FLOOR);
+			expect(gameState.map.length).toBe(expectedSize.height);
 			for (const row of gameState.map) {
-				expect(row.length).toBe(gameState.map[0].length);
+				expect(row.length).toBe(expectedSize.width);
 			}
-			expect(gameState.enemies.length).toBe(ENEMY_COUNT);
+			expect(gameState.enemies.length).toBe(getEnemyCount(INITIAL_FLOOR));
 			for (const enemy of gameState.enemies) {
 				expect(enemy.hp).toBe(ENEMY_HP);
 				expect(enemy.maxHp).toBe(ENEMY_HP);

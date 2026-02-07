@@ -8,6 +8,8 @@ import {
 	ENEMY_PARAMS,
 	FLOOR_TILE_COUNT,
 	getEnemyComposition,
+	getEnemyCount,
+	getMapSize,
 	INITIAL_DECK,
 	MAP_HEIGHT,
 	MAP_WIDTH,
@@ -78,6 +80,51 @@ describe("constants", () => {
 		it("旧定数がENEMY_PARAMS.normalと一致する", () => {
 			expect(ENEMY_HP).toBe(ENEMY_PARAMS.normal.hp);
 			expect(ENEMY_ATTACK_DAMAGE).toBe(ENEMY_PARAMS.normal.attackDamage);
+		});
+	});
+
+	describe("getMapSize", () => {
+		it("階層1-2: 9x9", () => {
+			expect(getMapSize(1)).toEqual({ width: 9, height: 9 });
+			expect(getMapSize(2)).toEqual({ width: 9, height: 9 });
+		});
+
+		it("階層3-4: 11x11", () => {
+			expect(getMapSize(3)).toEqual({ width: 11, height: 11 });
+			expect(getMapSize(4)).toEqual({ width: 11, height: 11 });
+		});
+
+		it("階層5-6: 13x13", () => {
+			expect(getMapSize(5)).toEqual({ width: 13, height: 13 });
+			expect(getMapSize(6)).toEqual({ width: 13, height: 13 });
+		});
+
+		it("階層7+: 15x15", () => {
+			expect(getMapSize(7)).toEqual({ width: 15, height: 15 });
+			expect(getMapSize(10)).toEqual({ width: 15, height: 15 });
+			expect(getMapSize(99)).toEqual({ width: 15, height: 15 });
+		});
+	});
+
+	describe("getEnemyCount", () => {
+		it("階層1-2: 3体", () => {
+			expect(getEnemyCount(1)).toBe(3);
+			expect(getEnemyCount(2)).toBe(3);
+		});
+
+		it("階層3-4: 4体", () => {
+			expect(getEnemyCount(3)).toBe(4);
+			expect(getEnemyCount(4)).toBe(4);
+		});
+
+		it("階層5-6: 5体", () => {
+			expect(getEnemyCount(5)).toBe(5);
+			expect(getEnemyCount(6)).toBe(5);
+		});
+
+		it("階層7+: 6体", () => {
+			expect(getEnemyCount(7)).toBe(6);
+			expect(getEnemyCount(99)).toBe(6);
 		});
 	});
 

@@ -5,10 +5,9 @@
  */
 
 import {
-	BSP_MAP_HEIGHT,
-	BSP_MAP_WIDTH,
 	BSP_MAX_RETRIES,
-	ENEMY_COUNT,
+	getEnemyCount,
+	getMapSize,
 	getSpecialTileComposition,
 	getSpecialTileCount,
 	INITIAL_FLOOR,
@@ -38,13 +37,16 @@ const createStairsTile = (): Tile => ({ type: "stairs" });
 /**
  * 固定レイアウトのマップを生成（外周が壁、内側が床）
  */
-export function createFixedLayoutMap(): GameMap {
+export function createFixedLayoutMap(
+	width: number = MAP_WIDTH,
+	height: number = MAP_HEIGHT,
+): GameMap {
 	const map: GameMap = [];
-	for (let y = 0; y < MAP_HEIGHT; y++) {
+	for (let y = 0; y < height; y++) {
 		const row: Tile[] = [];
-		for (let x = 0; x < MAP_WIDTH; x++) {
+		for (let x = 0; x < width; x++) {
 			const isBoundary =
-				x === 0 || y === 0 || x === MAP_WIDTH - 1 || y === MAP_HEIGHT - 1;
+				x === 0 || y === 0 || x === width - 1 || y === height - 1;
 			row.push(isBoundary ? createWallTile() : createFloorTile());
 		}
 		map.push(row);
@@ -109,8 +111,9 @@ export function generateBSPMapPlacement(
 	height: number,
 	floor: number = INITIAL_FLOOR,
 ): MapPlacement {
+	const enemyCount = getEnemyCount(floor);
 	const specialTileCount = getSpecialTileCount(floor);
-	const requiredCount = 1 + STAIRS_COUNT + ENEMY_COUNT + specialTileCount;
+	const requiredCount = 1 + STAIRS_COUNT + enemyCount + specialTileCount;
 
 	for (let attempt = 0; attempt < BSP_MAX_RETRIES; attempt++) {
 		const result = generateBSPMap(width, height, rng, requiredCount);
@@ -121,7 +124,7 @@ export function generateBSPMapPlacement(
 		if (floorPositions.length < requiredCount) continue;
 
 		// プレイヤー/階段/敵はすべての床タイルからサンプリング
-		const baseCount = 1 + STAIRS_COUNT + ENEMY_COUNT;
+		const baseCount = 1 + STAIRS_COUNT + enemyCount;
 		const baseSampled = rng.sample(floorPositions, baseCount);
 		const player = baseSampled[0];
 		const stairsPositions = baseSampled.slice(1, 1 + STAIRS_COUNT);
@@ -151,7 +154,7 @@ export function generateBSPMapPlacement(
 	}
 
 	// リトライ上限到達時は固定レイアウトにフォールバック
-	return generateFixedMapPlacement(rng, floor);
+	return generateFixedMapPlacement(rng, floor, width, height);
 }
 
 /**
@@ -160,11 +163,14 @@ export function generateBSPMapPlacement(
 function generateFixedMapPlacement(
 	rng: RNG,
 	floor: number = INITIAL_FLOOR,
+	width: number = MAP_WIDTH,
+	height: number = MAP_HEIGHT,
 ): MapPlacement {
-	const map = createFixedLayoutMap();
+	const map = createFixedLayoutMap(width, height);
 	const floorPositions = getFloorPositions(map);
+	const enemyCount = getEnemyCount(floor);
 	const specialTileCount = getSpecialTileCount(floor);
-	const requiredCount = 1 + STAIRS_COUNT + ENEMY_COUNT + specialTileCount;
+	const requiredCount = 1 + STAIRS_COUNT + enemyCount + specialTileCount;
 
 	if (requiredCount > floorPositions.length) {
 		throw new Error(
@@ -177,14 +183,14 @@ function generateFixedMapPlacement(
 	const stairsPositions = sampled.slice(1, 1 + STAIRS_COUNT);
 	const enemies = sampled.slice(
 		1 + STAIRS_COUNT,
-		1 + STAIRS_COUNT + ENEMY_COUNT,
+		1 + STAIRS_COUNT + enemyCount,
 	);
 
 	const stairs = stairsPositions[0];
 	map[stairs.y][stairs.x] = createStairsTile();
 
 	// 特殊タイル（固定レイアウトでは部屋/通路の区別なし、全床タイルからサンプリング）
-	const specialPositions = sampled.slice(1 + STAIRS_COUNT + ENEMY_COUNT);
+	const specialPositions = sampled.slice(1 + STAIRS_COUNT + enemyCount);
 	const specialTileTypes = getSpecialTileTypes(floor);
 	const specialTiles: { position: Position; type: TileType }[] = [];
 
@@ -205,9 +211,10 @@ export function generateMapPlacement(
 	rng: RNG,
 	floor: number = INITIAL_FLOOR,
 ): MapPlacement {
+	const { width, height } = getMapSize(floor);
 	if (MAP_GENERATION_MODE === "bsp") {
-		return generateBSPMapPlacement(rng, BSP_MAP_WIDTH, BSP_MAP_HEIGHT, floor);
+		return generateBSPMapPlacement(rng, width, height, floor);
 	}
 
-	return generateFixedMapPlacement(rng, floor);
+	return generateFixedMapPlacement(rng, floor, width, height);
 }

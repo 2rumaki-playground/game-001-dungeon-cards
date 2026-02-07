@@ -2,6 +2,7 @@
  * アプリケーション全体の共有状態とUIコンポーネント参照
  */
 
+import type { Application } from "pixi.js";
 import type { Card, GameState } from "./types";
 import type {
 	ActionLogRenderer,
@@ -38,6 +39,7 @@ export interface UIComponents {
 
 /** アプリケーションの共有状態 */
 export interface GameContext {
+	app: Application;
 	state: GameState;
 	isAnimating: boolean;
 	pendingCard: Card | null;

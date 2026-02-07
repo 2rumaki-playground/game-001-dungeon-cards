@@ -1,16 +1,12 @@
 import { Application } from "pixi.js";
 import {
-	BSP_MAP_HEIGHT,
-	BSP_MAP_WIDTH,
 	COLORS,
+	getMapSize,
 	LOG_AREA_GAP,
 	LOG_AREA_WIDTH,
-	MAP_HEIGHT,
-	MAP_WIDTH,
 	STATUS_BAR_HEIGHT,
 } from "./constants";
 import { createTitleScreenState } from "./game";
-import { MAP_GENERATION_MODE } from "./game/map";
 import type { GameContext, UIComponents } from "./gameContext";
 import type { GameState } from "./types";
 import {
@@ -157,37 +153,40 @@ function setupDebugGlobals(): void {
 
 async function main() {
 	const app = new Application();
-	const currentMapWidth =
-		MAP_GENERATION_MODE === "bsp" ? BSP_MAP_WIDTH : MAP_WIDTH;
-	const currentMapHeight =
-		MAP_GENERATION_MODE === "bsp" ? BSP_MAP_HEIGHT : MAP_HEIGHT;
-	const mapSize = getMapPixelSize(currentMapWidth, currentMapHeight);
-	const totalHeight = mapSize.height + HAND_AREA_HEIGHT + STATUS_BAR_HEIGHT;
+	// 最大マップサイズ（15x15）でキャンバスを確保
+	const maxSize = getMapSize(Infinity);
+	const maxMapSize = getMapPixelSize(maxSize.width, maxSize.height);
+	const maxTotalHeight =
+		maxMapSize.height + HAND_AREA_HEIGHT + STATUS_BAR_HEIGHT;
 
 	await app.init({
-		width: mapSize.width + LOG_AREA_GAP + LOG_AREA_WIDTH,
-		height: totalHeight,
+		width: maxMapSize.width + LOG_AREA_GAP + LOG_AREA_WIDTH,
+		height: maxTotalHeight,
 		backgroundColor: COLORS.background,
 	});
 
 	document.body.appendChild(app.canvas);
 
+	// UIコンポーネントは最大サイズで初期化
+	const ui = initializeUIComponents(app, maxMapSize, maxTotalHeight);
+
 	// コンテキスト初期化
 	ctx = {
+		app,
 		state: createTitleScreenState(),
 		isAnimating: false,
 		pendingCard: null,
 		debugLog: import.meta.env.DEV,
-		ui: initializeUIComponents(app, mapSize, totalHeight),
+		ui,
 	};
 
 	// イベントハンドラの設定
-	setupEventHandlers(ctx, mapSize, totalHeight);
+	setupEventHandlers(ctx);
 
 	// タイトル画面を描画
 	const totalWidth =
-		mapSize.width + LOG_AREA_GAP + ctx.ui.actionLogRenderer.getWidth();
-	ctx.ui.titleScreen.render(totalWidth, totalHeight, hasSaveData());
+		maxMapSize.width + LOG_AREA_GAP + ctx.ui.actionLogRenderer.getWidth();
+	ctx.ui.titleScreen.render(totalWidth, maxTotalHeight, hasSaveData());
 	render(ctx);
 
 	// デバッグ用グローバル変数の設定

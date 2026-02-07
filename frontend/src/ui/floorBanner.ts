@@ -54,6 +54,18 @@ export class FloorBanner {
 	}
 
 	/**
+	 * 画面サイズ変更に対応
+	 */
+	resize(screenWidth: number, screenHeight: number): void {
+		this.screenWidth = screenWidth;
+		this.screenHeight = screenHeight;
+		if (this.container.visible) {
+			this.text.x = screenWidth / 2;
+			this.text.y = screenHeight / 2;
+		}
+	}
+
+	/**
 	 * 階層バナーを表示
 	 * テキスト設定 → フェードイン → 保持時間待機
 	 */

@@ -2,7 +2,7 @@
  * イベントハンドラ設定
  */
 
-import { LOG_AREA_GAP } from "../constants";
+import { LOG_AREA_GAP, STATUS_BAR_HEIGHT } from "../constants";
 import {
 	endPlayerTurn,
 	executeAttack,
@@ -19,6 +19,7 @@ import type { GameContext } from "../gameContext";
 import type { Direction } from "../types";
 import { DIRECTION_DELTA } from "../types";
 import { deleteSaveData, hasSaveData, loadGame } from "../utils/storage";
+import { getMapPixelSize } from "./coordinates";
 import { detectEnemyMoves } from "./enemyMoveDetector";
 import {
 	animateRushWithStairs,
@@ -33,6 +34,8 @@ import {
 	renderGameScreen,
 	updateState,
 } from "./gameRenderer";
+import { HAND_AREA_HEIGHT } from "./layout";
+import { relayoutUI } from "./relayout";
 
 /**
  * 移動カードの実行と対応するアニメーション
@@ -168,13 +171,29 @@ async function handleRushCardExecution(
 }
 
 /**
- * イベントハンドラを設定
+ * 現在のマップサイズから画面サイズを計算
  */
-export function setupEventHandlers(
-	ctx: GameContext,
-	mapSize: { width: number; height: number },
-	totalHeight: number,
-): void {
+function getScreenSize(ctx: GameContext): {
+	width: number;
+	height: number;
+} {
+	const mapWidth = ctx.state.map[0]?.length ?? 0;
+	const mapHeight = ctx.state.map.length;
+	if (mapWidth === 0 || mapHeight === 0) {
+		return {
+			width: ctx.app.renderer.width,
+			height: ctx.app.renderer.height,
+		};
+	}
+	const mapPixelSize = getMapPixelSize(mapWidth, mapHeight);
+	return {
+		width:
+			mapPixelSize.width + LOG_AREA_GAP + ctx.ui.actionLogRenderer.getWidth(),
+		height: mapPixelSize.height + HAND_AREA_HEIGHT + STATUS_BAR_HEIGHT,
+	};
+}
+
+export function setupEventHandlers(ctx: GameContext): void {
 	// 方向選択UIのコールバック設定
 	ctx.ui.directionSelector.setOnDirectionSelect(async (direction) => {
 		if (ctx.isAnimating) return; // アニメーション中は無効
@@ -242,6 +261,7 @@ export function setupEventHandlers(
 			const newState = startNewGame(ctx.state);
 			await ctx.ui.screenTransition.fadeTransition(() => {
 				applyState(ctx, newState);
+				relayoutUI(ctx);
 				// 手札はフェードイン後に配布アニメーションで表示するためスキップ
 				render(ctx, true);
 			});
@@ -264,15 +284,17 @@ export function setupEventHandlers(
 			try {
 				await ctx.ui.screenTransition.fadeTransition(() => {
 					updateState(ctx, savedState);
+					if (savedState.screen === "game") {
+						relayoutUI(ctx);
+					}
 				});
 			} finally {
 				ctx.isAnimating = false;
 			}
 		} else {
 			alert("セーブデータの読み込みに失敗しました。");
-			const totalWidth =
-				mapSize.width + LOG_AREA_GAP + ctx.ui.actionLogRenderer.getWidth();
-			ctx.ui.titleScreen.render(totalWidth, totalHeight, hasSaveData());
+			const screen = getScreenSize(ctx);
+			ctx.ui.titleScreen.render(screen.width, screen.height, hasSaveData());
 		}
 	});
 
@@ -283,9 +305,8 @@ export function setupEventHandlers(
 		try {
 			await ctx.ui.screenTransition.fadeTransition(() => {
 				updateState(ctx, returnToTitle(ctx.state));
-				const totalWidth =
-					mapSize.width + LOG_AREA_GAP + ctx.ui.actionLogRenderer.getWidth();
-				ctx.ui.titleScreen.render(totalWidth, totalHeight, hasSaveData());
+				const screen = getScreenSize(ctx);
+				ctx.ui.titleScreen.render(screen.width, screen.height, hasSaveData());
 			});
 		} finally {
 			ctx.isAnimating = false;
@@ -295,9 +316,8 @@ export function setupEventHandlers(
 	// デッキ閲覧UIのコールバック設定
 	ctx.ui.deckViewer.setOnOpen(() => {
 		if (ctx.isAnimating) return;
-		const totalWidth =
-			mapSize.width + LOG_AREA_GAP + ctx.ui.actionLogRenderer.getWidth();
-		ctx.ui.deckViewer.render(ctx.state.deck, totalWidth, totalHeight);
+		const screen = getScreenSize(ctx);
+		ctx.ui.deckViewer.render(ctx.state.deck, screen.width, screen.height);
 		ctx.ui.deckViewer.show();
 	});
 
