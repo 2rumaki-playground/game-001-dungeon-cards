@@ -1,6 +1,6 @@
 /**
  * マップ生成
- * @see docs/spec/mvp/rules.md - マップ生成
+ * @see docs/spec/rules.md - マップ生成
  * @see docs/spec/mapgen.md - BSP分割アルゴリズム
  */
 
