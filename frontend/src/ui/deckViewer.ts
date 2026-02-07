@@ -13,7 +13,11 @@ import {
 	CARD_TYPE_SYMBOL,
 	RARITY_COLORS,
 } from "./cardConstants";
-import { drawRoundedRect, makeInteractive } from "./graphicsHelpers";
+import {
+	createOverlay,
+	drawRoundedRect,
+	makeInteractive,
+} from "./graphicsHelpers";
 import { BUTTON_HEIGHT, DECK_BUTTON_WIDTH } from "./layout";
 
 /** カード行の高さ・間隔 */
@@ -130,9 +134,7 @@ export class DeckViewer {
 
 		// 半透明オーバーレイ（背面UIへのポインタ入力を吸収）
 		const overlay = new Graphics();
-		overlay.rect(0, 0, screenWidth, screenHeight);
-		overlay.fill({ color: 0x000000, alpha: 0.7 });
-		overlay.eventMode = "static";
+		createOverlay(overlay, screenWidth, screenHeight);
 		this.container.addChild(overlay);
 
 		// タイトル

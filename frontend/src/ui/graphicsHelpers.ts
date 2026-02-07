@@ -28,6 +28,20 @@ export function drawRoundedRect(
 }
 
 /**
+ * 半透明オーバーレイを設定する（背面UIへのポインタ入力を吸収）
+ * 呼び出し側で new Graphics() を渡す
+ */
+export function createOverlay(
+	graphics: Graphics,
+	screenWidth: number,
+	screenHeight: number,
+): void {
+	graphics.rect(0, 0, screenWidth, screenHeight);
+	graphics.fill({ color: 0x000000, alpha: 0.7 });
+	graphics.eventMode = "static";
+}
+
+/**
  * ボタンのインタラクション設定（eventMode / cursor / pointerdownリスナー）を一括で行う
  */
 export function makeInteractive(
