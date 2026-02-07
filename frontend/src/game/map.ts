@@ -1,11 +1,21 @@
 /**
  * マップ生成
  * @see docs/spec/mvp/rules.md - マップ生成
+ * @see docs/spec/mapgen.md - BSP分割アルゴリズム
  */
 
-import { ENEMY_COUNT, MAP_HEIGHT, MAP_WIDTH, STAIRS_COUNT } from "../constants";
+import {
+	BSP_MAP_HEIGHT,
+	BSP_MAP_WIDTH,
+	BSP_MAX_RETRIES,
+	ENEMY_COUNT,
+	MAP_HEIGHT,
+	MAP_WIDTH,
+	STAIRS_COUNT,
+} from "../constants";
 import type { GameMap, Position, Tile } from "../types";
 import type { RNG } from "../utils/rng";
+import { generateBSPMap } from "./bsp";
 
 export type MapPlacement = {
 	map: GameMap;
@@ -13,6 +23,9 @@ export type MapPlacement = {
 	stairs: Position;
 	enemies: Position[];
 };
+
+/** マップ生成モード */
+export const MAP_GENERATION_MODE: "fixed" | "bsp" = "bsp";
 
 const createWallTile = (): Tile => ({ type: "wall" });
 const createFloorTile = (): Tile => ({ type: "floor" });
@@ -48,9 +61,46 @@ const getFloorPositions = (map: GameMap): Position[] => {
 };
 
 /**
- * 固定レイアウトに対してプレイヤー/階段/敵をランダム配置
+ * BSPマップ生成（リトライ付き）
+ */
+export function generateBSPMapPlacement(
+	rng: RNG,
+	width: number,
+	height: number,
+): MapPlacement {
+	const requiredCount = 1 + STAIRS_COUNT + ENEMY_COUNT;
+
+	for (let attempt = 0; attempt < BSP_MAX_RETRIES; attempt++) {
+		const map = generateBSPMap(width, height, rng, requiredCount);
+		if (!map) continue;
+
+		const floorPositions = getFloorPositions(map);
+		if (floorPositions.length < requiredCount) continue;
+
+		const sampled = rng.sample(floorPositions, requiredCount);
+		const player = sampled[0];
+		const stairsPositions = sampled.slice(1, 1 + STAIRS_COUNT);
+		const enemies = sampled.slice(1 + STAIRS_COUNT);
+
+		const stairs = stairsPositions[0];
+		map[stairs.y][stairs.x] = createStairsTile();
+
+		return { map, player, stairs, enemies };
+	}
+
+	throw new Error(
+		`BSP map generation failed after ${BSP_MAX_RETRIES} attempts`,
+	);
+}
+
+/**
+ * マップ生成（モードに応じて固定/BSPを切り替え）
  */
 export function generateMapPlacement(rng: RNG): MapPlacement {
+	if (MAP_GENERATION_MODE === "bsp") {
+		return generateBSPMapPlacement(rng, BSP_MAP_WIDTH, BSP_MAP_HEIGHT);
+	}
+
 	const map = createFixedLayoutMap();
 	const floorPositions = getFloorPositions(map);
 	const requiredCount = 1 + STAIRS_COUNT + ENEMY_COUNT;

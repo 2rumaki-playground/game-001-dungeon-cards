@@ -3,7 +3,7 @@
  * @see docs/spec/mvp/rules.md
  */
 
-import { ENEMY_PARAMS, MAP_HEIGHT, MAP_WIDTH } from "../constants";
+import { ENEMY_PARAMS } from "../constants";
 import type { Direction, Enemy, GameState, Position } from "../types";
 import { DIRECTION_DELTA } from "../types";
 import { applyDamageToPlayer, checkGameOver, isDefeated } from "./combat";
@@ -42,7 +42,7 @@ function canEnemyMoveTo(
 	nx: number,
 	ny: number,
 ): boolean {
-	if (nx < 0 || ny < 0 || nx >= MAP_WIDTH || ny >= MAP_HEIGHT) {
+	if (nx < 0 || ny < 0 || nx >= state.map[0].length || ny >= state.map.length) {
 		return false;
 	}
 
