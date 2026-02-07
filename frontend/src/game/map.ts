@@ -211,10 +211,10 @@ export function generateMapPlacement(
 	rng: RNG,
 	floor: number = INITIAL_FLOOR,
 ): MapPlacement {
+	const { width, height } = getMapSize(floor);
 	if (MAP_GENERATION_MODE === "bsp") {
-		const { width, height } = getMapSize(floor);
 		return generateBSPMapPlacement(rng, width, height, floor);
 	}
 
-	return generateFixedMapPlacement(rng, floor);
+	return generateFixedMapPlacement(rng, floor, width, height);
 }
