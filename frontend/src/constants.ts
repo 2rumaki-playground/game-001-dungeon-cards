@@ -121,8 +121,8 @@ export const BSP_MIN_ROOM_SIZE = 3; // 内部床面積
 export const BSP_CORRIDOR_WIDTH = 1;
 export const BSP_MAX_DEPTH = 4;
 export const BSP_MAX_RETRIES = 10;
-export const BSP_MAP_WIDTH = 9; // Issue #211で階層別に変更予定
-export const BSP_MAP_HEIGHT = 9;
+export const BSP_MAP_WIDTH = 12; // 内側領域が 2 * BSP_MIN_PARTITION_SIZE 以上（Issue #211で階層別に変更予定）
+export const BSP_MAP_HEIGHT = 12;
 
 // 描画設定
 export const CELL_SIZE = 64;

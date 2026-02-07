@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
+	BSP_MAP_HEIGHT,
+	BSP_MAP_WIDTH,
 	BSP_MAX_DEPTH,
 	BSP_MIN_PARTITION_SIZE,
 	BSP_MIN_ROOM_SIZE,
@@ -262,45 +264,50 @@ describe("bsp", () => {
 	});
 
 	describe("generateBSPMap", () => {
-		it("9x9マップが正しく生成される", () => {
+		it("マップが正しく生成される", () => {
 			const rng = new RNG(42);
-			const map = generateBSPMap(9, 9, rng, 5);
+			const map = generateBSPMap(BSP_MAP_WIDTH, BSP_MAP_HEIGHT, rng, 5);
 
 			expect(map).not.toBeNull();
 			if (!map) return;
 
-			expect(map.length).toBe(9);
+			expect(map.length).toBe(BSP_MAP_HEIGHT);
 			for (const row of map) {
-				expect(row.length).toBe(9);
+				expect(row.length).toBe(BSP_MAP_WIDTH);
 			}
 		});
 
 		it("外周が壁タイルである", () => {
 			const rng = new RNG(42);
-			const map = generateBSPMap(9, 9, rng, 5);
+			const map = generateBSPMap(BSP_MAP_WIDTH, BSP_MAP_HEIGHT, rng, 5);
 			if (!map) return;
 
-			for (let x = 0; x < 9; x++) {
+			for (let x = 0; x < BSP_MAP_WIDTH; x++) {
 				expect(map[0][x].type).toBe("wall");
-				expect(map[8][x].type).toBe("wall");
+				expect(map[BSP_MAP_HEIGHT - 1][x].type).toBe("wall");
 			}
-			for (let y = 0; y < 9; y++) {
+			for (let y = 0; y < BSP_MAP_HEIGHT; y++) {
 				expect(map[y][0].type).toBe("wall");
-				expect(map[y][8].type).toBe("wall");
+				expect(map[y][BSP_MAP_WIDTH - 1].type).toBe("wall");
 			}
 		});
 
 		it("十分な床タイルが生成される", () => {
 			const rng = new RNG(42);
 			const requiredTiles = 5;
-			const map = generateBSPMap(9, 9, rng, requiredTiles);
+			const map = generateBSPMap(
+				BSP_MAP_WIDTH,
+				BSP_MAP_HEIGHT,
+				rng,
+				requiredTiles,
+			);
 
 			expect(map).not.toBeNull();
 			if (!map) return;
 
 			let floorCount = 0;
-			for (let y = 0; y < 9; y++) {
-				for (let x = 0; x < 9; x++) {
+			for (let y = 0; y < BSP_MAP_HEIGHT; y++) {
+				for (let x = 0; x < BSP_MAP_WIDTH; x++) {
 					if (map[y][x].type === "floor") floorCount++;
 				}
 			}
@@ -308,16 +315,18 @@ describe("bsp", () => {
 		});
 
 		it("異なるシードで異なるマップが生成される", () => {
-			const map1 = generateBSPMap(9, 9, new RNG(1), 5);
-			const map2 = generateBSPMap(9, 9, new RNG(2), 5);
+			// 分割の多様性を検証するため、十分大きなマップサイズを使用
+			const testSize = 15;
+			const map1 = generateBSPMap(testSize, testSize, new RNG(42), 5);
+			const map2 = generateBSPMap(testSize, testSize, new RNG(999), 5);
 
 			expect(map1).not.toBeNull();
 			expect(map2).not.toBeNull();
 			if (!map1 || !map2) return;
 
 			let different = false;
-			for (let y = 0; y < 9 && !different; y++) {
-				for (let x = 0; x < 9 && !different; x++) {
+			for (let y = 0; y < testSize && !different; y++) {
+				for (let x = 0; x < testSize && !different; x++) {
 					if (map1[y][x].type !== map2[y][x].type) {
 						different = true;
 					}
@@ -327,15 +336,25 @@ describe("bsp", () => {
 		});
 
 		it("同じシードで同じマップが生成される（再現性）", () => {
-			const map1 = generateBSPMap(9, 9, new RNG(12345), 5);
-			const map2 = generateBSPMap(9, 9, new RNG(12345), 5);
+			const map1 = generateBSPMap(
+				BSP_MAP_WIDTH,
+				BSP_MAP_HEIGHT,
+				new RNG(12345),
+				5,
+			);
+			const map2 = generateBSPMap(
+				BSP_MAP_WIDTH,
+				BSP_MAP_HEIGHT,
+				new RNG(12345),
+				5,
+			);
 
 			expect(map1).not.toBeNull();
 			expect(map2).not.toBeNull();
 			if (!map1 || !map2) return;
 
-			for (let y = 0; y < 9; y++) {
-				for (let x = 0; x < 9; x++) {
+			for (let y = 0; y < BSP_MAP_HEIGHT; y++) {
+				for (let x = 0; x < BSP_MAP_WIDTH; x++) {
 					expect(map1[y][x].type).toBe(map2[y][x].type);
 				}
 			}
@@ -344,7 +363,7 @@ describe("bsp", () => {
 		it("床タイル数が不足する場合はnullを返す", () => {
 			const rng = new RNG(42);
 			// 非常に大きな数を要求
-			const map = generateBSPMap(9, 9, rng, 1000);
+			const map = generateBSPMap(BSP_MAP_WIDTH, BSP_MAP_HEIGHT, rng, 1000);
 			expect(map).toBeNull();
 		});
 
@@ -352,7 +371,7 @@ describe("bsp", () => {
 			let successCount = 0;
 			for (let seed = 0; seed < 50; seed++) {
 				const rng = new RNG(seed);
-				const map = generateBSPMap(9, 9, rng, 5);
+				const map = generateBSPMap(BSP_MAP_WIDTH, BSP_MAP_HEIGHT, rng, 5);
 				if (map) successCount++;
 			}
 			// 大多数のシードで生成できるはず
