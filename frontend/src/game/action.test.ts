@@ -6,6 +6,8 @@ import {
 	PLAYER_ATTACK_DAMAGE,
 	PLAYER_INITIAL_HP,
 	PLAYER_STRONG_ATTACK_DAMAGE,
+	TRAP_DAMAGE,
+	TREASURE_HEAL,
 } from "../constants";
 import {
 	createTestMap,
@@ -133,6 +135,91 @@ describe("executeMove", () => {
 		expect(result.floor).toBe(1);
 		// プレイヤーは階段マスに移動している
 		expect(result.player.position).toEqual({ x: 4, y: 3 });
+	});
+
+	it("罠タイルへの移動: ダメージを受けてtileEffectがtrap", () => {
+		const map = createTestMap();
+		map[3][4] = { type: "trap" };
+		const state = createTestState({
+			map,
+			deck: {
+				drawPile: [],
+				hand: [{ id: "move-1", type: "move" }],
+				discardPile: [],
+			},
+		});
+		const {
+			state: result,
+			tileEffect,
+			gameOver,
+		} = executeMove(state, "move-1", "right");
+
+		expect(result.player.position).toEqual({ x: 4, y: 3 });
+		expect(tileEffect).toBe("trap");
+		expect(gameOver).toBe(false);
+		expect(result.player.hp).toBe(PLAYER_INITIAL_HP - TRAP_DAMAGE);
+		expect(result.map[3][4].type).toBe("floor");
+	});
+
+	it("宝箱タイルへの移動: HP回復してtileEffectがtreasure", () => {
+		const map = createTestMap();
+		map[3][4] = { type: "treasure" };
+		const state = createTestState({
+			map,
+			player: {
+				position: { x: 3, y: 3 },
+				hp: 5,
+				maxHp: PLAYER_INITIAL_HP,
+				ap: MAX_AP,
+				maxAp: MAX_AP,
+			},
+			deck: {
+				drawPile: [],
+				hand: [{ id: "move-1", type: "move" }],
+				discardPile: [],
+			},
+		});
+		const { state: result, tileEffect } = executeMove(state, "move-1", "right");
+
+		expect(tileEffect).toBe("treasure");
+		expect(result.player.hp).toBe(5 + TREASURE_HEAL);
+	});
+
+	it("罠タイルでHP0: gameOverがtrue", () => {
+		const map = createTestMap();
+		map[3][4] = { type: "trap" };
+		const state = createTestState({
+			map,
+			player: {
+				position: { x: 3, y: 3 },
+				hp: 1,
+				maxHp: PLAYER_INITIAL_HP,
+				ap: MAX_AP,
+				maxAp: MAX_AP,
+			},
+			deck: {
+				drawPile: [],
+				hand: [{ id: "move-1", type: "move" }],
+				discardPile: [],
+			},
+		});
+		const { gameOver } = executeMove(state, "move-1", "right");
+
+		expect(gameOver).toBe(true);
+	});
+
+	it("床タイルへの移動: tileEffectがnull", () => {
+		const state = createTestState({
+			deck: {
+				drawPile: [],
+				hand: [{ id: "move-1", type: "move" }],
+				discardPile: [],
+			},
+		});
+		const { tileEffect, gameOver } = executeMove(state, "move-1", "right");
+
+		expect(tileEffect).toBeNull();
+		expect(gameOver).toBe(false);
 	});
 
 	it("元のGameStateが変更されない（イミュータブル）", () => {
@@ -731,6 +818,107 @@ describe("executeRush", () => {
 		expect(result.player.position).toEqual({ x: 5, y: 3 });
 		expect(movedDistance).toBe(2);
 		expect(intermediatePosition).toEqual({ x: 4, y: 3 });
+	});
+
+	it("1マス目で罠→HP0→ゲームオーバーで2マス目に進まない", () => {
+		const map = createTestMap();
+		map[3][4] = { type: "trap" };
+		const state = createTestState({
+			map,
+			player: {
+				position: { x: 3, y: 3 },
+				hp: 1,
+				maxHp: PLAYER_INITIAL_HP,
+				ap: MAX_AP,
+				maxAp: MAX_AP,
+			},
+			deck: {
+				drawPile: [],
+				hand: [{ id: "rush-1", type: "rush" }],
+				discardPile: [],
+			},
+		});
+		const result = executeRush(state, "rush-1", "right");
+
+		expect(result.gameOver).toBe(true);
+		expect(result.movedDistance).toBe(1);
+		expect(result.state.player.position).toEqual({ x: 4, y: 3 });
+		expect(result.tileEffects).toContain("trap");
+	});
+
+	it("1マス目で罠→HP残存→2マス目に進む", () => {
+		const map = createTestMap();
+		map[3][4] = { type: "trap" };
+		const state = createTestState({
+			map,
+			player: {
+				position: { x: 3, y: 3 },
+				hp: PLAYER_INITIAL_HP,
+				maxHp: PLAYER_INITIAL_HP,
+				ap: MAX_AP,
+				maxAp: MAX_AP,
+			},
+			deck: {
+				drawPile: [],
+				hand: [{ id: "rush-1", type: "rush" }],
+				discardPile: [],
+			},
+		});
+		const result = executeRush(state, "rush-1", "right");
+
+		expect(result.gameOver).toBe(false);
+		expect(result.movedDistance).toBe(2);
+		expect(result.state.player.position).toEqual({ x: 5, y: 3 });
+		expect(result.state.player.hp).toBe(PLAYER_INITIAL_HP - TRAP_DAMAGE);
+		expect(result.tileEffects).toEqual(["trap"]);
+	});
+
+	it("1マス目と2マス目の両方に特殊タイル: 両方発動", () => {
+		const map = createTestMap();
+		map[3][4] = { type: "trap" };
+		map[3][5] = { type: "treasure" };
+		const state = createTestState({
+			map,
+			player: {
+				position: { x: 3, y: 3 },
+				hp: PLAYER_INITIAL_HP,
+				maxHp: PLAYER_INITIAL_HP,
+				ap: MAX_AP,
+				maxAp: MAX_AP,
+			},
+			deck: {
+				drawPile: [],
+				hand: [{ id: "rush-1", type: "rush" }],
+				discardPile: [],
+			},
+		});
+		const result = executeRush(state, "rush-1", "right");
+
+		expect(result.tileEffects).toEqual(["trap", "treasure"]);
+		expect(result.movedDistance).toBe(2);
+		// HP: 10 - 1(trap) + 3(treasure) = 12 → maxHpで10
+		expect(result.state.player.hp).toBe(PLAYER_INITIAL_HP);
+	});
+
+	it("突進で特殊タイルなし: tileEffectsが空", () => {
+		const state = createTestState({
+			player: {
+				position: { x: 3, y: 3 },
+				hp: PLAYER_INITIAL_HP,
+				maxHp: PLAYER_INITIAL_HP,
+				ap: MAX_AP,
+				maxAp: MAX_AP,
+			},
+			deck: {
+				drawPile: [],
+				hand: [{ id: "rush-1", type: "rush" }],
+				discardPile: [],
+			},
+		});
+		const result = executeRush(state, "rush-1", "right");
+
+		expect(result.tileEffects).toEqual([]);
+		expect(result.gameOver).toBe(false);
 	});
 
 	it("元のGameStateが変更されない（イミュータブル）", () => {

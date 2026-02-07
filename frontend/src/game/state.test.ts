@@ -9,10 +9,7 @@ import {
 	MAX_AP,
 	PLAYER_INITIAL_HP,
 } from "../constants";
-import {
-	createTestMap,
-	createTestState,
-} from "../test-utils/createTestFixtures";
+import { createTestState } from "../test-utils/createTestFixtures";
 import {
 	addActionLog,
 	changeScreen,
