@@ -121,7 +121,7 @@ export function createTitleScreenState(seed?: number): GameState {
  */
 export function createInitialGameState(seed?: number): GameState {
 	const rng = new RNG(seed);
-	const { map, player, enemies } = generateMapPlacement(rng);
+	const { map, player, enemies } = generateMapPlacement(rng, INITIAL_FLOOR);
 	const initialPlayer = createInitialPlayer();
 
 	return {
