@@ -28,9 +28,13 @@ import { setupEventHandlers } from "./ui/eventHandlers";
 import { render, updateState } from "./ui/gameRenderer";
 import {
 	BUTTON_BOTTOM_MARGIN,
+	BUTTON_GAP,
 	BUTTON_HEIGHT,
+	BUTTON_RIGHT_MARGIN,
+	DECK_BUTTON_WIDTH,
 	HAND_AREA_HEIGHT,
 	HAND_AREA_TOP_PADDING,
+	TURN_END_BUTTON_WIDTH,
 } from "./ui/layout";
 import { hasSaveData } from "./utils/storage";
 
@@ -67,13 +71,14 @@ function initializeUIComponents(
 
 	const turnEndButton = new TurnEndButton();
 	const turnEndContainer = turnEndButton.getContainer();
-	turnEndContainer.x = mapSize.width - 136;
+	turnEndContainer.x =
+		mapSize.width - TURN_END_BUTTON_WIDTH - BUTTON_RIGHT_MARGIN;
 	turnEndContainer.y = totalHeight - BUTTON_HEIGHT - BUTTON_BOTTOM_MARGIN;
 	app.stage.addChild(turnEndContainer);
 
 	const deckViewer = new DeckViewer();
 	const deckButtonContainer = deckViewer.getButtonContainer();
-	deckButtonContainer.x = mapSize.width - 136 - 88;
+	deckButtonContainer.x = turnEndContainer.x - DECK_BUTTON_WIDTH - BUTTON_GAP;
 	deckButtonContainer.y = totalHeight - BUTTON_HEIGHT - BUTTON_BOTTOM_MARGIN;
 	app.stage.addChild(deckButtonContainer);
 
