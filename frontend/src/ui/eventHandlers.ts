@@ -2,7 +2,6 @@
  * イベントハンドラ設定
  */
 
-import { LOG_AREA_GAP, STATUS_BAR_HEIGHT } from "../constants";
 import {
 	endPlayerTurn,
 	executeAttack,
@@ -19,10 +18,10 @@ import type { GameContext } from "../gameContext";
 import type { Direction } from "../types";
 import { DIRECTION_DELTA } from "../types";
 import { deleteSaveData, hasSaveData, loadGame } from "../utils/storage";
-import { getMapPixelSize } from "./coordinates";
 import { detectEnemyMoves } from "./enemyMoveDetector";
 import {
 	animateRushWithStairs,
+	getScreenSize,
 	updateStateWithAttackAnimation,
 	updateStateWithBumpAnimation,
 	updateStateWithMoveAnimation,
@@ -34,7 +33,6 @@ import {
 	renderGameScreen,
 	updateState,
 } from "./gameRenderer";
-import { HAND_AREA_HEIGHT } from "./layout";
 import { relayoutUI } from "./relayout";
 
 /**
@@ -168,29 +166,6 @@ async function handleRushCardExecution(
 			});
 		}
 	}
-}
-
-/**
- * 現在のマップサイズから画面サイズを計算
- */
-function getScreenSize(ctx: GameContext): {
-	width: number;
-	height: number;
-} {
-	const mapWidth = ctx.state.map[0]?.length ?? 0;
-	const mapHeight = ctx.state.map.length;
-	if (mapWidth === 0 || mapHeight === 0) {
-		return {
-			width: ctx.app.renderer.width,
-			height: ctx.app.renderer.height,
-		};
-	}
-	const mapPixelSize = getMapPixelSize(mapWidth, mapHeight);
-	return {
-		width:
-			mapPixelSize.width + LOG_AREA_GAP + ctx.ui.actionLogRenderer.getWidth(),
-		height: mapPixelSize.height + HAND_AREA_HEIGHT + STATUS_BAR_HEIGHT,
-	};
 }
 
 export function setupEventHandlers(ctx: GameContext): void {
