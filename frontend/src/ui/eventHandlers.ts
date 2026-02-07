@@ -171,9 +171,6 @@ async function handleRushCardExecution(
 }
 
 /**
- * イベントハンドラを設定
- */
-/**
  * 現在のマップサイズから画面サイズを計算
  */
 function getScreenSize(ctx: GameContext): {
