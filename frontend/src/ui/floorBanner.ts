@@ -59,6 +59,10 @@ export class FloorBanner {
 	resize(screenWidth: number, screenHeight: number): void {
 		this.screenWidth = screenWidth;
 		this.screenHeight = screenHeight;
+		if (this.container.visible) {
+			this.text.x = screenWidth / 2;
+			this.text.y = screenHeight / 2;
+		}
 	}
 
 	/**
