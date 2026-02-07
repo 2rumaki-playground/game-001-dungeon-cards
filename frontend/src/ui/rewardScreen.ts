@@ -152,7 +152,7 @@ export class RewardScreen {
 	}
 
 	/**
-	 * 入れ替えモードのデッキ一覧を描画
+	 * 除去選択画面のデッキ一覧を描画
 	 */
 	renderRemoveSelection(
 		deckCards: Card[],
