@@ -91,6 +91,14 @@ describe("RewardScreen", () => {
 			{ id: "card-3", type: "rush" },
 		];
 
+		it("カスタムタイトルを渡した場合に描画される", () => {
+			const screen = new RewardScreen();
+			screen.renderRemoveSelection(testCards, 600, 400, "カード除去イベント");
+
+			const container = screen.getContainer();
+			expect(container.children.length).toBeGreaterThan(0);
+		});
+
 		it("除去選択画面が描画される", () => {
 			const screen = new RewardScreen();
 			screen.renderRemoveSelection(testCards, 600, 400);

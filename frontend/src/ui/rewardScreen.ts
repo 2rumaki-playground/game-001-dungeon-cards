@@ -158,6 +158,7 @@ export class RewardScreen {
 		deckCards: Card[],
 		screenWidth: number,
 		screenHeight: number,
+		titleText = "除去するカードを選択",
 	): void {
 		this.container.removeChildren();
 
@@ -170,7 +171,7 @@ export class RewardScreen {
 
 		// タイトル
 		const title = new Text({
-			text: "除去するカードを選択",
+			text: titleText,
 			style: {
 				fontSize: 24,
 				fontFamily: "sans-serif",

@@ -13,6 +13,7 @@ import {
 	createRewardState,
 	getTotalDeckSize,
 	removeCardFromDeck,
+	shouldTriggerCardRemoval,
 	transitionFloor,
 } from "../game";
 import type { GameContext } from "../gameContext";
@@ -174,6 +175,7 @@ function showRemoveCardSelection(
 	state: GameState,
 	screenWidth: number,
 	screenHeight: number,
+	title?: string,
 ): Promise<string | null> {
 	return new Promise((resolve) => {
 		const allCards = [
@@ -186,6 +188,7 @@ function showRemoveCardSelection(
 			allCards,
 			screenWidth,
 			screenHeight,
+			title,
 		);
 		ctx.ui.rewardScreen.show();
 
@@ -197,6 +200,37 @@ function showRemoveCardSelection(
 			resolve(null);
 		});
 	});
+}
+
+/**
+ * カード除去イベントを実行する
+ *
+ * 全敵撃破かつデッキ枚数が最小値を超えている場合、30%の確率で除去イベントが発生。
+ * 報酬フローの前に挿入される。
+ * @see docs/spec/deckbuilding.md「カード除去」
+ */
+async function executeCardRemovalEvent(
+	ctx: GameContext,
+	state: GameState,
+	screenWidth: number,
+	screenHeight: number,
+): Promise<GameState> {
+	const { triggered, updatedState } = shouldTriggerCardRemoval(state);
+	if (!triggered) return updatedState;
+
+	const removeResult = await showRemoveCardSelection(
+		ctx,
+		updatedState,
+		screenWidth,
+		screenHeight,
+		"カード除去イベント",
+	);
+
+	if (removeResult !== null) {
+		return removeCardFromDeck(updatedState, removeResult);
+	}
+
+	return updatedState;
 }
 
 /**
@@ -214,14 +248,30 @@ export async function updateStateWithStairsAnimation(
 		// 1. 現在のマップ上で階段マスへ移動アニメーション
 		await ctx.ui.mapRenderer.animatePlayerMove(stairsGridPos);
 
-		// 2. 報酬フロー（撃破数0ならスキップ）
 		applyState(ctx, stairsState);
-		const afterReward = await executeRewardFlow(ctx, stairsState);
 
-		// 3. 階層遷移
+		// 画面サイズ計算（除去イベントで使用）
+		const mapPixelSize = getMapPixelSize();
+		const screenWidth =
+			mapPixelSize.width + LOG_AREA_GAP + ctx.ui.actionLogRenderer.getWidth();
+		const screenHeight =
+			mapPixelSize.height + HAND_AREA_HEIGHT + STATUS_BAR_HEIGHT;
+
+		// 2. カード除去イベント（報酬フローの前）
+		const afterRemoval = await executeCardRemovalEvent(
+			ctx,
+			stairsState,
+			screenWidth,
+			screenHeight,
+		);
+
+		// 3. 報酬フロー（撃破数0ならスキップ）
+		const afterReward = await executeRewardFlow(ctx, afterRemoval);
+
+		// 4. 階層遷移
 		const transitioned = transitionFloor(afterReward);
 
-		// 4. フェードトランジション（暗転中に階層バナー表示 + 状態更新）
+		// 5. フェードトランジション（暗転中に階層バナー表示 + 状態更新）
 		await ctx.ui.screenTransition.fadeTransition(async () => {
 			await ctx.ui.floorBanner.show(transitioned.floor);
 			applyState(ctx, transitioned);
@@ -229,7 +279,7 @@ export async function updateStateWithStairsAnimation(
 			await ctx.ui.floorBanner.hide();
 		});
 
-		// 5. フェードイン後に手札配布アニメーション
+		// 6. フェードイン後に手札配布アニメーション
 		await ctx.ui.handRenderer.renderWithAnimation(
 			ctx.state.deck.hand,
 			ctx.state.player.ap,
@@ -295,14 +345,30 @@ export async function animateRushWithStairs(
 		// 2. 階段位置（2マス目）へ移動アニメーション
 		await ctx.ui.mapRenderer.animatePlayerMove(stairsPos);
 
-		// 3. 報酬フロー
 		applyState(ctx, stairsState);
-		const afterReward = await executeRewardFlow(ctx, stairsState);
 
-		// 4. 階層遷移
+		// 画面サイズ計算（除去イベントで使用）
+		const mapPixelSize = getMapPixelSize();
+		const screenWidth =
+			mapPixelSize.width + LOG_AREA_GAP + ctx.ui.actionLogRenderer.getWidth();
+		const screenHeight =
+			mapPixelSize.height + HAND_AREA_HEIGHT + STATUS_BAR_HEIGHT;
+
+		// 3. カード除去イベント（報酬フローの前）
+		const afterRemoval = await executeCardRemovalEvent(
+			ctx,
+			stairsState,
+			screenWidth,
+			screenHeight,
+		);
+
+		// 4. 報酬フロー
+		const afterReward = await executeRewardFlow(ctx, afterRemoval);
+
+		// 5. 階層遷移
 		const transitioned = transitionFloor(afterReward);
 
-		// 5. フェードトランジション（暗転中に階層バナー表示 + 状態更新）
+		// 6. フェードトランジション（暗転中に階層バナー表示 + 状態更新）
 		await ctx.ui.screenTransition.fadeTransition(async () => {
 			await ctx.ui.floorBanner.show(transitioned.floor);
 			applyState(ctx, transitioned);
@@ -310,7 +376,7 @@ export async function animateRushWithStairs(
 			await ctx.ui.floorBanner.hide();
 		});
 
-		// 6. フェードイン後に手札配布アニメーション
+		// 7. フェードイン後に手札配布アニメーション
 		await ctx.ui.handRenderer.renderWithAnimation(
 			ctx.state.deck.hand,
 			ctx.state.player.ap,

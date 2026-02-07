@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
+import { DECK_MIN_SIZE, ENEMY_COUNT } from "../constants";
 import { createTestState } from "../test-utils/createTestFixtures";
 import type { Card } from "../types";
 import { resetCardIdCounter } from "./deck";
@@ -7,6 +8,7 @@ import {
 	createRewardState,
 	getTotalDeckSize,
 	removeCardFromDeck,
+	shouldTriggerCardRemoval,
 } from "./reward";
 
 beforeEach(() => {
@@ -153,5 +155,87 @@ describe("removeCardFromDeck", () => {
 
 		removeCardFromDeck(state, "c-1");
 		expect(state.deck.drawPile).toHaveLength(1);
+	});
+});
+
+describe("shouldTriggerCardRemoval", () => {
+	/** DECK_MIN_SIZEより多いカードのデッキを作成 */
+	function createLargeDeck(size: number): {
+		drawPile: Card[];
+		hand: Card[];
+		discardPile: Card[];
+	} {
+		const cards: Card[] = Array.from({ length: size }, (_, i) => ({
+			id: `c-${i + 1}`,
+			type: "move" as const,
+		}));
+		return { drawPile: cards, hand: [], discardPile: [] };
+	}
+
+	it("全敵撃破していない場合 → triggered: false", () => {
+		const state = createTestState({
+			defeatedEnemyCount: ENEMY_COUNT - 1,
+			deck: createLargeDeck(DECK_MIN_SIZE + 1),
+		});
+
+		const result = shouldTriggerCardRemoval(state);
+		expect(result.triggered).toBe(false);
+	});
+
+	it("デッキがDECK_MIN_SIZE以下の場合 → triggered: false", () => {
+		const state = createTestState({
+			defeatedEnemyCount: ENEMY_COUNT,
+			deck: createLargeDeck(DECK_MIN_SIZE),
+		});
+
+		const result = shouldTriggerCardRemoval(state);
+		expect(result.triggered).toBe(false);
+	});
+
+	it("条件を満たす場合、シード固定で再現性がある", () => {
+		const state1 = createTestState({
+			defeatedEnemyCount: ENEMY_COUNT,
+			deck: createLargeDeck(DECK_MIN_SIZE + 1),
+		});
+		const state2 = createTestState({
+			defeatedEnemyCount: ENEMY_COUNT,
+			deck: createLargeDeck(DECK_MIN_SIZE + 1),
+		});
+
+		const result1 = shouldTriggerCardRemoval(state1);
+		const result2 = shouldTriggerCardRemoval(state2);
+		expect(result1.triggered).toBe(result2.triggered);
+	});
+
+	it("RNG消費がupdatedStateに反映される", () => {
+		const state = createTestState({
+			defeatedEnemyCount: ENEMY_COUNT,
+			deck: createLargeDeck(DECK_MIN_SIZE + 1),
+		});
+
+		const result = shouldTriggerCardRemoval(state);
+		// RNG消費が発生しているため、updatedStateのrngは元と異なる
+		expect(result.updatedState.rng).not.toBe(state.rng);
+	});
+
+	it("全敵撃破していない場合、RNGは消費されない", () => {
+		const state = createTestState({
+			defeatedEnemyCount: 0,
+			deck: createLargeDeck(DECK_MIN_SIZE + 1),
+		});
+
+		const result = shouldTriggerCardRemoval(state);
+		// RNGが消費されていないので、updatedStateは元のstateと同じ
+		expect(result.updatedState).toBe(state);
+	});
+
+	it("デッキ枚数不足の場合、RNGは消費されない", () => {
+		const state = createTestState({
+			defeatedEnemyCount: ENEMY_COUNT,
+			deck: createLargeDeck(DECK_MIN_SIZE),
+		});
+
+		const result = shouldTriggerCardRemoval(state);
+		expect(result.updatedState).toBe(state);
 	});
 });
