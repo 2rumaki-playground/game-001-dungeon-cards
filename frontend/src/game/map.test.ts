@@ -223,14 +223,15 @@ describe("map", () => {
 			expect(specialTiles.length).toBe(getSpecialTileCount(floor));
 		});
 
-		it("リトライ上限到達時は固定マップにフォールバックする", () => {
+		it("リトライ上限到達時は指定サイズの固定マップにフォールバックする", () => {
 			const rng = new RNG(42);
-			// 小さすぎるサイズでBSP生成が必ず失敗する→固定マップにフォールバック
-			const result = generateBSPMapPlacement(rng, 3, 3);
+			// 階層1のサイズ(9x9)でBSP_MIN_PARTITION_SIZE未満の小サイズを使い、BSP生成を必ず失敗させる
+			// フォールバック時も渡されたサイズで固定マップが生成される
+			const result = generateBSPMapPlacement(rng, 9, 9, 1);
 
-			expect(result.map.length).toBe(MAP_HEIGHT);
+			expect(result.map.length).toBe(9);
 			for (const row of result.map) {
-				expect(row.length).toBe(MAP_WIDTH);
+				expect(row.length).toBe(9);
 			}
 		});
 

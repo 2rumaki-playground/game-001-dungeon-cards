@@ -37,13 +37,16 @@ const createStairsTile = (): Tile => ({ type: "stairs" });
 /**
  * 固定レイアウトのマップを生成（外周が壁、内側が床）
  */
-export function createFixedLayoutMap(): GameMap {
+export function createFixedLayoutMap(
+	width: number = MAP_WIDTH,
+	height: number = MAP_HEIGHT,
+): GameMap {
 	const map: GameMap = [];
-	for (let y = 0; y < MAP_HEIGHT; y++) {
+	for (let y = 0; y < height; y++) {
 		const row: Tile[] = [];
-		for (let x = 0; x < MAP_WIDTH; x++) {
+		for (let x = 0; x < width; x++) {
 			const isBoundary =
-				x === 0 || y === 0 || x === MAP_WIDTH - 1 || y === MAP_HEIGHT - 1;
+				x === 0 || y === 0 || x === width - 1 || y === height - 1;
 			row.push(isBoundary ? createWallTile() : createFloorTile());
 		}
 		map.push(row);
@@ -151,7 +154,7 @@ export function generateBSPMapPlacement(
 	}
 
 	// リトライ上限到達時は固定レイアウトにフォールバック
-	return generateFixedMapPlacement(rng, floor);
+	return generateFixedMapPlacement(rng, floor, width, height);
 }
 
 /**
@@ -160,8 +163,10 @@ export function generateBSPMapPlacement(
 function generateFixedMapPlacement(
 	rng: RNG,
 	floor: number = INITIAL_FLOOR,
+	width: number = MAP_WIDTH,
+	height: number = MAP_HEIGHT,
 ): MapPlacement {
-	const map = createFixedLayoutMap();
+	const map = createFixedLayoutMap(width, height);
 	const floorPositions = getFloorPositions(map);
 	const enemyCount = getEnemyCount(floor);
 	const specialTileCount = getSpecialTileCount(floor);
