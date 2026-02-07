@@ -277,6 +277,12 @@ export function generateBSPMap(
 	rng: RNG,
 	requiredFloorTiles: number,
 ): GameMap | null {
+	// 入力バリデーション: 外周壁2マス + 最小パーティションサイズが必要
+	const minSize = BSP_MIN_PARTITION_SIZE + 2;
+	if (width < minSize || height < minSize) {
+		return null;
+	}
+
 	// 壁で埋めたマップを初期化
 	const map: GameMap = [];
 	for (let y = 0; y < height; y++) {

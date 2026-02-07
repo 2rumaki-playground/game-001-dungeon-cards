@@ -367,6 +367,14 @@ describe("bsp", () => {
 			expect(map).toBeNull();
 		});
 
+		it("マップサイズが小さすぎる場合はnullを返す", () => {
+			const rng = new RNG(42);
+			// 最小サイズ = BSP_MIN_PARTITION_SIZE + 2 = 7
+			expect(generateBSPMap(6, 12, rng, 5)).toBeNull();
+			expect(generateBSPMap(12, 6, rng, 5)).toBeNull();
+			expect(generateBSPMap(3, 3, rng, 5)).toBeNull();
+		});
+
 		it("複数シードで安定して生成できる", () => {
 			let successCount = 0;
 			for (let seed = 0; seed < 50; seed++) {
