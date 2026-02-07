@@ -1,6 +1,6 @@
-import type { Graphics } from "pixi.js";
+import type { Container, FederatedPointerEvent, Graphics } from "pixi.js";
 import { describe, expect, it, vi } from "vitest";
-import { drawRoundedRect } from "./graphicsHelpers";
+import { drawRoundedRect, makeInteractive } from "./graphicsHelpers";
 
 function createMockGraphics() {
 	const calls: { method: string; args: unknown[] }[] = [];
@@ -53,5 +53,63 @@ describe("drawRoundedRect", () => {
 			{ method: "roundRect", args: [0, 0, 200, 100, 6] },
 			{ method: "stroke", args: [{ color: 0x445566, width: 1 }] },
 		]);
+	});
+});
+
+function createMockContainer() {
+	return {
+		eventMode: "passive" as string,
+		cursor: "default" as string,
+		on: vi.fn(),
+	} as unknown as Container & {
+		eventMode: string;
+		cursor: string;
+		on: ReturnType<typeof vi.fn>;
+	};
+}
+
+describe("makeInteractive", () => {
+	it("eventModeをstaticに設定する", () => {
+		const container = createMockContainer();
+		const onClick = vi.fn();
+
+		makeInteractive(container, onClick);
+
+		expect(container.eventMode).toBe("static");
+	});
+
+	it("cursorをpointerに設定する", () => {
+		const container = createMockContainer();
+		const onClick = vi.fn();
+
+		makeInteractive(container, onClick);
+
+		expect(container.cursor).toBe("pointer");
+	});
+
+	it("pointerdownイベントリスナーを登録する", () => {
+		const container = createMockContainer();
+		const onClick = vi.fn();
+
+		makeInteractive(container, onClick);
+
+		expect(container.on).toHaveBeenCalledWith("pointerdown", onClick);
+	});
+
+	it("コールバックにFederatedPointerEventが渡される", () => {
+		const container = createMockContainer();
+		const onClick = vi.fn();
+
+		makeInteractive(container, onClick);
+
+		const mockEvent = {
+			stopPropagation: vi.fn(),
+		} as unknown as FederatedPointerEvent;
+		const registeredCallback = container.on.mock.calls[0][1] as (
+			e: FederatedPointerEvent,
+		) => void;
+		registeredCallback(mockEvent);
+
+		expect(onClick).toHaveBeenCalledWith(mockEvent);
 	});
 });

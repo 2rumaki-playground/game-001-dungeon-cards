@@ -2,7 +2,12 @@
  * Graphics描画の共通ヘルパー関数
  */
 
-import type { FillInput, Graphics } from "pixi.js";
+import type {
+	Container,
+	FederatedPointerEvent,
+	FillInput,
+	Graphics,
+} from "pixi.js";
 
 /**
  * 角丸矩形を塗りつぶし＋ストロークで描画する
@@ -20,4 +25,16 @@ export function drawRoundedRect(
 	graphics.fill(fillColor);
 	graphics.roundRect(0, 0, width, height, radius);
 	graphics.stroke(stroke);
+}
+
+/**
+ * ボタンのインタラクション設定（eventMode / cursor / pointerdownリスナー）を一括で行う
+ */
+export function makeInteractive(
+	target: Container,
+	onClick: (event: FederatedPointerEvent) => void,
+): void {
+	target.eventMode = "static";
+	target.cursor = "pointer";
+	target.on("pointerdown", onClick);
 }
