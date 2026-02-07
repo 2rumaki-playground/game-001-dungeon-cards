@@ -1,12 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
+	BSP_MIN_PARTITION_SIZE,
 	ENEMY_COUNT,
 	ENEMY_HP,
 	ENEMY_PARAMS,
 	HAND_LIMIT,
 	INITIAL_FLOOR,
-	MAP_HEIGHT,
-	MAP_WIDTH,
 	MAX_AP,
 	PLAYER_INITIAL_HP,
 } from "../constants";
@@ -127,9 +126,11 @@ describe("state", () => {
 			expect(state.turn).toBe("player");
 			expect(state.floor).toBe(INITIAL_FLOOR);
 			expect(state.rng.seed).toBe(12345);
-			expect(state.map.length).toBe(MAP_HEIGHT);
+			expect(state.map.length).toBeGreaterThanOrEqual(
+				BSP_MIN_PARTITION_SIZE + 2,
+			);
 			for (const row of state.map) {
-				expect(row.length).toBe(MAP_WIDTH);
+				expect(row.length).toBe(state.map[0].length);
 			}
 			expect(state.enemies.length).toBe(ENEMY_COUNT);
 			for (const enemy of state.enemies) {
@@ -161,9 +162,11 @@ describe("state", () => {
 		it("マップと敵が初期化される", () => {
 			const titleState = createTitleScreenState(12345);
 			const gameState = startNewGame(titleState);
-			expect(gameState.map.length).toBe(MAP_HEIGHT);
+			expect(gameState.map.length).toBeGreaterThanOrEqual(
+				BSP_MIN_PARTITION_SIZE + 2,
+			);
 			for (const row of gameState.map) {
-				expect(row.length).toBe(MAP_WIDTH);
+				expect(row.length).toBe(gameState.map[0].length);
 			}
 			expect(gameState.enemies.length).toBe(ENEMY_COUNT);
 			for (const enemy of gameState.enemies) {

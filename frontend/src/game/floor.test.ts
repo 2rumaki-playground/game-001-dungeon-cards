@@ -1,11 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
+	BSP_MIN_PARTITION_SIZE,
 	ENEMY_COUNT,
 	ENEMY_HP,
 	ENEMY_PARAMS,
 	HAND_LIMIT,
-	MAP_HEIGHT,
-	MAP_WIDTH,
 	MAX_AP,
 	TOTAL_DECK_SIZE,
 } from "../constants";
@@ -28,12 +27,12 @@ vi.mock("../utils/storage", async (importOriginal) => {
  * テスト用の7x7マップを生成（外周壁・内側床・階段1つ）
  */
 function createTestMap(): GameMap {
+	const size = 7;
 	const map: GameMap = [];
-	for (let y = 0; y < MAP_HEIGHT; y++) {
+	for (let y = 0; y < size; y++) {
 		const row: Tile[] = [];
-		for (let x = 0; x < MAP_WIDTH; x++) {
-			const isBoundary =
-				x === 0 || y === 0 || x === MAP_WIDTH - 1 || y === MAP_HEIGHT - 1;
+		for (let x = 0; x < size; x++) {
+			const isBoundary = x === 0 || y === 0 || x === size - 1 || y === size - 1;
 			row.push({ type: isBoundary ? "wall" : "floor" });
 		}
 		map.push(row);
@@ -94,8 +93,13 @@ describe("transitionFloor", () => {
 		const result = transitionFloor(state);
 
 		// マップが存在し、正しいサイズ
-		expect(result.map).toHaveLength(MAP_HEIGHT);
-		expect(result.map[0]).toHaveLength(MAP_WIDTH);
+		expect(result.map.length).toBeGreaterThanOrEqual(
+			BSP_MIN_PARTITION_SIZE + 2,
+		);
+		// すべての行が同じ幅であること
+		for (const row of result.map) {
+			expect(row.length).toBe(result.map[0].length);
+		}
 	});
 
 	it("プレイヤーHPが維持される", () => {

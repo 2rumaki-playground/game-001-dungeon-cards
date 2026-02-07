@@ -5,8 +5,6 @@
 
 import {
 	CARD_COST,
-	MAP_HEIGHT,
-	MAP_WIDTH,
 	PLAYER_ATTACK_DAMAGE,
 	PLAYER_STRONG_ATTACK_DAMAGE,
 	RUSH_MAX_DISTANCE,
@@ -26,7 +24,7 @@ function canMove(state: GameState, direction: Direction): boolean {
 	const ny = state.player.position.y + delta.y;
 
 	// マップ範囲外
-	if (nx < 0 || ny < 0 || nx >= MAP_WIDTH || ny >= MAP_HEIGHT) {
+	if (nx < 0 || ny < 0 || nx >= state.map[0].length || ny >= state.map.length) {
 		return false;
 	}
 
@@ -116,7 +114,7 @@ function canAttack(
 	const ny = state.player.position.y + delta.y;
 
 	// マップ範囲外
-	if (nx < 0 || ny < 0 || nx >= MAP_WIDTH || ny >= MAP_HEIGHT) {
+	if (nx < 0 || ny < 0 || nx >= state.map[0].length || ny >= state.map.length) {
 		return { hit: false };
 	}
 

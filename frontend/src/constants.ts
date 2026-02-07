@@ -115,6 +115,15 @@ export const ACTION_LOG_LIMIT = 50;
 export const FLOOR_AREA_SIZE = 5; // 5x5
 export const FLOOR_TILE_COUNT = FLOOR_AREA_SIZE * FLOOR_AREA_SIZE; // 25
 
+// BSPマップ生成（v1.3）
+export const BSP_MIN_PARTITION_SIZE = 5;
+export const BSP_MIN_ROOM_SIZE = 3; // 内部床サイズ（最小幅/高さ）
+export const BSP_CORRIDOR_WIDTH = 1;
+export const BSP_MAX_DEPTH = 4;
+export const BSP_MAX_RETRIES = 10;
+export const BSP_MAP_WIDTH = 12; // 内側領域が 2 * BSP_MIN_PARTITION_SIZE 以上（Issue #211で階層別に変更予定）
+export const BSP_MAP_HEIGHT = 12;
+
 // 描画設定
 export const CELL_SIZE = 64;
 export const CELL_GAP = 4;
