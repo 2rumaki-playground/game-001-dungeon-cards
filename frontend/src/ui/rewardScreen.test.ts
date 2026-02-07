@@ -91,12 +91,14 @@ describe("RewardScreen", () => {
 			{ id: "card-3", type: "rush" },
 		];
 
-		it("カスタムタイトルを渡した場合に描画される", () => {
+		it("カスタムタイトルを渡した場合にそのテキストが描画される", () => {
 			const screen = new RewardScreen();
 			screen.renderRemoveSelection(testCards, 600, 400, "カード除去イベント");
 
 			const container = screen.getContainer();
-			expect(container.children.length).toBeGreaterThan(0);
+			// children[0]=overlay, children[1]=title(Text)
+			const title = container.children[1] as import("pixi.js").Text;
+			expect(title.text).toBe("カード除去イベント");
 		});
 
 		it("除去選択画面が描画される", () => {
