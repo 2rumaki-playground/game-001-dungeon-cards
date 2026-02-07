@@ -5,6 +5,7 @@
 
 import { Container, Graphics, Text } from "pixi.js";
 import { CARD_COST, CARD_RARITY } from "../constants";
+import { getAllCards, getTotalDeckSize } from "../game/deck";
 import type { CardType, DeckState } from "../types";
 import {
 	CARD_COLORS,
@@ -129,8 +130,7 @@ export class DeckViewer {
 		this.container.removeChildren();
 
 		const cardCounts = this.countCardsByType(deck);
-		const totalCards =
-			deck.drawPile.length + deck.hand.length + deck.discardPile.length;
+		const totalCards = getTotalDeckSize(deck);
 
 		// 半透明オーバーレイ（背面UIへのポインタ入力を吸収）
 		const overlay = new Graphics();
@@ -179,7 +179,7 @@ export class DeckViewer {
 	 */
 	private countCardsByType(deck: DeckState): Map<CardType, number> {
 		const counts = new Map<CardType, number>();
-		const allCards = [...deck.drawPile, ...deck.hand, ...deck.discardPile];
+		const allCards = getAllCards(deck);
 		for (const card of allCards) {
 			counts.set(card.type, (counts.get(card.type) ?? 0) + 1);
 		}

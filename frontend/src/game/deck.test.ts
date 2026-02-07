@@ -6,6 +6,8 @@ import {
 	createInitialDeckState,
 	discardHand,
 	drawCards,
+	getAllCards,
+	getTotalDeckSize,
 	playCard,
 	resetCardIdCounter,
 	reshuffleDeck,
@@ -183,6 +185,54 @@ describe("deck", () => {
 			expect(result.drawPile).toHaveLength(3);
 			expect(result.hand).toHaveLength(0);
 			expect(result.discardPile).toHaveLength(0);
+		});
+	});
+
+	describe("getAllCards", () => {
+		it("3ゾーンの全カードを結合した配列を返す", () => {
+			const deck: ReturnType<typeof createInitialDeckState> = {
+				drawPile: [{ id: "card-1", type: "move" }],
+				hand: [{ id: "card-2", type: "attack" }],
+				discardPile: [{ id: "card-3", type: "wait" }],
+			};
+			const result = getAllCards(deck);
+			expect(result).toHaveLength(3);
+			expect(result.map((c) => c.id)).toEqual(["card-1", "card-2", "card-3"]);
+		});
+
+		it("空デッキで空配列を返す", () => {
+			const deck: ReturnType<typeof createInitialDeckState> = {
+				drawPile: [],
+				hand: [],
+				discardPile: [],
+			};
+			expect(getAllCards(deck)).toHaveLength(0);
+		});
+	});
+
+	describe("getTotalDeckSize", () => {
+		it("3ゾーンの合計枚数を返す", () => {
+			const deck: ReturnType<typeof createInitialDeckState> = {
+				drawPile: [
+					{ id: "card-1", type: "move" },
+					{ id: "card-2", type: "attack" },
+				],
+				hand: [{ id: "card-3", type: "rush" }],
+				discardPile: [
+					{ id: "card-4", type: "wait" },
+					{ id: "card-5", type: "move" },
+				],
+			};
+			expect(getTotalDeckSize(deck)).toBe(5);
+		});
+
+		it("空デッキで0を返す", () => {
+			const deck: ReturnType<typeof createInitialDeckState> = {
+				drawPile: [],
+				hand: [],
+				discardPile: [],
+			};
+			expect(getTotalDeckSize(deck)).toBe(0);
 		});
 	});
 });
