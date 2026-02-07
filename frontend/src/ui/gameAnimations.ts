@@ -229,19 +229,35 @@ async function executeCardRemovalEvent(
 	const { triggered, updatedState } = shouldTriggerCardRemoval(state);
 	if (!triggered) return updatedState;
 
+	// 除去イベント中は報酬フローと同様に screen を "reward" 扱いにして描画する
+	const prevScreen = updatedState.screen;
+	const removalState: GameState = {
+		...updatedState,
+		screen: "reward",
+	};
+	applyState(ctx, removalState);
+	render(ctx);
+
 	const removeResult = await showRemoveCardSelection(
 		ctx,
-		updatedState,
+		removalState,
 		screenWidth,
 		screenHeight,
 		"カード除去イベント",
 	);
 
+	let resultState: GameState;
 	if (removeResult !== null) {
-		return removeCardFromDeck(updatedState, removeResult);
+		resultState = removeCardFromDeck(removalState, removeResult);
+	} else {
+		resultState = removalState;
 	}
 
-	return updatedState;
+	// 除去イベント終了後は元の screen に戻して返す
+	return {
+		...resultState,
+		screen: prevScreen,
+	};
 }
 
 /**
