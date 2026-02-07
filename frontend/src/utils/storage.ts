@@ -4,6 +4,7 @@
  */
 
 import { ENEMY_COUNT } from "../constants";
+import { initCardIdCounterFromDeck } from "../game/deck";
 import type { GameState } from "../types";
 import { RNG } from "./rng";
 
@@ -72,7 +73,7 @@ export function loadGame(): GameState | null {
 				}))
 			: data.enemies;
 
-		return {
+		const state: GameState = {
 			...data,
 			enemies,
 			rng: RNG.deserialize(data.rng),
@@ -84,6 +85,13 @@ export function loadGame(): GameState | null {
 					: 0,
 			rewardState: null,
 		};
+
+		// カードIDカウンターをデッキの最大IDで初期化
+		if (state.deck) {
+			initCardIdCounterFromDeck(state.deck);
+		}
+
+		return state;
 	} catch (e) {
 		console.error("Failed to load save data", e);
 		return null;
