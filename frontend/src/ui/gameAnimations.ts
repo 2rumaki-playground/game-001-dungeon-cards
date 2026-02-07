@@ -30,7 +30,7 @@ function getScreenSize(ctx: GameContext): {
 	width: number;
 	height: number;
 } {
-	const mapWidth = ctx.state.map[0].length;
+	const mapWidth = ctx.state.map[0]?.length ?? 0;
 	const mapHeight = ctx.state.map.length;
 	const mapPixelSize = getMapPixelSize(mapWidth, mapHeight);
 	return {

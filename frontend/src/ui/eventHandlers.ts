@@ -182,6 +182,12 @@ function getScreenSize(ctx: GameContext): {
 } {
 	const mapWidth = ctx.state.map[0]?.length ?? 0;
 	const mapHeight = ctx.state.map.length;
+	if (mapWidth === 0 || mapHeight === 0) {
+		return {
+			width: ctx.app.renderer.width,
+			height: ctx.app.renderer.height,
+		};
+	}
 	const mapPixelSize = getMapPixelSize(mapWidth, mapHeight);
 	return {
 		width:
