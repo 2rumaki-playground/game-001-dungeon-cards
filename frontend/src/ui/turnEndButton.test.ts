@@ -62,7 +62,7 @@ describe("TurnEndButton", () => {
 			expect(callback).toHaveBeenCalledTimes(1);
 		});
 
-		it("非活性時はコールバックが呼ばれない", () => {
+		it("非活性時はeventModeがnoneでポインタイベントをブロックする", () => {
 			const button = new TurnEndButton();
 			const callback = vi.fn();
 
@@ -71,9 +71,7 @@ describe("TurnEndButton", () => {
 
 			const container = button.getContainer();
 			const buttonContainer = container.children[0];
-			buttonContainer.emit("pointerdown", {} as FederatedPointerEvent);
-
-			expect(callback).not.toHaveBeenCalled();
+			expect(buttonContainer.eventMode).toBe("none");
 		});
 	});
 
