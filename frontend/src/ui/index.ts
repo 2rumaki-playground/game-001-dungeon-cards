@@ -9,6 +9,7 @@ export * from "./floorBanner";
 export * from "./gameOverScreen";
 export * from "./handRenderer";
 export * from "./mapRenderer";
+export * from "./rewardScreen";
 export * from "./screenTransition";
 export * from "./statusBar";
 export * from "./titleScreen";

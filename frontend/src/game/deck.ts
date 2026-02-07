@@ -18,9 +18,24 @@ export function resetCardIdCounter(): void {
 }
 
 /**
+ * デッキ内のカードIDからカウンターを初期化（セーブデータ復元用）
+ */
+export function initCardIdCounterFromDeck(deck: DeckState): void {
+	const allCards = [...deck.drawPile, ...deck.hand, ...deck.discardPile];
+	let maxId = 0;
+	for (const card of allCards) {
+		const match = card.id.match(/^card-(\d+)$/);
+		if (match) {
+			maxId = Math.max(maxId, Number(match[1]));
+		}
+	}
+	cardIdCounter = maxId;
+}
+
+/**
  * カードを1枚生成
  */
-function createCard(type: CardType): Card {
+export function createCard(type: CardType): Card {
 	cardIdCounter++;
 	return { id: `card-${cardIdCounter}`, type };
 }

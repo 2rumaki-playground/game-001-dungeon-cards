@@ -54,10 +54,18 @@ export function transitionFloor(state: GameState): GameState {
 	// 6. プレイヤーターン開始処理（AP リセット + 手札補充）
 	next = startPlayerTurn(next);
 
-	// 7. 行動ログに記録
+	// 7. 撃破カウント・報酬状態をリセット
+	next = {
+		...next,
+		rng: next.rng.clone(),
+		defeatedEnemyCount: 0,
+		rewardState: null,
+	};
+
+	// 8. 行動ログに記録
 	next = addActionLog(next, `${next.floor}階に到達した`);
 
-	// 8. セーブ処理 (#104)
+	// 9. セーブ処理 (#104)
 	saveGame(next);
 
 	return next;

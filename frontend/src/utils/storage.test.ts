@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { ENEMY_COUNT } from "../constants";
 import { createTitleScreenState } from "../game/state";
 import { deleteSaveData, hasSaveData, loadGame, saveGame } from "./storage";
 
@@ -130,6 +131,55 @@ describe("storage", () => {
 		if (loaded) {
 			expect(loaded.enemies[0].type).toBe("heavy");
 		}
+	});
+
+	it("should sanitize invalid defeatedEnemyCount to 0", () => {
+		const state = createTitleScreenState(42);
+		const invalidCounts = ["abc", null, undefined, -1];
+
+		for (const count of invalidCounts) {
+			const saveData = {
+				...state,
+				screen: "game",
+				defeatedEnemyCount: count,
+				rng: state.rng.serialize(),
+			};
+			localStorageMock.setItem("dungeon-cards-save", JSON.stringify(saveData));
+
+			const loaded = loadGame();
+			expect(loaded).not.toBeNull();
+			expect(loaded?.defeatedEnemyCount).toBe(0);
+		}
+	});
+
+	it("should floor fractional defeatedEnemyCount", () => {
+		const state = createTitleScreenState(42);
+		const saveData = {
+			...state,
+			screen: "game",
+			defeatedEnemyCount: 2.5,
+			rng: state.rng.serialize(),
+		};
+		localStorageMock.setItem("dungeon-cards-save", JSON.stringify(saveData));
+
+		const loaded = loadGame();
+		expect(loaded).not.toBeNull();
+		expect(loaded?.defeatedEnemyCount).toBe(2);
+	});
+
+	it("should clamp defeatedEnemyCount to ENEMY_COUNT", () => {
+		const state = createTitleScreenState(42);
+		const saveData = {
+			...state,
+			screen: "game",
+			defeatedEnemyCount: 999,
+			rng: state.rng.serialize(),
+		};
+		localStorageMock.setItem("dungeon-cards-save", JSON.stringify(saveData));
+
+		const loaded = loadGame();
+		expect(loaded).not.toBeNull();
+		expect(loaded?.defeatedEnemyCount).toBe(ENEMY_COUNT);
 	});
 
 	it("should return null if screen is invalid", () => {

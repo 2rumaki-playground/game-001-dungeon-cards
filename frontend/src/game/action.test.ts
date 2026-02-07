@@ -1,9 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
 	CARD_COST,
-	ENEMY_COUNT,
 	ENEMY_HP,
-	MAP_HEIGHT,
 	MAX_AP,
 	PLAYER_ATTACK_DAMAGE,
 	PLAYER_INITIAL_HP,
@@ -31,7 +29,11 @@ describe("executeMove", () => {
 				discardPile: [],
 			},
 		});
-		const result = executeMove(state, "move-1", "right");
+		const { state: result, reachedStairs } = executeMove(
+			state,
+			"move-1",
+			"right",
+		);
 
 		// 位置が更新される
 		expect(result.player.position).toEqual({ x: 4, y: 3 });
@@ -43,6 +45,8 @@ describe("executeMove", () => {
 		expect(result.deck.discardPile[0].id).toBe("move-1");
 		// 行動ログに記録
 		expect(result.actionLog.length).toBeGreaterThan(0);
+		// 階段ではない
+		expect(reachedStairs).toBe(false);
 	});
 
 	it("壁タイルへの移動失敗: 位置変更なし・AP消費・カード捨て札移動・失敗ログ", () => {
@@ -61,7 +65,7 @@ describe("executeMove", () => {
 				discardPile: [],
 			},
 		});
-		const result = executeMove(state, "move-1", "up");
+		const { state: result } = executeMove(state, "move-1", "up");
 
 		// 位置が変更されない
 		expect(result.player.position).toEqual({ x: 1, y: 1 });
@@ -92,7 +96,7 @@ describe("executeMove", () => {
 				discardPile: [],
 			},
 		});
-		const result = executeMove(state, "move-1", "right");
+		const { state: result } = executeMove(state, "move-1", "right");
 
 		// 位置が変更されない
 		expect(result.player.position).toEqual({ x: 3, y: 3 });
@@ -103,7 +107,7 @@ describe("executeMove", () => {
 		expect(result.deck.discardPile).toHaveLength(1);
 	});
 
-	it("階段タイルへの移動成功: 階層遷移が発生する", () => {
+	it("階段タイルへの移動成功: reachedStairsがtrueで階層遷移は行わない", () => {
 		const map = createTestMap();
 		// (4,3)を階段タイルに設定
 		map[3][4] = { type: "stairs" };
@@ -117,36 +121,18 @@ describe("executeMove", () => {
 				discardPile: [],
 			},
 		});
-		const result = executeMove(state, "move-1", "right");
-
-		// 階層が +1
-		expect(result.floor).toBe(2);
-		// 新マップが生成される
-		expect(result.map).toHaveLength(MAP_HEIGHT);
-		// 敵が新規配置される
-		expect(result.enemies).toHaveLength(ENEMY_COUNT);
-		// 行動ログに階層遷移が記録
-		const hasFloorLog = result.actionLog.some((log) =>
-			log.message.includes("2階に到達した"),
+		const { state: result, reachedStairs } = executeMove(
+			state,
+			"move-1",
+			"right",
 		);
-		expect(hasFloorLog).toBe(true);
-	});
 
-	it("階段タイルへの移動成功: 遷移後のターンが player", () => {
-		const map = createTestMap();
-		map[3][4] = { type: "stairs" };
-
-		const state = createTestState({
-			map,
-			deck: {
-				drawPile: [],
-				hand: [{ id: "move-1", type: "move" }],
-				discardPile: [],
-			},
-		});
-		const result = executeMove(state, "move-1", "right");
-
-		expect(result.turn).toBe("player");
+		// 階段到達フラグ
+		expect(reachedStairs).toBe(true);
+		// 階層遷移は行わない（floorは変わらない）
+		expect(result.floor).toBe(1);
+		// プレイヤーは階段マスに移動している
+		expect(result.player.position).toEqual({ x: 4, y: 3 });
 	});
 
 	it("元のGameStateが変更されない（イミュータブル）", () => {
@@ -160,7 +146,7 @@ describe("executeMove", () => {
 		const originalPosition = { ...state.player.position };
 		const originalAp = state.player.ap;
 
-		executeMove(state, "move-1", "right");
+		executeMove(state, "move-1", "right"); // MoveResultを返すが、破棄
 
 		expect(state.player.position).toEqual(originalPosition);
 		expect(state.player.ap).toBe(originalAp);
@@ -535,7 +521,7 @@ describe("executeRush", () => {
 		const {
 			state: result,
 			movedDistance,
-			floorTransitioned,
+			reachedStairs,
 		} = executeRush(state, "rush-1", "right");
 
 		expect(result.player.position).toEqual({ x: 5, y: 3 });
@@ -544,7 +530,7 @@ describe("executeRush", () => {
 		expect(result.deck.discardPile).toHaveLength(1);
 		expect(result.deck.discardPile[0].id).toBe("rush-1");
 		expect(movedDistance).toBe(2);
-		expect(floorTransitioned).toBe(false);
+		expect(reachedStairs).toBe(false);
 	});
 
 	it("1マス目で壁: 移動なし・AP消費・カード捨て札移動", () => {
@@ -622,7 +608,7 @@ describe("executeRush", () => {
 		expect(movedDistance).toBe(0);
 	});
 
-	it("1マス目で階段: 階層遷移が発生する", () => {
+	it("1マス目で階段: reachedStairsがtrueで階層遷移は行わない", () => {
 		const map = createTestMap();
 		map[3][4] = { type: "stairs" };
 
@@ -638,13 +624,13 @@ describe("executeRush", () => {
 		const {
 			state: result,
 			movedDistance,
-			floorTransitioned,
+			reachedStairs,
 		} = executeRush(state, "rush-1", "right");
 
-		expect(result.floor).toBe(2);
-		expect(result.enemies).toHaveLength(ENEMY_COUNT);
+		expect(reachedStairs).toBe(true);
+		expect(result.floor).toBe(1);
+		expect(result.player.position).toEqual({ x: 4, y: 3 });
 		expect(movedDistance).toBe(1);
-		expect(floorTransitioned).toBe(true);
 	});
 
 	it("2マス目で壁: 1マス停止・AP消費", () => {
@@ -713,7 +699,7 @@ describe("executeRush", () => {
 		expect(movedDistance).toBe(1);
 	});
 
-	it("2マス目で階段: 階層遷移が発生する", () => {
+	it("2マス目で階段: reachedStairsがtrueで階層遷移は行わない", () => {
 		const map = createTestMap();
 		map[3][5] = { type: "stairs" };
 
@@ -736,14 +722,14 @@ describe("executeRush", () => {
 		const {
 			state: result,
 			movedDistance,
-			floorTransitioned,
+			reachedStairs,
 			intermediatePosition,
 		} = executeRush(state, "rush-1", "right");
 
-		expect(result.floor).toBe(2);
-		expect(result.enemies).toHaveLength(ENEMY_COUNT);
+		expect(reachedStairs).toBe(true);
+		expect(result.floor).toBe(1);
+		expect(result.player.position).toEqual({ x: 5, y: 3 });
 		expect(movedDistance).toBe(2);
-		expect(floorTransitioned).toBe(true);
 		expect(intermediatePosition).toEqual({ x: 4, y: 3 });
 	});
 

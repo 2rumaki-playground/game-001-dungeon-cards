@@ -2,10 +2,24 @@
  * アニメーション付きゲーム状態更新関数群
  */
 
-import { PLAYER_ATTACK_DAMAGE } from "../constants";
+import {
+	DECK_MAX_SIZE,
+	LOG_AREA_GAP,
+	PLAYER_ATTACK_DAMAGE,
+	STATUS_BAR_HEIGHT,
+} from "../constants";
+import {
+	addRewardCardToDeck,
+	createRewardState,
+	getTotalDeckSize,
+	removeCardFromDeck,
+	transitionFloor,
+} from "../game";
 import type { GameContext } from "../gameContext";
-import type { Direction, GameState, Position } from "../types";
+import type { CardType, Direction, GameState, Position } from "../types";
+import { getMapPixelSize } from "./coordinates";
 import { applyState, render } from "./gameRenderer";
+import { HAND_AREA_HEIGHT } from "./layout";
 
 /**
  * ゲーム状態を更新してプレイヤー移動アニメーション付きで再描画
@@ -45,11 +59,152 @@ export async function updateStateWithMoveAnimation(
 }
 
 /**
- * 階段への移動アニメーション後に階層遷移する
+ * 報酬フローを実行する
+ *
+ * 撃破数に応じた報酬カード選択肢を全て表示し、
+ * ユーザーが1枚選択（またはスキップ）するまで待機する。
+ * @see docs/spec/deckbuilding.md「報酬画面」
+ */
+async function executeRewardFlow(
+	ctx: GameContext,
+	state: GameState,
+): Promise<GameState> {
+	const result = createRewardState(state);
+	if (!result) return state;
+
+	let current: GameState = {
+		...result.updatedState,
+		screen: "reward" as const,
+		rewardState: result.rewardState,
+	};
+
+	// 報酬画面に遷移した状態を適用してから描画する
+	applyState(ctx, current);
+	render(ctx);
+
+	const mapPixelSize = getMapPixelSize();
+	const screenWidth =
+		mapPixelSize.width + LOG_AREA_GAP + ctx.ui.actionLogRenderer.getWidth();
+	const screenHeight =
+		mapPixelSize.height + HAND_AREA_HEIGHT + STATUS_BAR_HEIGHT;
+
+	const needsReplacement = getTotalDeckSize(current.deck) >= DECK_MAX_SIZE;
+
+	if (needsReplacement) {
+		// 入れ替えモード（仕様準拠）: まず除去カード選択→その後報酬カード選択→追加
+		// スキップ時は除去も追加も行わない（デッキ枚数不変）
+		// @see docs/spec/deckbuilding.md「デッキ上限到達時の入手」
+		const removeResult = await showRemoveCardSelection(
+			ctx,
+			current,
+			screenWidth,
+			screenHeight,
+		);
+		if (removeResult !== null) {
+			const beforeRemove = current;
+			current = removeCardFromDeck(current, removeResult);
+			// 除去後に報酬カード選択
+			const selectedIndex = await showRewardCardSelection(
+				ctx,
+				result.rewardState.choices,
+				screenWidth,
+				screenHeight,
+			);
+			if (selectedIndex !== null) {
+				current = addRewardCardToDeck(
+					current,
+					result.rewardState.choices[selectedIndex],
+				);
+			} else {
+				// 報酬スキップ時は除去もロールバック（仕様: 枚数不変）
+				current = beforeRemove;
+			}
+		}
+	} else {
+		// 通常モード: 選択肢から1枚選択 or スキップ
+		const selectedIndex = await showRewardCardSelection(
+			ctx,
+			result.rewardState.choices,
+			screenWidth,
+			screenHeight,
+		);
+		if (selectedIndex !== null) {
+			current = addRewardCardToDeck(
+				current,
+				result.rewardState.choices[selectedIndex],
+			);
+		}
+	}
+
+	// 報酬完了: ゲーム画面に戻す
+	return { ...current, screen: "game", rewardState: null };
+}
+
+/**
+ * 報酬カード選択をPromiseで待機する
+ *
+ * 全選択肢を表示し、ユーザーが1枚選択するかスキップするまで待機する。
+ * @returns 選択されたカードのインデックス（スキップ時はnull）
+ */
+function showRewardCardSelection(
+	ctx: GameContext,
+	choices: CardType[],
+	screenWidth: number,
+	screenHeight: number,
+): Promise<number | null> {
+	return new Promise((resolve) => {
+		ctx.ui.rewardScreen.render(choices, screenWidth, screenHeight);
+		ctx.ui.rewardScreen.show();
+
+		ctx.ui.rewardScreen.setOnCardSelect((index) => {
+			resolve(index);
+		});
+
+		ctx.ui.rewardScreen.setOnSkip(() => {
+			resolve(null);
+		});
+	});
+}
+
+/**
+ * 入れ替えモードのカード除去選択をPromiseで待機する
+ */
+function showRemoveCardSelection(
+	ctx: GameContext,
+	state: GameState,
+	screenWidth: number,
+	screenHeight: number,
+): Promise<string | null> {
+	return new Promise((resolve) => {
+		const allCards = [
+			...state.deck.drawPile,
+			...state.deck.hand,
+			...state.deck.discardPile,
+		];
+
+		ctx.ui.rewardScreen.renderRemoveSelection(
+			allCards,
+			screenWidth,
+			screenHeight,
+		);
+		ctx.ui.rewardScreen.show();
+
+		ctx.ui.rewardScreen.setOnRemoveCard((cardId) => {
+			resolve(cardId);
+		});
+
+		ctx.ui.rewardScreen.setOnSkip(() => {
+			resolve(null);
+		});
+	});
+}
+
+/**
+ * 階段への移動アニメーション後に報酬フロー→階層遷移する
  */
 export async function updateStateWithStairsAnimation(
 	ctx: GameContext,
-	newState: GameState,
+	stairsState: GameState,
 	stairsGridPos: Position,
 ): Promise<void> {
 	if (ctx.isAnimating) return;
@@ -59,19 +214,26 @@ export async function updateStateWithStairsAnimation(
 		// 1. 現在のマップ上で階段マスへ移動アニメーション
 		await ctx.ui.mapRenderer.animatePlayerMove(stairsGridPos);
 
-		// 2. フェードトランジション（暗転中に階層バナー表示 + 状態更新）
+		// 2. 報酬フロー（撃破数0ならスキップ）
+		applyState(ctx, stairsState);
+		const afterReward = await executeRewardFlow(ctx, stairsState);
+
+		// 3. 階層遷移
+		const transitioned = transitionFloor(afterReward);
+
+		// 4. フェードトランジション（暗転中に階層バナー表示 + 状態更新）
 		await ctx.ui.screenTransition.fadeTransition(async () => {
-			await ctx.ui.floorBanner.show(newState.floor);
-			applyState(ctx, newState);
+			await ctx.ui.floorBanner.show(transitioned.floor);
+			applyState(ctx, transitioned);
 			render(ctx, true);
 			await ctx.ui.floorBanner.hide();
 		});
 
-		// 3. フェードイン後に手札配布アニメーション
+		// 5. フェードイン後に手札配布アニメーション
 		await ctx.ui.handRenderer.renderWithAnimation(
 			ctx.state.deck.hand,
 			ctx.state.player.ap,
-			newState.deck.hand.length,
+			transitioned.deck.hand.length,
 		);
 	} finally {
 		ctx.isAnimating = false;
@@ -115,11 +277,11 @@ export async function updateStateWithBumpAnimation(
 
 /**
  * 突進で2マス目が階段の場合のアニメーション
- * 1マス目への移動→2マス目（階段）への移動→フェードトランジション→階層遷移
+ * 1マス目への移動→2マス目（階段）への移動→報酬フロー→フェードトランジション→階層遷移
  */
 export async function animateRushWithStairs(
 	ctx: GameContext,
-	newState: GameState,
+	stairsState: GameState,
 	intermediatePos: Position,
 	stairsPos: Position,
 ): Promise<void> {
@@ -133,19 +295,26 @@ export async function animateRushWithStairs(
 		// 2. 階段位置（2マス目）へ移動アニメーション
 		await ctx.ui.mapRenderer.animatePlayerMove(stairsPos);
 
-		// 3. フェードトランジション（暗転中に階層バナー表示 + 状態更新）
+		// 3. 報酬フロー
+		applyState(ctx, stairsState);
+		const afterReward = await executeRewardFlow(ctx, stairsState);
+
+		// 4. 階層遷移
+		const transitioned = transitionFloor(afterReward);
+
+		// 5. フェードトランジション（暗転中に階層バナー表示 + 状態更新）
 		await ctx.ui.screenTransition.fadeTransition(async () => {
-			await ctx.ui.floorBanner.show(newState.floor);
-			applyState(ctx, newState);
+			await ctx.ui.floorBanner.show(transitioned.floor);
+			applyState(ctx, transitioned);
 			render(ctx, true);
 			await ctx.ui.floorBanner.hide();
 		});
 
-		// 4. フェードイン後に手札配布アニメーション
+		// 6. フェードイン後に手札配布アニメーション
 		await ctx.ui.handRenderer.renderWithAnimation(
 			ctx.state.deck.hand,
 			ctx.state.player.ap,
-			newState.deck.hand.length,
+			transitioned.deck.hand.length,
 		);
 	} finally {
 		ctx.isAnimating = false;

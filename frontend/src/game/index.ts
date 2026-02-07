@@ -4,5 +4,6 @@ export * from "./deck";
 export * from "./enemyAi";
 export * from "./floor";
 export * from "./map";
+export * from "./reward";
 export * from "./state";
 export * from "./turn";

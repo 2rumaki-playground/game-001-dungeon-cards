@@ -4,14 +4,23 @@
  */
 
 import type { RNG } from "../utils/rng";
-import type { DeckState } from "./card";
+import type { CardType, DeckState } from "./card";
 import type { Enemy, Player } from "./character";
 import type { GameMap } from "./map";
 
 /**
  * 画面種別
  */
-export type Screen = "title" | "game" | "gameOver";
+export type Screen = "title" | "game" | "gameOver" | "reward";
+
+/**
+ * 報酬画面の状態
+ * @see docs/spec/deckbuilding.md
+ */
+export type RewardState = {
+	/** 撃破数分のカード選択肢 */
+	choices: CardType[];
+};
 
 /**
  * ターン種別
@@ -49,4 +58,8 @@ export type GameState = {
 	actionLog: ActionLogEntry[];
 	/** 乱数生成器 */
 	rng: RNG;
+	/** このフロアで撃破した敵の数 */
+	defeatedEnemyCount: number;
+	/** 報酬画面の状態（null = 報酬画面ではない） */
+	rewardState: RewardState | null;
 };

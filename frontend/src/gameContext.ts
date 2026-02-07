@@ -10,6 +10,7 @@ import type {
 	GameOverScreen,
 	HandRenderer,
 	MapRenderer,
+	RewardScreen,
 	ScreenTransition,
 	StatusBar,
 	TitleScreen,
@@ -28,6 +29,7 @@ export interface UIComponents {
 	turnEndButton: TurnEndButton;
 	actionLogRenderer: ActionLogRenderer;
 	turnBanner: TurnBanner;
+	rewardScreen: RewardScreen;
 	screenTransition: ScreenTransition;
 	floorBanner: FloorBanner;
 }

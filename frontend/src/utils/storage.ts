@@ -3,6 +3,8 @@
  * @see docs/spec/mvp/rules.md - セーブとログ
  */
 
+import { ENEMY_COUNT } from "../constants";
+import { initCardIdCounterFromDeck } from "../game/deck";
 import type { GameState } from "../types";
 import { RNG } from "./rng";
 
@@ -50,7 +52,11 @@ export function loadGame(): GameState | null {
 			return null;
 		}
 
-		// screen の検証
+		// screen の検証（reward画面はgameに復帰、撃破数もリセット）
+		if (data.screen === "reward") {
+			data.screen = "game";
+			data.defeatedEnemyCount = 0;
+		}
 		if (
 			data.screen !== "title" &&
 			data.screen !== "game" &&
@@ -68,11 +74,25 @@ export function loadGame(): GameState | null {
 				}))
 			: data.enemies;
 
-		return {
+		const state: GameState = {
 			...data,
 			enemies,
 			rng: RNG.deserialize(data.rng),
+			defeatedEnemyCount:
+				typeof data.defeatedEnemyCount === "number" &&
+				Number.isFinite(data.defeatedEnemyCount) &&
+				data.defeatedEnemyCount >= 0
+					? Math.min(Math.floor(data.defeatedEnemyCount), ENEMY_COUNT)
+					: 0,
+			rewardState: null,
 		};
+
+		// カードIDカウンターをデッキの最大IDで初期化
+		if (state.deck) {
+			initCardIdCounterFromDeck(state.deck);
+		}
+
+		return state;
 	} catch (e) {
 		console.error("Failed to load save data", e);
 		return null;

@@ -16,6 +16,7 @@ import {
 	getMapPixelSize,
 	HandRenderer,
 	MapRenderer,
+	RewardScreen,
 	ScreenTransition,
 	StatusBar,
 	TitleScreen,
@@ -88,6 +89,9 @@ function initializeUIComponents(
 		STATUS_BAR_HEIGHT + mapSize.height + HAND_AREA_TOP_PADDING;
 	app.stage.addChild(directionContainer);
 
+	const rewardScreen = new RewardScreen();
+	app.stage.addChild(rewardScreen.getContainer());
+
 	const totalWidth =
 		mapSize.width + LOG_AREA_GAP + actionLogRenderer.getWidth();
 	const screenTransition = new ScreenTransition(totalWidth, totalHeight);
@@ -106,6 +110,7 @@ function initializeUIComponents(
 		turnEndButton,
 		actionLogRenderer,
 		turnBanner,
+		rewardScreen,
 		screenTransition,
 		floorBanner,
 	};
