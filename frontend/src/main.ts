@@ -1,11 +1,16 @@
 import { Application } from "pixi.js";
 import {
+	BSP_MAP_HEIGHT,
+	BSP_MAP_WIDTH,
 	COLORS,
 	LOG_AREA_GAP,
 	LOG_AREA_WIDTH,
+	MAP_HEIGHT,
+	MAP_WIDTH,
 	STATUS_BAR_HEIGHT,
 } from "./constants";
 import { createTitleScreenState } from "./game";
+import { MAP_GENERATION_MODE } from "./game/map";
 import type { GameContext, UIComponents } from "./gameContext";
 import type { GameState } from "./types";
 import {
@@ -152,7 +157,11 @@ function setupDebugGlobals(): void {
 
 async function main() {
 	const app = new Application();
-	const mapSize = getMapPixelSize();
+	const currentMapWidth =
+		MAP_GENERATION_MODE === "bsp" ? BSP_MAP_WIDTH : MAP_WIDTH;
+	const currentMapHeight =
+		MAP_GENERATION_MODE === "bsp" ? BSP_MAP_HEIGHT : MAP_HEIGHT;
+	const mapSize = getMapPixelSize(currentMapWidth, currentMapHeight);
 	const totalHeight = mapSize.height + HAND_AREA_HEIGHT + STATUS_BAR_HEIGHT;
 
 	await app.init({

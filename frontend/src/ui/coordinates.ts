@@ -3,7 +3,7 @@
  * グリッド座標とピクセル座標の相互変換
  */
 
-import { CELL_GAP, CELL_SIZE, MAP_HEIGHT, MAP_WIDTH } from "../constants";
+import { CELL_GAP, CELL_SIZE } from "../constants";
 import type { Position } from "../types";
 
 /**
@@ -34,9 +34,15 @@ export function gridToCenterPixel(gridPos: Position): Position {
 /**
  * ピクセル座標からグリッド座標を計算
  * @param pixelPos ピクセル座標
+ * @param mapWidth マップの幅（グリッド数）
+ * @param mapHeight マップの高さ（グリッド数）
  * @returns グリッド座標（セル内の場合）、ギャップ領域や範囲外の場合はnull
  */
-export function pixelToGrid(pixelPos: Position): Position | null {
+export function pixelToGrid(
+	pixelPos: Position,
+	mapWidth: number,
+	mapHeight: number,
+): Position | null {
 	const cellWithGap = CELL_SIZE + CELL_GAP;
 	const adjustedX = pixelPos.x - CELL_GAP;
 	const adjustedY = pixelPos.y - CELL_GAP;
@@ -46,7 +52,7 @@ export function pixelToGrid(pixelPos: Position): Position | null {
 	const y = Math.floor(adjustedY / cellWithGap);
 
 	// 範囲外チェック
-	if (x < 0 || x >= MAP_WIDTH || y < 0 || y >= MAP_HEIGHT) {
+	if (x < 0 || x >= mapWidth || y < 0 || y >= mapHeight) {
 		return null;
 	}
 
@@ -64,11 +70,16 @@ export function pixelToGrid(pixelPos: Position): Position | null {
 
 /**
  * マップ全体のピクセルサイズを計算
+ * @param mapWidth マップの幅（グリッド数）
+ * @param mapHeight マップの高さ（グリッド数）
  * @returns マップの幅と高さ（ピクセル）
  */
-export function getMapPixelSize(): { width: number; height: number } {
+export function getMapPixelSize(
+	mapWidth: number,
+	mapHeight: number,
+): { width: number; height: number } {
 	return {
-		width: MAP_WIDTH * (CELL_SIZE + CELL_GAP) + CELL_GAP,
-		height: MAP_HEIGHT * (CELL_SIZE + CELL_GAP) + CELL_GAP,
+		width: mapWidth * (CELL_SIZE + CELL_GAP) + CELL_GAP,
+		height: mapHeight * (CELL_SIZE + CELL_GAP) + CELL_GAP,
 	};
 }

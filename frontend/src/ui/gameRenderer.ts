@@ -84,7 +84,9 @@ function renderGameOverScreen(ctx: GameContext): void {
 	ctx.ui.actionLogRenderer.hide();
 	ctx.ui.mapRenderer.clear();
 	ctx.ui.handRenderer.clear();
-	const size = getMapPixelSize();
+	const mapWidth = ctx.state.map[0].length;
+	const mapHeight = ctx.state.map.length;
+	const size = getMapPixelSize(mapWidth, mapHeight);
 	const width = size.width + LOG_AREA_GAP + ctx.ui.actionLogRenderer.getWidth();
 	const height = size.height + HAND_AREA_HEIGHT + STATUS_BAR_HEIGHT;
 	ctx.ui.gameOverScreen.render(ctx.state.floor, width, height);

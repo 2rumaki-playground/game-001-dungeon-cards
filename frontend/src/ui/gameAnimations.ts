@@ -29,7 +29,9 @@ function getScreenSize(ctx: GameContext): {
 	width: number;
 	height: number;
 } {
-	const mapPixelSize = getMapPixelSize();
+	const mapWidth = ctx.state.map[0].length;
+	const mapHeight = ctx.state.map.length;
+	const mapPixelSize = getMapPixelSize(mapWidth, mapHeight);
 	return {
 		width:
 			mapPixelSize.width + LOG_AREA_GAP + ctx.ui.actionLogRenderer.getWidth(),
