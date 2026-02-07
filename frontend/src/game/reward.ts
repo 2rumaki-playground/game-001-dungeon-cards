@@ -3,6 +3,7 @@
  * @see docs/spec/deckbuilding.md
  */
 
+import { CARD_REMOVAL_CHANCE, DECK_MIN_SIZE, ENEMY_COUNT } from "../constants";
 import type { CardType, DeckState, GameState, RewardState } from "../types";
 import { generateRewardChoices } from "./cardPool";
 import { createCard } from "./deck";
@@ -51,6 +52,31 @@ export function addRewardCardToDeck(
 			drawPile: [...state.deck.drawPile, newCard],
 		},
 	};
+}
+
+/**
+ * カード除去イベント発生を判定する
+ *
+ * - 全敵撃破でない → triggered: false（RNG消費なし）
+ * - デッキ枚数がDECK_MIN_SIZE以下 → triggered: false（RNG消費なし）
+ * - 上記を通過 → CARD_REMOVAL_CHANCE で抽選（RNG消費あり）
+ * @see docs/spec/deckbuilding.md「カード除去」
+ */
+export function shouldTriggerCardRemoval(state: GameState): {
+	triggered: boolean;
+	updatedState: GameState;
+} {
+	if (state.defeatedEnemyCount < ENEMY_COUNT) {
+		return { triggered: false, updatedState: state };
+	}
+
+	if (getTotalDeckSize(state.deck) <= DECK_MIN_SIZE) {
+		return { triggered: false, updatedState: state };
+	}
+
+	const rng = state.rng.clone();
+	const triggered = rng.random() < CARD_REMOVAL_CHANCE;
+	return { triggered, updatedState: { ...state, rng } };
 }
 
 /**

@@ -13,6 +13,7 @@ import {
 	createRewardState,
 	getTotalDeckSize,
 	removeCardFromDeck,
+	shouldTriggerCardRemoval,
 	transitionFloor,
 } from "../game";
 import type { GameContext } from "../gameContext";
@@ -20,6 +21,21 @@ import type { CardType, Direction, GameState, Position } from "../types";
 import { getMapPixelSize } from "./coordinates";
 import { applyState, render } from "./gameRenderer";
 import { HAND_AREA_HEIGHT } from "./layout";
+
+/**
+ * 画面サイズを計算する
+ */
+function getScreenSize(ctx: GameContext): {
+	width: number;
+	height: number;
+} {
+	const mapPixelSize = getMapPixelSize();
+	return {
+		width:
+			mapPixelSize.width + LOG_AREA_GAP + ctx.ui.actionLogRenderer.getWidth(),
+		height: mapPixelSize.height + HAND_AREA_HEIGHT + STATUS_BAR_HEIGHT,
+	};
+}
 
 /**
  * ゲーム状態を更新してプレイヤー移動アニメーション付きで再描画
@@ -82,11 +98,7 @@ async function executeRewardFlow(
 	applyState(ctx, current);
 	render(ctx);
 
-	const mapPixelSize = getMapPixelSize();
-	const screenWidth =
-		mapPixelSize.width + LOG_AREA_GAP + ctx.ui.actionLogRenderer.getWidth();
-	const screenHeight =
-		mapPixelSize.height + HAND_AREA_HEIGHT + STATUS_BAR_HEIGHT;
+	const { width: screenWidth, height: screenHeight } = getScreenSize(ctx);
 
 	const needsReplacement = getTotalDeckSize(current.deck) >= DECK_MAX_SIZE;
 
@@ -167,13 +179,14 @@ function showRewardCardSelection(
 }
 
 /**
- * 入れ替えモードのカード除去選択をPromiseで待機する
+ * カード除去選択画面をPromiseで待機する
  */
 function showRemoveCardSelection(
 	ctx: GameContext,
 	state: GameState,
 	screenWidth: number,
 	screenHeight: number,
+	title?: string,
 ): Promise<string | null> {
 	return new Promise((resolve) => {
 		const allCards = [
@@ -186,6 +199,7 @@ function showRemoveCardSelection(
 			allCards,
 			screenWidth,
 			screenHeight,
+			title,
 		);
 		ctx.ui.rewardScreen.show();
 
@@ -197,6 +211,53 @@ function showRemoveCardSelection(
 			resolve(null);
 		});
 	});
+}
+
+/**
+ * カード除去イベントを実行する
+ *
+ * 全敵撃破かつデッキ枚数が最小値を超えている場合、30%の確率で除去イベントが発生。
+ * 報酬フローの前に挿入される。
+ * @see docs/spec/deckbuilding.md「カード除去」
+ */
+async function executeCardRemovalEvent(
+	ctx: GameContext,
+	state: GameState,
+	screenWidth: number,
+	screenHeight: number,
+): Promise<GameState> {
+	const { triggered, updatedState } = shouldTriggerCardRemoval(state);
+	if (!triggered) return updatedState;
+
+	// 除去イベント中は報酬フローと同様に screen を "reward" 扱いにして描画する
+	const prevScreen = updatedState.screen;
+	const removalState: GameState = {
+		...updatedState,
+		screen: "reward",
+	};
+	applyState(ctx, removalState);
+	render(ctx);
+
+	const removeResult = await showRemoveCardSelection(
+		ctx,
+		removalState,
+		screenWidth,
+		screenHeight,
+		"カード除去イベント",
+	);
+
+	let resultState: GameState;
+	if (removeResult !== null) {
+		resultState = removeCardFromDeck(removalState, removeResult);
+	} else {
+		resultState = removalState;
+	}
+
+	// 除去イベント終了後は元の screen に戻して返す
+	return {
+		...resultState,
+		screen: prevScreen,
+	};
 }
 
 /**
@@ -214,14 +275,25 @@ export async function updateStateWithStairsAnimation(
 		// 1. 現在のマップ上で階段マスへ移動アニメーション
 		await ctx.ui.mapRenderer.animatePlayerMove(stairsGridPos);
 
-		// 2. 報酬フロー（撃破数0ならスキップ）
 		applyState(ctx, stairsState);
-		const afterReward = await executeRewardFlow(ctx, stairsState);
 
-		// 3. 階層遷移
+		const { width: screenWidth, height: screenHeight } = getScreenSize(ctx);
+
+		// 2. カード除去イベント（報酬フローの前）
+		const afterRemoval = await executeCardRemovalEvent(
+			ctx,
+			stairsState,
+			screenWidth,
+			screenHeight,
+		);
+
+		// 3. 報酬フロー（撃破数0ならスキップ）
+		const afterReward = await executeRewardFlow(ctx, afterRemoval);
+
+		// 4. 階層遷移
 		const transitioned = transitionFloor(afterReward);
 
-		// 4. フェードトランジション（暗転中に階層バナー表示 + 状態更新）
+		// 5. フェードトランジション（暗転中に階層バナー表示 + 状態更新）
 		await ctx.ui.screenTransition.fadeTransition(async () => {
 			await ctx.ui.floorBanner.show(transitioned.floor);
 			applyState(ctx, transitioned);
@@ -229,7 +301,7 @@ export async function updateStateWithStairsAnimation(
 			await ctx.ui.floorBanner.hide();
 		});
 
-		// 5. フェードイン後に手札配布アニメーション
+		// 6. フェードイン後に手札配布アニメーション
 		await ctx.ui.handRenderer.renderWithAnimation(
 			ctx.state.deck.hand,
 			ctx.state.player.ap,
@@ -295,14 +367,25 @@ export async function animateRushWithStairs(
 		// 2. 階段位置（2マス目）へ移動アニメーション
 		await ctx.ui.mapRenderer.animatePlayerMove(stairsPos);
 
-		// 3. 報酬フロー
 		applyState(ctx, stairsState);
-		const afterReward = await executeRewardFlow(ctx, stairsState);
 
-		// 4. 階層遷移
+		const { width: screenWidth, height: screenHeight } = getScreenSize(ctx);
+
+		// 3. カード除去イベント（報酬フローの前）
+		const afterRemoval = await executeCardRemovalEvent(
+			ctx,
+			stairsState,
+			screenWidth,
+			screenHeight,
+		);
+
+		// 4. 報酬フロー
+		const afterReward = await executeRewardFlow(ctx, afterRemoval);
+
+		// 5. 階層遷移
 		const transitioned = transitionFloor(afterReward);
 
-		// 5. フェードトランジション（暗転中に階層バナー表示 + 状態更新）
+		// 6. フェードトランジション（暗転中に階層バナー表示 + 状態更新）
 		await ctx.ui.screenTransition.fadeTransition(async () => {
 			await ctx.ui.floorBanner.show(transitioned.floor);
 			applyState(ctx, transitioned);
@@ -310,7 +393,7 @@ export async function animateRushWithStairs(
 			await ctx.ui.floorBanner.hide();
 		});
 
-		// 6. フェードイン後に手札配布アニメーション
+		// 7. フェードイン後に手札配布アニメーション
 		await ctx.ui.handRenderer.renderWithAnimation(
 			ctx.state.deck.hand,
 			ctx.state.player.ap,

@@ -152,12 +152,13 @@ export class RewardScreen {
 	}
 
 	/**
-	 * 入れ替えモードのデッキ一覧を描画
+	 * 除去選択画面のデッキ一覧を描画
 	 */
 	renderRemoveSelection(
 		deckCards: Card[],
 		screenWidth: number,
 		screenHeight: number,
+		titleText = "除去するカードを選択",
 	): void {
 		this.container.removeChildren();
 
@@ -170,7 +171,7 @@ export class RewardScreen {
 
 		// タイトル
 		const title = new Text({
-			text: "除去するカードを選択",
+			text: titleText,
 			style: {
 				fontSize: 24,
 				fontFamily: "sans-serif",
