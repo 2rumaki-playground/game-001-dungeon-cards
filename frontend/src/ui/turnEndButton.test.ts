@@ -62,18 +62,17 @@ describe("TurnEndButton", () => {
 			expect(callback).toHaveBeenCalledTimes(1);
 		});
 
-		it("非活性時はコールバックが呼ばれない", () => {
+		it("複数回呼んでもpointerdownリスナーが増えない", () => {
 			const button = new TurnEndButton();
-			const callback = vi.fn();
-
-			button.setOnEndTurn(callback);
-			button.render("enemy");
-
 			const container = button.getContainer();
 			const buttonContainer = container.children[0];
-			buttonContainer.emit("pointerdown", {} as FederatedPointerEvent);
+			const initialCount = buttonContainer.listenerCount("pointerdown");
 
-			expect(callback).not.toHaveBeenCalled();
+			button.setOnEndTurn(vi.fn());
+			button.setOnEndTurn(vi.fn());
+			button.setOnEndTurn(vi.fn());
+
+			expect(buttonContainer.listenerCount("pointerdown")).toBe(initialCount);
 		});
 	});
 

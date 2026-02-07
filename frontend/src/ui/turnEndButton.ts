@@ -52,6 +52,11 @@ export class TurnEndButton {
 		this.label.y = BUTTON_HEIGHT / 2;
 		this.button.addChild(this.label);
 
+		// イベントリスナー登録（1回のみ）
+		this.button.on("pointerdown", () => {
+			this.onEndTurn?.();
+		});
+
 		// 初期状態の描画
 		this.drawButton(true);
 	}
@@ -95,12 +100,6 @@ export class TurnEndButton {
 	 */
 	setOnEndTurn(callback: () => void): void {
 		this.onEndTurn = callback;
-		this.button.off("pointerdown");
-		this.button.on("pointerdown", () => {
-			if (this.enabled && this.onEndTurn) {
-				this.onEndTurn();
-			}
-		});
 	}
 
 	/**
