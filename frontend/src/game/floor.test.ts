@@ -93,7 +93,10 @@ describe("transitionFloor", () => {
 
 		// マップが存在し、正しいサイズ
 		expect(result.map.length).toBeGreaterThanOrEqual(7);
-		expect(result.map[0].length).toBe(result.map[0].length);
+		// すべての行が同じ幅であること
+		for (const row of result.map) {
+			expect(row.length).toBe(result.map[0].length);
+		}
 	});
 
 	it("プレイヤーHPが維持される", () => {
