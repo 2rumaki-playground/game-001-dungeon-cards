@@ -3,6 +3,7 @@
  */
 
 import { Container, Graphics, Text } from "pixi.js";
+import { drawRoundedRect } from "./graphicsHelpers";
 
 /** ボタン描画定数 */
 const BUTTON_WIDTH = 240;
@@ -109,10 +110,10 @@ export class TitleScreen {
 		// 背景
 		const bg = new Graphics();
 		const colors = enabled ? BUTTON_COLORS.active : BUTTON_COLORS.disabled;
-		bg.roundRect(0, 0, BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_RADIUS);
-		bg.fill(colors.bg);
-		bg.roundRect(0, 0, BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_RADIUS);
-		bg.stroke({ color: colors.border, width: 2 });
+		drawRoundedRect(bg, BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_RADIUS, colors.bg, {
+			color: colors.border,
+			width: 2,
+		});
 		button.addChild(bg);
 
 		// ラベル

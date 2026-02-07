@@ -13,6 +13,7 @@ import {
 	CARD_TYPE_SYMBOL,
 	RARITY_COLORS,
 } from "./cardConstants";
+import { drawRoundedRect } from "./graphicsHelpers";
 
 /** カードサイズ */
 const REWARD_CARD_WIDTH = 120;
@@ -242,22 +243,14 @@ export class RewardScreen {
 
 		// 背景
 		const bg = new Graphics();
-		bg.roundRect(
-			0,
-			0,
+		drawRoundedRect(
+			bg,
 			REWARD_CARD_WIDTH,
 			REWARD_CARD_HEIGHT,
 			REWARD_CARD_RADIUS,
+			colors.bg,
+			{ color: colors.border, width: 2 },
 		);
-		bg.fill(colors.bg);
-		bg.roundRect(
-			0,
-			0,
-			REWARD_CARD_WIDTH,
-			REWARD_CARD_HEIGHT,
-			REWARD_CARD_RADIUS,
-		);
-		bg.stroke({ color: colors.border, width: 2 });
 		cardContainer.addChild(bg);
 
 		// レアリティバー
@@ -378,10 +371,14 @@ export class RewardScreen {
 
 		// 背景
 		const bg = new Graphics();
-		bg.roundRect(0, 0, width, REMOVE_CARD_HEIGHT, 4);
-		bg.fill(CARD_COLORS[card.type].bg);
-		bg.roundRect(0, 0, width, REMOVE_CARD_HEIGHT, 4);
-		bg.stroke({ color: CARD_COLORS[card.type].border, width: 1 });
+		drawRoundedRect(
+			bg,
+			width,
+			REMOVE_CARD_HEIGHT,
+			4,
+			CARD_COLORS[card.type].bg,
+			{ color: CARD_COLORS[card.type].border, width: 1 },
+		);
 		item.addChild(bg);
 
 		// カード名
@@ -406,10 +403,10 @@ export class RewardScreen {
 		removeBtn.y = (REMOVE_CARD_HEIGHT - removeBtnHeight) / 2;
 
 		const removeBg = new Graphics();
-		removeBg.roundRect(0, 0, removeBtnWidth, removeBtnHeight, 4);
-		removeBg.fill(0x882222);
-		removeBg.roundRect(0, 0, removeBtnWidth, removeBtnHeight, 4);
-		removeBg.stroke({ color: 0xaa4444, width: 1 });
+		drawRoundedRect(removeBg, removeBtnWidth, removeBtnHeight, 4, 0x882222, {
+			color: 0xaa4444,
+			width: 1,
+		});
 		removeBtn.addChild(removeBg);
 
 		const removeBtnText = new Text({
@@ -453,10 +450,10 @@ export class RewardScreen {
 		button.y = y;
 
 		const bg = new Graphics();
-		bg.roundRect(0, 0, BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_RADIUS);
-		bg.fill(bgColor);
-		bg.roundRect(0, 0, BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_RADIUS);
-		bg.stroke({ color: borderColor, width: 1 });
+		drawRoundedRect(bg, BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_RADIUS, bgColor, {
+			color: borderColor,
+			width: 1,
+		});
 		button.addChild(bg);
 
 		const text = new Text({

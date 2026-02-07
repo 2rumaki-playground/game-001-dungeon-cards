@@ -3,6 +3,7 @@
  */
 
 import { Container, Graphics, Text } from "pixi.js";
+import { drawRoundedRect } from "./graphicsHelpers";
 
 /** ボタン描画定数 */
 const BUTTON_WIDTH = 240;
@@ -95,10 +96,14 @@ export class GameOverScreen {
 
 		// 背景
 		const bg = new Graphics();
-		bg.roundRect(0, 0, BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_RADIUS);
-		bg.fill(BUTTON_COLORS.bg);
-		bg.roundRect(0, 0, BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_RADIUS);
-		bg.stroke({ color: BUTTON_COLORS.border, width: 2 });
+		drawRoundedRect(
+			bg,
+			BUTTON_WIDTH,
+			BUTTON_HEIGHT,
+			BUTTON_RADIUS,
+			BUTTON_COLORS.bg,
+			{ color: BUTTON_COLORS.border, width: 2 },
+		);
 		button.addChild(bg);
 
 		// ラベル

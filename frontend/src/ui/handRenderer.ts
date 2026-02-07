@@ -13,6 +13,7 @@ import {
 	CARD_TYPE_NAME,
 	CARD_TYPE_SYMBOL,
 } from "./cardConstants";
+import { drawRoundedRect } from "./graphicsHelpers";
 
 /** カード描画定数 */
 export const CARD_WIDTH = 90;
@@ -268,10 +269,10 @@ export class HandRenderer {
 				: colors.border;
 		const borderWidth = selected ? 3 : 2;
 
-		bg.roundRect(0, 0, CARD_WIDTH, CARD_HEIGHT, CARD_RADIUS);
-		bg.fill(colors.bg);
-		bg.roundRect(0, 0, CARD_WIDTH, CARD_HEIGHT, CARD_RADIUS);
-		bg.stroke({ color: borderColor, width: borderWidth });
+		drawRoundedRect(bg, CARD_WIDTH, CARD_HEIGHT, CARD_RADIUS, colors.bg, {
+			color: borderColor,
+			width: borderWidth,
+		});
 
 		cardContainer.addChild(bg);
 

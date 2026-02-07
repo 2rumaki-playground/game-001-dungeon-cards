@@ -9,6 +9,7 @@ export * from "./deckViewer";
 export * from "./directionSelector";
 export * from "./floorBanner";
 export * from "./gameOverScreen";
+export * from "./graphicsHelpers";
 export * from "./handRenderer";
 export * from "./mapRenderer";
 export * from "./rewardScreen";

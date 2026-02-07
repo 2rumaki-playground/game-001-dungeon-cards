@@ -5,6 +5,7 @@
 
 import { Container, Graphics, Text } from "pixi.js";
 import type { Direction } from "../types";
+import { drawRoundedRect } from "./graphicsHelpers";
 
 /** ボタンサイズ */
 const BUTTON_SIZE = 56;
@@ -137,10 +138,10 @@ export class DirectionSelector {
 		button.y = y - BUTTON_SIZE / 2;
 
 		const bg = new Graphics();
-		bg.roundRect(0, 0, BUTTON_SIZE, BUTTON_SIZE, BUTTON_RADIUS);
-		bg.fill(colors.bg);
-		bg.roundRect(0, 0, BUTTON_SIZE, BUTTON_SIZE, BUTTON_RADIUS);
-		bg.stroke({ color: colors.border, width: 2 });
+		drawRoundedRect(bg, BUTTON_SIZE, BUTTON_SIZE, BUTTON_RADIUS, colors.bg, {
+			color: colors.border,
+			width: 2,
+		});
 		button.addChild(bg);
 
 		const text = new Text({
