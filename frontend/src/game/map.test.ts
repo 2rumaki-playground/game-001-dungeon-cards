@@ -3,6 +3,7 @@ import {
 	BSP_MAP_HEIGHT,
 	BSP_MAP_WIDTH,
 	ENEMY_COUNT,
+	getSpecialTileCount,
 	MAP_HEIGHT,
 	MAP_WIDTH,
 } from "../constants";
@@ -34,14 +35,17 @@ describe("map", () => {
 	});
 
 	describe("generateMapPlacement", () => {
-		it("プレイヤー/階段/敵の配置が重複しない", () => {
+		it("プレイヤー/階段/敵/特殊タイルの配置が重複しない", () => {
 			const rng = new RNG(12345);
-			const { map, player, stairs, enemies } = generateMapPlacement(rng);
+			const floor = 1;
+			const { map, player, stairs, enemies, specialTiles } =
+				generateMapPlacement(rng, floor);
 
 			const positions = [
 				`${player.x},${player.y}`,
 				`${stairs.x},${stairs.y}`,
 				...enemies.map((enemy) => `${enemy.x},${enemy.y}`),
+				...specialTiles.map((st) => `${st.position.x},${st.position.y}`),
 			];
 			const unique = new Set(positions);
 			expect(unique.size).toBe(positions.length);
@@ -51,6 +55,17 @@ describe("map", () => {
 			for (const enemy of enemies) {
 				expect(map[enemy.y][enemy.x].type).toBe("floor");
 			}
+			for (const st of specialTiles) {
+				expect(map[st.position.y][st.position.x].type).toBe(st.type);
+			}
+		});
+
+		it("特殊タイルの配置数が階層に応じて正しい", () => {
+			const rng = new RNG(42);
+			const floor = 1;
+			const { specialTiles } = generateMapPlacement(rng, floor);
+
+			expect(specialTiles.length).toBe(getSpecialTileCount(floor));
 		});
 	});
 
@@ -87,18 +102,17 @@ describe("map", () => {
 			}
 		});
 
-		it("プレイヤー/階段/敵の配置が重複しない", () => {
+		it("プレイヤー/階段/敵/特殊タイルの配置が重複しない", () => {
 			const rng = new RNG(42);
-			const { map, player, stairs, enemies } = generateBSPMapPlacement(
-				rng,
-				BSP_MAP_WIDTH,
-				BSP_MAP_HEIGHT,
-			);
+			const floor = 1;
+			const { map, player, stairs, enemies, specialTiles } =
+				generateBSPMapPlacement(rng, BSP_MAP_WIDTH, BSP_MAP_HEIGHT, floor);
 
 			const positions = [
 				`${player.x},${player.y}`,
 				`${stairs.x},${stairs.y}`,
 				...enemies.map((enemy) => `${enemy.x},${enemy.y}`),
+				...specialTiles.map((st) => `${st.position.x},${st.position.y}`),
 			];
 			const unique = new Set(positions);
 			expect(unique.size).toBe(positions.length);
@@ -107,6 +121,9 @@ describe("map", () => {
 			expect(map[stairs.y][stairs.x].type).toBe("stairs");
 			for (const enemy of enemies) {
 				expect(map[enemy.y][enemy.x].type).toBe("floor");
+			}
+			for (const st of specialTiles) {
+				expect(map[st.position.y][st.position.x].type).toBe(st.type);
 			}
 		});
 
@@ -119,6 +136,19 @@ describe("map", () => {
 			);
 
 			expect(enemies.length).toBe(ENEMY_COUNT);
+		});
+
+		it("特殊タイルの配置数が正しい", () => {
+			const rng = new RNG(42);
+			const floor = 1;
+			const { specialTiles } = generateBSPMapPlacement(
+				rng,
+				BSP_MAP_WIDTH,
+				BSP_MAP_HEIGHT,
+				floor,
+			);
+
+			expect(specialTiles.length).toBe(getSpecialTileCount(floor));
 		});
 
 		it("リトライ上限到達時は固定マップにフォールバックする", () => {
@@ -135,16 +165,14 @@ describe("map", () => {
 		it("複数シードで安定して生成できる", () => {
 			for (let seed = 0; seed < 20; seed++) {
 				const rng = new RNG(seed);
-				const { map, player, stairs, enemies } = generateBSPMapPlacement(
-					rng,
-					BSP_MAP_WIDTH,
-					BSP_MAP_HEIGHT,
-				);
+				const { map, player, stairs, enemies, specialTiles } =
+					generateBSPMapPlacement(rng, BSP_MAP_WIDTH, BSP_MAP_HEIGHT);
 
 				expect(map.length).toBe(BSP_MAP_HEIGHT);
 				expect(map[player.y][player.x].type).toBe("floor");
 				expect(map[stairs.y][stairs.x].type).toBe("stairs");
 				expect(enemies.length).toBe(ENEMY_COUNT);
+				expect(specialTiles.length).toBe(getSpecialTileCount(1));
 			}
 		});
 	});

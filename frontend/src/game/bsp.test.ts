@@ -266,49 +266,50 @@ describe("bsp", () => {
 	describe("generateBSPMap", () => {
 		it("マップが正しく生成される", () => {
 			const rng = new RNG(42);
-			const map = generateBSPMap(BSP_MAP_WIDTH, BSP_MAP_HEIGHT, rng, 5);
+			const result = generateBSPMap(BSP_MAP_WIDTH, BSP_MAP_HEIGHT, rng, 5);
 
-			expect(map).not.toBeNull();
-			if (!map) return;
+			expect(result).not.toBeNull();
+			if (!result) return;
 
-			expect(map.length).toBe(BSP_MAP_HEIGHT);
-			for (const row of map) {
+			expect(result.map.length).toBe(BSP_MAP_HEIGHT);
+			for (const row of result.map) {
 				expect(row.length).toBe(BSP_MAP_WIDTH);
 			}
+			expect(result.rooms.length).toBeGreaterThan(0);
 		});
 
 		it("外周が壁タイルである", () => {
 			const rng = new RNG(42);
-			const map = generateBSPMap(BSP_MAP_WIDTH, BSP_MAP_HEIGHT, rng, 5);
-			if (!map) return;
+			const result = generateBSPMap(BSP_MAP_WIDTH, BSP_MAP_HEIGHT, rng, 5);
+			if (!result) return;
 
 			for (let x = 0; x < BSP_MAP_WIDTH; x++) {
-				expect(map[0][x].type).toBe("wall");
-				expect(map[BSP_MAP_HEIGHT - 1][x].type).toBe("wall");
+				expect(result.map[0][x].type).toBe("wall");
+				expect(result.map[BSP_MAP_HEIGHT - 1][x].type).toBe("wall");
 			}
 			for (let y = 0; y < BSP_MAP_HEIGHT; y++) {
-				expect(map[y][0].type).toBe("wall");
-				expect(map[y][BSP_MAP_WIDTH - 1].type).toBe("wall");
+				expect(result.map[y][0].type).toBe("wall");
+				expect(result.map[y][BSP_MAP_WIDTH - 1].type).toBe("wall");
 			}
 		});
 
 		it("十分な床タイルが生成される", () => {
 			const rng = new RNG(42);
 			const requiredTiles = 5;
-			const map = generateBSPMap(
+			const result = generateBSPMap(
 				BSP_MAP_WIDTH,
 				BSP_MAP_HEIGHT,
 				rng,
 				requiredTiles,
 			);
 
-			expect(map).not.toBeNull();
-			if (!map) return;
+			expect(result).not.toBeNull();
+			if (!result) return;
 
 			let floorCount = 0;
 			for (let y = 0; y < BSP_MAP_HEIGHT; y++) {
 				for (let x = 0; x < BSP_MAP_WIDTH; x++) {
-					if (map[y][x].type === "floor") floorCount++;
+					if (result.map[y][x].type === "floor") floorCount++;
 				}
 			}
 			expect(floorCount).toBeGreaterThanOrEqual(requiredTiles);
@@ -317,17 +318,17 @@ describe("bsp", () => {
 		it("異なるシードで異なるマップが生成される", () => {
 			// 分割の多様性を検証するため、十分大きなマップサイズを使用
 			const testSize = 15;
-			const map1 = generateBSPMap(testSize, testSize, new RNG(42), 5);
-			const map2 = generateBSPMap(testSize, testSize, new RNG(999), 5);
+			const r1 = generateBSPMap(testSize, testSize, new RNG(42), 5);
+			const r2 = generateBSPMap(testSize, testSize, new RNG(999), 5);
 
-			expect(map1).not.toBeNull();
-			expect(map2).not.toBeNull();
-			if (!map1 || !map2) return;
+			expect(r1).not.toBeNull();
+			expect(r2).not.toBeNull();
+			if (!r1 || !r2) return;
 
 			let different = false;
 			for (let y = 0; y < testSize && !different; y++) {
 				for (let x = 0; x < testSize && !different; x++) {
-					if (map1[y][x].type !== map2[y][x].type) {
+					if (r1.map[y][x].type !== r2.map[y][x].type) {
 						different = true;
 					}
 				}
@@ -336,26 +337,26 @@ describe("bsp", () => {
 		});
 
 		it("同じシードで同じマップが生成される（再現性）", () => {
-			const map1 = generateBSPMap(
+			const r1 = generateBSPMap(
 				BSP_MAP_WIDTH,
 				BSP_MAP_HEIGHT,
 				new RNG(12345),
 				5,
 			);
-			const map2 = generateBSPMap(
+			const r2 = generateBSPMap(
 				BSP_MAP_WIDTH,
 				BSP_MAP_HEIGHT,
 				new RNG(12345),
 				5,
 			);
 
-			expect(map1).not.toBeNull();
-			expect(map2).not.toBeNull();
-			if (!map1 || !map2) return;
+			expect(r1).not.toBeNull();
+			expect(r2).not.toBeNull();
+			if (!r1 || !r2) return;
 
 			for (let y = 0; y < BSP_MAP_HEIGHT; y++) {
 				for (let x = 0; x < BSP_MAP_WIDTH; x++) {
-					expect(map1[y][x].type).toBe(map2[y][x].type);
+					expect(r1.map[y][x].type).toBe(r2.map[y][x].type);
 				}
 			}
 		});
@@ -363,8 +364,8 @@ describe("bsp", () => {
 		it("床タイル数が不足する場合はnullを返す", () => {
 			const rng = new RNG(42);
 			// 非常に大きな数を要求
-			const map = generateBSPMap(BSP_MAP_WIDTH, BSP_MAP_HEIGHT, rng, 1000);
-			expect(map).toBeNull();
+			const result = generateBSPMap(BSP_MAP_WIDTH, BSP_MAP_HEIGHT, rng, 1000);
+			expect(result).toBeNull();
 		});
 
 		it("マップサイズが小さすぎる場合はnullを返す", () => {
@@ -379,8 +380,8 @@ describe("bsp", () => {
 			let successCount = 0;
 			for (let seed = 0; seed < 50; seed++) {
 				const rng = new RNG(seed);
-				const map = generateBSPMap(BSP_MAP_WIDTH, BSP_MAP_HEIGHT, rng, 5);
-				if (map) successCount++;
+				const result = generateBSPMap(BSP_MAP_WIDTH, BSP_MAP_HEIGHT, rng, 5);
+				if (result) successCount++;
 			}
 			// 大多数のシードで生成できるはず
 			expect(successCount).toBeGreaterThanOrEqual(45);
