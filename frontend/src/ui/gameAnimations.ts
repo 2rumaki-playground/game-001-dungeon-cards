@@ -21,6 +21,7 @@ import type { CardType, Direction, GameState, Position } from "../types";
 import { getMapPixelSize } from "./coordinates";
 import { applyState, render } from "./gameRenderer";
 import { HAND_AREA_HEIGHT } from "./layout";
+import { relayoutUI } from "./relayout";
 
 /**
  * 画面サイズを計算する
@@ -299,6 +300,7 @@ export async function updateStateWithStairsAnimation(
 		await ctx.ui.screenTransition.fadeTransition(async () => {
 			await ctx.ui.floorBanner.show(transitioned.floor);
 			applyState(ctx, transitioned);
+			relayoutUI(ctx);
 			render(ctx, true);
 			await ctx.ui.floorBanner.hide();
 		});
@@ -391,6 +393,7 @@ export async function animateRushWithStairs(
 		await ctx.ui.screenTransition.fadeTransition(async () => {
 			await ctx.ui.floorBanner.show(transitioned.floor);
 			applyState(ctx, transitioned);
+			relayoutUI(ctx);
 			render(ctx, true);
 			await ctx.ui.floorBanner.hide();
 		});

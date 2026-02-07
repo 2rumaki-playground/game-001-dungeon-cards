@@ -39,6 +39,16 @@ export class ScreenTransition {
 	}
 
 	/**
+	 * 画面サイズ変更に対応
+	 */
+	resize(screenWidth: number, screenHeight: number): void {
+		this.overlay.clear();
+		this.overlay.rect(0, 0, screenWidth, screenHeight);
+		this.overlay.fill({ color: OVERLAY_COLOR });
+		this.overlay.alpha = 0;
+	}
+
+	/**
 	 * フェードトランジションを実行
 	 * 1. フェードアウト（alpha 0→1、画面を暗転）
 	 * 2. onTransition コールバック実行（画面切り替え処理）

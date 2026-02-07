@@ -75,6 +75,14 @@ export class TurnBanner {
 	}
 
 	/**
+	 * 画面サイズ変更に対応
+	 */
+	resize(screenWidth: number, screenHeight: number): void {
+		this.screenWidth = screenWidth;
+		this.screenHeight = screenHeight;
+	}
+
+	/**
 	 * 1文字ずつのTextオブジェクトを生成し、横並びに配置
 	 */
 	private createCharTexts(text: string, color: number): Text[] {
