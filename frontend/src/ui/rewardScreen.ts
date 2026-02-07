@@ -13,7 +13,7 @@ import {
 	CARD_TYPE_SYMBOL,
 	RARITY_COLORS,
 } from "./cardConstants";
-import { drawRoundedRect } from "./graphicsHelpers";
+import { drawRoundedRect, makeInteractive } from "./graphicsHelpers";
 
 /** カードサイズ */
 const REWARD_CARD_WIDTH = 120;
@@ -423,9 +423,7 @@ export class RewardScreen {
 		removeBtnText.y = removeBtnHeight / 2;
 		removeBtn.addChild(removeBtnText);
 
-		removeBtn.eventMode = "static";
-		removeBtn.cursor = "pointer";
-		removeBtn.on("pointerdown", (e: { stopPropagation?: () => void }) => {
+		makeInteractive(removeBtn, (e) => {
 			e.stopPropagation?.();
 			this.onRemoveCard?.(card.id);
 		});
@@ -470,9 +468,7 @@ export class RewardScreen {
 		text.y = BUTTON_HEIGHT / 2;
 		button.addChild(text);
 
-		button.eventMode = "static";
-		button.cursor = "pointer";
-		button.on("pointerdown", onClick);
+		makeInteractive(button, onClick);
 
 		return button;
 	}

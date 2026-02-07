@@ -13,7 +13,7 @@ import {
 	CARD_TYPE_SYMBOL,
 	RARITY_COLORS,
 } from "./cardConstants";
-import { drawRoundedRect } from "./graphicsHelpers";
+import { drawRoundedRect, makeInteractive } from "./graphicsHelpers";
 import { BUTTON_HEIGHT, DECK_BUTTON_WIDTH } from "./layout";
 
 /** カード行の高さ・間隔 */
@@ -284,9 +284,7 @@ export class DeckViewer {
 		text.y = CLOSE_BUTTON_HEIGHT / 2;
 		button.addChild(text);
 
-		button.eventMode = "static";
-		button.cursor = "pointer";
-		button.on("pointerdown", () => {
+		makeInteractive(button, () => {
 			this.onClose?.();
 		});
 
@@ -324,9 +322,7 @@ export class DeckViewer {
 		text.y = BUTTON_HEIGHT / 2;
 		button.addChild(text);
 
-		button.eventMode = "static";
-		button.cursor = "pointer";
-		button.on("pointerdown", () => {
+		makeInteractive(button, () => {
 			this.onOpen?.();
 		});
 

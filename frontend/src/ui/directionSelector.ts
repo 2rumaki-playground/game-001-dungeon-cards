@@ -5,7 +5,7 @@
 
 import { Container, Graphics, Text } from "pixi.js";
 import type { Direction } from "../types";
-import { drawRoundedRect } from "./graphicsHelpers";
+import { drawRoundedRect, makeInteractive } from "./graphicsHelpers";
 
 /** ボタンサイズ */
 const BUTTON_SIZE = 56;
@@ -158,9 +158,7 @@ export class DirectionSelector {
 		text.y = BUTTON_SIZE / 2;
 		button.addChild(text);
 
-		button.eventMode = "static";
-		button.cursor = "pointer";
-		button.on("pointerdown", onClick);
+		makeInteractive(button, onClick);
 
 		return button;
 	}
