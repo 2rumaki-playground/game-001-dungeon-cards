@@ -115,6 +115,39 @@ export const ACTION_LOG_LIMIT = 50;
 export const FLOOR_AREA_SIZE = 5; // 5x5
 export const FLOOR_TILE_COUNT = FLOOR_AREA_SIZE * FLOOR_AREA_SIZE; // 25
 
+// 特殊タイル効果（v1.3）
+export const TRAP_DAMAGE = 1;
+export const TREASURE_HEAL = 3;
+
+// 階層別特殊タイル配置テーブル
+export type SpecialTileComposition = {
+	trap: number;
+	treasure: number;
+	rest_area: number;
+};
+
+export const SPECIAL_TILE_TABLE: {
+	maxFloor: number;
+	composition: SpecialTileComposition;
+}[] = [
+	{ maxFloor: 2, composition: { trap: 1, treasure: 1, rest_area: 0 } },
+	{ maxFloor: 4, composition: { trap: 2, treasure: 1, rest_area: 1 } },
+	{ maxFloor: 6, composition: { trap: 2, treasure: 1, rest_area: 1 } },
+	{ maxFloor: Infinity, composition: { trap: 3, treasure: 1, rest_area: 1 } },
+];
+
+export function getSpecialTileComposition(
+	floor: number,
+): SpecialTileComposition {
+	const entry = SPECIAL_TILE_TABLE.find((e) => floor <= e.maxFloor);
+	return (entry as (typeof SPECIAL_TILE_TABLE)[number]).composition;
+}
+
+export function getSpecialTileCount(floor: number): number {
+	const comp = getSpecialTileComposition(floor);
+	return comp.trap + comp.treasure + comp.rest_area;
+}
+
 // BSPマップ生成（v1.3）
 export const BSP_MIN_PARTITION_SIZE = 5;
 export const BSP_MIN_ROOM_SIZE = 3; // 内部床サイズ（最小幅/高さ）
@@ -139,6 +172,9 @@ export const COLORS = {
 	floor: 0x3a3a3a,
 	wall: 0x1a1a1a,
 	stairs: 0x4a6a4a,
+	trap: 0xcc6644,
+	treasure: 0xccaa44,
+	restArea: 0x44aa88,
 	// キャラクター
 	player: 0x4a8cca,
 	// 敵タイプ別カラー

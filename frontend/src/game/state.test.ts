@@ -9,6 +9,7 @@ import {
 	MAX_AP,
 	PLAYER_INITIAL_HP,
 } from "../constants";
+import { createTestState } from "../test-utils/createTestFixtures";
 import {
 	addActionLog,
 	changeScreen,
@@ -21,6 +22,7 @@ import {
 	removeEnemy,
 	returnToTitle,
 	setFloor,
+	setTile,
 	startNewGame,
 	updateEnemy,
 	updatePlayer,
@@ -303,6 +305,28 @@ describe("state", () => {
 			}
 			expect(state.actionLog.length).toBe(50);
 			expect(state.actionLog[0].message).toBe("メッセージ54");
+		});
+	});
+
+	describe("setTile", () => {
+		it("指定座標のタイルが変更される", () => {
+			const state = createTestState();
+			const result = setTile(state, 3, 3, { type: "trap" });
+			expect(result.map[3][3].type).toBe("trap");
+		});
+
+		it("元のGameStateが変更されない（イミュータブル）", () => {
+			const state = createTestState();
+			const original = state.map[3][3].type;
+			setTile(state, 3, 3, { type: "trap" });
+			expect(state.map[3][3].type).toBe(original);
+		});
+
+		it("他の座標のタイルは変更されない", () => {
+			const state = createTestState();
+			const result = setTile(state, 3, 3, { type: "treasure" });
+			expect(result.map[2][3].type).toBe("floor");
+			expect(result.map[3][2].type).toBe("floor");
 		});
 	});
 });

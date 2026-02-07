@@ -43,11 +43,11 @@ async function handleMoveCardExecution(
 	direction: Direction,
 ): Promise<void> {
 	const prevPosition = ctx.state.player.position;
-	const { state: next, reachedStairs } = executeMove(
-		ctx.state,
-		cardId,
-		direction,
-	);
+	const {
+		state: next,
+		reachedStairs,
+		gameOver,
+	} = executeMove(ctx.state, cardId, direction);
 	const moved =
 		next.player.position.x !== prevPosition.x ||
 		next.player.position.y !== prevPosition.y;
@@ -61,6 +61,12 @@ async function handleMoveCardExecution(
 		await updateStateWithStairsAnimation(ctx, next, stairsPos);
 	} else if (moved) {
 		await updateStateWithMoveAnimation(ctx, next, next.player.position);
+		if (gameOver) {
+			deleteSaveData();
+			await ctx.ui.screenTransition.fadeTransition(() => {
+				updateState(ctx, next);
+			});
+		}
 	} else {
 		await updateStateWithBumpAnimation(ctx, next, direction);
 	}
@@ -152,6 +158,12 @@ async function handleRushCardExecution(
 			result.state,
 			result.state.player.position,
 		);
+		if (result.gameOver) {
+			deleteSaveData();
+			await ctx.ui.screenTransition.fadeTransition(() => {
+				updateState(ctx, result.state);
+			});
+		}
 	}
 }
 

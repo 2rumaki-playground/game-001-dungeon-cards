@@ -20,6 +20,7 @@ import type {
 	Player,
 	Position,
 	Screen,
+	Tile,
 	Turn,
 } from "../types";
 import { RNG } from "../utils/rng";
@@ -120,7 +121,7 @@ export function createTitleScreenState(seed?: number): GameState {
  */
 export function createInitialGameState(seed?: number): GameState {
 	const rng = new RNG(seed);
-	const { map, player, enemies } = generateMapPlacement(rng);
+	const { map, player, enemies } = generateMapPlacement(rng, INITIAL_FLOOR);
 	const initialPlayer = createInitialPlayer();
 
 	return {
@@ -181,6 +182,21 @@ export function setFloor(state: GameState, floor: number): GameState {
  */
 export function setMap(state: GameState, map: GameMap): GameState {
 	return { ...state, map, rng: cloneRng(state.rng) };
+}
+
+/**
+ * 指定座標のタイルを更新（イミュータブル）
+ */
+export function setTile(
+	state: GameState,
+	x: number,
+	y: number,
+	tile: Tile,
+): GameState {
+	const newMap = state.map.map((row, ry) =>
+		ry === y ? row.map((t, rx) => (rx === x ? tile : t)) : row,
+	);
+	return { ...state, map: newMap, rng: cloneRng(state.rng) };
 }
 
 /**

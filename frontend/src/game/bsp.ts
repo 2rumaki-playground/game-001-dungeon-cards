@@ -267,16 +267,35 @@ function carveAllRooms(map: GameMap, node: BSPNode): void {
 	if (node.right) carveAllRooms(map, node.right);
 }
 
+/** BSPマップ生成結果 */
+export type BSPMapResult = {
+	map: GameMap;
+	rooms: Room[];
+};
+
+/**
+ * BSP木からすべてのRoomを収集する
+ */
+export function collectRooms(node: BSPNode): Room[] {
+	const rooms: Room[] = [];
+	if (node.room) {
+		rooms.push(node.room);
+	}
+	if (node.left) rooms.push(...collectRooms(node.left));
+	if (node.right) rooms.push(...collectRooms(node.right));
+	return rooms;
+}
+
 /**
  * BSPアルゴリズムによるマップ生成
- * @returns 生成されたGameMap、または床タイル不足の場合null
+ * @returns 生成されたGameMapとRoom情報、または床タイル不足の場合null
  */
 export function generateBSPMap(
 	width: number,
 	height: number,
 	rng: RNG,
 	requiredFloorTiles: number,
-): GameMap | null {
+): BSPMapResult | null {
 	// 入力バリデーション: 外周壁2マス + 最小パーティションサイズが必要
 	const minSize = BSP_MIN_PARTITION_SIZE + 2;
 	if (width < minSize || height < minSize) {
@@ -325,5 +344,6 @@ export function generateBSPMap(
 		return null;
 	}
 
-	return map;
+	const rooms = collectRooms(tree);
+	return { map, rooms };
 }

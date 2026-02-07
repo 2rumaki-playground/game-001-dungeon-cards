@@ -35,7 +35,7 @@ export function transitionFloor(state: GameState): GameState {
 	let next = setFloor(state, state.floor + 1);
 
 	// 2. 新マップを生成
-	const { map, player, enemies } = generateMapPlacement(next.rng);
+	const { map, player, enemies } = generateMapPlacement(next.rng, next.floor);
 
 	next = setMap(next, map);
 

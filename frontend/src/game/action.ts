@@ -14,6 +14,7 @@ import { DIRECTION_DELTA } from "../types";
 import { applyDamageToEnemy } from "./combat";
 import { playCard } from "./deck";
 import { addActionLog, setDeck, updatePlayer } from "./state";
+import { applyTileEffect, type SpecialTileType } from "./tileEffect";
 
 /**
  * 移動可否を判定
@@ -46,6 +47,10 @@ export type MoveResult = {
 	state: GameState;
 	/** 階段に到達したか */
 	reachedStairs: boolean;
+	/** 発動した特殊タイル効果 */
+	tileEffect: SpecialTileType | null;
+	/** 特殊タイル効果によるゲームオーバー */
+	gameOver: boolean;
 };
 
 /**
@@ -74,6 +79,8 @@ export function executeMove(
 		return {
 			state: addActionLog(next, "移動できなかった"),
 			reachedStairs: false,
+			tileEffect: null,
+			gameOver: false,
 		};
 	}
 
@@ -91,10 +98,22 @@ export function executeMove(
 
 	// 階段判定（遷移はUI層で行う）
 	if (state.map[ny][nx].type === "stairs") {
-		return { state: next, reachedStairs: true };
+		return {
+			state: next,
+			reachedStairs: true,
+			tileEffect: null,
+			gameOver: false,
+		};
 	}
 
-	return { state: next, reachedStairs: false };
+	// 特殊タイル効果
+	const effect = applyTileEffect(next);
+	return {
+		state: effect.state,
+		reachedStairs: false,
+		tileEffect: effect.triggeredTile,
+		gameOver: effect.gameOver,
+	};
 }
 
 /**
@@ -216,6 +235,10 @@ export type RushResult = {
 	reachedStairs: boolean;
 	/** 階段到達前に移動した位置（アニメーション用） */
 	intermediatePosition?: { x: number; y: number };
+	/** 発動した特殊タイル効果の一覧 */
+	tileEffects: SpecialTileType[];
+	/** 特殊タイル効果によるゲームオーバー */
+	gameOver: boolean;
 };
 
 /**
@@ -246,6 +269,7 @@ export function executeRush(
 
 	let movedDistance = 0;
 	let intermediatePosition: { x: number; y: number } | undefined;
+	const tileEffects: SpecialTileType[] = [];
 
 	for (let step = 0; step < RUSH_MAX_DISTANCE; step++) {
 		if (!canMove(next, direction)) {
@@ -273,6 +297,25 @@ export function executeRush(
 				movedDistance,
 				reachedStairs: true,
 				intermediatePosition,
+				tileEffects,
+				gameOver: false,
+			};
+		}
+
+		// 特殊タイル効果
+		const effect = applyTileEffect(next);
+		next = effect.state;
+		if (effect.triggeredTile) {
+			tileEffects.push(effect.triggeredTile);
+		}
+		if (effect.gameOver) {
+			return {
+				state: next,
+				movedDistance,
+				reachedStairs: false,
+				intermediatePosition,
+				tileEffects,
+				gameOver: true,
 			};
 		}
 	}
@@ -282,6 +325,8 @@ export function executeRush(
 			state: addActionLog(next, "突進できなかった"),
 			movedDistance: 0,
 			reachedStairs: false,
+			tileEffects,
+			gameOver: false,
 		};
 	}
 
@@ -289,6 +334,8 @@ export function executeRush(
 		state: addActionLog(next, "突進した"),
 		movedDistance,
 		reachedStairs: false,
+		tileEffects,
+		gameOver: false,
 	};
 }
 

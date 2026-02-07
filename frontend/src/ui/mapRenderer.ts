@@ -91,6 +91,12 @@ function getTileColor(type: TileType): number {
 			return COLORS.wall;
 		case "stairs":
 			return COLORS.stairs;
+		case "trap":
+			return COLORS.trap;
+		case "treasure":
+			return COLORS.treasure;
+		case "rest_area":
+			return COLORS.restArea;
 		default:
 			return COLORS.floor;
 	}
