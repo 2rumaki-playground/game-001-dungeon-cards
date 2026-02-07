@@ -40,6 +40,11 @@ describe("isInBounds", () => {
 	it("境界値（最大インデックス）はtrueを返す", () => {
 		expect(isInBounds(map, 4, 4)).toBe(true);
 	});
+
+	it("空マップはfalseを返す", () => {
+		const emptyMap: ReturnType<typeof createFixedLayoutMap> = [];
+		expect(isInBounds(emptyMap, 0, 0)).toBe(false);
+	});
 });
 
 describe("map", () => {
