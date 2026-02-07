@@ -6,7 +6,13 @@
 /**
  * タイル種別
  */
-export type TileType = "floor" | "wall" | "stairs";
+export type TileType =
+	| "floor"
+	| "wall"
+	| "stairs"
+	| "trap"
+	| "treasure"
+	| "rest_area";
 
 /**
  * タイル
