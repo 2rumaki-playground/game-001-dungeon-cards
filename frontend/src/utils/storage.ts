@@ -52,9 +52,10 @@ export function loadGame(): GameState | null {
 			return null;
 		}
 
-		// screen の検証（reward画面はgameに復帰）
+		// screen の検証（reward画面はgameに復帰、撃破数もリセット）
 		if (data.screen === "reward") {
 			data.screen = "game";
+			data.defeatedEnemyCount = 0;
 		}
 		if (
 			data.screen !== "title" &&
