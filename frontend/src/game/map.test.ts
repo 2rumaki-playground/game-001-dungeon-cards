@@ -225,13 +225,13 @@ describe("map", () => {
 
 		it("リトライ上限到達時は指定サイズの固定マップにフォールバックする", () => {
 			const rng = new RNG(42);
-			// 階層1のサイズ(9x9)でBSP_MIN_PARTITION_SIZE未満の小サイズを使い、BSP生成を必ず失敗させる
+			// BSP_MIN_PARTITION_SIZE(5)+2未満のサイズでBSP生成が必ず失敗する
 			// フォールバック時も渡されたサイズで固定マップが生成される
-			const result = generateBSPMapPlacement(rng, 9, 9, 1);
+			const result = generateBSPMapPlacement(rng, 6, 6, 1);
 
-			expect(result.map.length).toBe(9);
+			expect(result.map.length).toBe(6);
 			for (const row of result.map) {
-				expect(row.length).toBe(9);
+				expect(row.length).toBe(6);
 			}
 		});
 
