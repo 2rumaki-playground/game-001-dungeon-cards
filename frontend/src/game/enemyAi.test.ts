@@ -730,6 +730,61 @@ describe("executeEnemyTurn", () => {
 		expect(result.enemies[0].position).toEqual({ x: 4, y: 3 });
 	});
 
+	it("敵が罠タイル上に移動できる", () => {
+		const map = createTestMap();
+		map[4][3] = { type: "trap" };
+		const enemies: Enemy[] = [
+			{
+				id: "enemy-1",
+				type: "normal",
+				position: { x: 3, y: 5 },
+				hp: ENEMY_HP,
+				maxHp: ENEMY_HP,
+			},
+		];
+		const state = createTestState({ turn: "enemy", map, enemies });
+		const { state: result } = executeEnemyTurn(state);
+
+		// 罠タイルの上に移動できる
+		expect(result.enemies[0].position).toEqual({ x: 3, y: 4 });
+	});
+
+	it("敵が宝箱タイル上に移動できる", () => {
+		const map = createTestMap();
+		map[4][3] = { type: "treasure" };
+		const enemies: Enemy[] = [
+			{
+				id: "enemy-1",
+				type: "normal",
+				position: { x: 3, y: 5 },
+				hp: ENEMY_HP,
+				maxHp: ENEMY_HP,
+			},
+		];
+		const state = createTestState({ turn: "enemy", map, enemies });
+		const { state: result } = executeEnemyTurn(state);
+
+		expect(result.enemies[0].position).toEqual({ x: 3, y: 4 });
+	});
+
+	it("敵が休憩所タイル上に移動できる", () => {
+		const map = createTestMap();
+		map[4][3] = { type: "rest_area" };
+		const enemies: Enemy[] = [
+			{
+				id: "enemy-1",
+				type: "normal",
+				position: { x: 3, y: 5 },
+				hp: ENEMY_HP,
+				maxHp: ENEMY_HP,
+			},
+		];
+		const state = createTestState({ turn: "enemy", map, enemies });
+		const { state: result } = executeEnemyTurn(state);
+
+		expect(result.enemies[0].position).toEqual({ x: 3, y: 4 });
+	});
+
 	it("異なるタイプの敵が混在した場合のtotalDamageが正しい", () => {
 		// normal(隣接) + heavy(隣接) → totalDamage = 1 + 2 = 3
 		const enemies: Enemy[] = [
