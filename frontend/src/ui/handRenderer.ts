@@ -4,14 +4,15 @@
  */
 
 import { Container, Graphics, Text } from "pixi.js";
-import {
-	CARD_COST,
-	PLAYER_ATTACK_DAMAGE,
-	PLAYER_STRONG_ATTACK_DAMAGE,
-	RUSH_MAX_DISTANCE,
-} from "../constants";
-import type { Card, CardType, Direction } from "../types";
+import { CARD_COST } from "../constants";
+import type { Card, Direction } from "../types";
 import { Easing, tween } from "../utils/tween";
+import {
+	CARD_COLORS as BASE_CARD_COLORS,
+	CARD_EFFECT_TEXT,
+	CARD_TYPE_NAME,
+	CARD_TYPE_SYMBOL,
+} from "./cardConstants";
 
 /** カード描画定数 */
 export const CARD_WIDTH = 90;
@@ -78,44 +79,13 @@ export function getDirectionFromClickPosition(
 	return relY > 0 ? "down" : "up";
 }
 
-/** カード色定義 */
+/** handRenderer固有のカード色拡張 */
 const CARD_COLORS = {
-	move: { bg: 0x2a5a8c, border: 0x4a8cca },
-	attack: { bg: 0x8c2a2a, border: 0xca4a4a },
-	strong_attack: { bg: 0x7a3a6a, border: 0xaa5a9a },
-	rush: { bg: 0x2a6a3a, border: 0x4aaa5a },
-	wait: { bg: 0x4a4a4a, border: 0x6a6a6a },
+	...BASE_CARD_COLORS,
 	disabled: { bg: 0x2a2a2a, border: 0x4a4a4a },
 	selectedBorder: 0xffd700,
 	hoveredBorder: 0x88ccff,
 } as const;
-
-/** カード種別シンボル */
-const CARD_TYPE_SYMBOL: Record<CardType, string> = {
-	move: "👟",
-	attack: "⚔",
-	strong_attack: "🔥",
-	rush: "💨",
-	wait: "⏳",
-};
-
-/** カード効果テキスト */
-const CARD_EFFECT_TEXT: Record<CardType, string> = {
-	move: "1マス移動",
-	attack: `${PLAYER_ATTACK_DAMAGE}ダメージ`,
-	strong_attack: `${PLAYER_STRONG_ATTACK_DAMAGE}ダメージ`,
-	rush: `${RUSH_MAX_DISTANCE}マス移動`,
-	wait: "-",
-};
-
-/** カード種別の日本語名 */
-const CARD_TYPE_NAME: Record<CardType, string> = {
-	move: "移動",
-	attack: "攻撃",
-	strong_attack: "強攻撃",
-	rush: "突進",
-	wait: "待機",
-};
 
 /**
  * 手札レンダラー

@@ -4,14 +4,15 @@
  */
 
 import { Container, Graphics, Text } from "pixi.js";
+import { CARD_COST, CARD_RARITY } from "../constants";
+import type { Card, CardType } from "../types";
 import {
-	CARD_COST,
-	CARD_RARITY,
-	PLAYER_ATTACK_DAMAGE,
-	PLAYER_STRONG_ATTACK_DAMAGE,
-	RUSH_MAX_DISTANCE,
-} from "../constants";
-import type { Card, CardType, Rarity } from "../types";
+	CARD_COLORS,
+	CARD_EFFECT_TEXT,
+	CARD_TYPE_NAME,
+	CARD_TYPE_SYMBOL,
+	RARITY_COLORS,
+} from "./cardConstants";
 
 /** カードサイズ */
 const REWARD_CARD_WIDTH = 120;
@@ -23,49 +24,6 @@ const REWARD_CARD_GAP = 20;
 const BUTTON_WIDTH = 100;
 const BUTTON_HEIGHT = 32;
 const BUTTON_RADIUS = 6;
-
-/** レアリティ色 */
-const RARITY_COLORS: Record<Rarity, number> = {
-	common: 0x888888,
-	uncommon: 0x44aa44,
-	rare: 0xddaa22,
-};
-
-/** カード背景色 */
-const REWARD_CARD_COLORS: Record<CardType, { bg: number; border: number }> = {
-	move: { bg: 0x2a5a8c, border: 0x4a8cca },
-	attack: { bg: 0x8c2a2a, border: 0xca4a4a },
-	strong_attack: { bg: 0x7a3a6a, border: 0xaa5a9a },
-	rush: { bg: 0x2a6a3a, border: 0x4aaa5a },
-	wait: { bg: 0x4a4a4a, border: 0x6a6a6a },
-};
-
-/** カード種別シンボル */
-const CARD_TYPE_SYMBOL: Record<CardType, string> = {
-	move: "👟",
-	attack: "⚔",
-	strong_attack: "🔥",
-	rush: "💨",
-	wait: "⏳",
-};
-
-/** カード効果テキスト */
-const CARD_EFFECT_TEXT: Record<CardType, string> = {
-	move: "1マス移動",
-	attack: `${PLAYER_ATTACK_DAMAGE}ダメージ`,
-	strong_attack: `${PLAYER_STRONG_ATTACK_DAMAGE}ダメージ`,
-	rush: `${RUSH_MAX_DISTANCE}マス移動`,
-	wait: "-",
-};
-
-/** カード種別の日本語名 */
-const CARD_TYPE_NAME: Record<CardType, string> = {
-	move: "移動",
-	attack: "攻撃",
-	strong_attack: "強攻撃",
-	rush: "突進",
-	wait: "待機",
-};
 
 /** レアリティ日本語名 */
 const RARITY_NAME: Record<Rarity, string> = {
@@ -278,7 +236,7 @@ export class RewardScreen {
 		cardContainer.x = x;
 		cardContainer.y = y;
 
-		const colors = REWARD_CARD_COLORS[cardType];
+		const colors = CARD_COLORS[cardType];
 		const rarity = CARD_RARITY[cardType];
 		const rarityColor = RARITY_COLORS[rarity];
 
@@ -421,9 +379,9 @@ export class RewardScreen {
 		// 背景
 		const bg = new Graphics();
 		bg.roundRect(0, 0, width, REMOVE_CARD_HEIGHT, 4);
-		bg.fill(REWARD_CARD_COLORS[card.type].bg);
+		bg.fill(CARD_COLORS[card.type].bg);
 		bg.roundRect(0, 0, width, REMOVE_CARD_HEIGHT, 4);
-		bg.stroke({ color: REWARD_CARD_COLORS[card.type].border, width: 1 });
+		bg.stroke({ color: CARD_COLORS[card.type].border, width: 1 });
 		item.addChild(bg);
 
 		// カード名
