@@ -8,6 +8,20 @@ import { HAND_LIMIT, INITIAL_DECK } from "../constants";
 import type { Card, CardType, DeckState } from "../types";
 import type { RNG } from "../utils/rng";
 
+/**
+ * デッキの3ゾーン（山札・手札・捨て札）を結合した全カード配列を取得
+ */
+export function getAllCards(deck: DeckState): Card[] {
+	return [...deck.drawPile, ...deck.hand, ...deck.discardPile];
+}
+
+/**
+ * デッキの総枚数を取得（山札＋手札＋捨て札）
+ */
+export function getTotalDeckSize(deck: DeckState): number {
+	return deck.drawPile.length + deck.hand.length + deck.discardPile.length;
+}
+
 let cardIdCounter = 0;
 
 /**
@@ -21,7 +35,7 @@ export function resetCardIdCounter(): void {
  * デッキ内のカードIDからカウンターを初期化（セーブデータ復元用）
  */
 export function initCardIdCounterFromDeck(deck: DeckState): void {
-	const allCards = [...deck.drawPile, ...deck.hand, ...deck.discardPile];
+	const allCards = getAllCards(deck);
 	let maxId = 0;
 	for (const card of allCards) {
 		const match = card.id.match(/^card-(\d+)$/);
@@ -138,7 +152,7 @@ export function discardHand(deck: DeckState): DeckState {
  * デッキをリセット（全カードを山札に戻してシャッフル）
  */
 export function reshuffleDeck(deck: DeckState, rng: RNG): DeckState {
-	const allCards = [...deck.drawPile, ...deck.hand, ...deck.discardPile];
+	const allCards = getAllCards(deck);
 	return {
 		drawPile: rng.shuffle(allCards),
 		hand: [],

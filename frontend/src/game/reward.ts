@@ -8,16 +8,11 @@ import {
 	DECK_MIN_SIZE,
 	getEnemyCount,
 } from "../constants";
-import type { CardType, DeckState, GameState, RewardState } from "../types";
+import type { CardType, GameState, RewardState } from "../types";
 import { generateRewardChoices } from "./cardPool";
-import { createCard } from "./deck";
+import { createCard, getTotalDeckSize } from "./deck";
 
-/**
- * デッキの総枚数を取得（山札＋手札＋捨て札）
- */
-export function getTotalDeckSize(deck: DeckState): number {
-	return deck.drawPile.length + deck.hand.length + deck.discardPile.length;
-}
+export { getTotalDeckSize };
 
 /**
  * 報酬状態を生成する
