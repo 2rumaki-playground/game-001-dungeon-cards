@@ -89,9 +89,11 @@ const getRoomFloorPositions = (
 /**
  * 特殊タイル種別リストを階層に応じて生成
  */
-function getSpecialTileTypes(floor: number): TileType[] {
+type SpecialTileType = Extract<TileType, "trap" | "treasure" | "rest_area">;
+
+function getSpecialTileTypes(floor: number): SpecialTileType[] {
 	const comp = getSpecialTileComposition(floor);
-	const types: TileType[] = [];
+	const types: SpecialTileType[] = [];
 	for (let i = 0; i < comp.trap; i++) types.push("trap");
 	for (let i = 0; i < comp.treasure; i++) types.push("treasure");
 	for (let i = 0; i < comp.rest_area; i++) types.push("rest_area");
