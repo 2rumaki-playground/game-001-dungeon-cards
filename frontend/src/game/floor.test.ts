@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
+	BSP_MIN_PARTITION_SIZE,
 	ENEMY_COUNT,
 	ENEMY_HP,
 	ENEMY_PARAMS,
@@ -92,7 +93,9 @@ describe("transitionFloor", () => {
 		const result = transitionFloor(state);
 
 		// マップが存在し、正しいサイズ
-		expect(result.map.length).toBeGreaterThanOrEqual(7);
+		expect(result.map.length).toBeGreaterThanOrEqual(
+			BSP_MIN_PARTITION_SIZE + 2,
+		);
 		// すべての行が同じ幅であること
 		for (const row of result.map) {
 			expect(row.length).toBe(result.map[0].length);

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+	BSP_MIN_PARTITION_SIZE,
 	ENEMY_COUNT,
 	ENEMY_HP,
 	ENEMY_PARAMS,
@@ -125,7 +126,9 @@ describe("state", () => {
 			expect(state.turn).toBe("player");
 			expect(state.floor).toBe(INITIAL_FLOOR);
 			expect(state.rng.seed).toBe(12345);
-			expect(state.map.length).toBeGreaterThanOrEqual(7);
+			expect(state.map.length).toBeGreaterThanOrEqual(
+				BSP_MIN_PARTITION_SIZE + 2,
+			);
 			for (const row of state.map) {
 				expect(row.length).toBe(state.map[0].length);
 			}
@@ -159,7 +162,9 @@ describe("state", () => {
 		it("マップと敵が初期化される", () => {
 			const titleState = createTitleScreenState(12345);
 			const gameState = startNewGame(titleState);
-			expect(gameState.map.length).toBeGreaterThanOrEqual(7);
+			expect(gameState.map.length).toBeGreaterThanOrEqual(
+				BSP_MIN_PARTITION_SIZE + 2,
+			);
 			for (const row of gameState.map) {
 				expect(row.length).toBe(gameState.map[0].length);
 			}
