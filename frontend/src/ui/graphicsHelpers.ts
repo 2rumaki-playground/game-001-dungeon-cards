@@ -1,5 +1,5 @@
 /**
- * Graphics描画の共通ヘルパー関数
+ * Graphics描画およびインタラクションの共通ヘルパー関数
  */
 
 import type {
