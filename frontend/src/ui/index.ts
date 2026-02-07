@@ -4,6 +4,7 @@
 
 export * from "./actionLogRenderer";
 export * from "./coordinates";
+export * from "./deckViewer";
 export * from "./directionSelector";
 export * from "./floorBanner";
 export * from "./gameOverScreen";

@@ -10,6 +10,7 @@ import type { GameContext, UIComponents } from "./gameContext";
 import type { GameState } from "./types";
 import {
 	ActionLogRenderer,
+	DeckViewer,
 	DirectionSelector,
 	FloorBanner,
 	GameOverScreen,
@@ -27,9 +28,13 @@ import { setupEventHandlers } from "./ui/eventHandlers";
 import { render, updateState } from "./ui/gameRenderer";
 import {
 	BUTTON_BOTTOM_MARGIN,
+	BUTTON_GAP,
 	BUTTON_HEIGHT,
+	BUTTON_RIGHT_MARGIN,
+	DECK_BUTTON_WIDTH,
 	HAND_AREA_HEIGHT,
 	HAND_AREA_TOP_PADDING,
+	TURN_END_BUTTON_WIDTH,
 } from "./ui/layout";
 import { hasSaveData } from "./utils/storage";
 
@@ -66,9 +71,16 @@ function initializeUIComponents(
 
 	const turnEndButton = new TurnEndButton();
 	const turnEndContainer = turnEndButton.getContainer();
-	turnEndContainer.x = mapSize.width - 136;
+	turnEndContainer.x =
+		mapSize.width - TURN_END_BUTTON_WIDTH - BUTTON_RIGHT_MARGIN;
 	turnEndContainer.y = totalHeight - BUTTON_HEIGHT - BUTTON_BOTTOM_MARGIN;
 	app.stage.addChild(turnEndContainer);
+
+	const deckViewer = new DeckViewer();
+	const deckButtonContainer = deckViewer.getButtonContainer();
+	deckButtonContainer.x = turnEndContainer.x - DECK_BUTTON_WIDTH - BUTTON_GAP;
+	deckButtonContainer.y = totalHeight - BUTTON_HEIGHT - BUTTON_BOTTOM_MARGIN;
+	app.stage.addChild(deckButtonContainer);
 
 	const actionLogRenderer = new ActionLogRenderer(totalHeight);
 	const logContainer = actionLogRenderer.getContainer();
@@ -89,6 +101,8 @@ function initializeUIComponents(
 		STATUS_BAR_HEIGHT + mapSize.height + HAND_AREA_TOP_PADDING;
 	app.stage.addChild(directionContainer);
 
+	app.stage.addChild(deckViewer.getContainer());
+
 	const rewardScreen = new RewardScreen();
 	app.stage.addChild(rewardScreen.getContainer());
 
@@ -108,6 +122,7 @@ function initializeUIComponents(
 		handRenderer,
 		directionSelector,
 		turnEndButton,
+		deckViewer,
 		actionLogRenderer,
 		turnBanner,
 		rewardScreen,

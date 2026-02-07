@@ -5,6 +5,7 @@
 import type { Card, GameState } from "./types";
 import type {
 	ActionLogRenderer,
+	DeckViewer,
 	DirectionSelector,
 	FloorBanner,
 	GameOverScreen,
@@ -27,6 +28,7 @@ export interface UIComponents {
 	handRenderer: HandRenderer;
 	directionSelector: DirectionSelector;
 	turnEndButton: TurnEndButton;
+	deckViewer: DeckViewer;
 	actionLogRenderer: ActionLogRenderer;
 	turnBanner: TurnBanner;
 	rewardScreen: RewardScreen;

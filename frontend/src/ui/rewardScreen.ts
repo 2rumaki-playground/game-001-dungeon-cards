@@ -206,13 +206,12 @@ export class RewardScreen {
 		scrollContainer.y = listStartY;
 
 		// リスト表示領域をマスクで制限
+		// PixiJS v8ではマスクをディスプレイリストに追加せず参照のみ保持する
 		const visibleHeight = Math.min(REMOVE_LIST_MAX_HEIGHT, totalListHeight);
 		const maskGraphics = new Graphics();
 		maskGraphics.rect(listX, listStartY, listWidth, visibleHeight);
 		maskGraphics.fill(0xffffff);
-		maskGraphics.visible = false;
 		scrollContainer.mask = maskGraphics;
-		this.container.addChild(maskGraphics);
 		this.container.addChild(scrollContainer);
 
 		// ドラッグスクロール（scrollContainer自体にイベントを持たせる）

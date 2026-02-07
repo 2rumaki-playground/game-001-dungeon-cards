@@ -5,10 +5,9 @@
 
 import { Container, Graphics, Text } from "pixi.js";
 import type { Turn } from "../types";
+import { BUTTON_HEIGHT, TURN_END_BUTTON_WIDTH as BUTTON_WIDTH } from "./layout";
 
 /** ボタンサイズ */
-const BUTTON_WIDTH = 120;
-const BUTTON_HEIGHT = 36;
 const BUTTON_RADIUS = 6;
 
 /** ボタン色定義 */
