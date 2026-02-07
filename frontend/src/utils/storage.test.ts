@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { ENEMY_COUNT } from "../constants";
+import { getEnemyCount, INITIAL_FLOOR } from "../constants";
 import { createTitleScreenState } from "../game/state";
 import { deleteSaveData, hasSaveData, loadGame, saveGame } from "./storage";
 
@@ -167,7 +167,7 @@ describe("storage", () => {
 		expect(loaded?.defeatedEnemyCount).toBe(2);
 	});
 
-	it("should clamp defeatedEnemyCount to ENEMY_COUNT", () => {
+	it("should clamp defeatedEnemyCount to getEnemyCount(floor)", () => {
 		const state = createTitleScreenState(42);
 		const saveData = {
 			...state,
@@ -179,7 +179,7 @@ describe("storage", () => {
 
 		const loaded = loadGame();
 		expect(loaded).not.toBeNull();
-		expect(loaded?.defeatedEnemyCount).toBe(ENEMY_COUNT);
+		expect(loaded?.defeatedEnemyCount).toBe(getEnemyCount(INITIAL_FLOOR));
 	});
 
 	it("should return null if screen is invalid", () => {

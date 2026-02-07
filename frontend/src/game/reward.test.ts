@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { DECK_MIN_SIZE, ENEMY_COUNT } from "../constants";
+import { DECK_MIN_SIZE, getEnemyCount, INITIAL_FLOOR } from "../constants";
 import { createTestState } from "../test-utils/createTestFixtures";
 import type { Card } from "../types";
 import { resetCardIdCounter } from "./deck";
@@ -174,7 +174,7 @@ describe("shouldTriggerCardRemoval", () => {
 
 	it("全敵撃破していない場合 → triggered: false", () => {
 		const state = createTestState({
-			defeatedEnemyCount: ENEMY_COUNT - 1,
+			defeatedEnemyCount: getEnemyCount(INITIAL_FLOOR) - 1,
 			deck: createLargeDeck(DECK_MIN_SIZE + 1),
 		});
 
@@ -184,7 +184,7 @@ describe("shouldTriggerCardRemoval", () => {
 
 	it("デッキがDECK_MIN_SIZE以下の場合 → triggered: false", () => {
 		const state = createTestState({
-			defeatedEnemyCount: ENEMY_COUNT,
+			defeatedEnemyCount: getEnemyCount(INITIAL_FLOOR),
 			deck: createLargeDeck(DECK_MIN_SIZE),
 		});
 
@@ -194,11 +194,11 @@ describe("shouldTriggerCardRemoval", () => {
 
 	it("条件を満たす場合、シード固定で再現性がある", () => {
 		const state1 = createTestState({
-			defeatedEnemyCount: ENEMY_COUNT,
+			defeatedEnemyCount: getEnemyCount(INITIAL_FLOOR),
 			deck: createLargeDeck(DECK_MIN_SIZE + 1),
 		});
 		const state2 = createTestState({
-			defeatedEnemyCount: ENEMY_COUNT,
+			defeatedEnemyCount: getEnemyCount(INITIAL_FLOOR),
 			deck: createLargeDeck(DECK_MIN_SIZE + 1),
 		});
 
@@ -209,7 +209,7 @@ describe("shouldTriggerCardRemoval", () => {
 
 	it("RNG消費がupdatedStateに反映される", () => {
 		const state = createTestState({
-			defeatedEnemyCount: ENEMY_COUNT,
+			defeatedEnemyCount: getEnemyCount(INITIAL_FLOOR),
 			deck: createLargeDeck(DECK_MIN_SIZE + 1),
 		});
 
@@ -231,7 +231,7 @@ describe("shouldTriggerCardRemoval", () => {
 
 	it("デッキ枚数不足の場合、RNGは消費されない", () => {
 		const state = createTestState({
-			defeatedEnemyCount: ENEMY_COUNT,
+			defeatedEnemyCount: getEnemyCount(INITIAL_FLOOR),
 			deck: createLargeDeck(DECK_MIN_SIZE),
 		});
 

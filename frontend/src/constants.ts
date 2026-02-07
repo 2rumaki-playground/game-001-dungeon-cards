@@ -162,7 +162,7 @@ export const MAP_SIZE_TABLE: {
 
 export function getMapSize(floor: number): { width: number; height: number } {
 	const entry = MAP_SIZE_TABLE.find((e) => floor <= e.maxFloor);
-	const { width, height } = entry as (typeof MAP_SIZE_TABLE)[number];
+	const { width, height } = entry ?? MAP_SIZE_TABLE[MAP_SIZE_TABLE.length - 1];
 	return { width, height };
 }
 
@@ -178,8 +178,10 @@ export const ENEMY_COUNT_TABLE: {
 ];
 
 export function getEnemyCount(floor: number): number {
-	const entry = ENEMY_COUNT_TABLE.find((e) => floor <= e.maxFloor);
-	return (entry as (typeof ENEMY_COUNT_TABLE)[number]).count;
+	const entry =
+		ENEMY_COUNT_TABLE.find((e) => floor <= e.maxFloor) ??
+		ENEMY_COUNT_TABLE[ENEMY_COUNT_TABLE.length - 1];
+	return entry.count;
 }
 
 // BSPマップ生成（v1.3）

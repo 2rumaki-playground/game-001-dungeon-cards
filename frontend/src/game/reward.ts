@@ -3,7 +3,11 @@
  * @see docs/spec/deckbuilding.md
  */
 
-import { CARD_REMOVAL_CHANCE, DECK_MIN_SIZE, ENEMY_COUNT } from "../constants";
+import {
+	CARD_REMOVAL_CHANCE,
+	DECK_MIN_SIZE,
+	getEnemyCount,
+} from "../constants";
 import type { CardType, DeckState, GameState, RewardState } from "../types";
 import { generateRewardChoices } from "./cardPool";
 import { createCard } from "./deck";
@@ -66,7 +70,7 @@ export function shouldTriggerCardRemoval(state: GameState): {
 	triggered: boolean;
 	updatedState: GameState;
 } {
-	if (state.defeatedEnemyCount < ENEMY_COUNT) {
+	if (state.defeatedEnemyCount < getEnemyCount(state.floor)) {
 		return { triggered: false, updatedState: state };
 	}
 

@@ -3,7 +3,7 @@
  * @see docs/spec/mvp/rules.md - セーブとログ
  */
 
-import { ENEMY_COUNT } from "../constants";
+import { getEnemyCount } from "../constants";
 import { initCardIdCounterFromDeck } from "../game/deck";
 import type { GameState } from "../types";
 import { RNG } from "./rng";
@@ -82,7 +82,10 @@ export function loadGame(): GameState | null {
 				typeof data.defeatedEnemyCount === "number" &&
 				Number.isFinite(data.defeatedEnemyCount) &&
 				data.defeatedEnemyCount >= 0
-					? Math.min(Math.floor(data.defeatedEnemyCount), ENEMY_COUNT)
+					? Math.min(
+							Math.floor(data.defeatedEnemyCount),
+							getEnemyCount(data.floor),
+						)
 					: 0,
 			rewardState: null,
 		};
