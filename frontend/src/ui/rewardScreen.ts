@@ -470,7 +470,10 @@ export class RewardScreen {
 
 		removeBtn.eventMode = "static";
 		removeBtn.cursor = "pointer";
-		removeBtn.on("pointerdown", () => this.onRemoveCard?.(card.id));
+		removeBtn.on("pointerdown", (e: { stopPropagation?: () => void }) => {
+			e.stopPropagation?.();
+			this.onRemoveCard?.(card.id);
+		});
 		item.addChild(removeBtn);
 
 		return item;
