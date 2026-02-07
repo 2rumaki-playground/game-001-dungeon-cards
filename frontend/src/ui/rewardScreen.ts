@@ -210,25 +210,23 @@ export class RewardScreen {
 		this.container.addChild(maskGraphics);
 		this.container.addChild(scrollContainer);
 
-		// ドラッグスクロール
+		// ドラッグスクロール（scrollContainer自体にイベントを持たせる）
 		if (totalListHeight > REMOVE_LIST_MAX_HEIGHT) {
-			const scrollArea = new Graphics();
-			scrollArea.rect(listX, listStartY, listWidth, visibleHeight);
-			scrollArea.fill({ color: 0x000000, alpha: 0.01 });
-			scrollArea.eventMode = "static";
-			scrollArea.cursor = "grab";
+			scrollContainer.eventMode = "static";
+			scrollContainer.cursor = "grab";
+			scrollContainer.interactiveChildren = true;
 
 			let isDragging = false;
 			let lastY = 0;
 			const minScrollY = listStartY - (totalListHeight - visibleHeight);
 			const maxScrollY = listStartY;
 
-			scrollArea.on("pointerdown", (e) => {
+			scrollContainer.on("pointerdown", (e) => {
 				isDragging = true;
 				lastY = e.globalY;
-				scrollArea.cursor = "grabbing";
+				scrollContainer.cursor = "grabbing";
 			});
-			scrollArea.on("pointermove", (e) => {
+			scrollContainer.on("pointermove", (e) => {
 				if (!isDragging) return;
 				const dy = e.globalY - lastY;
 				lastY = e.globalY;
@@ -237,16 +235,14 @@ export class RewardScreen {
 					Math.min(maxScrollY, scrollContainer.y + dy),
 				);
 			});
-			scrollArea.on("pointerup", () => {
+			scrollContainer.on("pointerup", () => {
 				isDragging = false;
-				scrollArea.cursor = "grab";
+				scrollContainer.cursor = "grab";
 			});
-			scrollArea.on("pointerupoutside", () => {
+			scrollContainer.on("pointerupoutside", () => {
 				isDragging = false;
-				scrollArea.cursor = "grab";
+				scrollContainer.cursor = "grab";
 			});
-
-			this.container.addChild(scrollArea);
 		}
 
 		// キャンセルボタン
