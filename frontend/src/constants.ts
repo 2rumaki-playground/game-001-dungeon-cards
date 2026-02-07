@@ -148,6 +148,40 @@ export function getSpecialTileCount(floor: number): number {
 	return comp.trap + comp.treasure + comp.rest_area;
 }
 
+// 階層別マップサイズ（v1.3）
+export const MAP_SIZE_TABLE: {
+	maxFloor: number;
+	width: number;
+	height: number;
+}[] = [
+	{ maxFloor: 2, width: 9, height: 9 },
+	{ maxFloor: 4, width: 11, height: 11 },
+	{ maxFloor: 6, width: 13, height: 13 },
+	{ maxFloor: Infinity, width: 15, height: 15 },
+];
+
+export function getMapSize(floor: number): { width: number; height: number } {
+	const entry = MAP_SIZE_TABLE.find((e) => floor <= e.maxFloor);
+	const { width, height } = entry as (typeof MAP_SIZE_TABLE)[number];
+	return { width, height };
+}
+
+// 階層別敵配置数（v1.3）
+export const ENEMY_COUNT_TABLE: {
+	maxFloor: number;
+	count: number;
+}[] = [
+	{ maxFloor: 2, count: 3 },
+	{ maxFloor: 4, count: 4 },
+	{ maxFloor: 6, count: 5 },
+	{ maxFloor: Infinity, count: 6 },
+];
+
+export function getEnemyCount(floor: number): number {
+	const entry = ENEMY_COUNT_TABLE.find((e) => floor <= e.maxFloor);
+	return (entry as (typeof ENEMY_COUNT_TABLE)[number]).count;
+}
+
 // BSPマップ生成（v1.3）
 export const BSP_MIN_PARTITION_SIZE = 5;
 export const BSP_MIN_ROOM_SIZE = 3; // 内部床サイズ（最小幅/高さ）

@@ -2,7 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
 	BSP_MAP_HEIGHT,
 	BSP_MAP_WIDTH,
-	ENEMY_COUNT,
+	getEnemyCount,
+	getMapSize,
 	getSpecialTileCount,
 	MAP_HEIGHT,
 	MAP_WIDTH,
@@ -69,6 +70,75 @@ describe("map", () => {
 		});
 	});
 
+	describe("generateMapPlacement - 階層別サイズ", () => {
+		it("階層1のマップは9x9", () => {
+			const rng = new RNG(42);
+			const { map } = generateMapPlacement(rng, 1);
+			expect(map.length).toBe(9);
+			expect(map[0].length).toBe(9);
+		});
+
+		it("階層3のマップは11x11", () => {
+			const rng = new RNG(42);
+			const { map } = generateMapPlacement(rng, 3);
+			expect(map.length).toBe(11);
+			expect(map[0].length).toBe(11);
+		});
+
+		it("階層5のマップは13x13", () => {
+			const rng = new RNG(42);
+			const { map } = generateMapPlacement(rng, 5);
+			expect(map.length).toBe(13);
+			expect(map[0].length).toBe(13);
+		});
+
+		it("階層7のマップは15x15", () => {
+			const rng = new RNG(42);
+			const { map } = generateMapPlacement(rng, 7);
+			expect(map.length).toBe(15);
+			expect(map[0].length).toBe(15);
+		});
+	});
+
+	describe("generateMapPlacement - 階層別敵数", () => {
+		it("階層1: 敵3体", () => {
+			const rng = new RNG(42);
+			const { enemies } = generateMapPlacement(rng, 1);
+			expect(enemies.length).toBe(3);
+		});
+
+		it("階層3: 敵4体", () => {
+			const rng = new RNG(42);
+			const { enemies } = generateMapPlacement(rng, 3);
+			expect(enemies.length).toBe(4);
+		});
+
+		it("階層5: 敵5体", () => {
+			const rng = new RNG(42);
+			const { enemies } = generateMapPlacement(rng, 5);
+			expect(enemies.length).toBe(5);
+		});
+
+		it("階層7: 敵6体", () => {
+			const rng = new RNG(42);
+			const { enemies } = generateMapPlacement(rng, 7);
+			expect(enemies.length).toBe(6);
+		});
+
+		it("複数シードで各階層のマップが安定して生成できる", () => {
+			for (const floor of [1, 3, 5, 7]) {
+				for (let seed = 0; seed < 10; seed++) {
+					const rng = new RNG(seed);
+					const result = generateMapPlacement(rng, floor);
+					const expectedSize = getMapSize(floor);
+					expect(result.map.length).toBe(expectedSize.height);
+					expect(result.map[0].length).toBe(expectedSize.width);
+					expect(result.enemies.length).toBe(getEnemyCount(floor));
+				}
+			}
+		});
+	});
+
 	describe("generateBSPMapPlacement", () => {
 		it("BSPマップが正しいサイズで生成される", () => {
 			const rng = new RNG(42);
@@ -129,13 +199,15 @@ describe("map", () => {
 
 		it("敵の数が正しい", () => {
 			const rng = new RNG(42);
+			const floor = 1;
 			const { enemies } = generateBSPMapPlacement(
 				rng,
 				BSP_MAP_WIDTH,
 				BSP_MAP_HEIGHT,
+				floor,
 			);
 
-			expect(enemies.length).toBe(ENEMY_COUNT);
+			expect(enemies.length).toBe(getEnemyCount(floor));
 		});
 
 		it("特殊タイルの配置数が正しい", () => {
@@ -163,16 +235,17 @@ describe("map", () => {
 		});
 
 		it("複数シードで安定して生成できる", () => {
+			const floor = 1;
 			for (let seed = 0; seed < 20; seed++) {
 				const rng = new RNG(seed);
 				const { map, player, stairs, enemies, specialTiles } =
-					generateBSPMapPlacement(rng, BSP_MAP_WIDTH, BSP_MAP_HEIGHT);
+					generateBSPMapPlacement(rng, BSP_MAP_WIDTH, BSP_MAP_HEIGHT, floor);
 
 				expect(map.length).toBe(BSP_MAP_HEIGHT);
 				expect(map[player.y][player.x].type).toBe("floor");
 				expect(map[stairs.y][stairs.x].type).toBe("stairs");
-				expect(enemies.length).toBe(ENEMY_COUNT);
-				expect(specialTiles.length).toBe(getSpecialTileCount(1));
+				expect(enemies.length).toBe(getEnemyCount(floor));
+				expect(specialTiles.length).toBe(getSpecialTileCount(floor));
 			}
 		});
 	});
