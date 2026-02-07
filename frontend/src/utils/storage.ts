@@ -80,7 +80,7 @@ export function loadGame(): GameState | null {
 				typeof data.defeatedEnemyCount === "number" &&
 				Number.isFinite(data.defeatedEnemyCount) &&
 				data.defeatedEnemyCount >= 0
-					? Math.min(data.defeatedEnemyCount, ENEMY_COUNT)
+					? Math.min(Math.floor(data.defeatedEnemyCount), ENEMY_COUNT)
 					: 0,
 			rewardState: null,
 		};
