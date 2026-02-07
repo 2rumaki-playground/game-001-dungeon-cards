@@ -13,6 +13,7 @@ import {
 	CARD_TYPE_SYMBOL,
 	RARITY_COLORS,
 } from "./cardConstants";
+import { drawRoundedRect } from "./graphicsHelpers";
 import { BUTTON_HEIGHT, DECK_BUTTON_WIDTH } from "./layout";
 
 /** カード行の高さ・間隔 */
@@ -203,10 +204,10 @@ export class DeckViewer {
 
 		// 背景
 		const bg = new Graphics();
-		bg.roundRect(0, 0, width, CARD_ROW_HEIGHT, 6);
-		bg.fill(colors.bg);
-		bg.roundRect(0, 0, width, CARD_ROW_HEIGHT, 6);
-		bg.stroke({ color: colors.border, width: 1 });
+		drawRoundedRect(bg, width, CARD_ROW_HEIGHT, 6, colors.bg, {
+			color: colors.border,
+			width: 1,
+		});
 		row.addChild(bg);
 
 		// レアリティバー
@@ -259,22 +260,14 @@ export class DeckViewer {
 		button.y = y;
 
 		const bg = new Graphics();
-		bg.roundRect(
-			0,
-			0,
+		drawRoundedRect(
+			bg,
 			CLOSE_BUTTON_WIDTH,
 			CLOSE_BUTTON_HEIGHT,
 			CLOSE_BUTTON_RADIUS,
+			0x555555,
+			{ color: 0x777777, width: 1 },
 		);
-		bg.fill(0x555555);
-		bg.roundRect(
-			0,
-			0,
-			CLOSE_BUTTON_WIDTH,
-			CLOSE_BUTTON_HEIGHT,
-			CLOSE_BUTTON_RADIUS,
-		);
-		bg.stroke({ color: 0x777777, width: 1 });
 		button.addChild(bg);
 
 		const text = new Text({
@@ -307,10 +300,14 @@ export class DeckViewer {
 		const button = new Container();
 
 		const bg = new Graphics();
-		bg.roundRect(0, 0, DECK_BUTTON_WIDTH, BUTTON_HEIGHT, DECK_BUTTON_RADIUS);
-		bg.fill(DECK_BUTTON_COLORS.bg);
-		bg.roundRect(0, 0, DECK_BUTTON_WIDTH, BUTTON_HEIGHT, DECK_BUTTON_RADIUS);
-		bg.stroke({ color: DECK_BUTTON_COLORS.border, width: 2 });
+		drawRoundedRect(
+			bg,
+			DECK_BUTTON_WIDTH,
+			BUTTON_HEIGHT,
+			DECK_BUTTON_RADIUS,
+			DECK_BUTTON_COLORS.bg,
+			{ color: DECK_BUTTON_COLORS.border, width: 2 },
+		);
 		button.addChild(bg);
 
 		const text = new Text({

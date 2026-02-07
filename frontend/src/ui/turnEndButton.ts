@@ -5,6 +5,7 @@
 
 import { Container, Graphics, Text } from "pixi.js";
 import type { Turn } from "../types";
+import { drawRoundedRect } from "./graphicsHelpers";
 import { BUTTON_HEIGHT, TURN_END_BUTTON_WIDTH as BUTTON_WIDTH } from "./layout";
 
 /** ボタンサイズ */
@@ -62,10 +63,14 @@ export class TurnEndButton {
 		const colors = enabled ? BUTTON_COLORS.active : BUTTON_COLORS.disabled;
 
 		this.background.clear();
-		this.background.roundRect(0, 0, BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_RADIUS);
-		this.background.fill(colors.bg);
-		this.background.roundRect(0, 0, BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_RADIUS);
-		this.background.stroke({ color: colors.border, width: 2 });
+		drawRoundedRect(
+			this.background,
+			BUTTON_WIDTH,
+			BUTTON_HEIGHT,
+			BUTTON_RADIUS,
+			colors.bg,
+			{ color: colors.border, width: 2 },
+		);
 
 		this.label.style.fill = colors.text;
 
