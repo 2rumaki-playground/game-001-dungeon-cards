@@ -206,6 +206,7 @@ export class RewardScreen {
 		const maskGraphics = new Graphics();
 		maskGraphics.rect(listX, listStartY, listWidth, visibleHeight);
 		maskGraphics.fill(0xffffff);
+		maskGraphics.visible = false;
 		scrollContainer.mask = maskGraphics;
 		this.container.addChild(maskGraphics);
 		this.container.addChild(scrollContainer);
