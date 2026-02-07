@@ -10,6 +10,7 @@ import type { GameContext, UIComponents } from "./gameContext";
 import type { GameState } from "./types";
 import {
 	ActionLogRenderer,
+	DeckViewer,
 	DirectionSelector,
 	FloorBanner,
 	GameOverScreen,
@@ -70,6 +71,12 @@ function initializeUIComponents(
 	turnEndContainer.y = totalHeight - BUTTON_HEIGHT - BUTTON_BOTTOM_MARGIN;
 	app.stage.addChild(turnEndContainer);
 
+	const deckViewer = new DeckViewer();
+	const deckButtonContainer = deckViewer.getButtonContainer();
+	deckButtonContainer.x = mapSize.width - 136 - 88;
+	deckButtonContainer.y = totalHeight - BUTTON_HEIGHT - BUTTON_BOTTOM_MARGIN;
+	app.stage.addChild(deckButtonContainer);
+
 	const actionLogRenderer = new ActionLogRenderer(totalHeight);
 	const logContainer = actionLogRenderer.getContainer();
 	logContainer.x = mapSize.width + LOG_AREA_GAP;
@@ -88,6 +95,8 @@ function initializeUIComponents(
 	directionContainer.y =
 		STATUS_BAR_HEIGHT + mapSize.height + HAND_AREA_TOP_PADDING;
 	app.stage.addChild(directionContainer);
+
+	app.stage.addChild(deckViewer.getContainer());
 
 	const rewardScreen = new RewardScreen();
 	app.stage.addChild(rewardScreen.getContainer());
@@ -108,6 +117,7 @@ function initializeUIComponents(
 		handRenderer,
 		directionSelector,
 		turnEndButton,
+		deckViewer,
 		actionLogRenderer,
 		turnBanner,
 		rewardScreen,

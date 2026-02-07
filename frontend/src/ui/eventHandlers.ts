@@ -280,6 +280,19 @@ export function setupEventHandlers(
 		}
 	});
 
+	// デッキ閲覧UIのコールバック設定
+	ctx.ui.deckViewer.setOnOpen(() => {
+		if (ctx.isAnimating) return;
+		const totalWidth =
+			mapSize.width + LOG_AREA_GAP + ctx.ui.actionLogRenderer.getWidth();
+		ctx.ui.deckViewer.render(ctx.state.deck, totalWidth, totalHeight);
+		ctx.ui.deckViewer.show();
+	});
+
+	ctx.ui.deckViewer.setOnClose(() => {
+		ctx.ui.deckViewer.hide();
+	});
+
 	// ターン終了ボタンのコールバック設定
 	ctx.ui.turnEndButton.setOnEndTurn(async () => {
 		if (ctx.isAnimating) return; // アニメーション中は無効
