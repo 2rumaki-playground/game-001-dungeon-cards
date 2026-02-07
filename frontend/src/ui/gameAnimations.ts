@@ -179,7 +179,7 @@ function showRewardCardSelection(
 }
 
 /**
- * 入れ替えモードのカード除去選択をPromiseで待機する
+ * カード除去選択画面をPromiseで待機する
  */
 function showRemoveCardSelection(
 	ctx: GameContext,
