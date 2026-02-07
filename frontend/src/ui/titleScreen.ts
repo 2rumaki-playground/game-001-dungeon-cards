@@ -3,7 +3,7 @@
  */
 
 import { Container, Graphics, Text } from "pixi.js";
-import { drawRoundedRect } from "./graphicsHelpers";
+import { drawRoundedRect, makeInteractive } from "./graphicsHelpers";
 
 /** ボタン描画定数 */
 const BUTTON_WIDTH = 240;
@@ -133,9 +133,7 @@ export class TitleScreen {
 
 		// インタラクション
 		if (enabled && onClick) {
-			button.eventMode = "static";
-			button.cursor = "pointer";
-			button.on("pointerdown", onClick);
+			makeInteractive(button, onClick);
 		}
 
 		return button;

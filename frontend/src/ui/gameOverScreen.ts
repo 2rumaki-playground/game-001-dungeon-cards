@@ -3,7 +3,7 @@
  */
 
 import { Container, Graphics, Text } from "pixi.js";
-import { drawRoundedRect } from "./graphicsHelpers";
+import { drawRoundedRect, makeInteractive } from "./graphicsHelpers";
 
 /** ボタン描画定数 */
 const BUTTON_WIDTH = 240;
@@ -122,9 +122,7 @@ export class GameOverScreen {
 		button.addChild(text);
 
 		// インタラクション
-		button.eventMode = "static";
-		button.cursor = "pointer";
-		button.on("pointerdown", () => this.onReturnToTitle?.());
+		makeInteractive(button, () => this.onReturnToTitle?.());
 
 		return button;
 	}
