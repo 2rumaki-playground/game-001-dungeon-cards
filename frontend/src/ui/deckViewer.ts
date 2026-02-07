@@ -12,6 +12,7 @@ import {
 	RUSH_MAX_DISTANCE,
 } from "../constants";
 import type { CardType, DeckState, Rarity } from "../types";
+import { BUTTON_HEIGHT, DECK_BUTTON_WIDTH } from "./layout";
 
 /** カード背景色 */
 const CARD_COLORS: Record<CardType, { bg: number; border: number }> = {
@@ -66,8 +67,6 @@ const CLOSE_BUTTON_HEIGHT = 32;
 const CLOSE_BUTTON_RADIUS = 6;
 
 /** デッキ閲覧ボタンサイズ */
-const DECK_BUTTON_WIDTH = 80;
-const DECK_BUTTON_HEIGHT = 36;
 const DECK_BUTTON_RADIUS = 6;
 
 /** ボタン色定義 */
@@ -350,21 +349,9 @@ export class DeckViewer {
 		const button = new Container();
 
 		const bg = new Graphics();
-		bg.roundRect(
-			0,
-			0,
-			DECK_BUTTON_WIDTH,
-			DECK_BUTTON_HEIGHT,
-			DECK_BUTTON_RADIUS,
-		);
+		bg.roundRect(0, 0, DECK_BUTTON_WIDTH, BUTTON_HEIGHT, DECK_BUTTON_RADIUS);
 		bg.fill(DECK_BUTTON_COLORS.bg);
-		bg.roundRect(
-			0,
-			0,
-			DECK_BUTTON_WIDTH,
-			DECK_BUTTON_HEIGHT,
-			DECK_BUTTON_RADIUS,
-		);
+		bg.roundRect(0, 0, DECK_BUTTON_WIDTH, BUTTON_HEIGHT, DECK_BUTTON_RADIUS);
 		bg.stroke({ color: DECK_BUTTON_COLORS.border, width: 2 });
 		button.addChild(bg);
 
@@ -379,7 +366,7 @@ export class DeckViewer {
 		});
 		text.anchor.set(0.5);
 		text.x = DECK_BUTTON_WIDTH / 2;
-		text.y = DECK_BUTTON_HEIGHT / 2;
+		text.y = BUTTON_HEIGHT / 2;
 		button.addChild(text);
 
 		button.eventMode = "static";
