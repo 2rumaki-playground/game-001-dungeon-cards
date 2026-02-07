@@ -287,7 +287,9 @@ export function setupEventHandlers(ctx: GameContext): void {
 			try {
 				await ctx.ui.screenTransition.fadeTransition(() => {
 					updateState(ctx, savedState);
-					relayoutUI(ctx);
+					if (savedState.screen === "game") {
+						relayoutUI(ctx);
+					}
 				});
 			} finally {
 				ctx.isAnimating = false;
