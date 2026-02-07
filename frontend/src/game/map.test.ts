@@ -13,7 +13,34 @@ import {
 	createFixedLayoutMap,
 	generateBSPMapPlacement,
 	generateMapPlacement,
+	isInBounds,
 } from "./map";
+
+describe("isInBounds", () => {
+	const map = createFixedLayoutMap(5, 5);
+
+	it("マップ内の座標はtrueを返す", () => {
+		expect(isInBounds(map, 0, 0)).toBe(true);
+		expect(isInBounds(map, 2, 2)).toBe(true);
+		expect(isInBounds(map, 4, 4)).toBe(true);
+	});
+
+	it("負の座標はfalseを返す", () => {
+		expect(isInBounds(map, -1, 0)).toBe(false);
+		expect(isInBounds(map, 0, -1)).toBe(false);
+		expect(isInBounds(map, -1, -1)).toBe(false);
+	});
+
+	it("マップサイズ以上の座標はfalseを返す", () => {
+		expect(isInBounds(map, 5, 0)).toBe(false);
+		expect(isInBounds(map, 0, 5)).toBe(false);
+		expect(isInBounds(map, 5, 5)).toBe(false);
+	});
+
+	it("境界値（最大インデックス）はtrueを返す", () => {
+		expect(isInBounds(map, 4, 4)).toBe(true);
+	});
+});
 
 describe("map", () => {
 	describe("createFixedLayoutMap", () => {

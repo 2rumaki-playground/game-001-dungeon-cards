@@ -19,6 +19,13 @@ import type { GameMap, Position, Tile, TileType } from "../types";
 import type { RNG } from "../utils/rng";
 import { generateBSPMap, type Room } from "./bsp";
 
+/**
+ * 座標がマップ範囲内かを判定
+ */
+export function isInBounds(map: GameMap, x: number, y: number): boolean {
+	return x >= 0 && y >= 0 && x < map[0].length && y < map.length;
+}
+
 export type MapPlacement = {
 	map: GameMap;
 	player: Position;

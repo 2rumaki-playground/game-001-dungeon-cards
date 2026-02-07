@@ -13,6 +13,7 @@ import type { Direction, GameState } from "../types";
 import { DIRECTION_DELTA } from "../types";
 import { applyDamageToEnemy } from "./combat";
 import { playCard } from "./deck";
+import { isInBounds } from "./map";
 import { addActionLog, setDeck, updatePlayer } from "./state";
 import { applyTileEffect, type SpecialTileType } from "./tileEffect";
 
@@ -25,7 +26,7 @@ function canMove(state: GameState, direction: Direction): boolean {
 	const ny = state.player.position.y + delta.y;
 
 	// マップ範囲外
-	if (nx < 0 || ny < 0 || nx >= state.map[0].length || ny >= state.map.length) {
+	if (!isInBounds(state.map, nx, ny)) {
 		return false;
 	}
 
@@ -133,7 +134,7 @@ function canAttack(
 	const ny = state.player.position.y + delta.y;
 
 	// マップ範囲外
-	if (nx < 0 || ny < 0 || nx >= state.map[0].length || ny >= state.map.length) {
+	if (!isInBounds(state.map, nx, ny)) {
 		return { hit: false };
 	}
 

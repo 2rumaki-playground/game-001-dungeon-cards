@@ -7,6 +7,7 @@ import { ENEMY_PARAMS } from "../constants";
 import type { Direction, Enemy, GameState, Position } from "../types";
 import { DIRECTION_DELTA } from "../types";
 import { applyDamageToPlayer, checkGameOver, isDefeated } from "./combat";
+import { isInBounds } from "./map";
 import { addActionLog, setEnemies } from "./state";
 
 /**
@@ -42,7 +43,7 @@ function canEnemyMoveTo(
 	nx: number,
 	ny: number,
 ): boolean {
-	if (nx < 0 || ny < 0 || nx >= state.map[0].length || ny >= state.map.length) {
+	if (!isInBounds(state.map, nx, ny)) {
 		return false;
 	}
 
