@@ -88,19 +88,14 @@ export function generateBSPMapPlacement(
 		return { map, player, stairs, enemies };
 	}
 
-	throw new Error(
-		`BSP map generation failed after ${BSP_MAX_RETRIES} attempts`,
-	);
+	// リトライ上限到達時は固定レイアウトにフォールバック
+	return generateFixedMapPlacement(rng);
 }
 
 /**
- * マップ生成（モードに応じて固定/BSPを切り替え）
+ * 固定レイアウトマップでの配置生成
  */
-export function generateMapPlacement(rng: RNG): MapPlacement {
-	if (MAP_GENERATION_MODE === "bsp") {
-		return generateBSPMapPlacement(rng, BSP_MAP_WIDTH, BSP_MAP_HEIGHT);
-	}
-
+function generateFixedMapPlacement(rng: RNG): MapPlacement {
 	const map = createFixedLayoutMap();
 	const floorPositions = getFloorPositions(map);
 	const requiredCount = 1 + STAIRS_COUNT + ENEMY_COUNT;
@@ -120,4 +115,15 @@ export function generateMapPlacement(rng: RNG): MapPlacement {
 	map[stairs.y][stairs.x] = createStairsTile();
 
 	return { map, player, stairs, enemies };
+}
+
+/**
+ * マップ生成（モードに応じて固定/BSPを切り替え）
+ */
+export function generateMapPlacement(rng: RNG): MapPlacement {
+	if (MAP_GENERATION_MODE === "bsp") {
+		return generateBSPMapPlacement(rng, BSP_MAP_WIDTH, BSP_MAP_HEIGHT);
+	}
+
+	return generateFixedMapPlacement(rng);
 }

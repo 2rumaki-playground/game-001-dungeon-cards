@@ -121,6 +121,17 @@ describe("map", () => {
 			expect(enemies.length).toBe(ENEMY_COUNT);
 		});
 
+		it("リトライ上限到達時は固定マップにフォールバックする", () => {
+			const rng = new RNG(42);
+			// 小さすぎるサイズでBSP生成が必ず失敗する→固定マップにフォールバック
+			const result = generateBSPMapPlacement(rng, 3, 3);
+
+			expect(result.map.length).toBe(MAP_HEIGHT);
+			for (const row of result.map) {
+				expect(row.length).toBe(MAP_WIDTH);
+			}
+		});
+
 		it("複数シードで安定して生成できる", () => {
 			for (let seed = 0; seed < 20; seed++) {
 				const rng = new RNG(seed);
