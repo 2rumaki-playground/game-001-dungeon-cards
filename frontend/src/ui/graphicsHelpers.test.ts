@@ -1,11 +1,19 @@
 import type { Container, FederatedPointerEvent, Graphics } from "pixi.js";
 import { describe, expect, it, vi } from "vitest";
-import { drawRoundedRect, makeInteractive } from "./graphicsHelpers";
+import {
+	createOverlay,
+	drawRoundedRect,
+	makeInteractive,
+} from "./graphicsHelpers";
 
 function createMockGraphics() {
 	const calls: { method: string; args: unknown[] }[] = [];
 	return {
 		_calls: calls,
+		eventMode: "passive" as string,
+		rect: vi.fn((...args: unknown[]) => {
+			calls.push({ method: "rect", args });
+		}),
 		roundRect: vi.fn((...args: unknown[]) => {
 			calls.push({ method: "roundRect", args });
 		}),
@@ -15,7 +23,11 @@ function createMockGraphics() {
 		stroke: vi.fn((...args: unknown[]) => {
 			calls.push({ method: "stroke", args });
 		}),
-	} as unknown as Graphics & { _calls: { method: string; args: unknown[] }[] };
+	} as unknown as Graphics & {
+		_calls: { method: string; args: unknown[] }[];
+		eventMode: string;
+		rect: ReturnType<typeof vi.fn>;
+	};
 }
 
 describe("drawRoundedRect", () => {
@@ -53,6 +65,32 @@ describe("drawRoundedRect", () => {
 			{ method: "roundRect", args: [0, 0, 200, 100, 6] },
 			{ method: "stroke", args: [{ color: 0x445566, width: 1 }] },
 		]);
+	});
+});
+
+describe("createOverlay", () => {
+	it("指定サイズの矩形を描画する", () => {
+		const g = createMockGraphics();
+
+		createOverlay(g, 800, 600);
+
+		expect(g.rect).toHaveBeenCalledWith(0, 0, 800, 600);
+	});
+
+	it("半透明の黒で塗りつぶす", () => {
+		const g = createMockGraphics();
+
+		createOverlay(g, 800, 600);
+
+		expect(g.fill).toHaveBeenCalledWith({ color: 0x000000, alpha: 0.7 });
+	});
+
+	it("eventModeをstaticに設定する", () => {
+		const g = createMockGraphics();
+
+		createOverlay(g, 800, 600);
+
+		expect(g.eventMode).toBe("static");
 	});
 });
 
