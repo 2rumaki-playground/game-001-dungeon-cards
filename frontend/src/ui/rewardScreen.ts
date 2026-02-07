@@ -15,7 +15,7 @@ import type { Card, CardType, Rarity } from "../types";
 
 /** カードサイズ */
 const REWARD_CARD_WIDTH = 120;
-const REWARD_CARD_HEIGHT = 160;
+const REWARD_CARD_HEIGHT = 190;
 const REWARD_CARD_RADIUS = 8;
 const REWARD_CARD_GAP = 20;
 
