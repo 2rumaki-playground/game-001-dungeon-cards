@@ -23,6 +23,21 @@ import { applyState, render } from "./gameRenderer";
 import { HAND_AREA_HEIGHT } from "./layout";
 
 /**
+ * 画面サイズを計算する
+ */
+function getScreenSize(ctx: GameContext): {
+	width: number;
+	height: number;
+} {
+	const mapPixelSize = getMapPixelSize();
+	return {
+		width:
+			mapPixelSize.width + LOG_AREA_GAP + ctx.ui.actionLogRenderer.getWidth(),
+		height: mapPixelSize.height + HAND_AREA_HEIGHT + STATUS_BAR_HEIGHT,
+	};
+}
+
+/**
  * ゲーム状態を更新してプレイヤー移動アニメーション付きで再描画
  */
 export async function updateStateWithMoveAnimation(
@@ -83,11 +98,7 @@ async function executeRewardFlow(
 	applyState(ctx, current);
 	render(ctx);
 
-	const mapPixelSize = getMapPixelSize();
-	const screenWidth =
-		mapPixelSize.width + LOG_AREA_GAP + ctx.ui.actionLogRenderer.getWidth();
-	const screenHeight =
-		mapPixelSize.height + HAND_AREA_HEIGHT + STATUS_BAR_HEIGHT;
+	const { width: screenWidth, height: screenHeight } = getScreenSize(ctx);
 
 	const needsReplacement = getTotalDeckSize(current.deck) >= DECK_MAX_SIZE;
 
@@ -250,12 +261,7 @@ export async function updateStateWithStairsAnimation(
 
 		applyState(ctx, stairsState);
 
-		// 画面サイズ計算（除去イベントで使用）
-		const mapPixelSize = getMapPixelSize();
-		const screenWidth =
-			mapPixelSize.width + LOG_AREA_GAP + ctx.ui.actionLogRenderer.getWidth();
-		const screenHeight =
-			mapPixelSize.height + HAND_AREA_HEIGHT + STATUS_BAR_HEIGHT;
+		const { width: screenWidth, height: screenHeight } = getScreenSize(ctx);
 
 		// 2. カード除去イベント（報酬フローの前）
 		const afterRemoval = await executeCardRemovalEvent(
@@ -347,12 +353,7 @@ export async function animateRushWithStairs(
 
 		applyState(ctx, stairsState);
 
-		// 画面サイズ計算（除去イベントで使用）
-		const mapPixelSize = getMapPixelSize();
-		const screenWidth =
-			mapPixelSize.width + LOG_AREA_GAP + ctx.ui.actionLogRenderer.getWidth();
-		const screenHeight =
-			mapPixelSize.height + HAND_AREA_HEIGHT + STATUS_BAR_HEIGHT;
+		const { width: screenWidth, height: screenHeight } = getScreenSize(ctx);
 
 		// 3. カード除去イベント（報酬フローの前）
 		const afterRemoval = await executeCardRemovalEvent(
