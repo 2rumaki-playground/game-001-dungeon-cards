@@ -42,10 +42,11 @@ export class ScreenTransition {
 	 * 画面サイズ変更に対応
 	 */
 	resize(screenWidth: number, screenHeight: number): void {
+		const prevAlpha = this.overlay.alpha;
 		this.overlay.clear();
 		this.overlay.rect(0, 0, screenWidth, screenHeight);
 		this.overlay.fill({ color: OVERLAY_COLOR });
-		this.overlay.alpha = 0;
+		this.overlay.alpha = prevAlpha;
 	}
 
 	/**
