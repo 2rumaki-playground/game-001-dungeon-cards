@@ -5,7 +5,7 @@
 
 import { Container, Graphics, Text } from "pixi.js";
 import { CARD_COST, CARD_RARITY } from "../constants";
-import type { Card, CardType } from "../types";
+import type { Card, CardType, Rarity } from "../types";
 import {
 	CARD_COLORS,
 	CARD_EFFECT_TEXT,
