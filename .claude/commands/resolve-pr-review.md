@@ -71,10 +71,10 @@ gh pr ready --undo <番号>
 
 コミット前に以下を実行し、問題があれば修正する:
 
-1. `pnpm format` — フォーマット適用
-2. `pnpm lint` — リントチェック
-3. `pnpm build` — TypeScriptビルド確認
-4. `pnpm test:run` — ユニットテスト全通過を確認
+1. `cd frontend && pnpm format` — フォーマット適用
+2. `cd frontend && pnpm lint` — リントチェック
+3. `cd frontend && pnpm build` — TypeScriptビルド確認
+4. `cd frontend && pnpm test:run` — ユニットテスト全通過を確認
 
 #### 5c. コミット・push
 
