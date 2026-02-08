@@ -154,11 +154,11 @@ describe("state", () => {
 				{ x: 5, y: 5 },
 				{ x: 1, y: 5 },
 			];
-			// 階層7: normal×1 + heavy×1 + scout×1 → 残り3体はnormal
+			// 階層7: heavy×1 + scout×2 → 残り3体はnormal
 			const enemies = createEnemiesForFloor(positions6, 7);
 			expect(enemies).toHaveLength(6);
-			expect(enemies[0].type).toBe("normal");
-			expect(enemies[1].type).toBe("heavy");
+			expect(enemies[0].type).toBe("heavy");
+			expect(enemies[1].type).toBe("scout");
 			expect(enemies[2].type).toBe("scout");
 			expect(enemies[3].type).toBe("normal");
 			expect(enemies[4].type).toBe("normal");

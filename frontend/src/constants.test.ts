@@ -111,10 +111,20 @@ describe("constants", () => {
 			expect(getMapSize(6)).toEqual({ width: 13, height: 13 });
 		});
 
-		it("階層7+: 15x15", () => {
+		it("階層7-9: 15x15", () => {
 			expect(getMapSize(7)).toEqual({ width: 15, height: 15 });
-			expect(getMapSize(10)).toEqual({ width: 15, height: 15 });
-			expect(getMapSize(99)).toEqual({ width: 15, height: 15 });
+			expect(getMapSize(9)).toEqual({ width: 15, height: 15 });
+		});
+
+		it("階層10-14: 17x17", () => {
+			expect(getMapSize(10)).toEqual({ width: 17, height: 17 });
+			expect(getMapSize(14)).toEqual({ width: 17, height: 17 });
+		});
+
+		it("階層15+: 19x19", () => {
+			expect(getMapSize(15)).toEqual({ width: 19, height: 19 });
+			expect(getMapSize(20)).toEqual({ width: 19, height: 19 });
+			expect(getMapSize(99)).toEqual({ width: 19, height: 19 });
 		});
 	});
 
@@ -134,9 +144,20 @@ describe("constants", () => {
 			expect(getEnemyCount(6)).toBe(5);
 		});
 
-		it("階層7+: 6体", () => {
+		it("階層7-9: 6体", () => {
 			expect(getEnemyCount(7)).toBe(6);
-			expect(getEnemyCount(99)).toBe(6);
+			expect(getEnemyCount(9)).toBe(6);
+		});
+
+		it("階層10-14: 7体", () => {
+			expect(getEnemyCount(10)).toBe(7);
+			expect(getEnemyCount(14)).toBe(7);
+		});
+
+		it("階層15+: 8体", () => {
+			expect(getEnemyCount(15)).toBe(8);
+			expect(getEnemyCount(20)).toBe(8);
+			expect(getEnemyCount(99)).toBe(8);
 		});
 	});
 
@@ -175,7 +196,7 @@ describe("constants", () => {
 			});
 		});
 
-		it("階層5-6: normal×1 + heavy×1 + miniboss×1", () => {
+		it("階層5: miniboss×1 + normal×1 + heavy×1（中ボス階層）", () => {
 			expect(getEnemyComposition(5)).toEqual({
 				normal: 1,
 				heavy: 1,
@@ -183,33 +204,36 @@ describe("constants", () => {
 				miniboss: 1,
 				boss: 0,
 			});
+		});
+
+		it("階層6: normal×1 + heavy×1 + scout×1", () => {
 			expect(getEnemyComposition(6)).toEqual({
 				normal: 1,
 				heavy: 1,
-				scout: 0,
-				miniboss: 1,
+				scout: 1,
+				miniboss: 0,
 				boss: 0,
 			});
 		});
 
-		it("階層7-8: normal×1 + heavy×1 + scout×1", () => {
+		it("階層7-8: heavy×1 + scout×2", () => {
 			expect(getEnemyComposition(7)).toEqual({
-				normal: 1,
+				normal: 0,
 				heavy: 1,
-				scout: 1,
+				scout: 2,
 				miniboss: 0,
 				boss: 0,
 			});
 			expect(getEnemyComposition(8)).toEqual({
-				normal: 1,
+				normal: 0,
 				heavy: 1,
-				scout: 1,
+				scout: 2,
 				miniboss: 0,
 				boss: 0,
 			});
 		});
 
-		it("階層9+: heavy×1 + scout×2", () => {
+		it("階層9: heavy×1 + scout×2", () => {
 			expect(getEnemyComposition(9)).toEqual({
 				normal: 0,
 				heavy: 1,
@@ -217,16 +241,39 @@ describe("constants", () => {
 				miniboss: 0,
 				boss: 0,
 			});
+		});
+
+		it("階層10: boss×1 + heavy×1 + scout×1（大ボス階層）", () => {
 			expect(getEnemyComposition(10)).toEqual({
 				normal: 0,
 				heavy: 1,
-				scout: 2,
+				scout: 1,
 				miniboss: 0,
+				boss: 1,
+			});
+		});
+
+		it("階層15: miniboss×1 + heavy×1 + scout×1（中ボス階層）", () => {
+			expect(getEnemyComposition(15)).toEqual({
+				normal: 0,
+				heavy: 1,
+				scout: 1,
+				miniboss: 1,
 				boss: 0,
 			});
 		});
 
-		it("全エントリの合計がENEMY_COUNTと一致", () => {
+		it("階層20: boss×1 + heavy×1 + scout×1（大ボス階層）", () => {
+			expect(getEnemyComposition(20)).toEqual({
+				normal: 0,
+				heavy: 1,
+				scout: 1,
+				miniboss: 0,
+				boss: 1,
+			});
+		});
+
+		it("全エントリの合計が3", () => {
 			for (const entry of ENEMY_COMPOSITION_TABLE) {
 				const { normal, heavy, scout, miniboss, boss } = entry.composition;
 				expect(normal + heavy + scout + miniboss + boss).toBe(ENEMY_COUNT);
