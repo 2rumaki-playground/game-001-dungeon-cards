@@ -209,9 +209,12 @@ export function executeEnemyTurn(state: GameState): EnemyTurnResult {
 			}
 		}
 
+		// 激昂後の敵状態を再取得（enrageBonus等に反映するため）
+		const currentEnemy = next.enemies[idx];
+
 		// 予告済みスキルの発動
-		if (enemy.pendingSkill) {
-			const skillResult = executePendingSkill(next, enemy);
+		if (currentEnemy.pendingSkill) {
+			const skillResult = executePendingSkill(next, currentEnemy);
 			next = skillResult.state;
 			totalDamage += skillResult.damage;
 
@@ -220,32 +223,32 @@ export function executeEnemyTurn(state: GameState): EnemyTurnResult {
 			continue;
 		}
 
-		if (isAdjacent(enemy.position, next.player.position)) {
+		if (isAdjacent(currentEnemy.position, next.player.position)) {
 			// 攻撃（激昂時はボーナスダメージ）
-			const enrageBonus = enemy.enraged ? BOSS_SKILL.enrageBonusDamage : 0;
+			const enrageBonus = currentEnemy.enraged
+				? BOSS_SKILL.enrageBonusDamage
+				: 0;
 			const damage = params.attackDamage + enrageBonus;
 			next = applyDamageToPlayer(next, damage);
 			next = addActionLog(next, "敵が攻撃した");
 			totalDamage += damage;
 		} else {
 			// 移動
-			next = moveEnemyByType(next, enemy, params.moveDistance);
+			next = moveEnemyByType(next, currentEnemy, params.moveDistance);
 
-			// ボス/ミニボス: スキル予告判定
-			const currentEnemy = next.enemies.find((e) => e.id === enemy.id);
-			if (currentEnemy) {
-				if (currentEnemy.type === "miniboss") {
-					const updated = decideMinibossSkill(currentEnemy, rng);
-					if (updated.pendingSkill) {
-						next = updateEnemy(next, enemy.id, () => updated);
-						next = addActionLog(next, "ミニボスが力を溜めている…");
-					}
-				} else if (currentEnemy.type === "boss") {
-					const updated = decideBossSkill(currentEnemy, rng);
-					if (updated.pendingSkill) {
-						next = updateEnemy(next, enemy.id, () => updated);
-						next = addActionLog(next, "ボスが大技を構えている…");
-					}
+			// ボス/ミニボス: スキル予告判定（移動後の敵をインデックスで取得）
+			const movedEnemy = next.enemies[idx];
+			if (movedEnemy.type === "miniboss") {
+				const updated = decideMinibossSkill(movedEnemy, rng);
+				if (updated.pendingSkill) {
+					next = updateEnemy(next, movedEnemy.id, () => updated);
+					next = addActionLog(next, "ミニボスが力を溜めている…");
+				}
+			} else if (movedEnemy.type === "boss") {
+				const updated = decideBossSkill(movedEnemy, rng);
+				if (updated.pendingSkill) {
+					next = updateEnemy(next, movedEnemy.id, () => updated);
+					next = addActionLog(next, "ボスが大技を構えている…");
 				}
 			}
 		}
