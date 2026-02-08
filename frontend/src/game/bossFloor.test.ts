@@ -118,23 +118,24 @@ describe("難易度テーブル拡張（10F〜20F）", () => {
 			}
 		});
 
-		it("難易度が段階的に上昇する（非ボス階層の強敵割合が増加）", () => {
-			// 序盤（1-2F）vs 中盤（7-8F）vs 終盤（17-18F）の強敵比率を比較
+		it("難易度が段階的に上昇する（総攻撃力が単調増加）", () => {
+			// 序盤（1-2F）vs 中盤（7-8F）vs 終盤（17-18F）の総攻撃力を比較
 			const earlyComp = getEnemyComposition(1);
 			const midComp = getEnemyComposition(7);
 			const lateComp = getEnemyComposition(17);
 
-			const strongRatio = (c: EnemyComposition) => {
-				const strongCount = c.heavy + c.scout + c.miniboss + c.boss;
-				const total = c.normal + c.heavy + c.scout + c.miniboss + c.boss;
-				return total === 0 ? 0 : strongCount / total;
-			};
+			const totalAttackPower = (c: EnemyComposition) =>
+				c.normal * ENEMY_PARAMS.normal.attackDamage +
+				c.heavy * ENEMY_PARAMS.heavy.attackDamage +
+				c.scout * ENEMY_PARAMS.scout.attackDamage +
+				c.miniboss * ENEMY_PARAMS.miniboss.attackDamage +
+				c.boss * ENEMY_PARAMS.boss.attackDamage;
 
-			expect(strongRatio(midComp)).toBeGreaterThanOrEqual(
-				strongRatio(earlyComp),
+			expect(totalAttackPower(midComp)).toBeGreaterThanOrEqual(
+				totalAttackPower(earlyComp),
 			);
-			expect(strongRatio(lateComp)).toBeGreaterThanOrEqual(
-				strongRatio(midComp),
+			expect(totalAttackPower(lateComp)).toBeGreaterThanOrEqual(
+				totalAttackPower(midComp),
 			);
 		});
 	});
