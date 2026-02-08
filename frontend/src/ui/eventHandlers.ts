@@ -175,17 +175,27 @@ async function handleRushCardExecution(
 		await updateStateWithBumpAnimation(ctx, result.state, direction);
 	} else if (result.reachedStairs && result.movedDistance === 1) {
 		// 1マス目が階段: 階段アニメーション
+		// 突進パーティクル（移動軌跡のスピードライン）
+		const delta = DIRECTION_DELTA[direction];
+		const moveAngle = Math.atan2(delta.y, delta.x);
 		const stairsPos = {
-			x: prevPosition.x + DIRECTION_DELTA[direction].x,
-			y: prevPosition.y + DIRECTION_DELTA[direction].y,
+			x: prevPosition.x + delta.x,
+			y: prevPosition.y + delta.y,
 		};
+		const rushCenter = gridToCenterPixel(stairsPos);
+		ctx.ui.particleSystem.emit(createRushParticleConfig(rushCenter, moveAngle));
 		await updateStateWithStairsAnimation(ctx, result.state, stairsPos);
 	} else if (result.reachedStairs && result.intermediatePosition) {
 		// 2マス目が階段: 2段階移動→階層遷移アニメーション
+		// 突進パーティクル（移動軌跡のスピードライン）
+		const delta = DIRECTION_DELTA[direction];
+		const moveAngle = Math.atan2(delta.y, delta.x);
 		const stairsPos = {
-			x: result.intermediatePosition.x + DIRECTION_DELTA[direction].x,
-			y: result.intermediatePosition.y + DIRECTION_DELTA[direction].y,
+			x: result.intermediatePosition.x + delta.x,
+			y: result.intermediatePosition.y + delta.y,
 		};
+		const rushCenter = gridToCenterPixel(stairsPos);
+		ctx.ui.particleSystem.emit(createRushParticleConfig(rushCenter, moveAngle));
 		await animateRushWithStairs(
 			ctx,
 			result.state,

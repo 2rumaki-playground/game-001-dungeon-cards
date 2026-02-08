@@ -6,6 +6,7 @@ import {
 	DECK_MAX_SIZE,
 	LOG_AREA_GAP,
 	PLAYER_ATTACK_DAMAGE,
+	PLAYER_STRONG_ATTACK_DAMAGE,
 	STATUS_BAR_HEIGHT,
 } from "../constants";
 import {
@@ -456,8 +457,12 @@ export async function updateStateWithAttackAnimation(
 		render(ctx, false, false, defeated);
 
 		// ヒットエフェクト（AP変化があればバーアニメーションも並列実行）
+		const damage =
+			cardType === "strong_attack"
+				? PLAYER_STRONG_ATTACK_DAMAGE
+				: PLAYER_ATTACK_DAMAGE;
 		const hitAnimations: Promise<void>[] = [
-			ctx.ui.mapRenderer.animateAttackHit(hitEnemyId, PLAYER_ATTACK_DAMAGE),
+			ctx.ui.mapRenderer.animateAttackHit(hitEnemyId, damage),
 		];
 		if (prevAp !== newState.player.ap) {
 			hitAnimations.push(
