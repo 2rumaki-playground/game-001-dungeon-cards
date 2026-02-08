@@ -332,23 +332,22 @@ describe("executePendingSkill", () => {
 		});
 	});
 
-	describe("enrage", () => {
-		it("激昂スキルは即座に発動し攻撃力を強化する", () => {
+	describe("想定外のスキルタイプ", () => {
+		it("未知のスキルタイプはpendingSkillをクリアして未実行扱い", () => {
 			const enemy: Enemy = {
 				id: "enemy-1",
 				type: "boss",
 				position: { x: 4, y: 3 },
 				hp: 5,
 				maxHp: ENEMY_PARAMS.boss.hp,
-				pendingSkill: { type: "enrage" },
+				pendingSkill: { type: "unknown" as never },
 			};
 			const state = createTestState({ enemies: [enemy] });
 			const result = executePendingSkill(state, enemy);
 
 			const updatedEnemy = result.state.enemies.find((e) => e.id === "enemy-1");
-			expect(updatedEnemy?.enraged).toBe(true);
 			expect(updatedEnemy?.pendingSkill).toBeUndefined();
-			expect(result.executed).toBe(true);
+			expect(result.executed).toBe(false);
 			expect(result.damage).toBe(0);
 		});
 	});

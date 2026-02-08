@@ -84,8 +84,14 @@ export function executePendingSkill(
 			return executePowerStrike(state, enemy);
 		case "area_attack":
 			return executeAreaAttack(state, enemy);
-		case "enrage":
-			return executeEnrage(state, enemy);
+		default: {
+			// 想定外のスキルtypeの場合はpendingSkillをクリアして未実行扱い
+			const next = updateEnemy(state, enemy.id, (e) => ({
+				...e,
+				pendingSkill: undefined,
+			}));
+			return { state: next, damage: 0, executed: false };
+		}
 	}
 }
 
@@ -135,23 +141,4 @@ function executeAreaAttack(state: GameState, enemy: Enemy): SkillResult {
 	next = addActionLog(next, "ボスが範囲攻撃を放った");
 
 	return { state: next, damage, executed: true };
-}
-
-/**
- * 激昂の実行
- *
- * ボスにenraged状態を付与する（ダメージなし）
- */
-function executeEnrage(state: GameState, enemy: Enemy): SkillResult {
-	const next = updateEnemy(state, enemy.id, (e) => ({
-		...e,
-		enraged: true,
-		pendingSkill: undefined,
-	}));
-
-	return {
-		state: addActionLog(next, "ボスが激昂した"),
-		damage: 0,
-		executed: true,
-	};
 }
