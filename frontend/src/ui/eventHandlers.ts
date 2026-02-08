@@ -2,7 +2,6 @@
  * イベントハンドラ設定
  */
 
-import { TRAP_DAMAGE, TREASURE_HEAL } from "../constants";
 import {
 	endPlayerTurn,
 	executeAttack,
@@ -38,20 +37,6 @@ import {
 import { relayoutUI } from "./relayout";
 
 /**
- * タイル効果に対応するポップアップの数値を取得
- */
-function getTileEffectAmount(tileType: SpecialTileType): number {
-	switch (tileType) {
-		case "trap":
-			return TRAP_DAMAGE;
-		case "treasure":
-			return TREASURE_HEAL;
-		case "rest_area":
-			return TREASURE_HEAL;
-	}
-}
-
-/**
  * タイル効果ポップアップを表示
  */
 async function showTileEffectPopup(
@@ -60,11 +45,15 @@ async function showTileEffectPopup(
 	hpBefore: number,
 	hpAfter: number,
 ): Promise<void> {
-	const amount =
-		tileType === "rest_area"
-			? hpAfter - hpBefore
-			: getTileEffectAmount(tileType);
-	if (amount <= 0 && tileType !== "trap") return;
+	let amount: number;
+
+	if (tileType === "trap") {
+		amount = hpBefore - hpAfter;
+	} else {
+		amount = hpAfter - hpBefore;
+	}
+
+	if (amount <= 0) return;
 	await ctx.ui.mapRenderer.animateTileEffectPopup(tileType, amount);
 }
 
