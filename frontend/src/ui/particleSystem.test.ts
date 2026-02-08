@@ -117,4 +117,37 @@ describe("ParticleSystem", () => {
 		system.clear();
 		expect(system.getContainer().children).toHaveLength(0);
 	});
+
+	it("clear()でTickerコールバックが解除される", () => {
+		tickerCallbacks = [];
+		const system = new ParticleSystem();
+		system.emit(baseConfig);
+		system.emit(baseConfig);
+
+		expect(tickerCallbacks).toHaveLength(2);
+
+		system.clear();
+		expect(tickerCallbacks).toHaveLength(0);
+	});
+
+	it("clear()で未完了のemit() Promiseがresolveされる", async () => {
+		tickerCallbacks = [];
+		const system = new ParticleSystem();
+		const p1 = system.emit(baseConfig);
+		const p2 = system.emit(baseConfig);
+
+		system.clear();
+
+		await Promise.all([p1, p2]);
+	});
+
+	it("count=0のemit()は即座にresolveする", async () => {
+		tickerCallbacks = [];
+		const system = new ParticleSystem();
+		const config: ParticleConfig = { ...baseConfig, count: 0 };
+		await system.emit(config);
+
+		expect(tickerCallbacks).toHaveLength(0);
+		expect(system.getContainer().children).toHaveLength(0);
+	});
 });
