@@ -158,7 +158,9 @@ gh api repos/{owner}/{repo}/pulls/<番号>/requested_reviewers \
   -X POST --raw-field 'reviewers[]=copilot-pull-request-reviewer[bot]'
 ```
 
-**注意**: botアカウント名は `copilot-pull-request-reviewer[bot]`（`[bot]` サフィックスが必要）。
+**注意**:
+- botアカウント名は `copilot-pull-request-reviewer[bot]`（`[bot]` サフィックスが必要）
+- 既にreviewerとしてrequestされている場合、APIが `Validation Failed` エラーを返すことがある。その場合はエラーを無視して続行する
 
 ### 7. PRをOPENに戻す
 
