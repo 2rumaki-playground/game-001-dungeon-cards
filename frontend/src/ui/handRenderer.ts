@@ -367,27 +367,33 @@ export class HandRenderer {
 		// インタラクション
 		if (enabled) {
 			makeInteractive(cardContainer, (event) => {
+				// 二重クリック防止：アニメーション中は手札全体を非インタラクティブ化
+				this.container.eventMode = "auto";
+
+				// 方向判定はアニメーション前に計算して保持
+				let direction: Direction | undefined;
+				if (
+					card.type === "move" ||
+					card.type === "attack" ||
+					card.type === "strong_attack" ||
+					card.type === "rush"
+				) {
+					const cardGlobalPos = cardContainer.getGlobalPosition();
+					direction = getDirectionFromClickPosition(
+						event.global.x - cardGlobalPos.x,
+						event.global.y - cardGlobalPos.y,
+					);
+				}
+
 				const invokeCallback = () => {
-					if (
-						card.type === "move" ||
-						card.type === "attack" ||
-						card.type === "strong_attack" ||
-						card.type === "rush"
-					) {
-						const direction = getDirectionFromClickPosition(
-							event.global.x - cardContainer.getGlobalPosition().x,
-							event.global.y - cardContainer.getGlobalPosition().y,
-						);
+					if (direction !== undefined) {
 						this.onCardSelect?.(card, direction);
 					} else {
 						this.onCardSelect?.(card);
 					}
 				};
 
-				this.animateCardConsume(cardContainer, card.type).then(
-					invokeCallback,
-					invokeCallback,
-				);
+				this.animateCardConsume(cardContainer, card.type).then(invokeCallback);
 			});
 
 			cardContainer.on("pointerover", () => {
