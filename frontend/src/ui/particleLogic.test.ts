@@ -29,7 +29,7 @@ describe("calcEmitVelocity", () => {
 		it("random=0のとき角度0（右方向）に発射", () => {
 			const pattern: EmitPattern = { type: "radial" };
 			const speed = { min: 0.1, max: 0.1 };
-			// 1回目: speed用(0.5 → 0.1), 2回目: angle用(0 → 0)
+			// 1回目: speed用(0 → 0.1), 2回目: angle用(0 → 0)
 			const v = calcEmitVelocity(pattern, speed, fixedRandom(0));
 			expect(v.x).toBeCloseTo(0.1);
 			expect(v.y).toBeCloseTo(0);
