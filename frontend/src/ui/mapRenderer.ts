@@ -5,6 +5,7 @@
 
 import { Container, Graphics, Text, Ticker } from "pixi.js";
 import { CELL_SIZE, COLORS } from "../constants";
+import type { SpecialTileType } from "../game/tileEffect";
 import type {
 	Direction,
 	Enemy,
@@ -522,7 +523,7 @@ export class MapRenderer {
 	 * @param amount 数値（ダメージ量または回復量）
 	 */
 	async animateTileEffectPopup(
-		tileType: "trap" | "treasure" | "rest_area",
+		tileType: SpecialTileType,
 		amount: number,
 	): Promise<void> {
 		const popupType: PopupType = tileType === "trap" ? "trap_damage" : "heal";
