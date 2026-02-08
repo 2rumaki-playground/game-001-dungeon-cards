@@ -11,6 +11,7 @@ import {
 	playCard,
 	resetCardIdCounter,
 	reshuffleDeck,
+	willReshuffle,
 } from "./deck";
 
 describe("deck", () => {
@@ -207,6 +208,53 @@ describe("deck", () => {
 				discardPile: [],
 			};
 			expect(getAllCards(deck)).toHaveLength(0);
+		});
+	});
+
+	describe("willReshuffle", () => {
+		it("山札がドロー枚数より少なく捨て札がある場合はtrueを返す", () => {
+			const deck = {
+				drawPile: [{ id: "card-1", type: "move" as const }],
+				hand: [],
+				discardPile: [
+					{ id: "card-2", type: "attack" as const },
+					{ id: "card-3", type: "wait" as const },
+				],
+			};
+			expect(willReshuffle(deck)).toBe(true);
+		});
+
+		it("山札がドロー枚数以上の場合はfalseを返す", () => {
+			const deck = {
+				drawPile: Array.from({ length: HAND_LIMIT }, (_, i) => ({
+					id: `card-${i + 1}`,
+					type: "move" as const,
+				})),
+				hand: [],
+				discardPile: [],
+			};
+			expect(willReshuffle(deck)).toBe(false);
+		});
+
+		it("捨て札が空の場合はfalseを返す", () => {
+			const deck = {
+				drawPile: [{ id: "card-1", type: "move" as const }],
+				hand: [],
+				discardPile: [],
+			};
+			expect(willReshuffle(deck)).toBe(false);
+		});
+
+		it("手札が上限の場合はfalseを返す", () => {
+			const deck = {
+				drawPile: [],
+				hand: Array.from({ length: HAND_LIMIT }, (_, i) => ({
+					id: `card-${i + 1}`,
+					type: "move" as const,
+				})),
+				discardPile: [{ id: "card-99", type: "attack" as const }],
+			};
+			expect(willReshuffle(deck)).toBe(false);
 		});
 	});
 
