@@ -456,10 +456,16 @@ export class RewardScreen {
 
 		makeInteractive(removeBtn, async (e) => {
 			e.stopPropagation?.();
-			if (this.particleSystem) {
-				await this.animateCardRemove(item, width);
+			removeBtn.eventMode = "none";
+			try {
+				if (this.particleSystem) {
+					await this.animateCardRemove(item, width);
+				}
+				this.onRemoveCard?.(card.id);
+			} catch (error) {
+				console.error("カード除去処理中にエラーが発生しました", error);
+				removeBtn.eventMode = "static";
 			}
-			this.onRemoveCard?.(card.id);
 		});
 		item.addChild(removeBtn);
 
