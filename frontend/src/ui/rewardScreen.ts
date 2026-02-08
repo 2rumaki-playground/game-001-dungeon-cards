@@ -573,12 +573,18 @@ export class RewardScreen {
 		itemContainer: Container,
 		itemWidth: number,
 	): Promise<void> {
-		const particleOriginX = itemContainer.x + itemWidth / 2;
-		const particleOriginY = itemContainer.y + REMOVE_CARD_HEIGHT / 2;
+		// アイテム中心のグローバル座標をパーティクルシステムのローカル座標に変換
+		const globalPos = itemContainer.toGlobal({
+			x: itemWidth / 2,
+			y: REMOVE_CARD_HEIGHT / 2,
+		});
+		const particleOrigin = this.particleSystem
+			? this.particleSystem.getContainer().toLocal(globalPos)
+			: { x: 0, y: 0 };
 
 		const particlePromise = this.particleSystem?.emit({
 			count: REMOVE_PARTICLE_COUNT,
-			origin: { x: particleOriginX, y: particleOriginY },
+			origin: particleOrigin,
 			color: REMOVE_PARTICLE_COLORS,
 			speed: { min: 0.02, max: 0.06 },
 			life: { min: 200, max: 500 },
