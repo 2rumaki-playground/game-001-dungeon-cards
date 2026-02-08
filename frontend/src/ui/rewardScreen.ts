@@ -590,7 +590,7 @@ export class RewardScreen {
 			? this.particleSystem.getContainer().toLocal(globalPos)
 			: { x: 0, y: 0 };
 
-		const particlePromise = this.particleSystem?.emit({
+		this.particleSystem?.emit({
 			count: REMOVE_PARTICLE_COUNT,
 			origin: particleOrigin,
 			color: REMOVE_PARTICLE_COLORS,
@@ -605,7 +605,5 @@ export class RewardScreen {
 			{ alpha: 0, scaleX: 0.8, scaleY: 0.8 },
 			{ duration: REMOVE_FADE_DURATION, easing: Easing.easeInOut },
 		);
-
-		await particlePromise;
 	}
 }
