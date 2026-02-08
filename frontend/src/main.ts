@@ -70,7 +70,7 @@ function initializeUIComponents(
 	particleContainer.y = STATUS_BAR_HEIGHT;
 	app.stage.addChild(particleContainer);
 
-	const handRenderer = new HandRenderer();
+	const handRenderer = new HandRenderer(particleSystem);
 	const handContainer = handRenderer.getContainer();
 	handContainer.x = mapSize.width / 2;
 	handContainer.y = STATUS_BAR_HEIGHT + mapSize.height + HAND_AREA_TOP_PADDING;

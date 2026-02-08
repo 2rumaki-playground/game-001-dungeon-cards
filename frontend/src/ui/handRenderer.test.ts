@@ -201,7 +201,7 @@ describe("HandRenderer ホバー・選択演出", () => {
 		expect(card0After.y).toBeLessThan(0);
 	});
 
-	it("pointerdown でカード選択コールバックが呼ばれる", () => {
+	it("pointerdown でカード選択コールバックが呼ばれる", async () => {
 		const renderer = new HandRenderer();
 		const cards = createTestCards();
 		const callback = vi.fn();
@@ -214,10 +214,38 @@ describe("HandRenderer ホバー・選択演出", () => {
 			global: { x: 0, y: 0 },
 		} as FederatedPointerEvent);
 
-		expect(callback).toHaveBeenCalledWith(cards[2]);
+		// コールバックが呼ばれ、その後に消費アニメーションが実行される
+		await vi.waitFor(() => {
+			expect(callback).toHaveBeenCalledWith(cards[2]);
+		});
 	});
 
-	it("pointerdown で tween によるパルスアニメーションが実行される", async () => {
+	it("onCardSelectがfalseを返した場合、消費アニメーションがスキップされる", async () => {
+		const renderer = new HandRenderer();
+		const cards = createTestCards();
+		// falseを返すコールバック（無効クリック）
+		const callback = vi.fn().mockReturnValue(false);
+		renderer.setOnCardSelect(callback);
+		renderer.render(cards, 10);
+
+		const mockedTween = vi.mocked(tween);
+		mockedTween.mockClear();
+
+		const card2 = findCardContainer(renderer, 2);
+		card2.emit("pointerdown", {
+			global: { x: 0, y: 0 },
+		} as FederatedPointerEvent);
+
+		// コールバックは呼ばれる
+		await vi.waitFor(() => {
+			expect(callback).toHaveBeenCalledTimes(1);
+		});
+
+		// 消費アニメーション（tween）は呼ばれない
+		expect(mockedTween).not.toHaveBeenCalled();
+	});
+
+	it("pointerdown で消費アニメーション（パルス拡大→飛行+縮小+フェード）が実行される", async () => {
 		const renderer = new HandRenderer();
 		const cards = createTestCards();
 		renderer.setOnCardSelect(vi.fn());
@@ -231,18 +259,253 @@ describe("HandRenderer ホバー・選択演出", () => {
 			global: { x: 0, y: 0 },
 		} as FederatedPointerEvent);
 
-		// fire-and-forget の非同期パルスが完了するまで待機
 		await vi.waitFor(() => {
 			expect(mockedTween).toHaveBeenCalledTimes(2);
 		});
 
-		// 拡大（scaleX/scaleY > 1）と縮小（scaleX/scaleY = 1）の2回呼ばれる
+		// フェーズ1a: パルス拡大
 		expect(mockedTween.mock.calls[0][1]).toEqual(
 			expect.objectContaining({ scaleX: 1.1, scaleY: 1.1 }),
 		);
+		// フェーズ1b: 飛行+縮小+フェード
 		expect(mockedTween.mock.calls[1][1]).toEqual(
-			expect.objectContaining({ scaleX: 1, scaleY: 1 }),
+			expect.objectContaining({ scaleX: 0.3, scaleY: 0.3, alpha: 0 }),
 		);
+		expect(mockedTween.mock.calls[1][1]).toHaveProperty("y");
+	});
+
+	it("アニメーション中の二重クリックが防止される", async () => {
+		const renderer = new HandRenderer();
+		const cards = createTestCards();
+		const callback = vi.fn();
+		renderer.setOnCardSelect(callback);
+		renderer.render(cards, 10);
+
+		const mockedTween = vi.mocked(tween);
+		const tweenCountBefore = mockedTween.mock.calls.length;
+
+		// tweenを未解決のPromiseにしてアニメーション継続中を再現
+		let resolveTween!: () => void;
+		mockedTween.mockImplementationOnce(() => {
+			return new Promise<void>((resolve) => {
+				resolveTween = resolve;
+			});
+		});
+
+		const card2 = findCardContainer(renderer, 2);
+		// 1回目のクリック
+		card2.emit("pointerdown", {
+			global: { x: 0, y: 0 },
+		} as FederatedPointerEvent);
+
+		// コールバック→tweenの順で呼ばれるので、tweenが呼ばれるまで待機
+		await vi.waitFor(() => {
+			expect(mockedTween.mock.calls.length).toBeGreaterThan(tweenCountBefore);
+		});
+
+		const tweenCallCountAfterFirst = mockedTween.mock.calls.length;
+
+		// 2回目のクリックを試行（isInputLockedガードで早期return）
+		card2.emit("pointerdown", {
+			global: { x: 0, y: 0 },
+		} as FederatedPointerEvent);
+
+		// tween呼び出し回数が増えていない（2回目は無視された）
+		expect(mockedTween.mock.calls.length).toBe(tweenCallCountAfterFirst);
+
+		// コールバックは1回のみ（アニメーション前に呼ばれる）
+		expect(callback).toHaveBeenCalledTimes(1);
+
+		// tweenを完了させてアニメーション完了
+		resolveTween();
+
+		// アニメーション完了後もコールバックは1回のみ
+		await vi.waitFor(() => {
+			expect(callback).toHaveBeenCalledTimes(1);
+		});
+	});
+
+	it("外部からのrender()では入力ロックが解除されない", async () => {
+		const renderer = new HandRenderer();
+		const cards = createTestCards();
+		const callback = vi.fn();
+		renderer.setOnCardSelect(callback);
+		renderer.render(cards, 10);
+
+		const mockedTween = vi.mocked(tween);
+		const tweenCountBefore = mockedTween.mock.calls.length;
+
+		// tweenを未解決のPromiseにしてアニメーション中を再現
+		let resolveTween!: () => void;
+		mockedTween.mockImplementationOnce(() => {
+			return new Promise<void>((resolve) => {
+				resolveTween = resolve;
+			});
+		});
+
+		// 1回目のクリックで入力ロック
+		const card0 = findCardContainer(renderer, 0);
+		card0.emit("pointerdown", {
+			global: { x: 0, y: 0 },
+		} as FederatedPointerEvent);
+
+		// コールバック→tweenの順で呼ばれるので、tweenが呼ばれるまで待機
+		await vi.waitFor(() => {
+			expect(mockedTween.mock.calls.length).toBeGreaterThan(tweenCountBefore);
+		});
+
+		const tweenCountAfterFirst = mockedTween.mock.calls.length;
+
+		// 外部からrender()を呼んでもロックは解除されない
+		renderer.render(cards, 10);
+
+		// クリックしてもtweenは増えない（ロック維持）
+		const card0After = findCardContainer(renderer, 0);
+		card0After.emit("pointerdown", {
+			global: { x: 0, y: 0 },
+		} as FederatedPointerEvent);
+		expect(mockedTween.mock.calls.length).toBe(tweenCountAfterFirst);
+
+		// cleanup
+		resolveTween();
+	});
+
+	it("アニメーション完了後に入力ロックが解除される", async () => {
+		const renderer = new HandRenderer();
+		const cards = createTestCards();
+		const callback = vi.fn();
+		renderer.setOnCardSelect(callback);
+		renderer.render(cards, 10);
+
+		const mockedTween = vi.mocked(tween);
+		const tweenCountBefore = mockedTween.mock.calls.length;
+
+		// tweenを未解決Promiseにしてアニメーション中を再現
+		let resolveTween!: () => void;
+		mockedTween.mockImplementationOnce(() => {
+			return new Promise<void>((resolve) => {
+				resolveTween = resolve;
+			});
+		});
+
+		const card2 = findCardContainer(renderer, 2);
+		card2.emit("pointerdown", {
+			global: { x: 0, y: 0 },
+		} as FederatedPointerEvent);
+
+		// コールバック→tweenの順で呼ばれるので、tweenが呼ばれるまで待機
+		await vi.waitFor(() => {
+			expect(mockedTween.mock.calls.length).toBeGreaterThan(tweenCountBefore);
+		});
+
+		const tweenCountAfterFirst = mockedTween.mock.calls.length;
+
+		// アニメーション中は2回目のクリックが無視される
+		card2.emit("pointerdown", {
+			global: { x: 0, y: 0 },
+		} as FederatedPointerEvent);
+		expect(mockedTween.mock.calls.length).toBe(tweenCountAfterFirst);
+
+		// アニメーション完了
+		resolveTween();
+
+		// アニメーション完了後に再クリック可能になる
+		await vi.waitFor(() => {
+			expect(callback).toHaveBeenCalledTimes(1);
+		});
+
+		// render()で再描画されるので新しいカードコンテナを取得
+		const card2After = findCardContainer(renderer, 2);
+		card2After.emit("pointerdown", {
+			global: { x: 0, y: 0 },
+		} as FederatedPointerEvent);
+		expect(mockedTween.mock.calls.length).toBeGreaterThan(tweenCountAfterFirst);
+	});
+
+	it("非同期コールバック完了まで入力ロックが維持される", async () => {
+		const renderer = new HandRenderer();
+		const cards = createTestCards();
+
+		const mockedTween = vi.mocked(tween);
+
+		// 非同期コールバック（未解決Promiseで保留）
+		let resolveCallback!: () => void;
+		const asyncCallback = vi.fn(
+			() =>
+				new Promise<undefined>((resolve) => {
+					resolveCallback = () => resolve(undefined);
+				}),
+		);
+		renderer.setOnCardSelect(asyncCallback);
+		renderer.render(cards, 10);
+
+		// tweenの1回目（パルス拡大）を即座に解決、2回目（飛行）も即座に解決
+		// → animateCardConsume完了 → invokeCallback呼び出し → 非同期コールバック保留
+		const card2 = findCardContainer(renderer, 2);
+		card2.emit("pointerdown", {
+			global: { x: 0, y: 0 },
+		} as FederatedPointerEvent);
+
+		// コールバックが呼ばれるまで待機（tweenモックは即座に解決）
+		await vi.waitFor(() => {
+			expect(asyncCallback).toHaveBeenCalledTimes(1);
+		});
+
+		const tweenCountAfterFirst = mockedTween.mock.calls.length;
+
+		// コールバックのPromise未解決中は入力ロックが維持される
+		card2.emit("pointerdown", {
+			global: { x: 0, y: 0 },
+		} as FederatedPointerEvent);
+		expect(mockedTween.mock.calls.length).toBe(tweenCountAfterFirst);
+
+		// コールバックのPromiseを解決
+		resolveCallback();
+
+		// 再描画完了（新しいカードコンテナが取得できる状態）になるまで待機
+		await vi.waitFor(() => {
+			const card2After = findCardContainer(renderer, 2);
+			// 再描画によりコンテナが差し替わったことを確認
+			expect(card2After).not.toBe(card2);
+		});
+
+		// 再描画完了後に、改めて新しいカードコンテナを取得してクリック
+		const card2After = findCardContainer(renderer, 2);
+		card2After.emit("pointerdown", {
+			global: { x: 0, y: 0 },
+		} as FederatedPointerEvent);
+		expect(mockedTween.mock.calls.length).toBeGreaterThan(tweenCountAfterFirst);
+	});
+
+	it("ParticleSystem付きの場合、消費アニメーション後にemitが呼ばれる", async () => {
+		const mockContainer = {
+			toLocal: vi.fn((pos: { x: number; y: number }) => ({
+				x: pos.x,
+				y: pos.y,
+			})),
+		};
+		const mockParticleSystem = {
+			emit: vi.fn().mockResolvedValue(undefined),
+			getContainer: vi.fn().mockReturnValue(mockContainer),
+			clear: vi.fn(),
+		};
+		const renderer = new HandRenderer(mockParticleSystem as never);
+		const cards = createTestCards();
+		renderer.setOnCardSelect(vi.fn());
+		renderer.render(cards, 10);
+
+		const card2 = findCardContainer(renderer, 2);
+		card2.emit("pointerdown", {
+			global: { x: 0, y: 0 },
+		} as FederatedPointerEvent);
+
+		await vi.waitFor(() => {
+			expect(mockParticleSystem.emit).toHaveBeenCalledTimes(1);
+		});
+
+		const emitConfig = mockParticleSystem.emit.mock.calls[0][0];
+		expect(emitConfig.count).toBe(12);
+		expect(emitConfig.pattern).toEqual({ type: "radial" });
 	});
 });
 

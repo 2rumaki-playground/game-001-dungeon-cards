@@ -5,15 +5,17 @@
 
 import { Container, Graphics, Text } from "pixi.js";
 import { CARD_COST } from "../constants";
-import type { Card, Direction } from "../types";
+import type { Card, CardType, Direction } from "../types";
 import { Easing, tween } from "../utils/tween";
 import {
 	CARD_COLORS as BASE_CARD_COLORS,
 	CARD_EFFECT_TEXT,
+	CARD_GLOW_COLORS,
 	CARD_TYPE_NAME,
 	CARD_TYPE_SYMBOL,
 } from "./cardConstants";
 import { drawRoundedRect, makeInteractive } from "./graphicsHelpers";
+import type { ParticleSystem } from "./particleSystem";
 import { UI_COLOR_GOLD, UI_COLORS_DISABLED } from "./uiColors";
 
 /** カード描画定数 */
@@ -31,6 +33,18 @@ const DEAL_ANIMATION_DELAY = 80; // カード間のディレイ（ms）
 const DECK_OFFSET_X = -300; // 山札の位置（手札コンテナからの相対X）
 const DECK_OFFSET_Y = -50; // 山札の位置（手札コンテナからの相対Y）
 
+/** シャッフルアニメーション定数 */
+const SHUFFLE_CARD_COUNT = 5; // シャッフル演出で表示するカード枚数
+const SHUFFLE_SCATTER_DURATION = 200; // 散らばるアニメーション時間（ms）
+const SHUFFLE_GATHER_DURATION = 200; // 集まるアニメーション時間（ms）
+const SHUFFLE_SCATTER_DELAY = 30; // カード間のディレイ（ms）
+const SHUFFLE_GATHER_DELAY = 30; // 集まり時のディレイ（ms）
+const SHUFFLE_SCATTER_RANGE_X = 60; // 散らばりのX範囲（px）
+const SHUFFLE_SCATTER_RANGE_Y = 30; // 散らばりのY範囲（px）
+const SHUFFLE_ROTATION_RANGE = 0.3; // 散らばり時の回転範囲（rad）
+const SHUFFLE_CARD_COLOR = 0x445566; // シャッフル演出のカード裏面色
+const SHUFFLE_CARD_BORDER_COLOR = 0x667788; // カード裏面の枠色
+
 /** ホバー時の浮き上がり距離（px） */
 const HOVER_LIFT = 8;
 
@@ -40,8 +54,14 @@ const PULSE_SCALE = 1.1;
 /** 選択パルスの拡大時間（ms） */
 const PULSE_UP_DURATION = 80;
 
-/** 選択パルスの縮小時間（ms） */
-const PULSE_DOWN_DURATION = 100;
+/** 消費アニメーション：飛行時間（ms） */
+const CONSUME_FLY_DURATION = 200;
+
+/** 消費アニメーション：飛行先Y座標（相対） */
+const CONSUME_FLY_TARGET_Y = -70;
+
+/** 消費アニメーション：パーティクル数 */
+const CONSUME_PARTICLE_COUNT = 12;
 
 /**
  * カード内のクリック位置から方向を判定
@@ -94,15 +114,22 @@ const CARD_COLORS = {
  */
 export class HandRenderer {
 	private container: Container;
+	private particleSystem: ParticleSystem | null;
 	private selectedCardId: string | null = null;
 	private hoveredCardId: string | null = null;
 	private currentHand: Card[] = [];
 	private currentAp = 0;
-	private onCardSelect: ((card: Card, direction?: Direction) => void) | null =
-		null;
+	private onCardSelect:
+		| ((
+				card: Card,
+				direction?: Direction,
+		  ) => undefined | false | Promise<undefined | false>)
+		| null = null;
+	private isInputLocked = false;
 
-	constructor() {
+	constructor(particleSystem?: ParticleSystem) {
 		this.container = new Container();
+		this.particleSystem = particleSystem ?? null;
 	}
 
 	/**
@@ -116,7 +143,12 @@ export class HandRenderer {
 	 * カード選択コールバックを設定
 	 * @param callback カード選択時のコールバック。方向パラメータを持つカードの場合、クリック位置に応じた方向も渡される
 	 */
-	setOnCardSelect(callback: (card: Card, direction?: Direction) => void): void {
+	setOnCardSelect(
+		callback: (
+			card: Card,
+			direction?: Direction,
+		) => undefined | false | Promise<undefined | false>,
+	): void {
 		this.onCardSelect = callback;
 	}
 
@@ -357,22 +389,47 @@ export class HandRenderer {
 		// インタラクション
 		if (enabled) {
 			makeInteractive(cardContainer, (event) => {
-				this.animateCardPulse(cardContainer);
-				// 方向パラメータを持つカードの場合、クリック位置から方向を判定
+				// 二重クリック防止：アニメーション中は追加クリックを無視
+				if (this.isInputLocked) return;
+				this.isInputLocked = true;
+				this.hoveredCardId = null;
+
+				// 方向判定はアニメーション前に計算して保持
+				let direction: Direction | undefined;
 				if (
 					card.type === "move" ||
 					card.type === "attack" ||
 					card.type === "strong_attack" ||
 					card.type === "rush"
 				) {
-					const direction = getDirectionFromClickPosition(
-						event.global.x - cardContainer.getGlobalPosition().x,
-						event.global.y - cardContainer.getGlobalPosition().y,
+					const cardGlobalPos = cardContainer.getGlobalPosition();
+					direction = getDirectionFromClickPosition(
+						event.global.x - cardGlobalPos.x,
+						event.global.y - cardGlobalPos.y,
 					);
-					this.onCardSelect?.(card, direction);
-				} else {
-					this.onCardSelect?.(card);
 				}
+
+				const invokeCallback = () => {
+					if (direction !== undefined) {
+						return this.onCardSelect?.(card, direction);
+					}
+					return this.onCardSelect?.(card);
+				};
+
+				Promise.resolve()
+					.then(invokeCallback)
+					.then((result) => {
+						// onCardSelectがfalseを返した場合は無効クリック（アニメーションスキップ）
+						if (result === false) return;
+						return this.animateCardConsume(cardContainer, card.type);
+					})
+					.catch((error) => {
+						console.error("onCardSelect callback failed:", error);
+					})
+					.finally(() => {
+						this.isInputLocked = false;
+						this.render(this.currentHand, this.currentAp);
+					});
 			});
 
 			cardContainer.on("pointerover", () => {
@@ -392,22 +449,44 @@ export class HandRenderer {
 	}
 
 	/**
-	 * カード選択時のパルスアニメーション（fire-and-forget）
+	 * カード消費アニメーション
+	 * パルス拡大 → 飛行+縮小+フェード → パーティクル放出
 	 */
-	private async animateCardPulse(container: Container): Promise<void> {
+	private async animateCardConsume(
+		container: Container,
+		cardType: CardType,
+	): Promise<void> {
 		try {
+			// フェーズ1a: パルス拡大
 			await tween(
 				container,
 				{ scaleX: PULSE_SCALE, scaleY: PULSE_SCALE },
 				{ duration: PULSE_UP_DURATION, easing: Easing.easeOut },
 			);
+			// フェーズ1b: 飛行+縮小+フェード
+			const flyTargetY = container.y + CONSUME_FLY_TARGET_Y;
 			await tween(
 				container,
-				{ scaleX: 1, scaleY: 1 },
-				{ duration: PULSE_DOWN_DURATION, easing: Easing.easeOut },
+				{ y: flyTargetY, scaleX: 0.3, scaleY: 0.3, alpha: 0 },
+				{ duration: CONSUME_FLY_DURATION, easing: Easing.easeOut },
 			);
-		} catch {
-			// render() でカードが破棄された場合のエラーは無視
+			// フェーズ2: パーティクル放出（fire-and-forget）
+			if (this.particleSystem) {
+				const globalPos = container.getGlobalPosition();
+				const localPos = this.particleSystem.getContainer().toLocal(globalPos);
+				this.particleSystem.emit({
+					count: CONSUME_PARTICLE_COUNT,
+					origin: { x: localPos.x, y: localPos.y },
+					color: CARD_GLOW_COLORS[cardType],
+					speed: { min: 50, max: 150 },
+					life: { min: 300, max: 600 },
+					size: { min: 2, max: 5 },
+					pattern: { type: "radial" },
+				});
+			}
+		} catch (e) {
+			// render() によるカード破棄等、想定内のタイミングエラーの可能性があるため warn で記録
+			console.warn("animateCardConsume failed:", e);
 		}
 	}
 
@@ -436,6 +515,117 @@ export class HandRenderer {
 			arrowText.y = arrow.y;
 			cardContainer.addChild(arrowText);
 		}
+	}
+
+	/**
+	 * シャッフルアニメーション
+	 * 捨て札→山札リシャッフル時に、山札位置でカードが散らばって集まる演出
+	 * @returns アニメーション完了時にresolveするPromise
+	 */
+	async animateShuffle(): Promise<void> {
+		this.container.removeChildren();
+
+		const cards: Container[] = [];
+
+		// シャッフル演出用のカード裏面を生成
+		for (let i = 0; i < SHUFFLE_CARD_COUNT; i++) {
+			const card = new Container();
+			card.x = DECK_OFFSET_X;
+			card.y = DECK_OFFSET_Y;
+
+			const bg = new Graphics();
+			drawRoundedRect(
+				bg,
+				CARD_WIDTH,
+				CARD_HEIGHT,
+				CARD_RADIUS,
+				SHUFFLE_CARD_COLOR,
+				{ color: SHUFFLE_CARD_BORDER_COLOR, width: 2 },
+			);
+			card.addChild(bg);
+
+			// カード裏面の模様（中央に菱形パターン）
+			const pattern = new Graphics();
+			const cx = CARD_WIDTH / 2;
+			const cy = CARD_HEIGHT / 2;
+			pattern.moveTo(cx, cy - 20);
+			pattern.lineTo(cx + 15, cy);
+			pattern.lineTo(cx, cy + 20);
+			pattern.lineTo(cx - 15, cy);
+			pattern.closePath();
+			pattern.stroke({ color: SHUFFLE_CARD_BORDER_COLOR, width: 1.5 });
+			card.addChild(pattern);
+
+			card.pivot.set(CARD_WIDTH / 2, CARD_HEIGHT / 2);
+			card.x = DECK_OFFSET_X + CARD_WIDTH / 2;
+			card.y = DECK_OFFSET_Y + CARD_HEIGHT / 2;
+			card.alpha = 0;
+
+			this.container.addChild(card);
+			cards.push(card);
+		}
+
+		// 散らばる目標位置を事前計算（対称的な配置）
+		const scatterTargets = cards.map((_, i) => {
+			const angle =
+				((i - Math.floor(SHUFFLE_CARD_COUNT / 2)) /
+					Math.max(SHUFFLE_CARD_COUNT - 1, 1)) *
+				2;
+			return {
+				x: DECK_OFFSET_X + CARD_WIDTH / 2 + angle * SHUFFLE_SCATTER_RANGE_X,
+				y:
+					DECK_OFFSET_Y +
+					CARD_HEIGHT / 2 +
+					(Math.abs(angle) - 1) * SHUFFLE_SCATTER_RANGE_Y,
+				rotation: angle * SHUFFLE_ROTATION_RANGE,
+			};
+		});
+
+		// フェーズ1: 散らばる
+		const scatterPromises = cards.map((card, i) =>
+			tween(
+				card,
+				{
+					x: scatterTargets[i].x,
+					y: scatterTargets[i].y,
+					alpha: 1,
+					rotation: scatterTargets[i].rotation,
+				},
+				{
+					duration: SHUFFLE_SCATTER_DURATION,
+					delay: i * SHUFFLE_SCATTER_DELAY,
+					easing: Easing.easeOutCubic,
+				},
+			),
+		);
+		await Promise.all(scatterPromises);
+
+		// フェーズ2: 集まる
+		const gatherPromises = cards.map((card, i) =>
+			tween(
+				card,
+				{
+					x: DECK_OFFSET_X + CARD_WIDTH / 2,
+					y: DECK_OFFSET_Y + CARD_HEIGHT / 2,
+					alpha: 0.8,
+					rotation: 0,
+				},
+				{
+					duration: SHUFFLE_GATHER_DURATION,
+					delay: i * SHUFFLE_GATHER_DELAY,
+					easing: Easing.easeInOut,
+				},
+			),
+		);
+		await Promise.all(gatherPromises);
+
+		// フェーズ3: フェードアウト
+		const fadePromises = cards.map((card) =>
+			tween(card, { alpha: 0 }, { duration: 100, easing: Easing.easeOut }),
+		);
+		await Promise.all(fadePromises);
+
+		this.container.removeChildren();
 	}
 
 	/**
