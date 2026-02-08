@@ -246,28 +246,32 @@ export class TitleScreen {
 		const ticker = Ticker.shared;
 
 		this.bgTickerCallback = (tick: Ticker): void => {
-			if (!this.bgParticleGraphics || !this.bgParticleConfig) return;
+			try {
+				if (!this.bgParticleGraphics || !this.bgParticleConfig) return;
 
-			this.bgParticleTimer += tick.deltaMS;
+				this.bgParticleTimer += tick.deltaMS;
 
-			// 定期的に新しいパーティクルを追加
-			if (this.bgParticleTimer >= BG_PARTICLE_INTERVAL) {
-				this.bgParticleTimer = 0;
-				const newParticles = createParticles(this.bgParticleConfig);
-				this.bgParticles = [...this.bgParticles, ...newParticles];
-			}
+				// 定期的に新しいパーティクルを追加
+				if (this.bgParticleTimer >= BG_PARTICLE_INTERVAL) {
+					this.bgParticleTimer = 0;
+					const newParticles = createParticles(this.bgParticleConfig);
+					this.bgParticles = [...this.bgParticles, ...newParticles];
+				}
 
-			// パーティクル更新
-			this.bgParticles = updateParticles(this.bgParticles, tick.deltaMS);
+				// パーティクル更新
+				this.bgParticles = updateParticles(this.bgParticles, tick.deltaMS);
 
-			// 描画
-			this.bgParticleGraphics.clear();
-			for (const p of this.bgParticles) {
-				this.bgParticleGraphics.circle(p.x, p.y, p.size);
-				this.bgParticleGraphics.fill({
-					color: p.color,
-					alpha: (p.life / p.maxLife) * 0.4,
-				});
+				// 描画
+				this.bgParticleGraphics.clear();
+				for (const p of this.bgParticles) {
+					this.bgParticleGraphics.circle(p.x, p.y, p.size);
+					this.bgParticleGraphics.fill({
+						color: p.color,
+						alpha: (p.life / p.maxLife) * 0.4,
+					});
+				}
+			} catch {
+				this.stopBgParticles();
 			}
 		};
 
