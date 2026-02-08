@@ -3,8 +3,10 @@
  * カードタイプ別のパーティクルエフェクト設定を生成する純粋関数群
  */
 
-import type { CardType } from "../types";
 import type { ParticleConfig, Vec2 } from "./particleLogic";
+
+/** 攻撃ヒット時に使用可能なカードタイプ */
+export type AttackCardType = "attack" | "strong_attack";
 
 /**
  * 攻撃カード用パーティクル設定を生成
@@ -82,18 +84,15 @@ export function createDefeatParticleConfig(origin: Vec2): ParticleConfig {
 
 /**
  * カードタイプからヒット時パーティクル設定を取得
- * attack/strong_attack以外はnull
  */
 export function getAttackParticleConfig(
-	cardType: CardType,
+	cardType: AttackCardType,
 	origin: Vec2,
-): ParticleConfig | null {
+): ParticleConfig {
 	switch (cardType) {
 		case "attack":
 			return createAttackParticleConfig(origin);
 		case "strong_attack":
 			return createStrongAttackParticleConfig(origin);
-		default:
-			return null;
 	}
 }

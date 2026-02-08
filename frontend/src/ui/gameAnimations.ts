@@ -21,6 +21,7 @@ import type { GameContext } from "../gameContext";
 import type { CardType, Direction, GameState, Position } from "../types";
 import { DIRECTION_DELTA } from "../types";
 import {
+	type AttackCardType,
 	createDefeatParticleConfig,
 	getAttackParticleConfig,
 } from "./battleParticles";
@@ -442,7 +443,7 @@ export async function updateStateWithAttackAnimation(
 	ctx: GameContext,
 	newState: GameState,
 	hitEnemyId: string,
-	cardType: CardType = "attack",
+	cardType: AttackCardType = "attack",
 ): Promise<void> {
 	if (ctx.isAnimating) return;
 	ctx.isAnimating = true;
@@ -477,10 +478,9 @@ export async function updateStateWithAttackAnimation(
 		// カードタイプ別パーティクル
 		if (hitEnemy) {
 			const center = gridToCenterPixel(hitEnemy.position);
-			const particleConfig = getAttackParticleConfig(cardType, center);
-			if (particleConfig) {
-				hitAnimations.push(ctx.ui.particleSystem.emit(particleConfig));
-			}
+			hitAnimations.push(
+				ctx.ui.particleSystem.emit(getAttackParticleConfig(cardType, center)),
+			);
 		}
 
 		await Promise.all(hitAnimations);

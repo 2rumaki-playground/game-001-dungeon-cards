@@ -118,30 +118,13 @@ describe("createDefeatParticleConfig", () => {
 describe("getAttackParticleConfig", () => {
 	it("attackタイプでattack用設定を返す", () => {
 		const config = getAttackParticleConfig("attack", { x: 0, y: 0 });
-		expect(config).not.toBeNull();
 		const attackConfig = createAttackParticleConfig({ x: 0, y: 0 });
-		expect(config?.count).toBe(attackConfig.count);
+		expect(config.count).toBe(attackConfig.count);
 	});
 
 	it("strong_attackタイプでstrong_attack用設定を返す", () => {
 		const config = getAttackParticleConfig("strong_attack", { x: 0, y: 0 });
-		expect(config).not.toBeNull();
 		const strongConfig = createStrongAttackParticleConfig({ x: 0, y: 0 });
-		expect(config?.count).toBe(strongConfig.count);
-	});
-
-	it("moveタイプでnullを返す", () => {
-		const config = getAttackParticleConfig("move", { x: 0, y: 0 });
-		expect(config).toBeNull();
-	});
-
-	it("waitタイプでnullを返す", () => {
-		const config = getAttackParticleConfig("wait", { x: 0, y: 0 });
-		expect(config).toBeNull();
-	});
-
-	it("rushタイプでnullを返す（rushは専用関数を使用）", () => {
-		const config = getAttackParticleConfig("rush", { x: 0, y: 0 });
-		expect(config).toBeNull();
+		expect(config.count).toBe(strongConfig.count);
 	});
 });
