@@ -103,13 +103,12 @@ git checkout <ブランチ名>
 
 #### 5b. コミット前チェック
 
-コミット前に以下を**リポジトリルートから**実行し、問題があれば修正する:
+コミット前に以下を**リポジトリルートから**実行し、問題があれば修正する。各コマンドはサブシェルで実行し、カレントディレクトリが戻るようにする:
 
-```bash
-cd /path/to/repo/frontend && pnpm format && pnpm lint && pnpm build && pnpm test:run
-```
-
-**注意**: `pnpm` コマンドはすべて `frontend/` ディレクトリで実行すること（`package.json` は `frontend/` にのみ存在する）。
+1. `(cd frontend && pnpm format)` — フォーマット適用
+2. `(cd frontend && pnpm lint)` — リントチェック
+3. `(cd frontend && pnpm build)` — TypeScriptビルド確認
+4. `(cd frontend && pnpm test:run)` — ユニットテスト全通過を確認
 
 #### 5c. コミット・push
 

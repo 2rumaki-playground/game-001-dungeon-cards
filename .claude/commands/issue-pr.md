@@ -182,11 +182,11 @@ Issue の内容に従い、TDD（テスト駆動開発）で実装を行って�
 - 例: `feat: カード効果の実装`
 - **粒度**: 意味のあるまとまりごとにコミットする。1つのIssueに対して複数コミットでよい（例: テスト追加、実装、リファクタリングを分けるなど）。ただし、Red（失敗するテストのみ）の状態ではコミットしない
 - **コミット前チェック**: 各コミットの前に以下を**リポジトリルートから**実行し、問題があれば修正してからコミットする（`package.json` は `frontend/` にのみ存在する）
-  1. `cd frontend && pnpm format` — フォーマット適用
-  2. `cd frontend && pnpm lint` — リントチェック
-  3. `cd frontend && pnpm build` — TypeScriptビルド確認
-  4. `cd frontend && pnpm test:run` — ユニットテスト全通過を確認
-  5. `cd frontend && pnpm test:e2e` — E2Eテスト全通過を確認
+  1. `(cd frontend && pnpm format)` — フォーマット適用
+  2. `(cd frontend && pnpm lint)` — リントチェック
+  3. `(cd frontend && pnpm build)` — TypeScriptビルド確認
+  4. `(cd frontend && pnpm test:run)` — ユニットテスト全通過を確認
+  5. `(cd frontend && pnpm test:e2e)` — E2Eテスト全通過を確認
 
 ### 7. 仕様の曖昧さへの対応
 
