@@ -84,7 +84,7 @@ export function getDirectionFromClickPosition(
 /** handRenderer固有のカード色拡張 */
 const CARD_COLORS = {
 	...BASE_CARD_COLORS,
-	disabled: { bg: UI_COLORS_DISABLED.bg, border: UI_COLORS_DISABLED.border },
+	disabled: UI_COLORS_DISABLED,
 	selectedBorder: UI_COLOR_GOLD,
 	hoveredBorder: 0x88ccff,
 } as const;
