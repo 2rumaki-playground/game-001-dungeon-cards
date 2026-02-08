@@ -314,6 +314,27 @@ describe("HandRenderer ホバー・選択演出", () => {
 		expect(renderer.getContainer().eventMode).toBe("passive");
 	});
 
+	it("アニメーション完了後にeventModeがpassiveに復帰する", async () => {
+		const renderer = new HandRenderer();
+		const cards = createTestCards();
+		const callback = vi.fn();
+		renderer.setOnCardSelect(callback);
+		renderer.render(cards, 10);
+
+		const card2 = findCardContainer(renderer, 2);
+		card2.emit("pointerdown", {
+			global: { x: 0, y: 0 },
+		} as FederatedPointerEvent);
+
+		// アニメーション中はnone
+		expect(renderer.getContainer().eventMode).toBe("none");
+
+		// アニメーション完了後にpassiveに復帰する
+		await vi.waitFor(() => {
+			expect(renderer.getContainer().eventMode).toBe("passive");
+		});
+	});
+
 	it("ParticleSystem付きの場合、消費アニメーション後にemitが呼ばれる", async () => {
 		const mockContainer = {
 			toLocal: vi.fn((pos: { x: number; y: number }) => ({

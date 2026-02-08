@@ -394,7 +394,11 @@ export class HandRenderer {
 					}
 				};
 
-				this.animateCardConsume(cardContainer, card.type).then(invokeCallback);
+				this.animateCardConsume(cardContainer, card.type)
+					.then(invokeCallback)
+					.finally(() => {
+						this.container.eventMode = "passive";
+					});
 			});
 
 			cardContainer.on("pointerover", () => {
