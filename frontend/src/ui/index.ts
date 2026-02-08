@@ -3,6 +3,7 @@
  */
 
 export * from "./actionLogRenderer";
+export * from "./battleParticles";
 export * from "./cardConstants";
 export * from "./coordinates";
 export * from "./deckViewer";

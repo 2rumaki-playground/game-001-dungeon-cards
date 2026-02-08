@@ -19,7 +19,11 @@ import {
 import type { GameContext } from "../gameContext";
 import type { CardType, Direction, GameState, Position } from "../types";
 import { DIRECTION_DELTA } from "../types";
-import { getMapPixelSize } from "./coordinates";
+import {
+	createDefeatParticleConfig,
+	getAttackParticleConfig,
+} from "./battleParticles";
+import { getMapPixelSize, gridToCenterPixel } from "./coordinates";
 import { applyState, render } from "./gameRenderer";
 import { HAND_AREA_HEIGHT } from "./layout";
 import { relayoutUI } from "./relayout";
@@ -431,16 +435,19 @@ export async function animateRushWithStairs(
 
 /**
  * プレイヤー攻撃ヒット時のアニメーション付きで状態を更新
+ * @param cardType 使用したカードタイプ（パーティクル演出に使用）
  */
 export async function updateStateWithAttackAnimation(
 	ctx: GameContext,
 	newState: GameState,
 	hitEnemyId: string,
+	cardType: CardType = "attack",
 ): Promise<void> {
 	if (ctx.isAnimating) return;
 	ctx.isAnimating = true;
 
 	const prevAp = ctx.state.player.ap;
+	const hitEnemy = ctx.state.enemies.find((e) => e.id === hitEnemyId);
 	const defeated = !newState.enemies.some((e) => e.id === hitEnemyId);
 	applyState(ctx, newState);
 
@@ -461,11 +468,30 @@ export async function updateStateWithAttackAnimation(
 				),
 			);
 		}
+
+		// カードタイプ別パーティクル
+		if (hitEnemy) {
+			const center = gridToCenterPixel(hitEnemy.position);
+			const particleConfig = getAttackParticleConfig(cardType, center);
+			if (particleConfig) {
+				hitAnimations.push(ctx.ui.particleSystem.emit(particleConfig));
+			}
+		}
+
 		await Promise.all(hitAnimations);
 
 		// 撃破演出
 		if (defeated) {
-			await ctx.ui.mapRenderer.animateEnemyDefeat(hitEnemyId);
+			const defeatAnimations: Promise<void>[] = [
+				ctx.ui.mapRenderer.animateEnemyDefeat(hitEnemyId),
+			];
+			if (hitEnemy) {
+				const center = gridToCenterPixel(hitEnemy.position);
+				defeatAnimations.push(
+					ctx.ui.particleSystem.emit(createDefeatParticleConfig(center)),
+				);
+			}
+			await Promise.all(defeatAnimations);
 			// 撃破後、敵描画を反映
 			render(ctx);
 		}

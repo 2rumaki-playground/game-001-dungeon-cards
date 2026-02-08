@@ -21,6 +21,8 @@ import type { GameContext } from "../gameContext";
 import type { Direction, Position } from "../types";
 import { DIRECTION_DELTA } from "../types";
 import { deleteSaveData, hasSaveData, loadGame } from "../utils/storage";
+import { createRushParticleConfig } from "./battleParticles";
+import { gridToCenterPixel } from "./coordinates";
 import { detectEnemyMoves } from "./enemyMoveDetector";
 import {
 	animateRushWithStairs,
@@ -126,7 +128,7 @@ async function handleAttackCardExecution(
 	ctx.ui.directionSelector.hide();
 	ctx.pendingCard = null;
 	if (hit && enemyId) {
-		await updateStateWithAttackAnimation(ctx, next, enemyId);
+		await updateStateWithAttackAnimation(ctx, next, enemyId, "attack");
 	} else {
 		await updateStateWithMissAnimation(ctx, next, direction);
 	}
@@ -148,7 +150,7 @@ async function handleStrongAttackCardExecution(
 	ctx.ui.directionSelector.hide();
 	ctx.pendingCard = null;
 	if (hit && enemyId) {
-		await updateStateWithAttackAnimation(ctx, next, enemyId);
+		await updateStateWithAttackAnimation(ctx, next, enemyId, "strong_attack");
 	} else {
 		await updateStateWithMissAnimation(ctx, next, direction);
 	}
@@ -192,6 +194,12 @@ async function handleRushCardExecution(
 		);
 	} else {
 		// 通常移動(1or2マス): 最終位置へ直接移動アニメーション
+		// 突進パーティクル（移動軌跡のスピードライン）
+		const delta = DIRECTION_DELTA[direction];
+		const moveAngle = Math.atan2(delta.y, delta.x);
+		const rushCenter = gridToCenterPixel(result.state.player.position);
+		ctx.ui.particleSystem.emit(createRushParticleConfig(rushCenter, moveAngle));
+
 		await updateStateWithMoveAnimation(
 			ctx,
 			result.state,
