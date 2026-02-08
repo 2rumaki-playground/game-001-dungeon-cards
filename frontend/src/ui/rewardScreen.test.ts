@@ -244,6 +244,52 @@ describe("RewardScreen", () => {
 			});
 		});
 
+		it("除去アニメーション中はonSkipが無効化される", async () => {
+			const screen = new RewardScreen();
+			const mockEmit = vi.fn().mockResolvedValue(undefined);
+			const mockGetContainer = vi.fn().mockReturnValue({
+				toLocal: (pos: { x: number; y: number }) => pos,
+			});
+			const mockParticle = {
+				emit: mockEmit,
+				getContainer: mockGetContainer,
+			} as unknown as ParticleSystem;
+			screen.setParticleSystem(mockParticle);
+
+			const onRemove = vi.fn();
+			const onSkip = vi.fn();
+			screen.setOnRemoveCard(onRemove);
+			screen.setOnSkip(onSkip);
+			screen.renderRemoveSelection(testCards, 600, 400);
+
+			// スキップボタンを取得
+			const container = screen.getContainer();
+			function findDirectButtons(
+				parent: import("pixi.js").Container,
+			): import("pixi.js").Container[] {
+				const result: import("pixi.js").Container[] = [];
+				for (const child of parent.children) {
+					if (child.eventMode === "static" && child.cursor === "pointer") {
+						result.push(child as import("pixi.js").Container);
+					}
+				}
+				return result;
+			}
+			const directButtons = findDirectButtons(container);
+			const cancelBtn = directButtons[directButtons.length - 1];
+
+			const removeBtn = findRemoveButton(container);
+			removeBtn?.emit("pointerdown", {} as FederatedPointerEvent);
+
+			// アニメーション中にスキップボタンを押してもコールバックは呼ばれない
+			cancelBtn?.emit("pointerdown", {} as FederatedPointerEvent);
+			expect(onSkip).not.toHaveBeenCalled();
+
+			await vi.waitFor(() => {
+				expect(onRemove).toHaveBeenCalledWith("rm-1");
+			});
+		});
+
 		it("除去ボタンクリック後にeventModeがnoneに設定される", () => {
 			const screen = new RewardScreen();
 			const mockEmit = vi.fn().mockResolvedValue(undefined);

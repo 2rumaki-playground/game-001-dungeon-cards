@@ -457,12 +457,19 @@ export class RewardScreen {
 		makeInteractive(removeBtn, async (e) => {
 			e.stopPropagation?.();
 			removeBtn.eventMode = "none";
+			// アニメーション中に他の除去ボタンやスキップボタンが押されないようロック
+			const originalOnRemoveCard = this.onRemoveCard;
+			const originalOnSkip = this.onSkip;
+			this.onRemoveCard = () => {};
+			this.onSkip = () => {};
 			try {
 				await this.animateCardRemove(item, width);
-				this.onRemoveCard?.(card.id);
+				originalOnRemoveCard?.(card.id);
 			} catch (error) {
 				console.error("カード除去処理中にエラーが発生しました", error);
 				removeBtn.eventMode = "static";
+				this.onRemoveCard = originalOnRemoveCard;
+				this.onSkip = originalOnSkip;
 			}
 		});
 		item.addChild(removeBtn);
