@@ -318,6 +318,60 @@ describe("MapRenderer タイプ別敵描画", () => {
 		expect(enemiesContainer.children.length).toBe(1);
 	});
 
+	it("Miniboss敵が描画できる", async () => {
+		const renderer = new MapRenderer();
+		const map = createTestMap();
+		const enemies = [
+			{
+				id: "e-miniboss",
+				position: { x: 1, y: 1 },
+				hp: 8,
+				maxHp: 8,
+				type: "miniboss" as const,
+			},
+		];
+		const player = {
+			position: { x: 0, y: 0 },
+			hp: 10,
+			maxHp: 10,
+			ap: 3,
+			maxAp: 3,
+		};
+		renderer.render(map, player, enemies);
+
+		const container = renderer.getContainer();
+		const enemiesContainer = container.children[1];
+		// 敵Graphics + HPバー = 2
+		expect(enemiesContainer.children.length).toBe(2);
+	});
+
+	it("Boss敵が描画できる", async () => {
+		const renderer = new MapRenderer();
+		const map = createTestMap();
+		const enemies = [
+			{
+				id: "e-boss",
+				position: { x: 2, y: 2 },
+				hp: 15,
+				maxHp: 15,
+				type: "boss" as const,
+			},
+		];
+		const player = {
+			position: { x: 0, y: 0 },
+			hp: 10,
+			maxHp: 10,
+			ap: 3,
+			maxAp: 3,
+		};
+		renderer.render(map, player, enemies);
+
+		const container = renderer.getContainer();
+		const enemiesContainer = container.children[1];
+		// 敵Graphics + HPバー = 2
+		expect(enemiesContainer.children.length).toBe(2);
+	});
+
 	it("全タイプの敵が同時に描画できる", async () => {
 		const renderer = new MapRenderer();
 		const map = createTestMap();
@@ -343,6 +397,20 @@ describe("MapRenderer タイプ別敵描画", () => {
 				maxHp: 2,
 				type: "scout" as const,
 			},
+			{
+				id: "e-miniboss",
+				position: { x: 4, y: 1 },
+				hp: 8,
+				maxHp: 8,
+				type: "miniboss" as const,
+			},
+			{
+				id: "e-boss",
+				position: { x: 4, y: 2 },
+				hp: 15,
+				maxHp: 15,
+				type: "boss" as const,
+			},
 		];
 		const player = {
 			position: { x: 0, y: 0 },
@@ -355,7 +423,8 @@ describe("MapRenderer タイプ別敵描画", () => {
 
 		const container = renderer.getContainer();
 		const enemiesContainer = container.children[1];
-		expect(enemiesContainer.children.length).toBe(3);
+		// 5体の敵Graphics + miniboss/bossの2つのHPバー = 7
+		expect(enemiesContainer.children.length).toBe(7);
 	});
 
 	it("Heavy敵の撃破アニメーションが正常に完了する", async () => {
@@ -468,6 +537,38 @@ describe("MapRenderer 敵撃破アニメーション", () => {
 		expect(enemiesContainer.children.length).toBe(0);
 	});
 
+	it("Miniboss敵の撃破アニメーション完了後にHPバーも削除される", async () => {
+		const renderer = new MapRenderer();
+		const map = createTestMap();
+		const enemies = [
+			{
+				id: "e-miniboss",
+				position: { x: 1, y: 1 },
+				hp: 8,
+				maxHp: 8,
+				type: "miniboss" as const,
+			},
+		];
+		const player = {
+			position: { x: 0, y: 0 },
+			hp: 10,
+			maxHp: 10,
+			ap: 3,
+			maxAp: 3,
+		};
+		renderer.render(map, player, enemies);
+
+		const container = renderer.getContainer();
+		const enemiesContainer = container.children[1];
+		// 敵Graphics + HPバー = 2
+		expect(enemiesContainer.children.length).toBe(2);
+
+		await renderer.animateEnemyDefeat("e-miniboss");
+
+		// 撃破後、敵GraphicsとHPバーが共に削除されていること
+		expect(enemiesContainer.children.length).toBe(0);
+	});
+
 	it("存在しない敵IDでanimateEnemyDefeatを呼んでもエラーにならない", async () => {
 		const renderer = new MapRenderer();
 		const map = createTestMap();
@@ -483,5 +584,115 @@ describe("MapRenderer 敵撃破アニメーション", () => {
 		await expect(
 			renderer.animateEnemyDefeat("nonexistent"),
 		).resolves.toBeUndefined();
+	});
+});
+
+describe("MapRenderer HPバー", () => {
+	it("miniboss敵にHPバーが表示される", () => {
+		const renderer = new MapRenderer();
+		const map = createTestMap();
+		const enemies = [
+			{
+				id: "e-miniboss",
+				position: { x: 1, y: 1 },
+				hp: 8,
+				maxHp: 8,
+				type: "miniboss" as const,
+			},
+		];
+		const player = {
+			position: { x: 0, y: 0 },
+			hp: 10,
+			maxHp: 10,
+			ap: 3,
+			maxAp: 3,
+		};
+		renderer.render(map, player, enemies);
+
+		const container = renderer.getContainer();
+		const enemiesContainer = container.children[1];
+		// 敵Graphics(1) + HPバー(1) = 2
+		expect(enemiesContainer.children.length).toBe(2);
+	});
+
+	it("boss敵にHPバーが表示される", () => {
+		const renderer = new MapRenderer();
+		const map = createTestMap();
+		const enemies = [
+			{
+				id: "e-boss",
+				position: { x: 2, y: 2 },
+				hp: 15,
+				maxHp: 15,
+				type: "boss" as const,
+			},
+		];
+		const player = {
+			position: { x: 0, y: 0 },
+			hp: 10,
+			maxHp: 10,
+			ap: 3,
+			maxAp: 3,
+		};
+		renderer.render(map, player, enemies);
+
+		const container = renderer.getContainer();
+		const enemiesContainer = container.children[1];
+		// 敵Graphics(1) + HPバー(1) = 2
+		expect(enemiesContainer.children.length).toBe(2);
+	});
+
+	it("通常敵にはHPバーが表示されない", () => {
+		const renderer = new MapRenderer();
+		const map = createTestMap();
+		const enemies = [
+			{
+				id: "e-normal",
+				position: { x: 1, y: 1 },
+				hp: 3,
+				maxHp: 3,
+				type: "normal" as const,
+			},
+		];
+		const player = {
+			position: { x: 0, y: 0 },
+			hp: 10,
+			maxHp: 10,
+			ap: 3,
+			maxAp: 3,
+		};
+		renderer.render(map, player, enemies);
+
+		const container = renderer.getContainer();
+		const enemiesContainer = container.children[1];
+		// 敵Graphicsのみ
+		expect(enemiesContainer.children.length).toBe(1);
+	});
+
+	it("clear後にHPバーもクリアされる", () => {
+		const renderer = new MapRenderer();
+		const map = createTestMap();
+		const enemies = [
+			{
+				id: "e-boss",
+				position: { x: 2, y: 2 },
+				hp: 15,
+				maxHp: 15,
+				type: "boss" as const,
+			},
+		];
+		const player = {
+			position: { x: 0, y: 0 },
+			hp: 10,
+			maxHp: 10,
+			ap: 3,
+			maxAp: 3,
+		};
+		renderer.render(map, player, enemies);
+		renderer.clear();
+
+		const container = renderer.getContainer();
+		const enemiesContainer = container.children[1];
+		expect(enemiesContainer.children.length).toBe(0);
 	});
 });

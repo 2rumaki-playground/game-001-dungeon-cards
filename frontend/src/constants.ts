@@ -48,6 +48,8 @@ export const ENEMY_PARAMS = {
 	normal: { hp: 3, attackDamage: 1, moveDistance: 1 },
 	heavy: { hp: 5, attackDamage: 2, moveDistance: 0 },
 	scout: { hp: 2, attackDamage: 1, moveDistance: 2 },
+	miniboss: { hp: 8, attackDamage: 2, moveDistance: 1 },
+	boss: { hp: 15, attackDamage: 3, moveDistance: 1 },
 } as const;
 
 // 後方互換（通常敵のパラメータ）
@@ -68,17 +70,34 @@ export type EnemyComposition = {
 	normal: number;
 	heavy: number;
 	scout: number;
+	miniboss: number;
+	boss: number;
 };
 
 export const ENEMY_COMPOSITION_TABLE: {
 	maxFloor: number;
 	composition: EnemyComposition;
 }[] = [
-	{ maxFloor: 2, composition: { normal: 3, heavy: 0, scout: 0 } },
-	{ maxFloor: 4, composition: { normal: 2, heavy: 0, scout: 1 } },
-	{ maxFloor: 6, composition: { normal: 2, heavy: 1, scout: 0 } },
-	{ maxFloor: 8, composition: { normal: 1, heavy: 1, scout: 1 } },
-	{ maxFloor: Infinity, composition: { normal: 0, heavy: 1, scout: 2 } },
+	{
+		maxFloor: 2,
+		composition: { normal: 3, heavy: 0, scout: 0, miniboss: 0, boss: 0 },
+	},
+	{
+		maxFloor: 4,
+		composition: { normal: 2, heavy: 0, scout: 1, miniboss: 0, boss: 0 },
+	},
+	{
+		maxFloor: 6,
+		composition: { normal: 1, heavy: 1, scout: 0, miniboss: 1, boss: 0 },
+	},
+	{
+		maxFloor: 8,
+		composition: { normal: 1, heavy: 1, scout: 1, miniboss: 0, boss: 0 },
+	},
+	{
+		maxFloor: Infinity,
+		composition: { normal: 0, heavy: 1, scout: 2, miniboss: 0, boss: 0 },
+	},
 ];
 
 export function getEnemyComposition(floor: number): EnemyComposition {
@@ -217,6 +236,8 @@ export const COLORS = {
 	enemyNormal: 0xca4a4a,
 	enemyHeavy: 0x8855aa,
 	enemyScout: 0x88cc44,
+	enemyMiniboss: 0xdd8833,
+	enemyBoss: 0xdd3333,
 	// 後方互換（通常敵カラー）
 	enemy: 0xca4a4a,
 } as const;

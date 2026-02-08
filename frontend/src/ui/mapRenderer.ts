@@ -74,11 +74,26 @@ const DEFEAT_DURATION = 400;
 const DEFEAT_ROTATION = Math.PI;
 
 /** 敵タイプ別パディング（セルサイズからの余白） */
-const ENEMY_PADDING = {
+const ENEMY_PADDING: Record<EnemyType, number> = {
 	normal: 12, // 標準サイズ
 	heavy: 8, // 大きめ（パディング小）
 	scout: 16, // 小さめ（パディング大）
-} as const;
+	miniboss: 6, // heavyより大きい
+	boss: 4, // 最大サイズ
+};
+
+/** HPバーの高さ（px） */
+const HP_BAR_HEIGHT = 4;
+
+/** HPバー背景色 */
+const HP_BAR_BG_COLOR = 0x333333;
+
+/**
+ * ボスタイプ判定（miniboss/boss）
+ */
+function isBossType(type: EnemyType): boolean {
+	return type === "miniboss" || type === "boss";
+}
 
 /**
  * タイル種別に対応する色を取得
@@ -113,6 +128,7 @@ export class MapRenderer {
 	private enemiesContainer: Container;
 	private isPlayerInitialized = false;
 	private enemyGraphicsMap: Map<string, Graphics> = new Map();
+	private enemyHpBarMap: Map<string, Graphics> = new Map();
 	private playerGridPos: Position = { x: 0, y: 0 };
 	private enemyGridPosMap: Map<string, Position> = new Map();
 
@@ -270,6 +286,10 @@ export class MapRenderer {
 				return COLORS.enemyHeavy;
 			case "scout":
 				return COLORS.enemyScout;
+			case "miniboss":
+				return COLORS.enemyMiniboss;
+			case "boss":
+				return COLORS.enemyBoss;
 			default:
 				return COLORS.enemyNormal;
 		}
@@ -293,6 +313,38 @@ export class MapRenderer {
 	}
 
 	/**
+	 * ボスタイプ敵のHPバーを描画・更新
+	 */
+	private renderHpBar(enemy: Enemy): void {
+		let hpBar = this.enemyHpBarMap.get(enemy.id);
+		if (!hpBar) {
+			hpBar = new Graphics();
+			this.enemyHpBarMap.set(enemy.id, hpBar);
+			this.enemiesContainer.addChild(hpBar);
+		}
+
+		const padding = ENEMY_PADDING[enemy.type];
+		const barWidth = CELL_SIZE - padding * 2;
+		const hpRatio = Math.max(0, enemy.hp / enemy.maxHp);
+		const pixelPos = gridToPixel(enemy.position);
+		const barY = padding - HP_BAR_HEIGHT - 2;
+
+		hpBar.clear();
+		// 背景
+		hpBar.rect(padding, barY, barWidth, HP_BAR_HEIGHT);
+		hpBar.fill(HP_BAR_BG_COLOR);
+		// HP部分
+		if (hpRatio > 0) {
+			const color = this.getEnemyColor(enemy.type);
+			hpBar.rect(padding, barY, barWidth * hpRatio, HP_BAR_HEIGHT);
+			hpBar.fill(color);
+		}
+
+		hpBar.x = pixelPos.x;
+		hpBar.y = pixelPos.y;
+	}
+
+	/**
 	 * 敵を描画（永続管理）
 	 */
 	renderEnemies(enemies: Enemy[]): void {
@@ -305,6 +357,13 @@ export class MapRenderer {
 				graphics.destroy();
 				this.enemyGraphicsMap.delete(id);
 				this.enemyGridPosMap.delete(id);
+				// HPバーも削除
+				const hpBar = this.enemyHpBarMap.get(id);
+				if (hpBar) {
+					this.enemiesContainer.removeChild(hpBar);
+					hpBar.destroy();
+					this.enemyHpBarMap.delete(id);
+				}
 			}
 		}
 
@@ -321,6 +380,11 @@ export class MapRenderer {
 			const pixelPos = gridToPixel(enemy.position);
 			graphics.x = pixelPos.x;
 			graphics.y = pixelPos.y;
+
+			// ボスタイプのHPバー描画
+			if (isBossType(enemy.type)) {
+				this.renderHpBar(enemy);
+			}
 		}
 	}
 
@@ -475,6 +539,14 @@ export class MapRenderer {
 		graphics.destroy();
 		this.enemyGraphicsMap.delete(enemyId);
 		this.enemyGridPosMap.delete(enemyId);
+
+		// HPバー削除
+		const hpBar = this.enemyHpBarMap.get(enemyId);
+		if (hpBar) {
+			this.enemiesContainer.removeChild(hpBar);
+			hpBar.destroy();
+			this.enemyHpBarMap.delete(enemyId);
+		}
 	}
 
 	/**
@@ -524,6 +596,10 @@ export class MapRenderer {
 			graphics.destroy();
 		}
 		this.enemyGraphicsMap.clear();
+		for (const hpBar of this.enemyHpBarMap.values()) {
+			hpBar.destroy();
+		}
+		this.enemyHpBarMap.clear();
 		this.enemyGridPosMap.clear();
 	}
 }

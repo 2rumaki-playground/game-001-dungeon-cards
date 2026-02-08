@@ -63,6 +63,22 @@ describe("state", () => {
 			expect(enemies[0].hp).toBe(ENEMY_PARAMS.scout.hp);
 			expect(enemies[0].maxHp).toBe(ENEMY_PARAMS.scout.hp);
 		});
+
+		it("minibossタイプ指定時に対応HPが設定される", () => {
+			const positions = [{ x: 2, y: 2 }];
+			const enemies = createEnemiesFromPositions(positions, "miniboss");
+			expect(enemies[0].type).toBe("miniboss");
+			expect(enemies[0].hp).toBe(ENEMY_PARAMS.miniboss.hp);
+			expect(enemies[0].maxHp).toBe(ENEMY_PARAMS.miniboss.hp);
+		});
+
+		it("bossタイプ指定時に対応HPが設定される", () => {
+			const positions = [{ x: 2, y: 2 }];
+			const enemies = createEnemiesFromPositions(positions, "boss");
+			expect(enemies[0].type).toBe("boss");
+			expect(enemies[0].hp).toBe(ENEMY_PARAMS.boss.hp);
+			expect(enemies[0].maxHp).toBe(ENEMY_PARAMS.boss.hp);
+		});
 	});
 
 	describe("createEnemiesForFloor", () => {
@@ -87,16 +103,17 @@ describe("state", () => {
 			expect(enemies[2].hp).toBe(ENEMY_PARAMS.scout.hp);
 		});
 
-		it("階層5: normal×2 + heavy×1", () => {
+		it("階層5: miniboss×1 + normal×1 + heavy×1", () => {
 			const enemies = createEnemiesForFloor(positions, 5);
-			expect(enemies[0].type).toBe("normal");
+			expect(enemies[0].type).toBe("miniboss");
+			expect(enemies[0].hp).toBe(ENEMY_PARAMS.miniboss.hp);
 			expect(enemies[1].type).toBe("normal");
 			expect(enemies[2].type).toBe("heavy");
 			expect(enemies[2].hp).toBe(ENEMY_PARAMS.heavy.hp);
 		});
 
 		it("各敵にIDと座標が設定される", () => {
-			const enemies = createEnemiesForFloor(positions, 5);
+			const enemies = createEnemiesForFloor(positions, 1);
 			expect(enemies[0].id).toBe("enemy-1");
 			expect(enemies[1].id).toBe("enemy-2");
 			expect(enemies[2].id).toBe("enemy-3");
@@ -118,6 +135,14 @@ describe("state", () => {
 			expect(enemies[1].type).toBe("normal");
 			expect(enemies[2].type).toBe("scout");
 			expect(enemies[3].type).toBe("normal");
+		});
+
+		it("minibossタイプの敵が正しいHPで生成される", () => {
+			const enemies = createEnemiesForFloor(positions, 5);
+			const miniboss = enemies.find((e) => e.type === "miniboss");
+			expect(miniboss).toBeDefined();
+			expect(miniboss?.hp).toBe(ENEMY_PARAMS.miniboss.hp);
+			expect(miniboss?.maxHp).toBe(ENEMY_PARAMS.miniboss.hp);
 		});
 
 		it("6体: 構成テーブルの3体 + 残り3体はすべてnormal", () => {
