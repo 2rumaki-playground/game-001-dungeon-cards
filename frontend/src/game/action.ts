@@ -162,69 +162,82 @@ export type AttackResult = {
 };
 
 /**
- * 攻撃カード使用時のプレイヤー攻撃処理
+ * 攻撃処理の共通実装
  *
  * 成功/失敗に関わらずAP消費・カード使用を行う。
  * 成功時は敵にダメージ、HP0以下で敵を削除。
- * 攻撃のヒット情報を含む結果を返す。
+ */
+function executeAttackBase(
+	state: GameState,
+	cardId: string,
+	direction: Direction,
+	apCost: number,
+	damage: number,
+	missLog: string,
+): AttackResult {
+	// AP消費
+	let next = updatePlayer(state, (p) => ({
+		...p,
+		ap: p.ap - apCost,
+	}));
+
+	// カードを捨て札へ
+	next = setDeck(next, playCard(next.deck, cardId));
+
+	// 攻撃判定（AP消費・カード使用後の状態で判定）
+	const result = canAttack(next, direction);
+	if (!result.hit) {
+		return { state: addActionLog(next, missLog), hit: false };
+	}
+
+	// 敵にダメージ（HP0以下で自動除去）
+	next = applyDamageToEnemy(next, result.enemyId, damage);
+
+	return { state: next, hit: true, enemyId: result.enemyId };
+}
+
+/**
+ * 攻撃カード使用時のプレイヤー攻撃処理
+ *
+ * 成功/失敗に関わらずAP消費・カード使用を行う。
+ * 成功時は敵にダメージを与え、HP0以下で敵を削除。
+ * 戻り値の hit でヒット情報を返す。
  */
 export function executeAttack(
 	state: GameState,
 	cardId: string,
 	direction: Direction,
 ): AttackResult {
-	// AP消費
-	let next = updatePlayer(state, (p) => ({
-		...p,
-		ap: p.ap - CARD_COST.attack,
-	}));
-
-	// カードを捨て札へ
-	next = setDeck(next, playCard(next.deck, cardId));
-
-	// 攻撃判定
-	const result = canAttack(state, direction);
-	if (!result.hit) {
-		return { state: addActionLog(next, "攻撃できなかった"), hit: false };
-	}
-
-	// 敵にダメージ（HP0以下で自動除去）
-	next = applyDamageToEnemy(next, result.enemyId, PLAYER_ATTACK_DAMAGE);
-
-	return { state: next, hit: true, enemyId: result.enemyId };
+	return executeAttackBase(
+		state,
+		cardId,
+		direction,
+		CARD_COST.attack,
+		PLAYER_ATTACK_DAMAGE,
+		"攻撃できなかった",
+	);
 }
 
 /**
  * 強攻撃カード使用時のプレイヤー攻撃処理
  *
  * 成功/失敗に関わらずAP消費・カード使用を行う。
- * 成功時は敵に大ダメージ、HP0以下で敵を削除。
- * 攻撃のヒット情報を含む結果を返す。
+ * 成功時は敵に大ダメージを与え、HP0以下で敵を削除。
+ * 戻り値の hit でヒット情報を返す。
  */
 export function executeStrongAttack(
 	state: GameState,
 	cardId: string,
 	direction: Direction,
 ): AttackResult {
-	// AP消費
-	let next = updatePlayer(state, (p) => ({
-		...p,
-		ap: p.ap - CARD_COST.strong_attack,
-	}));
-
-	// カードを捨て札へ
-	next = setDeck(next, playCard(next.deck, cardId));
-
-	// 攻撃判定
-	const result = canAttack(state, direction);
-	if (!result.hit) {
-		return { state: addActionLog(next, "強攻撃できなかった"), hit: false };
-	}
-
-	// 敵にダメージ（HP0以下で自動除去）
-	next = applyDamageToEnemy(next, result.enemyId, PLAYER_STRONG_ATTACK_DAMAGE);
-
-	return { state: next, hit: true, enemyId: result.enemyId };
+	return executeAttackBase(
+		state,
+		cardId,
+		direction,
+		CARD_COST.strong_attack,
+		PLAYER_STRONG_ATTACK_DAMAGE,
+		"強攻撃できなかった",
+	);
 }
 
 /** 突進実行結果 */
