@@ -2,13 +2,18 @@ import { describe, expect, it } from "vitest";
 import { BOSS_SKILL, ENEMY_PARAMS } from "../constants";
 import { createTestState } from "../test-utils/createTestFixtures";
 import type { Enemy } from "../types";
-import { RNG } from "../utils/rng";
+import type { RNG } from "../utils/rng";
 import {
 	checkEnrage,
 	decideBossSkill,
 	decideMinibossSkill,
 	executePendingSkill,
 } from "./bossSkill";
+
+/** random()が固定値を返すスタブRNG */
+function createStubRng(value: number): RNG {
+	return { random: () => value } as unknown as RNG;
+}
 
 describe("checkEnrage", () => {
 	it("HP50%以下のボスに激昂を付与する", () => {
@@ -75,19 +80,7 @@ describe("checkEnrage", () => {
 
 describe("decideMinibossSkill", () => {
 	it("確率に基づいてpower_strikeスキルを予告する", () => {
-		// RNGが閾値未満を返すケースを探す
-		let foundSeed = -1;
-		for (let seed = 0; seed < 100; seed++) {
-			const rng = new RNG(seed);
-			const val = rng.random();
-			if (val < BOSS_SKILL.powerStrikeChance) {
-				foundSeed = seed;
-				break;
-			}
-		}
-		expect(foundSeed).toBeGreaterThanOrEqual(0);
-
-		const rng = new RNG(foundSeed);
+		const rng = createStubRng(BOSS_SKILL.powerStrikeChance - 0.001);
 		const enemy: Enemy = {
 			id: "enemy-1",
 			type: "miniboss",
@@ -100,19 +93,7 @@ describe("decideMinibossSkill", () => {
 	});
 
 	it("確率外ではスキルを予告しない", () => {
-		// RNGが閾値以上を返すケースを探す
-		let foundSeed = -1;
-		for (let seed = 0; seed < 100; seed++) {
-			const rng = new RNG(seed);
-			const val = rng.random();
-			if (val >= BOSS_SKILL.powerStrikeChance) {
-				foundSeed = seed;
-				break;
-			}
-		}
-		expect(foundSeed).toBeGreaterThanOrEqual(0);
-
-		const rng = new RNG(foundSeed);
+		const rng = createStubRng(BOSS_SKILL.powerStrikeChance);
 		const enemy: Enemy = {
 			id: "enemy-1",
 			type: "miniboss",
@@ -125,7 +106,7 @@ describe("decideMinibossSkill", () => {
 	});
 
 	it("既に予告中のスキルがある場合は新しいスキルを予告しない", () => {
-		const rng = new RNG(0);
+		const rng = createStubRng(0);
 		const enemy: Enemy = {
 			id: "enemy-1",
 			type: "miniboss",
@@ -141,18 +122,7 @@ describe("decideMinibossSkill", () => {
 
 describe("decideBossSkill", () => {
 	it("確率に基づいてarea_attackスキルを予告する", () => {
-		let foundSeed = -1;
-		for (let seed = 0; seed < 100; seed++) {
-			const rng = new RNG(seed);
-			const val = rng.random();
-			if (val < BOSS_SKILL.areaAttackChance) {
-				foundSeed = seed;
-				break;
-			}
-		}
-		expect(foundSeed).toBeGreaterThanOrEqual(0);
-
-		const rng = new RNG(foundSeed);
+		const rng = createStubRng(BOSS_SKILL.areaAttackChance - 0.001);
 		const enemy: Enemy = {
 			id: "enemy-1",
 			type: "boss",
@@ -165,18 +135,7 @@ describe("decideBossSkill", () => {
 	});
 
 	it("確率外ではスキルを予告しない", () => {
-		let foundSeed = -1;
-		for (let seed = 0; seed < 100; seed++) {
-			const rng = new RNG(seed);
-			const val = rng.random();
-			if (val >= BOSS_SKILL.areaAttackChance) {
-				foundSeed = seed;
-				break;
-			}
-		}
-		expect(foundSeed).toBeGreaterThanOrEqual(0);
-
-		const rng = new RNG(foundSeed);
+		const rng = createStubRng(BOSS_SKILL.areaAttackChance);
 		const enemy: Enemy = {
 			id: "enemy-1",
 			type: "boss",
@@ -189,7 +148,7 @@ describe("decideBossSkill", () => {
 	});
 
 	it("既に予告中のスキルがある場合は新しいスキルを予告しない", () => {
-		const rng = new RNG(0);
+		const rng = createStubRng(0);
 		const enemy: Enemy = {
 			id: "enemy-1",
 			type: "boss",
