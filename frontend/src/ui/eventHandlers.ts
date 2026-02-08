@@ -24,6 +24,7 @@ import {
 	getScreenSize,
 	updateStateWithAttackAnimation,
 	updateStateWithBumpAnimation,
+	updateStateWithMissAnimation,
 	updateStateWithMoveAnimation,
 	updateStateWithStairsAnimation,
 } from "./gameAnimations";
@@ -91,7 +92,7 @@ async function handleAttackCardExecution(
 	if (hit && enemyId) {
 		await updateStateWithAttackAnimation(ctx, next, enemyId);
 	} else {
-		updateState(ctx, next);
+		await updateStateWithMissAnimation(ctx, next, direction);
 	}
 }
 
@@ -113,7 +114,7 @@ async function handleStrongAttackCardExecution(
 	if (hit && enemyId) {
 		await updateStateWithAttackAnimation(ctx, next, enemyId);
 	} else {
-		updateState(ctx, next);
+		await updateStateWithMissAnimation(ctx, next, direction);
 	}
 }
 
