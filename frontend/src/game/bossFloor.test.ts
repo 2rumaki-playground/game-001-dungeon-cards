@@ -80,7 +80,7 @@ describe("ボス階層判定", () => {
 
 describe("難易度テーブル拡張（10F〜20F）", () => {
 	describe("敵構成テーブル", () => {
-		it("5F: ボス1体を含む構成", () => {
+		it("5F: 中ボス1体を含む構成", () => {
 			const comp = getEnemyComposition(5);
 			expect(comp.miniboss).toBeGreaterThanOrEqual(1);
 		});
