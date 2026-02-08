@@ -143,7 +143,7 @@ git worktree add /tmp/wt-pr-<番号>
    ```
    （既にreviewerの場合の `Validation Failed` エラーは無視する）
 
-6. **PRをOPENに戻す**:
+6. **ドラフトを解除**:
    ```
    cd /tmp/wt-pr-<番号> && gh pr ready <番号>
    ```
