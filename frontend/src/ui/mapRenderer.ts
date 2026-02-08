@@ -411,6 +411,9 @@ export class MapRenderer {
 				// 非ボスタイプの場合、既存HPバーを削除
 				const hpBar = this.enemyHpBarMap.get(enemy.id);
 				if (hpBar) {
+					if (hpBar.parent) {
+						hpBar.parent.removeChild(hpBar);
+					}
 					hpBar.destroy();
 					this.enemyHpBarMap.delete(enemy.id);
 				}
