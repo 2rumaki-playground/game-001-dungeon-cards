@@ -5,15 +5,17 @@
 
 import { Container, Graphics, Text } from "pixi.js";
 import { CARD_COST } from "../constants";
-import type { Card, Direction } from "../types";
+import type { Card, CardType, Direction } from "../types";
 import { Easing, tween } from "../utils/tween";
 import {
 	CARD_COLORS as BASE_CARD_COLORS,
 	CARD_EFFECT_TEXT,
+	CARD_GLOW_COLORS,
 	CARD_TYPE_NAME,
 	CARD_TYPE_SYMBOL,
 } from "./cardConstants";
 import { drawRoundedRect, makeInteractive } from "./graphicsHelpers";
+import type { ParticleSystem } from "./particleSystem";
 import { UI_COLOR_GOLD, UI_COLORS_DISABLED } from "./uiColors";
 
 /** カード描画定数 */
@@ -40,8 +42,14 @@ const PULSE_SCALE = 1.1;
 /** 選択パルスの拡大時間（ms） */
 const PULSE_UP_DURATION = 80;
 
-/** 選択パルスの縮小時間（ms） */
-const PULSE_DOWN_DURATION = 100;
+/** 消費アニメーション：飛行時間（ms） */
+const CONSUME_FLY_DURATION = 200;
+
+/** 消費アニメーション：飛行先Y座標（相対） */
+const CONSUME_FLY_TARGET_Y = -70;
+
+/** 消費アニメーション：パーティクル数 */
+const CONSUME_PARTICLE_COUNT = 12;
 
 /**
  * カード内のクリック位置から方向を判定
@@ -94,15 +102,22 @@ const CARD_COLORS = {
  */
 export class HandRenderer {
 	private container: Container;
+	private particleSystem: ParticleSystem | null;
 	private selectedCardId: string | null = null;
 	private hoveredCardId: string | null = null;
 	private currentHand: Card[] = [];
 	private currentAp = 0;
-	private onCardSelect: ((card: Card, direction?: Direction) => void) | null =
-		null;
+	private onCardSelect:
+		| ((
+				card: Card,
+				direction?: Direction,
+		  ) => undefined | false | Promise<undefined | false>)
+		| null = null;
+	private isInputLocked = false;
 
-	constructor() {
+	constructor(particleSystem?: ParticleSystem) {
 		this.container = new Container();
+		this.particleSystem = particleSystem ?? null;
 	}
 
 	/**
@@ -116,7 +131,12 @@ export class HandRenderer {
 	 * カード選択コールバックを設定
 	 * @param callback カード選択時のコールバック。方向パラメータを持つカードの場合、クリック位置に応じた方向も渡される
 	 */
-	setOnCardSelect(callback: (card: Card, direction?: Direction) => void): void {
+	setOnCardSelect(
+		callback: (
+			card: Card,
+			direction?: Direction,
+		) => undefined | false | Promise<undefined | false>,
+	): void {
 		this.onCardSelect = callback;
 	}
 
@@ -357,22 +377,47 @@ export class HandRenderer {
 		// インタラクション
 		if (enabled) {
 			makeInteractive(cardContainer, (event) => {
-				this.animateCardPulse(cardContainer);
-				// 方向パラメータを持つカードの場合、クリック位置から方向を判定
+				// 二重クリック防止：アニメーション中は追加クリックを無視
+				if (this.isInputLocked) return;
+				this.isInputLocked = true;
+				this.hoveredCardId = null;
+
+				// 方向判定はアニメーション前に計算して保持
+				let direction: Direction | undefined;
 				if (
 					card.type === "move" ||
 					card.type === "attack" ||
 					card.type === "strong_attack" ||
 					card.type === "rush"
 				) {
-					const direction = getDirectionFromClickPosition(
-						event.global.x - cardContainer.getGlobalPosition().x,
-						event.global.y - cardContainer.getGlobalPosition().y,
+					const cardGlobalPos = cardContainer.getGlobalPosition();
+					direction = getDirectionFromClickPosition(
+						event.global.x - cardGlobalPos.x,
+						event.global.y - cardGlobalPos.y,
 					);
-					this.onCardSelect?.(card, direction);
-				} else {
-					this.onCardSelect?.(card);
 				}
+
+				const invokeCallback = () => {
+					if (direction !== undefined) {
+						return this.onCardSelect?.(card, direction);
+					}
+					return this.onCardSelect?.(card);
+				};
+
+				Promise.resolve()
+					.then(invokeCallback)
+					.then((result) => {
+						// onCardSelectがfalseを返した場合は無効クリック（アニメーションスキップ）
+						if (result === false) return;
+						return this.animateCardConsume(cardContainer, card.type);
+					})
+					.catch((error) => {
+						console.error("onCardSelect callback failed:", error);
+					})
+					.finally(() => {
+						this.isInputLocked = false;
+						this.render(this.currentHand, this.currentAp);
+					});
 			});
 
 			cardContainer.on("pointerover", () => {
@@ -392,22 +437,44 @@ export class HandRenderer {
 	}
 
 	/**
-	 * カード選択時のパルスアニメーション（fire-and-forget）
+	 * カード消費アニメーション
+	 * パルス拡大 → 飛行+縮小+フェード → パーティクル放出
 	 */
-	private async animateCardPulse(container: Container): Promise<void> {
+	private async animateCardConsume(
+		container: Container,
+		cardType: CardType,
+	): Promise<void> {
 		try {
+			// フェーズ1a: パルス拡大
 			await tween(
 				container,
 				{ scaleX: PULSE_SCALE, scaleY: PULSE_SCALE },
 				{ duration: PULSE_UP_DURATION, easing: Easing.easeOut },
 			);
+			// フェーズ1b: 飛行+縮小+フェード
+			const flyTargetY = container.y + CONSUME_FLY_TARGET_Y;
 			await tween(
 				container,
-				{ scaleX: 1, scaleY: 1 },
-				{ duration: PULSE_DOWN_DURATION, easing: Easing.easeOut },
+				{ y: flyTargetY, scaleX: 0.3, scaleY: 0.3, alpha: 0 },
+				{ duration: CONSUME_FLY_DURATION, easing: Easing.easeOut },
 			);
-		} catch {
-			// render() でカードが破棄された場合のエラーは無視
+			// フェーズ2: パーティクル放出（fire-and-forget）
+			if (this.particleSystem) {
+				const globalPos = container.getGlobalPosition();
+				const localPos = this.particleSystem.getContainer().toLocal(globalPos);
+				this.particleSystem.emit({
+					count: CONSUME_PARTICLE_COUNT,
+					origin: { x: localPos.x, y: localPos.y },
+					color: CARD_GLOW_COLORS[cardType],
+					speed: { min: 50, max: 150 },
+					life: { min: 300, max: 600 },
+					size: { min: 2, max: 5 },
+					pattern: { type: "radial" },
+				});
+			}
+		} catch (e) {
+			// render() によるカード破棄等、想定内のタイミングエラーの可能性があるため warn で記録
+			console.warn("animateCardConsume failed:", e);
 		}
 	}
 
