@@ -437,9 +437,10 @@ export class HandRenderer {
 			// フェーズ2: パーティクル放出（fire-and-forget）
 			if (this.particleSystem) {
 				const globalPos = container.getGlobalPosition();
+				const localPos = this.particleSystem.getContainer().toLocal(globalPos);
 				this.particleSystem.emit({
 					count: CONSUME_PARTICLE_COUNT,
-					origin: { x: globalPos.x, y: globalPos.y },
+					origin: { x: localPos.x, y: localPos.y },
 					color: CARD_GLOW_COLORS[cardType],
 					speed: { min: 50, max: 150 },
 					life: { min: 300, max: 600 },

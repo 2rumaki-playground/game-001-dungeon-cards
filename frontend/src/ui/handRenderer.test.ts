@@ -268,9 +268,15 @@ describe("HandRenderer ホバー・選択演出", () => {
 	});
 
 	it("ParticleSystem付きの場合、消費アニメーション後にemitが呼ばれる", async () => {
+		const mockContainer = {
+			toLocal: vi.fn((pos: { x: number; y: number }) => ({
+				x: pos.x,
+				y: pos.y,
+			})),
+		};
 		const mockParticleSystem = {
 			emit: vi.fn().mockResolvedValue(undefined),
-			getContainer: vi.fn(),
+			getContainer: vi.fn().mockReturnValue(mockContainer),
 			clear: vi.fn(),
 		};
 		const renderer = new HandRenderer(mockParticleSystem as never);
