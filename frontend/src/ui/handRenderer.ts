@@ -399,7 +399,13 @@ export class HandRenderer {
 				};
 
 				this.animateCardConsume(cardContainer, card.type)
-					.then(() => Promise.resolve(invokeCallback()))
+					.then(() =>
+						Promise.resolve()
+							.then(invokeCallback)
+							.catch((error) => {
+								console.error("onCardSelect callback failed:", error);
+							}),
+					)
 					.finally(() => {
 						// onCardSelect側で入力が無効化されていた場合でも、
 						// 手札UIがフェードアウトしたまま残らないように必ず再描画する
