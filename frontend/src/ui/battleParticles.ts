@@ -3,7 +3,7 @@
  * カードタイプ別のパーティクルエフェクト設定を生成する純粋関数群
  */
 
-import type { CardType } from "../types/card";
+import type { CardType } from "../types";
 import type { ParticleConfig, Vec2 } from "./particleLogic";
 
 /** 攻撃ヒット時に使用可能なカードタイプ */
