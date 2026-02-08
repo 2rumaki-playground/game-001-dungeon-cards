@@ -87,6 +87,19 @@ export function createInitialDeckState(rng: RNG): DeckState {
 }
 
 /**
+ * ドロー時に捨て札→山札のリシャッフルが発生するかを判定
+ * アニメーション制御用
+ */
+export function willReshuffle(deck: DeckState, count?: number): boolean {
+	const drawCount = count ?? Math.max(0, HAND_LIMIT - deck.hand.length);
+	return (
+		drawCount > 0 &&
+		deck.drawPile.length < drawCount &&
+		deck.discardPile.length > 0
+	);
+}
+
+/**
  * 山札からカードを引いて手札に加える
  * 山札が不足する場合は捨て札をシャッフルして山札に戻す
  */

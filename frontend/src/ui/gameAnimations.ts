@@ -311,7 +311,9 @@ export async function updateStateWithStairsAnimation(
 			await ctx.ui.floorBanner.hide();
 		});
 
-		// 6. フェードイン後に手札配布アニメーション
+		// 6. フェードイン後にシャッフル演出→手札配布アニメーション
+		// 階層遷移時は全デッキリシャッフルが行われるため常にシャッフル演出を表示
+		await ctx.ui.handRenderer.animateShuffle();
 		await ctx.ui.handRenderer.renderWithAnimation(
 			ctx.state.deck.hand,
 			ctx.state.player.ap,
@@ -404,7 +406,9 @@ export async function animateRushWithStairs(
 			await ctx.ui.floorBanner.hide();
 		});
 
-		// 7. フェードイン後に手札配布アニメーション
+		// 7. フェードイン後にシャッフル演出→手札配布アニメーション
+		// 階層遷移時は全デッキリシャッフルが行われるため常にシャッフル演出を表示
+		await ctx.ui.handRenderer.animateShuffle();
 		await ctx.ui.handRenderer.renderWithAnimation(
 			ctx.state.deck.hand,
 			ctx.state.player.ap,

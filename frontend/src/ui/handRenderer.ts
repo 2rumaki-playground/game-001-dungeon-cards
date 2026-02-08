@@ -33,6 +33,18 @@ const DEAL_ANIMATION_DELAY = 80; // カード間のディレイ（ms）
 const DECK_OFFSET_X = -300; // 山札の位置（手札コンテナからの相対X）
 const DECK_OFFSET_Y = -50; // 山札の位置（手札コンテナからの相対Y）
 
+/** シャッフルアニメーション定数 */
+const SHUFFLE_CARD_COUNT = 5; // シャッフル演出で表示するカード枚数
+const SHUFFLE_SCATTER_DURATION = 200; // 散らばるアニメーション時間（ms）
+const SHUFFLE_GATHER_DURATION = 200; // 集まるアニメーション時間（ms）
+const SHUFFLE_SCATTER_DELAY = 30; // カード間のディレイ（ms）
+const SHUFFLE_GATHER_DELAY = 30; // 集まり時のディレイ（ms）
+const SHUFFLE_SCATTER_RANGE_X = 60; // 散らばりのX範囲（px）
+const SHUFFLE_SCATTER_RANGE_Y = 30; // 散らばりのY範囲（px）
+const SHUFFLE_ROTATION_RANGE = 0.3; // 散らばり時の回転範囲（rad）
+const SHUFFLE_CARD_COLOR = 0x445566; // シャッフル演出のカード裏面色
+const SHUFFLE_CARD_BORDER_COLOR = 0x667788; // カード裏面の枠色
+
 /** ホバー時の浮き上がり距離（px） */
 const HOVER_LIFT = 8;
 
@@ -503,6 +515,117 @@ export class HandRenderer {
 			arrowText.y = arrow.y;
 			cardContainer.addChild(arrowText);
 		}
+	}
+
+	/**
+	 * シャッフルアニメーション
+	 * 捨て札→山札リシャッフル時に、山札位置でカードが散らばって集まる演出
+	 * @returns アニメーション完了時にresolveするPromise
+	 */
+	async animateShuffle(): Promise<void> {
+		this.container.removeChildren();
+
+		const cards: Container[] = [];
+
+		// シャッフル演出用のカード裏面を生成
+		for (let i = 0; i < SHUFFLE_CARD_COUNT; i++) {
+			const card = new Container();
+			card.x = DECK_OFFSET_X;
+			card.y = DECK_OFFSET_Y;
+
+			const bg = new Graphics();
+			drawRoundedRect(
+				bg,
+				CARD_WIDTH,
+				CARD_HEIGHT,
+				CARD_RADIUS,
+				SHUFFLE_CARD_COLOR,
+				{ color: SHUFFLE_CARD_BORDER_COLOR, width: 2 },
+			);
+			card.addChild(bg);
+
+			// カード裏面の模様（中央に菱形パターン）
+			const pattern = new Graphics();
+			const cx = CARD_WIDTH / 2;
+			const cy = CARD_HEIGHT / 2;
+			pattern.moveTo(cx, cy - 20);
+			pattern.lineTo(cx + 15, cy);
+			pattern.lineTo(cx, cy + 20);
+			pattern.lineTo(cx - 15, cy);
+			pattern.closePath();
+			pattern.stroke({ color: SHUFFLE_CARD_BORDER_COLOR, width: 1.5 });
+			card.addChild(pattern);
+
+			card.pivot.set(CARD_WIDTH / 2, CARD_HEIGHT / 2);
+			card.x = DECK_OFFSET_X + CARD_WIDTH / 2;
+			card.y = DECK_OFFSET_Y + CARD_HEIGHT / 2;
+			card.alpha = 0;
+
+			this.container.addChild(card);
+			cards.push(card);
+		}
+
+		// 散らばる目標位置を事前計算（対称的な配置）
+		const scatterTargets = cards.map((_, i) => {
+			const angle =
+				((i - Math.floor(SHUFFLE_CARD_COUNT / 2)) /
+					Math.max(SHUFFLE_CARD_COUNT - 1, 1)) *
+				2;
+			return {
+				x: DECK_OFFSET_X + CARD_WIDTH / 2 + angle * SHUFFLE_SCATTER_RANGE_X,
+				y:
+					DECK_OFFSET_Y +
+					CARD_HEIGHT / 2 +
+					(Math.abs(angle) - 1) * SHUFFLE_SCATTER_RANGE_Y,
+				rotation: angle * SHUFFLE_ROTATION_RANGE,
+			};
+		});
+
+		// フェーズ1: 散らばる
+		const scatterPromises = cards.map((card, i) =>
+			tween(
+				card,
+				{
+					x: scatterTargets[i].x,
+					y: scatterTargets[i].y,
+					alpha: 1,
+					rotation: scatterTargets[i].rotation,
+				},
+				{
+					duration: SHUFFLE_SCATTER_DURATION,
+					delay: i * SHUFFLE_SCATTER_DELAY,
+					easing: Easing.easeOutCubic,
+				},
+			),
+		);
+		await Promise.all(scatterPromises);
+
+		// フェーズ2: 集まる
+		const gatherPromises = cards.map((card, i) =>
+			tween(
+				card,
+				{
+					x: DECK_OFFSET_X + CARD_WIDTH / 2,
+					y: DECK_OFFSET_Y + CARD_HEIGHT / 2,
+					alpha: 0.8,
+					rotation: 0,
+				},
+				{
+					duration: SHUFFLE_GATHER_DURATION,
+					delay: i * SHUFFLE_GATHER_DELAY,
+					easing: Easing.easeInOut,
+				},
+			),
+		);
+		await Promise.all(gatherPromises);
+
+		// フェーズ3: フェードアウト
+		const fadePromises = cards.map((card) =>
+			tween(card, { alpha: 0 }, { duration: 100, easing: Easing.easeOut }),
+		);
+		await Promise.all(fadePromises);
+
+		this.container.removeChildren();
 	}
 
 	/**

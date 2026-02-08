@@ -13,6 +13,7 @@ import {
 	returnToTitle,
 	startNewGame,
 	startPlayerTurn,
+	willReshuffle,
 } from "../game";
 import type { GameContext } from "../gameContext";
 import type { Direction } from "../types";
@@ -344,6 +345,9 @@ export function setupEventHandlers(ctx: GameContext): void {
 			}
 
 			if (next.screen !== "gameOver") {
+				// リシャッフル判定（startPlayerTurn内のdrawCards前の状態で判定）
+				const needsShuffle = willReshuffle(next.deck);
+
 				next = startPlayerTurn(next);
 
 				// プレイヤーターンバナー表示
@@ -351,6 +355,12 @@ export function setupEventHandlers(ctx: GameContext): void {
 
 				applyState(ctx, next);
 				render(ctx, true);
+
+				// リシャッフル演出（ドロー前に実行）
+				if (needsShuffle) {
+					await ctx.ui.handRenderer.animateShuffle();
+				}
+
 				await ctx.ui.handRenderer.renderWithAnimation(
 					ctx.state.deck.hand,
 					ctx.state.player.ap,
