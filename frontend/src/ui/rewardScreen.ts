@@ -18,6 +18,7 @@ import {
 	drawRoundedRect,
 	makeInteractive,
 } from "./graphicsHelpers";
+import { UI_COLOR_GOLD, UI_COLORS_BUTTON_SECONDARY } from "./uiColors";
 
 /** カードサイズ */
 const REWARD_CARD_WIDTH = 120;
@@ -89,7 +90,7 @@ export class RewardScreen {
 			style: {
 				fontSize: 28,
 				fontFamily: "sans-serif",
-				fill: 0xffd700,
+				fill: UI_COLOR_GOLD,
 				fontWeight: "bold",
 			},
 		});
@@ -214,8 +215,8 @@ export class RewardScreen {
 			"スキップ",
 			screenWidth / 2 - BUTTON_WIDTH / 2,
 			cancelY,
-			0x555555,
-			0x777777,
+			UI_COLORS_BUTTON_SECONDARY.bg,
+			UI_COLORS_BUTTON_SECONDARY.border,
 			() => {
 				// キャンセル = スキップ扱い
 				this.onSkip?.(0);
@@ -347,8 +348,8 @@ export class RewardScreen {
 			"スキップ",
 			(REWARD_CARD_WIDTH - BUTTON_WIDTH) / 2,
 			118 + BUTTON_HEIGHT + 4,
-			0x555555,
-			0x777777,
+			UI_COLORS_BUTTON_SECONDARY.bg,
+			UI_COLORS_BUTTON_SECONDARY.border,
 			() => this.onSkip?.(index),
 		);
 		cardContainer.addChild(skipBtn);
