@@ -193,9 +193,18 @@ export function tween(
 		};
 
 		let elapsed = -delay;
+		let aborted = false;
 		const ticker = Ticker.shared;
 
+		const cleanup = (): void => {
+			if (signal && onAbort) {
+				signal.removeEventListener("abort", onAbort);
+			}
+		};
+
 		const update = (tick: Ticker): void => {
+			if (aborted) return;
+
 			try {
 				elapsed += tick.deltaMS;
 
@@ -234,24 +243,28 @@ export function tween(
 
 				if (progress >= 1) {
 					ticker.remove(update);
+					cleanup();
 					onComplete?.();
 					resolve();
 				}
 			} catch (error) {
 				ticker.remove(update);
+				cleanup();
 				reject(error);
 			}
 		};
 
 		// signalでキャンセル時にTickerから外す
-		signal?.addEventListener(
-			"abort",
-			() => {
-				ticker.remove(update);
-				resolve();
-			},
-			{ once: true },
-		);
+		const onAbort = signal
+			? () => {
+					aborted = true;
+					ticker.remove(update);
+					resolve();
+				}
+			: undefined;
+		if (signal && onAbort) {
+			signal.addEventListener("abort", onAbort, { once: true });
+		}
 
 		ticker.add(update);
 	});
