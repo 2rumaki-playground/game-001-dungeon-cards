@@ -20,7 +20,8 @@
 
 1. `pnpm format` — フォーマット適用
 2. `pnpm lint` — リントチェック
-3. `pnpm test:run` — ユニットテスト全通過を確認
+3. `pnpm build` — TypeScriptビルド確認
+4. `pnpm test:run` — ユニットテスト全通過を確認
 
 問題が見つかった場合は修正してから次に進む。
 
