@@ -49,6 +49,7 @@ Issue間の依存関係を分析し、**番号が若い順にPR作成すれば�
 
 ```
 gh issue create \
+  --repo {owner}/{repo} \
   --title "refactor: <日本語の簡潔な説明>" \
   --body "$(cat <<'EOF'
 ## 背景
