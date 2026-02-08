@@ -29,11 +29,11 @@
 2. `playwright-cli snapshot` でページ構造を確認
 3. `playwright-cli click <ref>` や `playwright-cli fill <ref> <text>` で操作
 4. 操作ごとに `playwright-cli snapshot` で状態を確認
-5. 確認した操作手順をもとに `@playwright/test` のE2Eテストコードを `frontend/e2e/` に実装
+5. 確認した操作手順をもとに `@playwright/test` のE2Eテストコードを `e2e/` に実装
 
 ## テストコード実装
 
-フロー確認後、`frontend/e2e/` ディレクトリに `@playwright/test` でテストを実装する:
+フロー確認後、`e2e/` ディレクトリに `@playwright/test` でテストを実装する:
 
 ```typescript
 import { test, expect } from "@playwright/test";
@@ -47,7 +47,6 @@ test("テスト名", async ({ page }) => {
 ## テスト実行
 
 ```bash
-cd frontend
 pnpm test:e2e          # ヘッドレス実行
 pnpm test:e2e:ui       # UI モードで実行
 ```

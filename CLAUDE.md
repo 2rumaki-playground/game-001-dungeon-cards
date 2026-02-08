@@ -54,10 +54,6 @@ Issueとして起票する：
 
 ## 技術スタック
 
-### フロントエンド
-
-`frontend/` ディレクトリで管理
-
 - **言語**: TypeScript
 - **ビルドツール**: Vite
 - **描画ライブラリ**: PixiJS
@@ -65,19 +61,11 @@ Issueとして起票する：
 - **リンター/フォーマッター**: Biome
 - **テスト**: Vitest
 
-### バックエンド（予定）
-
-- ASP.NET Core (.NET 10) Minimal API
-- テスト: xUnit
-- DB: MVPでは使用しない
-
-## フロントエンド開発
+## 開発
 
 ### コマンド
 
 ```bash
-cd frontend
-
 pnpm install     # 依存関係のインストール
 pnpm dev         # 開発サーバー起動
 pnpm build       # プロダクションビルド
@@ -91,7 +79,7 @@ pnpm test:run    # テスト実行（1回のみ）
 ### ディレクトリ構造
 
 ```
-frontend/src/
+src/
 ├── main.ts          # エントリーポイント
 ├── constants.ts     # 定数（constants.mdの値）
 ├── types/           # 型定義
@@ -106,7 +94,7 @@ frontend/src/
 - クォートスタイル: ダブルクォート (`"`)
 - import文の自動整理: 有効
 
-これらは `frontend/biome.json` で設定済み
+これらは `biome.json` で設定済み
 
 ## 言語
 

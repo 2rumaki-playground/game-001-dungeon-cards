@@ -12,7 +12,7 @@ if [[ "$command" != *"git commit"* ]]; then
   exit 0
 fi
 
-cd "$CLAUDE_PROJECT_DIR/frontend"
+cd "$CLAUDE_PROJECT_DIR"
 
 echo "biome format を実行中..." >&2
 pnpm format >&2
@@ -24,8 +24,7 @@ if ! pnpm lint >&2; then
 fi
 
 # フォーマットで変更されたファイルを再ステージ
-cd "$CLAUDE_PROJECT_DIR"
-changed=$(git diff --name-only -- frontend/src/)
+changed=$(git diff --name-only -- src/)
 if [ -n "$changed" ]; then
   echo "フォーマットで変更されたファイルを再ステージ..." >&2
   echo "$changed" | xargs git add

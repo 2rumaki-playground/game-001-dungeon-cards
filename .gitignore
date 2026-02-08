@@ -140,5 +140,21 @@ vite.config.ts.timestamp-*
 # JetBrains IDEs
 .idea/
 
+# Playwright
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
+
+# Build artifacts
+dist-ssr
+*.local
+
+# Lock files (use pnpm-lock.yaml)
+package-lock.json
+
+# pnpm
+pnpm-debug.log*
+
 # Playwright CLI
 .playwright-cli/

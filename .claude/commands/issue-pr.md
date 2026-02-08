@@ -54,7 +54,7 @@ git branch <ブランチ名> main
 git worktree add /tmp/wt-issue-<番号> <ブランチ名>
 
 # worktreeで依存関係をインストール（サブシェルで実行し、カレントディレクトリを維持）
-(cd /tmp/wt-issue-<番号>/frontend && pnpm install)
+(cd /tmp/wt-issue-<番号> && pnpm install)
 ```
 
 - ブランチ名の規則は [単一処理モードのステップ3](#3-ブランチの作成) と同じ
@@ -92,11 +92,11 @@ git worktree add /tmp/wt-issue-<番号> <ブランチ名>
    - Green: テストが通る最小限の実装
    - Refactor: 必要に応じてリファクタリング
 3. **コミット前チェック**（各コミットの前に必ず実行）:
-   - `cd /tmp/wt-issue-<番号>/frontend && pnpm format`
-   - `cd /tmp/wt-issue-<番号>/frontend && pnpm lint`
-   - `cd /tmp/wt-issue-<番号>/frontend && pnpm build`
-   - `cd /tmp/wt-issue-<番号>/frontend && pnpm test:run`
-   - `cd /tmp/wt-issue-<番号>/frontend && pnpm test:e2e`
+   - `cd /tmp/wt-issue-<番号> && pnpm format`
+   - `cd /tmp/wt-issue-<番号> && pnpm lint`
+   - `cd /tmp/wt-issue-<番号> && pnpm build`
+   - `cd /tmp/wt-issue-<番号> && pnpm test:run`
+   - `cd /tmp/wt-issue-<番号> && pnpm test:e2e`
 4. **コミット**: Conventional Commits形式、日本語、50文字以内
    - `git -C /tmp/wt-issue-<番号> add <files>`
    - `git -C /tmp/wt-issue-<番号> commit -m "<message>"`
@@ -181,12 +181,12 @@ Issue の内容に従い、TDD（テスト駆動開発）で実装を行って�
 - Conventional Commits形式、日本語、50文字以内
 - 例: `feat: カード効果の実装`
 - **粒度**: 意味のあるまとまりごとにコミットする。1つのIssueに対して複数コミットでよい（例: テスト追加、実装、リファクタリングを分けるなど）。ただし、Red（失敗するテストのみ）の状態ではコミットしない
-- **コミット前チェック**: 各コミットの前に以下を**リポジトリルートから**実行し、問題があれば修正してからコミットする（`package.json` は `frontend/` にのみ存在する）
-  1. `(cd frontend && pnpm format)` — フォーマット適用
-  2. `(cd frontend && pnpm lint)` — リントチェック
-  3. `(cd frontend && pnpm build)` — TypeScriptビルド確認
-  4. `(cd frontend && pnpm test:run)` — ユニットテスト全通過を確認
-  5. `(cd frontend && pnpm test:e2e)` — E2Eテスト全通過を確認
+- **コミット前チェック**: 各コミットの前に以下を実行し、問題があれば修正してからコミットする
+  1. `pnpm format` — フォーマット適用
+  2. `pnpm lint` — リントチェック
+  3. `pnpm build` — TypeScriptビルド確認
+  4. `pnpm test:run` — ユニットテスト全通過を確認
+  5. `pnpm test:e2e` — E2Eテスト全通過を確認
 
 ### 7. 仕様の曖昧さへの対応
 
