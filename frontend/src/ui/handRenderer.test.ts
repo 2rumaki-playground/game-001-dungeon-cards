@@ -419,17 +419,19 @@ describe("HandRenderer ホバー・選択演出", () => {
 		// コールバックのPromiseを解決
 		resolveCallback();
 
-		// 解決後に入力ロックが解除され、再クリック可能になる
+		// 再描画完了（新しいカードコンテナが取得できる状態）になるまで待機
 		await vi.waitFor(() => {
-			// render()による再描画後に新しいカードコンテナを取得
 			const card2After = findCardContainer(renderer, 2);
-			card2After.emit("pointerdown", {
-				global: { x: 0, y: 0 },
-			} as FederatedPointerEvent);
-			expect(mockedTween.mock.calls.length).toBeGreaterThan(
-				tweenCountAfterFirst,
-			);
+			// 再描画によりコンテナが差し替わったことを確認
+			expect(card2After).not.toBe(card2);
 		});
+
+		// 再描画完了後に、改めて新しいカードコンテナを取得してクリック
+		const card2After = findCardContainer(renderer, 2);
+		card2After.emit("pointerdown", {
+			global: { x: 0, y: 0 },
+		} as FederatedPointerEvent);
+		expect(mockedTween.mock.calls.length).toBeGreaterThan(tweenCountAfterFirst);
 	});
 
 	it("ParticleSystem付きの場合、消費アニメーション後にemitが呼ばれる", async () => {
