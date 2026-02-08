@@ -15,7 +15,7 @@ const BUTTON_GAP = 16;
 /** ボタン色定義 */
 const BUTTON_COLORS = {
 	active: UI_COLORS_BUTTON_PRIMARY,
-	disabled: { bg: UI_COLORS_DISABLED.bg, border: UI_COLORS_DISABLED.border },
+	disabled: UI_COLORS_DISABLED,
 } as const;
 
 /**
