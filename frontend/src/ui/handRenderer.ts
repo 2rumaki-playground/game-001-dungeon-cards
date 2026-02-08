@@ -14,6 +14,7 @@ import {
 	CARD_TYPE_SYMBOL,
 } from "./cardConstants";
 import { drawRoundedRect } from "./graphicsHelpers";
+import { UI_COLOR_GOLD, UI_COLORS_DISABLED } from "./uiColors";
 
 /** カード描画定数 */
 export const CARD_WIDTH = 90;
@@ -83,8 +84,8 @@ export function getDirectionFromClickPosition(
 /** handRenderer固有のカード色拡張 */
 const CARD_COLORS = {
 	...BASE_CARD_COLORS,
-	disabled: { bg: 0x2a2a2a, border: 0x4a4a4a },
-	selectedBorder: 0xffd700,
+	disabled: { bg: UI_COLORS_DISABLED.bg, border: UI_COLORS_DISABLED.border },
+	selectedBorder: UI_COLOR_GOLD,
 	hoveredBorder: 0x88ccff,
 } as const;
 

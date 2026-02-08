@@ -7,14 +7,15 @@ import { Container, Graphics, Text } from "pixi.js";
 import type { Turn } from "../types";
 import { drawRoundedRect } from "./graphicsHelpers";
 import { BUTTON_HEIGHT, TURN_END_BUTTON_WIDTH as BUTTON_WIDTH } from "./layout";
+import { UI_COLORS_BUTTON_PRIMARY, UI_COLORS_DISABLED } from "./uiColors";
 
 /** ボタンサイズ */
 const BUTTON_RADIUS = 6;
 
 /** ボタン色定義 */
 const BUTTON_COLORS = {
-	active: { bg: 0x2a5a8c, border: 0x4a8cca, text: 0xffffff },
-	disabled: { bg: 0x2a2a2a, border: 0x4a4a4a, text: 0x666666 },
+	active: { ...UI_COLORS_BUTTON_PRIMARY, text: 0xffffff },
+	disabled: UI_COLORS_DISABLED,
 } as const;
 
 /**

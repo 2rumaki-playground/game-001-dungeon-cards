@@ -20,6 +20,7 @@ import {
 	makeInteractive,
 } from "./graphicsHelpers";
 import { BUTTON_HEIGHT, DECK_BUTTON_WIDTH } from "./layout";
+import { UI_COLOR_GOLD, UI_COLORS_BUTTON_SECONDARY } from "./uiColors";
 
 /** カード行の高さ・間隔 */
 const CARD_ROW_HEIGHT = 52;
@@ -143,7 +144,7 @@ export class DeckViewer {
 			style: {
 				fontSize: 24,
 				fontFamily: "sans-serif",
-				fill: 0xffd700,
+				fill: UI_COLOR_GOLD,
 				fontWeight: "bold",
 			},
 		});
@@ -267,8 +268,8 @@ export class DeckViewer {
 			CLOSE_BUTTON_WIDTH,
 			CLOSE_BUTTON_HEIGHT,
 			CLOSE_BUTTON_RADIUS,
-			0x555555,
-			{ color: 0x777777, width: 1 },
+			UI_COLORS_BUTTON_SECONDARY.bg,
+			{ color: UI_COLORS_BUTTON_SECONDARY.border, width: 1 },
 		);
 		button.addChild(bg);
 

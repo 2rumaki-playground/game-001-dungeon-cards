@@ -4,6 +4,7 @@
 
 import { Container, Graphics, Text } from "pixi.js";
 import { drawRoundedRect, makeInteractive } from "./graphicsHelpers";
+import { UI_COLORS_BUTTON_PRIMARY, UI_COLORS_DISABLED } from "./uiColors";
 
 /** ボタン描画定数 */
 const BUTTON_WIDTH = 240;
@@ -13,8 +14,8 @@ const BUTTON_GAP = 16;
 
 /** ボタン色定義 */
 const BUTTON_COLORS = {
-	active: { bg: 0x2a5a8c, border: 0x4a8cca },
-	disabled: { bg: 0x2a2a2a, border: 0x4a4a4a },
+	active: UI_COLORS_BUTTON_PRIMARY,
+	disabled: { bg: UI_COLORS_DISABLED.bg, border: UI_COLORS_DISABLED.border },
 } as const;
 
 /**

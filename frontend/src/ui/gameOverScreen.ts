@@ -4,6 +4,7 @@
 
 import { Container, Graphics, Text } from "pixi.js";
 import { drawRoundedRect, makeInteractive } from "./graphicsHelpers";
+import { UI_COLORS_BUTTON_PRIMARY } from "./uiColors";
 
 /** ボタン描画定数 */
 const BUTTON_WIDTH = 240;
@@ -11,10 +12,7 @@ const BUTTON_HEIGHT = 48;
 const BUTTON_RADIUS = 8;
 
 /** ボタン色定義 */
-const BUTTON_COLORS = {
-	bg: 0x2a5a8c,
-	border: 0x4a8cca,
-} as const;
+const BUTTON_COLORS = UI_COLORS_BUTTON_PRIMARY;
 
 /**
  * ゲームオーバー画面レンダラー
