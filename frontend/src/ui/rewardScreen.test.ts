@@ -1,8 +1,14 @@
 import type { FederatedPointerEvent } from "pixi.js";
 import { describe, expect, it, vi } from "vitest";
+import { createTweenMock, mockEasing } from "../test-utils/mockTween";
 import type { Card } from "../types";
 import type { ParticleSystem } from "./particleSystem";
 import { RewardScreen } from "./rewardScreen";
+
+vi.mock("../utils/tween", () => ({
+	Easing: mockEasing,
+	tween: createTweenMock(),
+}));
 
 describe("RewardScreen", () => {
 	describe("コンストラクタ", () => {
@@ -191,6 +197,50 @@ describe("RewardScreen", () => {
 			await expect(
 				screen.animateCardAcquire(999, "move"),
 			).resolves.toBeUndefined();
+		});
+
+		it("render後にemitがレアリティに応じた引数で呼ばれる（common）", async () => {
+			const screen = new RewardScreen();
+			const mockEmit = vi.fn().mockResolvedValue(undefined);
+			const mockGetContainer = vi.fn().mockReturnValue({
+				toLocal: (pos: { x: number; y: number }) => pos,
+			});
+			const mockParticle = {
+				emit: mockEmit,
+				getContainer: mockGetContainer,
+			} as unknown as ParticleSystem;
+			screen.setParticleSystem(mockParticle);
+			screen.render(["move"], 600, 400);
+
+			await screen.animateCardAcquire(0, "move");
+			expect(mockEmit).toHaveBeenCalledTimes(1);
+			expect(mockEmit).toHaveBeenCalledWith(
+				expect.objectContaining({
+					count: 12,
+				}),
+			);
+		});
+
+		it("render後にemitがレアリティに応じた引数で呼ばれる（rare）", async () => {
+			const screen = new RewardScreen();
+			const mockEmit = vi.fn().mockResolvedValue(undefined);
+			const mockGetContainer = vi.fn().mockReturnValue({
+				toLocal: (pos: { x: number; y: number }) => pos,
+			});
+			const mockParticle = {
+				emit: mockEmit,
+				getContainer: mockGetContainer,
+			} as unknown as ParticleSystem;
+			screen.setParticleSystem(mockParticle);
+			screen.render(["rush"], 600, 400);
+
+			await screen.animateCardAcquire(0, "rush");
+			expect(mockEmit).toHaveBeenCalledTimes(1);
+			expect(mockEmit).toHaveBeenCalledWith(
+				expect.objectContaining({
+					count: 30,
+				}),
+			);
 		});
 	});
 });
