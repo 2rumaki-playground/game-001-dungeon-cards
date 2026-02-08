@@ -101,9 +101,9 @@ git worktree add /tmp/wt-issue-<番号> <ブランチ名>
    - `git -C /tmp/wt-issue-<番号> add <files>`
    - `git -C /tmp/wt-issue-<番号> commit -m "<message>"`
 5. **push**: `git -C /tmp/wt-issue-<番号> push -u origin <ブランチ名>`
-6. **PR作成**:
+6. **PR作成**（worktreeディレクトリで実行すること）:
    ```
-   gh pr create --base main --head <ブランチ名> --title "<type>: <日本語の説明>" --body "$(cat <<'EOF'
+   cd /tmp/wt-issue-<番号> && gh pr create --base main --head <ブランチ名> --title "<type>: <日本語の説明>" --body "$(cat <<'EOF'
    ## 概要
    <変更内容の箇条書き>
 
