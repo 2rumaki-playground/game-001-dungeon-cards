@@ -267,6 +267,38 @@ describe("HandRenderer ホバー・選択演出", () => {
 		});
 	});
 
+	it("アニメーション中の二重クリックが防止される", async () => {
+		const renderer = new HandRenderer();
+		const cards = createTestCards();
+		const callback = vi.fn();
+		renderer.setOnCardSelect(callback);
+		renderer.render(cards, 10);
+
+		const mockedTween = vi.mocked(tween);
+		// tweenを未解決のPromiseにしてアニメーション継続中を再現
+		let resolveTween!: () => void;
+		mockedTween.mockImplementationOnce(() => {
+			return new Promise<void>((resolve) => {
+				resolveTween = resolve;
+			});
+		});
+
+		const card2 = findCardContainer(renderer, 2);
+		// 1回目のクリック
+		card2.emit("pointerdown", {
+			global: { x: 0, y: 0 },
+		} as FederatedPointerEvent);
+
+		// アニメーション中に手札コンテナのeventModeがnoneになっている
+		expect(renderer.getContainer().eventMode).toBe("none");
+
+		// アニメーション完了前にコールバックは呼ばれない
+		expect(callback).not.toHaveBeenCalled();
+
+		// tweenを完了させる
+		resolveTween();
+	});
+
 	it("ParticleSystem付きの場合、消費アニメーション後にemitが呼ばれる", async () => {
 		const mockContainer = {
 			toLocal: vi.fn((pos: { x: number; y: number }) => ({
