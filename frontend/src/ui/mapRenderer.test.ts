@@ -411,6 +411,45 @@ describe("MapRenderer タイプ別敵描画", () => {
 	});
 });
 
+describe("MapRenderer MISSポップアップ", () => {
+	it("animateMissPopupが正常に完了する", async () => {
+		const renderer = new MapRenderer();
+		const map = createTestMap();
+		const player = {
+			position: { x: 0, y: 0 },
+			hp: 10,
+			maxHp: 10,
+			ap: 3,
+			maxAp: 3,
+		};
+		renderer.render(map, player, []);
+
+		await expect(
+			renderer.animateMissPopup({ x: 1, y: 1 }),
+		).resolves.toBeUndefined();
+	});
+
+	it("ポップアップ完了後にTextがcontainerから除去・破棄されている", async () => {
+		const renderer = new MapRenderer();
+		const map = createTestMap();
+		const player = {
+			position: { x: 0, y: 0 },
+			hp: 10,
+			maxHp: 10,
+			ap: 3,
+			maxAp: 3,
+		};
+		renderer.render(map, player, []);
+
+		const container = renderer.getContainer();
+		const childCountBefore = container.children.length;
+
+		await renderer.animateMissPopup({ x: 2, y: 2 });
+
+		expect(container.children.length).toBe(childCountBefore);
+	});
+});
+
 describe("MapRenderer 敵撃破アニメーション", () => {
 	it("animateEnemyDefeatが正常に完了する", async () => {
 		const renderer = new MapRenderer();
