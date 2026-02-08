@@ -1,6 +1,6 @@
 /**
  * 敵AI
- * @see docs/spec/mvp/rules.md
+ * @see docs/spec/rules.md
  */
 
 import { BOSS_SKILL, ENEMY_PARAMS } from "../constants";
