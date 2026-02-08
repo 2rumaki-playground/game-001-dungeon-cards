@@ -193,8 +193,14 @@ async function handleRushCardExecution(
 		const maxHp = result.state.player.maxHp;
 		for (const effect of result.tileEffects) {
 			const hpBefore = cursorHp;
-			const rawChange = effect === "trap" ? -TRAP_DAMAGE : TREASURE_HEAL;
-			const hpAfter = Math.max(0, Math.min(maxHp, hpBefore + rawChange));
+			let hpAfter: number;
+			if (effect === "trap") {
+				hpAfter = Math.max(0, hpBefore - TRAP_DAMAGE);
+			} else if (effect === "rest_area") {
+				hpAfter = maxHp;
+			} else {
+				hpAfter = Math.min(maxHp, hpBefore + TREASURE_HEAL);
+			}
 			await showTileEffectPopup(ctx, effect, hpBefore, hpAfter);
 			cursorHp = hpAfter;
 		}
