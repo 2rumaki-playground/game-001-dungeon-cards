@@ -18,6 +18,7 @@ import {
 	getMapPixelSize,
 	HandRenderer,
 	MapRenderer,
+	ParticleSystem,
 	RewardScreen,
 	ScreenTransition,
 	StatusBar,
@@ -63,6 +64,11 @@ function initializeUIComponents(
 	const mapContainer = mapRenderer.getContainer();
 	mapContainer.y = STATUS_BAR_HEIGHT;
 	app.stage.addChild(mapContainer);
+
+	const particleSystem = new ParticleSystem();
+	const particleContainer = particleSystem.getContainer();
+	particleContainer.y = STATUS_BAR_HEIGHT;
+	app.stage.addChild(particleContainer);
 
 	const handRenderer = new HandRenderer();
 	const handContainer = handRenderer.getContainer();
@@ -129,6 +135,7 @@ function initializeUIComponents(
 		rewardScreen,
 		screenTransition,
 		floorBanner,
+		particleSystem,
 	};
 }
 

@@ -12,6 +12,8 @@ export * from "./gameOverScreen";
 export * from "./graphicsHelpers";
 export * from "./handRenderer";
 export * from "./mapRenderer";
+export * from "./particleLogic";
+export * from "./particleSystem";
 export * from "./rewardScreen";
 export * from "./screenTransition";
 export * from "./statusBar";
