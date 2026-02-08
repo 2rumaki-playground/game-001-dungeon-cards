@@ -295,6 +295,8 @@ describe("RewardScreen", () => {
 			expect(mockEmit).toHaveBeenCalledWith(
 				expect.objectContaining({
 					count: 12,
+					color: [0xaaaaaa, 0xcccccc],
+					life: { min: 300, max: 500 },
 				}),
 			);
 		});
@@ -317,6 +319,8 @@ describe("RewardScreen", () => {
 			expect(mockEmit).toHaveBeenCalledWith(
 				expect.objectContaining({
 					count: 30,
+					color: [0xddaa22, 0xffdd44, 0xffcc00, 0xffffff],
+					life: { min: 300, max: 800 },
 				}),
 			);
 		});
