@@ -432,8 +432,8 @@ describe("HandRenderer ホバー・選択演出", () => {
 		let resolveCallback!: () => void;
 		const asyncCallback = vi.fn(
 			() =>
-				new Promise<void>((resolve) => {
-					resolveCallback = resolve;
+				new Promise<undefined>((resolve) => {
+					resolveCallback = () => resolve(undefined);
 				}),
 		);
 		renderer.setOnCardSelect(asyncCallback);
