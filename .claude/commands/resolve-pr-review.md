@@ -20,7 +20,152 @@ gh repo view --json owner,name -q '(.owner.login) + "/" + .name'
 ## 指示
 
 以下の手順でPRのレビューコメントを確認・解決し、pushまで行ってください。
-複数PR番号が指定されている場合は、**PRごとに順番に**全手順を実行する。
+
+**複数PR番号が指定された場合**: → [並列処理モード](#並列処理モード複数pr) に進む
+**単一PR（または引数なし）の場合**: → [単一処理モード](#単一処理モード) に進む
+
+---
+
+## 並列処理モード（複数PR）
+
+複数のPR番号が指定された場合、agent teamとgit worktreeを使って並列に作業を進める。
+
+### P-1. 事前準備
+
+1. 各PRの未解決レビュースレッドを [未解決スレッドの取得](#ref-未解決のレビュースレッドを取得) の手順で取得する
+2. 各PRについて [コメントの詳細を取得](#ref-コメントの詳細を取得) で必要に応じて全文を取得する
+3. 各PRの未解決コメントの分析結果と対応方針の一覧をユーザーに提示し、承認を得る
+
+### P-2. チームの作成
+
+TeamCreateでチームを作成する:
+- チーム名: `resolve-pr-batch`
+
+### P-3. タスクの作成
+
+各PRに対してTaskCreateでタスクを作成する。タスクの説明には以下を含める:
+- PR番号とタイトル
+- 未解決レビューコメントの一覧（スレッドID、databaseId、ファイル、要約、対応方針）
+- worktreeパスとブランチ名
+
+### P-4. git worktreeのセットアップ
+
+各PRについて以下を実行する:
+
+```bash
+# PRをドラフトに変換
+gh pr ready --undo <番号>
+
+# worktreeを作成（/tmp配下に作成し、メインリポジトリを汚さない）
+git worktree add /tmp/wt-pr-<番号>
+
+# worktree側でPRブランチをcheckoutし、依存関係をインストール
+(cd /tmp/wt-pr-<番号> && gh pr checkout <番号> && cd frontend && pnpm install)
+```
+
+### P-5. エージェントの並列起動
+
+各PRに対して、Taskツールで `general-purpose` エージェントを**並列に**起動する。
+
+**重要**: 全エージェントを**1つのメッセージ内で同時に**起動すること（逐次起動しない）。
+
+各エージェントへのプロンプトには以下を含める:
+
+```
+あなたはPR #<番号> のレビューコメント解決担当です。
+
+## 作業ディレクトリ
+/tmp/wt-pr-<番号>
+
+## リポジトリ情報
+- owner/repo: <owner>/<repo>
+- 作業ブランチ: <ブランチ名>（チェックアウト済み）
+
+## 未解決レビューコメント
+<コメント一覧（スレッドID、databaseId、ファイル、要約、対応方針）>
+
+## 実装手順
+
+以下のすべての作業を /tmp/wt-pr-<番号> ディレクトリ内で行うこと。
+メインリポジトリのファイルは絶対に変更しないこと。
+
+レビューコメント1件ごとに以下のサイクルを繰り返す:
+
+1. **コード変更**:
+   - CLAUDE.mdの開発方針に従うこと
+   - 変更は最小差分で行う
+   - 当該コメントの指摘範囲外の変更はしない
+
+2. **コミット前チェック**（各コミットの前に必ず実行）:
+   - `cd /tmp/wt-pr-<番号>/frontend && pnpm format`
+   - `cd /tmp/wt-pr-<番号>/frontend && pnpm lint`
+   - `cd /tmp/wt-pr-<番号>/frontend && pnpm build`
+   - `cd /tmp/wt-pr-<番号>/frontend && pnpm test:run`
+
+3. **コミット・push**:
+   - Conventional Commits形式、日本語、50文字以内
+   - コミットメッセージは当該コメントの指摘内容を反映させる
+   - `git -C /tmp/wt-pr-<番号> add <files>`（対象ファイルを個別指定、`git add .` は使わない）
+   - `git -C /tmp/wt-pr-<番号> commit -m "<message>"`
+   - `branch=$(git -C /tmp/wt-pr-<番号> rev-parse --abbrev-ref HEAD)`
+   - `git -C /tmp/wt-pr-<番号> push -u origin "$branch"`
+
+4. **レビューコメントへの返信・resolve**:
+   push後、対応したレビューコメントに対して以下を行う:
+
+   a. 返信（GraphQL API）:
+   ```
+   gh api graphql -f query='
+     mutation { addPullRequestReviewThreadReply(
+       input: {
+         pullRequestReviewThreadId: "<thread_id>",
+         body: "<対応内容の説明> (<コミットハッシュ>)"
+       }
+     ) { comment { id } } }'
+   ```
+   - `<thread_id>` はスレッドID（`PRRT_...`形式）
+   - 返信内容にはコミットハッシュ（短縮形7桁）を含める
+
+   b. resolve:
+   ```
+   gh api graphql -f query='
+     mutation { resolveReviewThread(input: {threadId: "<thread_id>"}) {
+       thread { isResolved }
+     } }'
+   ```
+
+すべてのコメントの対応が完了したら:
+
+5. **Copilotにレビュー再依頼**:
+   ```
+   gh api repos/{owner}/{repo}/pulls/<番号>/requested_reviewers \
+     -X POST --raw-field 'reviewers[]=copilot-pull-request-reviewer[bot]'
+   ```
+   （既にreviewerの場合の `Validation Failed` エラーは無視する）
+
+6. **ドラフトを解除**:
+   ```
+   cd /tmp/wt-pr-<番号> && gh pr ready <番号>
+   ```
+
+完了したら、対応したコメント数とPRのURLを報告してください。
+```
+
+### P-6. 完了待機と後片付け
+
+全エージェントの完了を待ち、以下を行う:
+
+1. 各エージェントの結果（対応コメント数、PRのURL等）をまとめてユーザーに報告する
+2. 各PRのドラフトが解除されているか確認し、ドラフトのまま残っている場合は `gh pr ready <番号>` で解除する
+3. git worktreeを削除する:
+   ```bash
+   git worktree remove /tmp/wt-pr-<番号>
+   ```
+4. チームを削除する（TeamDelete）
+
+---
+
+## 単一処理モード
 
 ### 1. PR番号の決定と情報取得
 
@@ -30,40 +175,7 @@ gh repo view --json owner,name -q '(.owner.login) + "/" + .name'
 gh pr view --json number -q .number
 ```
 
-#### 1a. 未解決のレビュースレッドを取得
-
-**GraphQL APIで未解決スレッドのみを直接取得する**（REST APIでは解決済み/未解決の区別ができないため）:
-
-```
-gh api graphql -f query='
-  { repository(owner:"{owner}", name:"{repo}") {
-    pullRequest(number:<番号>) {
-      reviewThreads(first:100) { nodes {
-        id
-        isResolved
-        comments(first:10) { nodes { databaseId body path line } }
-      } }
-    }
-  } }' --jq '.data.repository.pullRequest.reviewThreads.nodes[] | select(.isResolved == false) | {id, comments: [.comments.nodes[] | {databaseId, path, line, body: (.body | split("\n")[0][:120])}]}'
-```
-
-このクエリにより以下が1回で取得できる:
-- **thread ID**: resolve時に使用
-- **databaseId**: コメント詳細取得/参照用（REST APIで個別コメントを取得する際に使用）
-- **path / line**: 対象ファイルと行番号
-- **body**: コメント内容（先頭120文字で要約表示）
-
-**注意**: `first:100` / `first:10` は通常のPRで十分な件数だが、スレッドやコメントが非常に多い場合は取りこぼす可能性がある。結果が上限に達している場合は `pageInfo { hasNextPage endCursor }` を使ってページネーションすること。
-
-#### 1b. コメントの詳細を取得
-
-ステップ1aのbody要約（120文字）では指摘内容を十分把握できない場合に、REST APIでコメント全文を取得する:
-
-```
-gh api repos/{owner}/{repo}/pulls/comments/<databaseId> --jq '{id, path, line, body}'
-```
-
-**注意**: パスは `pulls/<PR番号>/comments/<id>` ではなく `pulls/comments/<id>` （PR番号なし）。
+[未解決スレッドの取得](#ref-未解決のレビュースレッドを取得) の手順でレビュースレッドを取得し、必要に応じて [コメントの詳細を取得](#ref-コメントの詳細を取得) で全文を取得する。
 
 ### 2. レビューコメントの分析
 
@@ -81,7 +193,7 @@ gh api repos/{owner}/{repo}/pulls/comments/<databaseId> --jq '{id, path, line, b
 | # | コメント(databaseId) | スレッドID | ファイル | 要約 | 対応方針 |
 |---|---------------------|-----------|---------|------|---------|
 
-コメント(databaseId) 列にはコメントの `databaseId`（コメント詳細の取得・参照用。必要に応じて手順1bで全文を取得）、スレッドID 列には返信・解決に使用するスレッドの `id` を記載すること。
+コメント(databaseId) 列にはコメントの `databaseId`（コメント詳細の取得・参照用。必要に応じてリファレンスの手順で全文を取得）、スレッドID 列には返信・解決に使用するスレッドの `id` を記載すること。
 
 ユーザーの承認を得てから実装に進むこと。
 
@@ -135,7 +247,7 @@ push後、対応したレビューコメントに対して以下を行う。
      ) { comment { id } } }'
    ```
 
-   - `<thread_id>` はステップ1aで取得済みのスレッドID（`PRRT_...`形式）
+   - `<thread_id>` はステップ1で取得済みのスレッドID（`PRRT_...`形式）
    - 返信内容にはコミットハッシュ（短縮形7桁）を含める
 
 2. **resolve**: 同じスレッドIDでresolveする
@@ -169,3 +281,42 @@ gh pr ready <番号>
 ```
 
 これにより、CIが `ready_for_review` イベントで起動する。
+
+---
+
+## リファレンス（共通手順）
+
+### Ref: 未解決のレビュースレッドを取得
+
+**GraphQL APIで未解決スレッドのみを直接取得する**（REST APIでは解決済み/未解決の区別ができないため）:
+
+```
+gh api graphql -f query='
+  { repository(owner:"{owner}", name:"{repo}") {
+    pullRequest(number:<番号>) {
+      reviewThreads(first:100) { nodes {
+        id
+        isResolved
+        comments(first:10) { nodes { databaseId body path line } }
+      } }
+    }
+  } }' --jq '.data.repository.pullRequest.reviewThreads.nodes[] | select(.isResolved == false) | {id, comments: [.comments.nodes[] | {databaseId, path, line, body: (.body | split("\n")[0][:120])}]}'
+```
+
+このクエリにより以下が1回で取得できる:
+- **thread ID**: resolve時に使用
+- **databaseId**: コメント詳細取得/参照用（REST APIで個別コメントを取得する際に使用）
+- **path / line**: 対象ファイルと行番号
+- **body**: コメント内容（先頭120文字で要約表示）
+
+**注意**: `first:100` / `first:10` は通常のPRで十分な件数だが、スレッドやコメントが非常に多い場合は取りこぼす可能性がある。結果が上限に達している場合は `pageInfo { hasNextPage endCursor }` を使ってページネーションすること。
+
+### Ref: コメントの詳細を取得
+
+body要約（120文字）では指摘内容を十分把握できない場合に、REST APIでコメント全文を取得する:
+
+```
+gh api repos/{owner}/{repo}/pulls/comments/<databaseId> --jq '{id, path, line, body}'
+```
+
+**注意**: パスは `pulls/<PR番号>/comments/<id>` ではなく `pulls/comments/<id>` （PR番号なし）。
