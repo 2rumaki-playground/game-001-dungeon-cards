@@ -138,7 +138,7 @@ git worktree add /tmp/wt-pr-<番号>
 
 5. **Copilotにレビュー再依頼**:
    ```
-   gh api repos/<owner>/<repo>/pulls/<番号>/requested_reviewers \
+   gh api repos/{owner}/{repo}/pulls/<番号>/requested_reviewers \
      -X POST --raw-field 'reviewers[]=copilot-pull-request-reviewer[bot]'
    ```
    （既にreviewerの場合の `Validation Failed` エラーは無視する）
