@@ -13,8 +13,139 @@ $![gh issue list]
 ### 1. 対象Issueの決定
 
 - 引数: `$ARGUMENTS`
-- 引数にIssue番号が指定されていればそのIssueを対象とする
+- 引数にIssue番号が指定されていればそのIssueを対象とする（スペース区切りで複数指定可能）
 - 引数が空の場合は、一覧の中で最も番号が小さい（最も古い）オープンIssueを自動選択する
+
+**複数Issue番号が指定された場合**: → [並列処理モード](#並列処理モード複数issue) に進む
+**単一Issue（または引数なし）の場合**: → [単一処理モード](#単一処理モード) に進む
+
+---
+
+## 並列処理モード（複数Issue）
+
+複数のIssue番号が指定された場合、agent teamとgit worktreeを使って並列に作業を進める。
+
+### P-1. 事前準備
+
+1. 各Issueの詳細を `gh issue view <番号>` で取得し、内容を把握する
+2. 対応方針の一覧をユーザーに提示し、承認を得る
+
+### P-2. チームの作成
+
+TeamCreateでチームを作成する:
+- チーム名: `issue-pr-batch`
+
+### P-3. タスクの作成
+
+各Issueに対してTaskCreateでタスクを作成する。タスクの説明には以下を含める:
+- Issue番号とタイトル
+- Issueの本文（受け入れ条件）
+- worktreeパスとブランチ名
+
+### P-4. git worktreeのセットアップ
+
+各Issueについて以下を実行する:
+
+```bash
+# mainから対象ブランチを作成
+git branch <ブランチ名> main
+
+# worktreeを作成（/tmp配下に作成し、メインリポジトリを汚さない）
+git worktree add /tmp/wt-issue-<番号> <ブランチ名>
+
+# worktreeで依存関係をインストール
+cd /tmp/wt-issue-<番号>/frontend && pnpm install
+```
+
+- ブランチ名の規則は [単一処理モードのステップ3](#3-ブランチの作成) と同じ
+
+### P-5. エージェントの並列起動
+
+各Issueに対して、Taskツールで `general-purpose` エージェントを**並列に**起動する。
+
+**重要**: 全エージェントを**1つのメッセージ内で同時に**起動すること（逐次起動しない）。
+
+各エージェントへのプロンプトには以下を含める:
+
+```
+あなはIssue #<番号> の実装担当です。
+
+## 作業ディレクトリ
+/tmp/wt-issue-<番号>
+
+## リポジトリ情報
+- owner/repo: <owner>/<repo>
+- ベースブランチ: main
+- 作業ブランチ: <ブランチ名>（作成済み）
+
+## Issue内容
+<gh issue viewの出力>
+
+## 実装手順
+
+以下のすべての作業を /tmp/wt-issue-<番号> ディレクトリ内で行うこと。
+メインリポジトリのファイルは絶対に変更しないこと。
+
+1. **設計**: Issueが複数ファイルにまたがる変更や設計判断を伴う場合はプランモードで方針を決定
+2. **実装（TDD）**:
+   - Red: 失敗するテストを先に書く
+   - Green: テストが通る最小限の実装
+   - Refactor: 必要に応じてリファクタリング
+3. **コミット前チェック**（各コミットの前に必ず実行）:
+   - `cd /tmp/wt-issue-<番号>/frontend && pnpm format`
+   - `cd /tmp/wt-issue-<番号>/frontend && pnpm lint`
+   - `cd /tmp/wt-issue-<番号>/frontend && pnpm build`
+   - `cd /tmp/wt-issue-<番号>/frontend && pnpm test:run`
+   - `cd /tmp/wt-issue-<番号>/frontend && pnpm test:e2e`
+4. **コミット**: Conventional Commits形式、日本語、50文字以内
+   - `git -C /tmp/wt-issue-<番号> add <files>`
+   - `git -C /tmp/wt-issue-<番号> commit -m "<message>"`
+5. **push**: `git -C /tmp/wt-issue-<番号> push -u origin <ブランチ名>`
+6. **PR作成**:
+   ```
+   gh pr create --repo <owner>/<repo> --base main --head <ブランチ名> --title "<type>: <日本語の説明>" --body "$(cat <<'PREOF'
+   ## 概要
+   <変更内容の箇条書き>
+
+   Closes #<Issue番号>
+
+   ## テスト計画
+   <テスト方法のチェックリスト>
+
+   🤖 Generated with [Claude Code](https://claude.com/claude-code)
+   PREOF
+   )"
+   ```
+   - PRタイトルはConventional Commits形式、日本語、70文字以内
+
+## 仕様の曖昧さへの対応
+実装中に仕様の曖昧さを発見した場合:
+1. 曖昧な点を明記した新しいIssueを起票する
+2. 最も保守的な解釈で実装し、PRの概要に判断理由を記載する
+
+## コーディング規約
+- CLAUDE.mdの開発方針に従うこと
+- インデント: タブ、クォート: ダブルクォート
+- import順序はBiomeの規約に従う
+
+完了したら、作成したPRのURLを報告してください。
+```
+
+### P-6. 完了待機と後片付け
+
+全エージェントの完了を待ち、以下を行う:
+
+1. 各エージェントの結果（PRのURL等）をまとめてユーザーに報告する
+2. git worktreeを削除する:
+   ```bash
+   git worktree remove /tmp/wt-issue-<番号>
+   git branch -d <ブランチ名>  # リモートにpush済みなのでローカルブランチは削除
+   ```
+3. チームを削除する（TeamDelete）
+
+---
+
+## 単一処理モード
 
 ### 2. Issue詳細の取得
 
@@ -53,8 +184,9 @@ Issue の内容に従い、TDD（テスト駆動開発）で実装を行って�
 - **コミット前チェック**: 各コミットの前に以下を実行し、問題があれば修正してからコミットする
   1. `pnpm format` — フォーマット適用
   2. `pnpm lint` — リントチェック
-  3. `pnpm test:run` — ユニットテスト全通過を確認
-  4. `pnpm test:e2e` — E2Eテスト全通過を確認
+  3. `pnpm build` — TypeScriptビルド確認
+  4. `pnpm test:run` — ユニットテスト全通過を確認
+  5. `pnpm test:e2e` — E2Eテスト全通過を確認
 
 ### 7. 仕様の曖昧さへの対応
 
