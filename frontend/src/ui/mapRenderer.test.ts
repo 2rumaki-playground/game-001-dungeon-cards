@@ -341,8 +341,8 @@ describe("MapRenderer タイプ別敵描画", () => {
 
 		const container = renderer.getContainer();
 		const enemiesContainer = container.children[1];
-		// 敵Graphics + HPバー = 2
-		expect(enemiesContainer.children.length).toBe(2);
+		// 敵コンテナ1つ（内部にGraphics + HPバー）
+		expect(enemiesContainer.children.length).toBe(1);
 	});
 
 	it("Boss敵が描画できる", async () => {
@@ -368,8 +368,8 @@ describe("MapRenderer タイプ別敵描画", () => {
 
 		const container = renderer.getContainer();
 		const enemiesContainer = container.children[1];
-		// 敵Graphics + HPバー = 2
-		expect(enemiesContainer.children.length).toBe(2);
+		// 敵コンテナ1つ（内部にGraphics + HPバー）
+		expect(enemiesContainer.children.length).toBe(1);
 	});
 
 	it("全タイプの敵が同時に描画できる", async () => {
@@ -423,8 +423,8 @@ describe("MapRenderer タイプ別敵描画", () => {
 
 		const container = renderer.getContainer();
 		const enemiesContainer = container.children[1];
-		// 5体の敵Graphics + miniboss/bossの2つのHPバー = 7
-		expect(enemiesContainer.children.length).toBe(7);
+		// 5体 = 5つの敵コンテナ
+		expect(enemiesContainer.children.length).toBe(5);
 	});
 
 	it("Heavy敵の撃破アニメーションが正常に完了する", async () => {
@@ -537,7 +537,7 @@ describe("MapRenderer 敵撃破アニメーション", () => {
 		expect(enemiesContainer.children.length).toBe(0);
 	});
 
-	it("Miniboss敵の撃破アニメーション完了後にHPバーも削除される", async () => {
+	it("Miniboss敵の撃破アニメーション完了後にコンテナごと削除される", async () => {
 		const renderer = new MapRenderer();
 		const map = createTestMap();
 		const enemies = [
@@ -560,12 +560,11 @@ describe("MapRenderer 敵撃破アニメーション", () => {
 
 		const container = renderer.getContainer();
 		const enemiesContainer = container.children[1];
-		// 敵Graphics + HPバー = 2
-		expect(enemiesContainer.children.length).toBe(2);
+		expect(enemiesContainer.children.length).toBe(1);
 
 		await renderer.animateEnemyDefeat("e-miniboss");
 
-		// 撃破後、敵GraphicsとHPバーが共に削除されていること
+		// 撃破後、敵コンテナが削除されていること
 		expect(enemiesContainer.children.length).toBe(0);
 	});
 
@@ -588,7 +587,7 @@ describe("MapRenderer 敵撃破アニメーション", () => {
 });
 
 describe("MapRenderer HPバー", () => {
-	it("miniboss敵にHPバーが表示される", () => {
+	it("miniboss敵のコンテナにHPバーが含まれる", () => {
 		const renderer = new MapRenderer();
 		const map = createTestMap();
 		const enemies = [
@@ -611,11 +610,14 @@ describe("MapRenderer HPバー", () => {
 
 		const container = renderer.getContainer();
 		const enemiesContainer = container.children[1];
-		// 敵Graphics(1) + HPバー(1) = 2
-		expect(enemiesContainer.children.length).toBe(2);
+		// 敵コンテナ1つ
+		expect(enemiesContainer.children.length).toBe(1);
+		// 敵コンテナ内にGraphics(1) + HPバー(1) = 2
+		const enemyContainer = enemiesContainer.children[0];
+		expect(enemyContainer.children.length).toBe(2);
 	});
 
-	it("boss敵にHPバーが表示される", () => {
+	it("boss敵のコンテナにHPバーが含まれる", () => {
 		const renderer = new MapRenderer();
 		const map = createTestMap();
 		const enemies = [
@@ -638,11 +640,13 @@ describe("MapRenderer HPバー", () => {
 
 		const container = renderer.getContainer();
 		const enemiesContainer = container.children[1];
-		// 敵Graphics(1) + HPバー(1) = 2
-		expect(enemiesContainer.children.length).toBe(2);
+		expect(enemiesContainer.children.length).toBe(1);
+		// 敵コンテナ内にGraphics(1) + HPバー(1) = 2
+		const enemyContainer = enemiesContainer.children[0];
+		expect(enemyContainer.children.length).toBe(2);
 	});
 
-	it("通常敵にはHPバーが表示されない", () => {
+	it("通常敵のコンテナにはHPバーが含まれない", () => {
 		const renderer = new MapRenderer();
 		const map = createTestMap();
 		const enemies = [
@@ -665,11 +669,13 @@ describe("MapRenderer HPバー", () => {
 
 		const container = renderer.getContainer();
 		const enemiesContainer = container.children[1];
-		// 敵Graphicsのみ
 		expect(enemiesContainer.children.length).toBe(1);
+		// 敵コンテナ内にGraphicsのみ
+		const enemyContainer = enemiesContainer.children[0];
+		expect(enemyContainer.children.length).toBe(1);
 	});
 
-	it("clear後にHPバーもクリアされる", () => {
+	it("clear後にコンテナがクリアされる", () => {
 		const renderer = new MapRenderer();
 		const map = createTestMap();
 		const enemies = [
