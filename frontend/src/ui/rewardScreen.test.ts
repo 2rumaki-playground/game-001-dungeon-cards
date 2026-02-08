@@ -190,6 +190,82 @@ describe("RewardScreen", () => {
 		});
 	});
 
+	describe("animateCardRemove（ParticleSystem設定済み）", () => {
+		const testCards: Card[] = [
+			{ id: "rm-1", type: "move" },
+			{ id: "rm-2", type: "attack" },
+		];
+
+		function findRemoveButton(
+			parent: import("pixi.js").Container,
+		): import("pixi.js").Container | null {
+			for (const child of parent.children) {
+				if (child.eventMode === "static" && child.cursor === "pointer") {
+					return child as import("pixi.js").Container;
+				}
+				if ("children" in child) {
+					const c = child as import("pixi.js").Container;
+					if (c.children?.length > 0) {
+						const found = findRemoveButton(c);
+						if (found) return found;
+					}
+				}
+			}
+			return null;
+		}
+
+		it("除去ボタンクリックでemitが呼ばれonRemoveCardが発火する", async () => {
+			const screen = new RewardScreen();
+			const mockEmit = vi.fn().mockResolvedValue(undefined);
+			const mockGetContainer = vi.fn().mockReturnValue({
+				toLocal: (pos: { x: number; y: number }) => pos,
+			});
+			const mockParticle = {
+				emit: mockEmit,
+				getContainer: mockGetContainer,
+			} as unknown as ParticleSystem;
+			screen.setParticleSystem(mockParticle);
+
+			const onRemove = vi.fn();
+			screen.setOnRemoveCard(onRemove);
+			screen.renderRemoveSelection(testCards, 600, 400);
+
+			const removeBtn = findRemoveButton(screen.getContainer());
+			expect(removeBtn).toBeDefined();
+			removeBtn?.emit("pointerdown", {} as FederatedPointerEvent);
+
+			// tween/emitは非同期なのでflush
+			await vi.dynamicImportSettled();
+			await new Promise((r) => setTimeout(r, 0));
+
+			expect(mockEmit).toHaveBeenCalledTimes(1);
+			expect(onRemove).toHaveBeenCalledWith("rm-1");
+		});
+
+		it("除去ボタンクリック後にeventModeがnoneに設定される", () => {
+			const screen = new RewardScreen();
+			const mockEmit = vi.fn().mockResolvedValue(undefined);
+			const mockGetContainer = vi.fn().mockReturnValue({
+				toLocal: (pos: { x: number; y: number }) => pos,
+			});
+			const mockParticle = {
+				emit: mockEmit,
+				getContainer: mockGetContainer,
+			} as unknown as ParticleSystem;
+			screen.setParticleSystem(mockParticle);
+
+			screen.setOnRemoveCard(vi.fn());
+			screen.renderRemoveSelection(testCards, 600, 400);
+
+			const removeBtn = findRemoveButton(screen.getContainer());
+			expect(removeBtn).toBeDefined();
+			removeBtn?.emit("pointerdown", {} as FederatedPointerEvent);
+
+			// クリック直後にeventModeがnoneになる（多重実行防止）
+			expect(removeBtn?.eventMode).toBe("none");
+		});
+	});
+
 	describe("animateCardAcquire", () => {
 		it("存在しないインデックスでもエラーにならない", async () => {
 			const screen = new RewardScreen();
