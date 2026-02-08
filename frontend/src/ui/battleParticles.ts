@@ -3,10 +3,11 @@
  * カードタイプ別のパーティクルエフェクト設定を生成する純粋関数群
  */
 
+import type { CardType } from "../types/card";
 import type { ParticleConfig, Vec2 } from "./particleLogic";
 
 /** 攻撃ヒット時に使用可能なカードタイプ */
-export type AttackCardType = "attack" | "strong_attack";
+export type AttackCardType = Extract<CardType, "attack" | "strong_attack">;
 
 /**
  * 攻撃カード用パーティクル設定を生成
@@ -94,5 +95,11 @@ export function getAttackParticleConfig(
 			return createAttackParticleConfig(origin);
 		case "strong_attack":
 			return createStrongAttackParticleConfig(origin);
+		default: {
+			const _exhaustiveCheck: never = cardType;
+			throw new Error(
+				`未対応の AttackCardType が指定されました: ${_exhaustiveCheck}`,
+			);
+		}
 	}
 }
