@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+	BOSS_SKILL,
 	ENEMY_ATTACK_DAMAGE,
 	ENEMY_HP,
 	ENEMY_PARAMS,
@@ -879,5 +880,105 @@ describe("executeEnemyTurn", () => {
 		expect(totalDamage).toBe(
 			ENEMY_PARAMS.normal.attackDamage + ENEMY_PARAMS.heavy.attackDamage,
 		);
+	});
+
+	it("ミニボスが予告済みpower_strikeを隣接時に発動する", () => {
+		const enemies: Enemy[] = [
+			{
+				id: "enemy-1",
+				type: "miniboss",
+				position: { x: 4, y: 3 },
+				hp: ENEMY_PARAMS.miniboss.hp,
+				maxHp: ENEMY_PARAMS.miniboss.hp,
+				pendingSkill: { type: "power_strike" },
+			},
+		];
+		const state = createTestState({ turn: "enemy", enemies });
+		const { state: result, totalDamage } = executeEnemyTurn(state);
+
+		const expectedDamage =
+			ENEMY_PARAMS.miniboss.attackDamage * BOSS_SKILL.powerStrikeMultiplier;
+		expect(result.player.hp).toBe(PLAYER_INITIAL_HP - expectedDamage);
+		expect(totalDamage).toBe(expectedDamage);
+		// pendingSkillがクリアされている
+		const enemy = result.enemies.find((e) => e.id === "enemy-1");
+		expect(enemy?.pendingSkill).toBeUndefined();
+	});
+
+	it("ボスが予告済みarea_attackをマンハッタン距離2以内で発動する", () => {
+		const enemies: Enemy[] = [
+			{
+				id: "enemy-1",
+				type: "boss",
+				position: { x: 5, y: 3 },
+				hp: ENEMY_PARAMS.boss.hp,
+				maxHp: ENEMY_PARAMS.boss.hp,
+				pendingSkill: { type: "area_attack" },
+			},
+		];
+		// プレイヤー(3,3)、ボス(5,3) → 距離2
+		const state = createTestState({ turn: "enemy", enemies });
+		const { state: result, totalDamage } = executeEnemyTurn(state);
+
+		expect(result.player.hp).toBe(
+			PLAYER_INITIAL_HP - BOSS_SKILL.areaAttackDamage,
+		);
+		expect(totalDamage).toBe(BOSS_SKILL.areaAttackDamage);
+	});
+
+	it("ボスがHP50%以下で激昂状態になる", () => {
+		const enemies: Enemy[] = [
+			{
+				id: "enemy-1",
+				type: "boss",
+				position: { x: 5, y: 3 },
+				hp: 7,
+				maxHp: ENEMY_PARAMS.boss.hp,
+			},
+		];
+		const state = createTestState({ turn: "enemy", enemies });
+		const { state: result } = executeEnemyTurn(state);
+
+		const enemy = result.enemies.find((e) => e.id === "enemy-1");
+		expect(enemy?.enraged).toBe(true);
+	});
+
+	it("激昂状態のボスが攻撃時にボーナスダメージを与える", () => {
+		const enemies: Enemy[] = [
+			{
+				id: "enemy-1",
+				type: "boss",
+				position: { x: 4, y: 3 },
+				hp: 7,
+				maxHp: ENEMY_PARAMS.boss.hp,
+				enraged: true,
+			},
+		];
+		const state = createTestState({ turn: "enemy", enemies });
+		const { state: result, totalDamage } = executeEnemyTurn(state);
+
+		const expectedDamage =
+			ENEMY_PARAMS.boss.attackDamage + BOSS_SKILL.enrageBonusDamage;
+		expect(result.player.hp).toBe(PLAYER_INITIAL_HP - expectedDamage);
+		expect(totalDamage).toBe(expectedDamage);
+	});
+
+	it("通常敵にはボススキルが適用されない", () => {
+		const enemies: Enemy[] = [
+			{
+				id: "enemy-1",
+				type: "normal",
+				position: { x: 4, y: 3 },
+				hp: ENEMY_HP,
+				maxHp: ENEMY_HP,
+			},
+		];
+		const state = createTestState({ turn: "enemy", enemies });
+		const { state: result, totalDamage } = executeEnemyTurn(state);
+
+		expect(result.player.hp).toBe(
+			PLAYER_INITIAL_HP - ENEMY_PARAMS.normal.attackDamage,
+		);
+		expect(totalDamage).toBe(ENEMY_PARAMS.normal.attackDamage);
 	});
 });

@@ -22,6 +22,18 @@ export type Player = {
 export type EnemyType = "normal" | "heavy" | "scout" | "miniboss" | "boss";
 
 /**
+ * ボス特殊スキル種別
+ */
+export type BossSkillType = "power_strike" | "area_attack" | "enrage";
+
+/**
+ * 予告中のスキル情報
+ */
+export type PendingSkill = {
+	type: BossSkillType;
+};
+
+/**
  * 敵
  */
 export type Enemy = {
@@ -30,4 +42,8 @@ export type Enemy = {
 	position: Position;
 	hp: number;
 	maxHp: number;
+	/** 予告中のスキル（次ターンで発動） */
+	pendingSkill?: PendingSkill;
+	/** 激昂状態（攻撃力UP） */
+	enraged?: boolean;
 };

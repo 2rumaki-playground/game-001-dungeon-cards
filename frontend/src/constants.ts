@@ -212,6 +212,22 @@ export const BSP_MAX_RETRIES = 10;
 export const BSP_MAP_WIDTH = 12; // 内側領域が 2 * BSP_MIN_PARTITION_SIZE 以上（Issue #211で階層別に変更予定）
 export const BSP_MAP_HEIGHT = 12;
 
+// ボス特殊スキル（v1.4）
+export const BOSS_SKILL = {
+	/** ミニボス: 強化攻撃の発動確率 */
+	powerStrikeChance: 0.3,
+	/** ミニボス: 強化攻撃のダメージ倍率 */
+	powerStrikeMultiplier: 2,
+	/** ボス: 範囲攻撃の発動確率 */
+	areaAttackChance: 0.25,
+	/** ボス: 範囲攻撃のダメージ */
+	areaAttackDamage: 2,
+	/** ボス: 激昂発動のHP閾値（maxHpに対する割合） */
+	enrageThreshold: 0.5,
+	/** ボス: 激昂時の攻撃ダメージ加算 */
+	enrageBonusDamage: 2,
+} as const;
+
 // 描画設定
 export const CELL_SIZE = 64;
 export const CELL_GAP = 4;
