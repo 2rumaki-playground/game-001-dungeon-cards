@@ -525,12 +525,18 @@ export class RewardScreen {
 		const rarity = CARD_RARITY[cardType];
 
 		// パーティクルエフェクト（レアリティで差別化）
-		const particleOriginX = cardContainer.x + REWARD_CARD_WIDTH / 2;
-		const particleOriginY = cardContainer.y + REWARD_CARD_HEIGHT / 2;
+		// カード中心のグローバル座標をパーティクルシステムのローカル座標に変換
+		const globalPos = cardContainer.toGlobal({
+			x: REWARD_CARD_WIDTH / 2,
+			y: REWARD_CARD_HEIGHT / 2,
+		});
+		const particleOrigin = this.particleSystem
+			.getContainer()
+			.toLocal(globalPos);
 
 		const particlePromise = this.particleSystem?.emit({
 			count: ACQUIRE_PARTICLE_COUNT[rarity],
-			origin: { x: particleOriginX, y: particleOriginY },
+			origin: particleOrigin,
 			color: ACQUIRE_PARTICLE_COLORS[rarity],
 			speed: { min: 0.02, max: rarity === "rare" ? 0.12 : 0.08 },
 			life: { min: 300, max: rarity === "rare" ? 800 : 500 },
