@@ -194,7 +194,7 @@ async function handleRushCardExecution(
 			x: prevPosition.x + delta.x,
 			y: prevPosition.y + delta.y,
 		};
-		emitRushParticles(ctx, stairsPos, moveAngle);
+		emitRushParticles(ctx, prevPosition, moveAngle);
 		await updateStateWithStairsAnimation(ctx, result.state, stairsPos);
 	} else if (result.reachedStairs && result.intermediatePosition) {
 		// 2マス目が階段: 2段階移動→階層遷移アニメーション
@@ -202,7 +202,7 @@ async function handleRushCardExecution(
 			x: result.intermediatePosition.x + delta.x,
 			y: result.intermediatePosition.y + delta.y,
 		};
-		emitRushParticles(ctx, stairsPos, moveAngle);
+		emitRushParticles(ctx, prevPosition, moveAngle);
 		await animateRushWithStairs(
 			ctx,
 			result.state,
@@ -211,7 +211,7 @@ async function handleRushCardExecution(
 		);
 	} else {
 		// 通常移動(1or2マス): 最終位置へ直接移動アニメーション
-		emitRushParticles(ctx, result.state.player.position, moveAngle);
+		emitRushParticles(ctx, prevPosition, moveAngle);
 
 		await updateStateWithMoveAnimation(
 			ctx,
