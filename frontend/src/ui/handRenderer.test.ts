@@ -201,7 +201,7 @@ describe("HandRenderer ホバー・選択演出", () => {
 		expect(card0After.y).toBeLessThan(0);
 	});
 
-	it("pointerdown でカード選択コールバックが呼ばれる", () => {
+	it("pointerdown でカード選択コールバックが呼ばれる", async () => {
 		const renderer = new HandRenderer();
 		const cards = createTestCards();
 		const callback = vi.fn();
@@ -214,10 +214,13 @@ describe("HandRenderer ホバー・選択演出", () => {
 			global: { x: 0, y: 0 },
 		} as FederatedPointerEvent);
 
-		expect(callback).toHaveBeenCalledWith(cards[2]);
+		// 消費アニメーション完了後にコールバックが呼ばれる
+		await vi.waitFor(() => {
+			expect(callback).toHaveBeenCalledWith(cards[2]);
+		});
 	});
 
-	it("pointerdown で tween によるパルスアニメーションが実行される", async () => {
+	it("pointerdown で消費アニメーション（パルス拡大→飛行+縮小+フェード）が実行される", async () => {
 		const renderer = new HandRenderer();
 		const cards = createTestCards();
 		renderer.setOnCardSelect(vi.fn());
@@ -231,18 +234,62 @@ describe("HandRenderer ホバー・選択演出", () => {
 			global: { x: 0, y: 0 },
 		} as FederatedPointerEvent);
 
-		// fire-and-forget の非同期パルスが完了するまで待機
 		await vi.waitFor(() => {
 			expect(mockedTween).toHaveBeenCalledTimes(2);
 		});
 
-		// 拡大（scaleX/scaleY > 1）と縮小（scaleX/scaleY = 1）の2回呼ばれる
+		// フェーズ1a: パルス拡大
 		expect(mockedTween.mock.calls[0][1]).toEqual(
 			expect.objectContaining({ scaleX: 1.1, scaleY: 1.1 }),
 		);
+		// フェーズ1b: 飛行+縮小+フェード
 		expect(mockedTween.mock.calls[1][1]).toEqual(
-			expect.objectContaining({ scaleX: 1, scaleY: 1 }),
+			expect.objectContaining({ scaleX: 0.3, scaleY: 0.3, alpha: 0 }),
 		);
+		expect(mockedTween.mock.calls[1][1]).toHaveProperty("y");
+	});
+
+	it("pointerdown でコールバックが消費アニメーション完了後に呼ばれる", async () => {
+		const renderer = new HandRenderer();
+		const cards = createTestCards();
+		const callback = vi.fn();
+		renderer.setOnCardSelect(callback);
+		renderer.render(cards, 10);
+
+		const card2 = findCardContainer(renderer, 2);
+		card2.emit("pointerdown", {
+			global: { x: 0, y: 0 },
+		} as FederatedPointerEvent);
+
+		// アニメーションはモックで即座に完了するため、コールバックも呼ばれる
+		await vi.waitFor(() => {
+			expect(callback).toHaveBeenCalledWith(cards[2]);
+		});
+	});
+
+	it("ParticleSystem付きの場合、消費アニメーション後にemitが呼ばれる", async () => {
+		const mockParticleSystem = {
+			emit: vi.fn().mockResolvedValue(undefined),
+			getContainer: vi.fn(),
+			clear: vi.fn(),
+		};
+		const renderer = new HandRenderer(mockParticleSystem as never);
+		const cards = createTestCards();
+		renderer.setOnCardSelect(vi.fn());
+		renderer.render(cards, 10);
+
+		const card2 = findCardContainer(renderer, 2);
+		card2.emit("pointerdown", {
+			global: { x: 0, y: 0 },
+		} as FederatedPointerEvent);
+
+		await vi.waitFor(() => {
+			expect(mockParticleSystem.emit).toHaveBeenCalledTimes(1);
+		});
+
+		const emitConfig = mockParticleSystem.emit.mock.calls[0][0];
+		expect(emitConfig.count).toBe(12);
+		expect(emitConfig.pattern).toEqual({ type: "radial" });
 	});
 });
 

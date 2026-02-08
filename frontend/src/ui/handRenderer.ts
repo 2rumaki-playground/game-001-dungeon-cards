@@ -5,15 +5,17 @@
 
 import { Container, Graphics, Text } from "pixi.js";
 import { CARD_COST } from "../constants";
-import type { Card, Direction } from "../types";
+import type { Card, CardType, Direction } from "../types";
 import { Easing, tween } from "../utils/tween";
 import {
 	CARD_COLORS as BASE_CARD_COLORS,
 	CARD_EFFECT_TEXT,
+	CARD_GLOW_COLORS,
 	CARD_TYPE_NAME,
 	CARD_TYPE_SYMBOL,
 } from "./cardConstants";
 import { drawRoundedRect, makeInteractive } from "./graphicsHelpers";
+import type { ParticleSystem } from "./particleSystem";
 import { UI_COLOR_GOLD, UI_COLORS_DISABLED } from "./uiColors";
 
 /** カード描画定数 */
@@ -40,8 +42,14 @@ const PULSE_SCALE = 1.1;
 /** 選択パルスの拡大時間（ms） */
 const PULSE_UP_DURATION = 80;
 
-/** 選択パルスの縮小時間（ms） */
-const PULSE_DOWN_DURATION = 100;
+/** 消費アニメーション：飛行時間（ms） */
+const CONSUME_FLY_DURATION = 200;
+
+/** 消費アニメーション：飛行先Y座標（相対） */
+const CONSUME_FLY_TARGET_Y = -70;
+
+/** 消費アニメーション：パーティクル数 */
+const CONSUME_PARTICLE_COUNT = 12;
 
 /**
  * カード内のクリック位置から方向を判定
@@ -94,6 +102,7 @@ const CARD_COLORS = {
  */
 export class HandRenderer {
 	private container: Container;
+	private particleSystem: ParticleSystem | null;
 	private selectedCardId: string | null = null;
 	private hoveredCardId: string | null = null;
 	private currentHand: Card[] = [];
@@ -101,8 +110,9 @@ export class HandRenderer {
 	private onCardSelect: ((card: Card, direction?: Direction) => void) | null =
 		null;
 
-	constructor() {
+	constructor(particleSystem?: ParticleSystem) {
 		this.container = new Container();
+		this.particleSystem = particleSystem ?? null;
 	}
 
 	/**
@@ -357,22 +367,27 @@ export class HandRenderer {
 		// インタラクション
 		if (enabled) {
 			makeInteractive(cardContainer, (event) => {
-				this.animateCardPulse(cardContainer);
-				// 方向パラメータを持つカードの場合、クリック位置から方向を判定
-				if (
-					card.type === "move" ||
-					card.type === "attack" ||
-					card.type === "strong_attack" ||
-					card.type === "rush"
-				) {
-					const direction = getDirectionFromClickPosition(
-						event.global.x - cardContainer.getGlobalPosition().x,
-						event.global.y - cardContainer.getGlobalPosition().y,
-					);
-					this.onCardSelect?.(card, direction);
-				} else {
-					this.onCardSelect?.(card);
-				}
+				const invokeCallback = () => {
+					if (
+						card.type === "move" ||
+						card.type === "attack" ||
+						card.type === "strong_attack" ||
+						card.type === "rush"
+					) {
+						const direction = getDirectionFromClickPosition(
+							event.global.x - cardContainer.getGlobalPosition().x,
+							event.global.y - cardContainer.getGlobalPosition().y,
+						);
+						this.onCardSelect?.(card, direction);
+					} else {
+						this.onCardSelect?.(card);
+					}
+				};
+
+				this.animateCardConsume(cardContainer, card.type).then(
+					invokeCallback,
+					invokeCallback,
+				);
 			});
 
 			cardContainer.on("pointerover", () => {
@@ -392,20 +407,40 @@ export class HandRenderer {
 	}
 
 	/**
-	 * カード選択時のパルスアニメーション（fire-and-forget）
+	 * カード消費アニメーション
+	 * パルス拡大 → 飛行+縮小+フェード → パーティクル放出
 	 */
-	private async animateCardPulse(container: Container): Promise<void> {
+	private async animateCardConsume(
+		container: Container,
+		cardType: CardType,
+	): Promise<void> {
 		try {
+			// フェーズ1a: パルス拡大
 			await tween(
 				container,
 				{ scaleX: PULSE_SCALE, scaleY: PULSE_SCALE },
 				{ duration: PULSE_UP_DURATION, easing: Easing.easeOut },
 			);
+			// フェーズ1b: 飛行+縮小+フェード
+			const flyTargetY = container.y + CONSUME_FLY_TARGET_Y;
 			await tween(
 				container,
-				{ scaleX: 1, scaleY: 1 },
-				{ duration: PULSE_DOWN_DURATION, easing: Easing.easeOut },
+				{ y: flyTargetY, scaleX: 0.3, scaleY: 0.3, alpha: 0 },
+				{ duration: CONSUME_FLY_DURATION, easing: Easing.easeOut },
 			);
+			// フェーズ2: パーティクル放出（fire-and-forget）
+			if (this.particleSystem) {
+				const globalPos = container.getGlobalPosition();
+				this.particleSystem.emit({
+					count: CONSUME_PARTICLE_COUNT,
+					origin: { x: globalPos.x, y: globalPos.y },
+					color: CARD_GLOW_COLORS[cardType],
+					speed: { min: 50, max: 150 },
+					life: { min: 300, max: 600 },
+					size: { min: 2, max: 5 },
+					pattern: { type: "radial" },
+				});
+			}
 		} catch {
 			// render() でカードが破棄された場合のエラーは無視
 		}
