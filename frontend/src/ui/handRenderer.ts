@@ -110,6 +110,7 @@ export class HandRenderer {
 	private onCardSelect:
 		| ((card: Card, direction?: Direction) => void | Promise<void>)
 		| null = null;
+	private isInputLocked = false;
 
 	constructor(particleSystem?: ParticleSystem) {
 		this.container = new Container();
@@ -147,7 +148,7 @@ export class HandRenderer {
 		this.currentHand = hand;
 		this.currentAp = currentAp;
 		this.container.removeChildren();
-		this.container.eventMode = "passive";
+		this.isInputLocked = false;
 
 		const totalWidth = hand.length * CARD_WIDTH + (hand.length - 1) * CARD_GAP;
 		const startX = -totalWidth / 2;
@@ -372,8 +373,8 @@ export class HandRenderer {
 		if (enabled) {
 			makeInteractive(cardContainer, (event) => {
 				// 二重クリック防止：アニメーション中は追加クリックを無視
-				if (this.container.eventMode === "none") return;
-				this.container.eventMode = "none";
+				if (this.isInputLocked) return;
+				this.isInputLocked = true;
 				this.hoveredCardId = null;
 
 				// 方向判定はアニメーション前に計算して保持
@@ -409,7 +410,7 @@ export class HandRenderer {
 					.finally(() => {
 						// onCardSelect側で入力が無効化されていた場合でも、
 						// 手札UIがフェードアウトしたまま残らないように必ず再描画する
-						this.container.eventMode = "passive";
+						this.isInputLocked = false;
 						this.render(this.currentHand, this.currentAp);
 					});
 			});
