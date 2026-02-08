@@ -458,9 +458,7 @@ export class RewardScreen {
 			e.stopPropagation?.();
 			removeBtn.eventMode = "none";
 			try {
-				if (this.particleSystem) {
-					await this.animateCardRemove(item, width);
-				}
+				await this.animateCardRemove(item, width);
 				this.onRemoveCard?.(card.id);
 			} catch (error) {
 				console.error("カード除去処理中にエラーが発生しました", error);

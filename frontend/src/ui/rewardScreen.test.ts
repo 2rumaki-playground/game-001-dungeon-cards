@@ -117,7 +117,7 @@ describe("RewardScreen", () => {
 			expect(container.children.length).toBeGreaterThan(0);
 		});
 
-		it("除去ボタンクリックでコールバックが呼ばれる", () => {
+		it("除去ボタンクリックでコールバックが呼ばれる", async () => {
 			const screen = new RewardScreen();
 			const callback = vi.fn();
 			screen.setOnRemoveCard(callback);
@@ -146,6 +146,9 @@ describe("RewardScreen", () => {
 			const removeBtn = findRemoveButton(container);
 			expect(removeBtn).toBeDefined();
 			removeBtn?.emit("pointerdown", {} as FederatedPointerEvent);
+
+			// animateCardRemoveが非同期のためflush
+			await new Promise((r) => setTimeout(r, 0));
 
 			expect(callback).toHaveBeenCalledWith("card-1");
 		});
