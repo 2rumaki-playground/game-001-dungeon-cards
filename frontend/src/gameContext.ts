@@ -12,6 +12,7 @@ import type {
 	GameOverScreen,
 	HandRenderer,
 	MapRenderer,
+	ParticleSystem,
 	RewardScreen,
 	ScreenTransition,
 	StatusBar,
@@ -35,6 +36,7 @@ export interface UIComponents {
 	rewardScreen: RewardScreen;
 	screenTransition: ScreenTransition;
 	floorBanner: FloorBanner;
+	particleSystem: ParticleSystem;
 }
 
 /** アプリケーションの共有状態 */
