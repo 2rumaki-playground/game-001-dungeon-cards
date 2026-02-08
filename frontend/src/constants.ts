@@ -142,9 +142,10 @@ export const ENEMY_COMPOSITION_TABLE: {
 ];
 
 export function getEnemyComposition(floor: number): EnemyComposition {
-	const entry = ENEMY_COMPOSITION_TABLE.find((e) => floor <= e.maxFloor);
-	// 最後のエントリがInfinityなので必ずマッチする
-	return (entry as (typeof ENEMY_COMPOSITION_TABLE)[number]).composition;
+	const entry =
+		ENEMY_COMPOSITION_TABLE.find((e) => floor <= e.maxFloor) ??
+		ENEMY_COMPOSITION_TABLE[ENEMY_COMPOSITION_TABLE.length - 1];
+	return entry.composition;
 }
 
 // ボス階層定義（ENEMY_COMPOSITION_TABLEから導出）
