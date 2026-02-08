@@ -2,6 +2,7 @@
  * イベントハンドラ設定
  */
 
+import { TRAP_DAMAGE, TREASURE_HEAL } from "../constants";
 import {
 	endPlayerTurn,
 	executeAttack,
@@ -14,6 +15,7 @@ import {
 	startNewGame,
 	startPlayerTurn,
 } from "../game";
+import type { SpecialTileType } from "../game/tileEffect";
 import type { GameContext } from "../gameContext";
 import type { Direction } from "../types";
 import { DIRECTION_DELTA } from "../types";
@@ -36,6 +38,37 @@ import {
 import { relayoutUI } from "./relayout";
 
 /**
+ * タイル効果に対応するポップアップの数値を取得
+ */
+function getTileEffectAmount(tileType: SpecialTileType): number {
+	switch (tileType) {
+		case "trap":
+			return TRAP_DAMAGE;
+		case "treasure":
+			return TREASURE_HEAL;
+		case "rest_area":
+			return TREASURE_HEAL;
+	}
+}
+
+/**
+ * タイル効果ポップアップを表示
+ */
+async function showTileEffectPopup(
+	ctx: GameContext,
+	tileType: SpecialTileType,
+	hpBefore: number,
+	hpAfter: number,
+): Promise<void> {
+	const amount =
+		tileType === "rest_area"
+			? hpAfter - hpBefore
+			: getTileEffectAmount(tileType);
+	if (amount <= 0 && tileType !== "trap") return;
+	await ctx.ui.mapRenderer.animateTileEffectPopup(tileType, amount);
+}
+
+/**
  * 移動カードの実行と対応するアニメーション
  */
 async function handleMoveCardExecution(
@@ -44,9 +77,11 @@ async function handleMoveCardExecution(
 	direction: Direction,
 ): Promise<void> {
 	const prevPosition = ctx.state.player.position;
+	const prevHp = ctx.state.player.hp;
 	const {
 		state: next,
 		reachedStairs,
+		tileEffect,
 		gameOver,
 	} = executeMove(ctx.state, cardId, direction);
 	const moved =
@@ -62,6 +97,9 @@ async function handleMoveCardExecution(
 		await updateStateWithStairsAnimation(ctx, next, stairsPos);
 	} else if (moved) {
 		await updateStateWithMoveAnimation(ctx, next, next.player.position);
+		if (tileEffect) {
+			await showTileEffectPopup(ctx, tileEffect, prevHp, next.player.hp);
+		}
 		if (gameOver) {
 			deleteSaveData();
 			await ctx.ui.screenTransition.fadeTransition(() => {
@@ -126,6 +164,7 @@ async function handleRushCardExecution(
 	direction: Direction,
 ): Promise<void> {
 	const prevPosition = ctx.state.player.position;
+	const prevHp = ctx.state.player.hp;
 	const result = executeRush(ctx.state, cardId, direction);
 	ctx.ui.directionSelector.hide();
 	ctx.pendingCard = null;
@@ -159,6 +198,10 @@ async function handleRushCardExecution(
 			result.state,
 			result.state.player.position,
 		);
+		// 突進中に発動したタイル効果のポップアップ
+		for (const effect of result.tileEffects) {
+			await showTileEffectPopup(ctx, effect, prevHp, result.state.player.hp);
+		}
 		if (result.gameOver) {
 			deleteSaveData();
 			await ctx.ui.screenTransition.fadeTransition(() => {

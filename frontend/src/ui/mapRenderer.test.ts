@@ -64,6 +64,91 @@ describe("MapRenderer ダメージポップアップ", () => {
 		).resolves.toBeUndefined();
 	});
 
+	it("回復ポップアップが正常に完了する", async () => {
+		const renderer = new MapRenderer();
+		const map = createTestMap();
+		const player = {
+			position: { x: 0, y: 0 },
+			hp: 10,
+			maxHp: 10,
+			ap: 3,
+			maxAp: 3,
+		};
+		renderer.render(map, player, []);
+
+		await expect(
+			renderer.animateDamagePopup({ x: 1, y: 1 }, 3, "heal"),
+		).resolves.toBeUndefined();
+	});
+
+	it("トラップダメージポップアップが正常に完了する", async () => {
+		const renderer = new MapRenderer();
+		const map = createTestMap();
+		const player = {
+			position: { x: 0, y: 0 },
+			hp: 10,
+			maxHp: 10,
+			ap: 3,
+			maxAp: 3,
+		};
+		renderer.render(map, player, []);
+
+		await expect(
+			renderer.animateDamagePopup({ x: 1, y: 1 }, 1, "trap_damage"),
+		).resolves.toBeUndefined();
+	});
+
+	it("animateTileEffectPopupが罠タイプで正常に完了する", async () => {
+		const renderer = new MapRenderer();
+		const map = createTestMap();
+		const player = {
+			position: { x: 2, y: 2 },
+			hp: 10,
+			maxHp: 10,
+			ap: 3,
+			maxAp: 3,
+		};
+		renderer.render(map, player, []);
+
+		await expect(
+			renderer.animateTileEffectPopup("trap", 1),
+		).resolves.toBeUndefined();
+	});
+
+	it("animateTileEffectPopupが宝箱タイプで正常に完了する", async () => {
+		const renderer = new MapRenderer();
+		const map = createTestMap();
+		const player = {
+			position: { x: 2, y: 2 },
+			hp: 10,
+			maxHp: 10,
+			ap: 3,
+			maxAp: 3,
+		};
+		renderer.render(map, player, []);
+
+		await expect(
+			renderer.animateTileEffectPopup("treasure", 3),
+		).resolves.toBeUndefined();
+	});
+
+	it("animateTileEffectPopupが休憩所タイプで正常に完了する", async () => {
+		const renderer = new MapRenderer();
+		const map = createTestMap();
+		const player = {
+			position: { x: 2, y: 2 },
+			hp: 10,
+			maxHp: 10,
+			ap: 3,
+			maxAp: 3,
+		};
+		renderer.render(map, player, []);
+
+		await expect(
+			renderer.animateTileEffectPopup("rest_area", 5),
+		).resolves.toBeUndefined();
+	});
+
 	it("ポップアップ完了後にTextが破棄されている", async () => {
 		const renderer = new MapRenderer();
 		const map = createTestMap();

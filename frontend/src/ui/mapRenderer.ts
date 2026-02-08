@@ -55,17 +55,30 @@ const PLAYER_BLINK_COUNT = 3;
 /** プレイヤー被ダメージ時の1回の点滅時間（ms） */
 const PLAYER_BLINK_INTERVAL = 80;
 
-/** ダメージポップアップの色（赤） */
-const DAMAGE_POPUP_COLOR = 0xff4444;
-
 /** ダメージポップアップのフォントサイズ */
-const DAMAGE_POPUP_FONT_SIZE = 20;
+const DAMAGE_POPUP_FONT_SIZE = 24;
 
 /** ダメージポップアップの上昇距離（px） */
-const DAMAGE_POPUP_RISE = 24;
+const DAMAGE_POPUP_RISE = 28;
 
 /** ダメージポップアップのアニメーション時間（ms） */
 const DAMAGE_POPUP_DURATION = 600;
+
+/** ダメージポップアップのアウトライン幅 */
+const DAMAGE_POPUP_STROKE_WIDTH = 3;
+
+/** ダメージポップアップのアウトライン色 */
+const DAMAGE_POPUP_STROKE_COLOR = 0x000000;
+
+/** ポップアップ種別 */
+export type PopupType = "damage" | "heal" | "trap_damage";
+
+/** ポップアップ種別ごとの色 */
+const POPUP_COLORS: Record<PopupType, number> = {
+	damage: 0xff4444,
+	heal: 0x44cc66,
+	trap_damage: 0xff8844,
+};
 
 /** 敵撃破アニメーションの時間（ms） */
 const DEFEAT_DURATION = 400;
@@ -398,19 +411,31 @@ export class MapRenderer {
 	}
 
 	/**
-	 * ダメージ数値ポップアップアニメーション
-	 * 対象セルの中央上部に赤字で「-N」を表示し、上昇しながらフェードアウト
+	 * ダメージ/回復数値ポップアップアニメーション
+	 * 対象セルの中央上部に数値を表示し、上昇しながらフェードアウト
 	 * @param gridPos 対象のグリッド座標
-	 * @param damage ダメージ量
+	 * @param amount 数値
+	 * @param popupType ポップアップ種別（デフォルト: "damage"）
 	 */
-	async animateDamagePopup(gridPos: Position, damage: number): Promise<void> {
+	async animateDamagePopup(
+		gridPos: Position,
+		amount: number,
+		popupType: PopupType = "damage",
+	): Promise<void> {
 		const pixelPos = gridToPixel(gridPos);
+		const prefix = popupType === "heal" ? "+" : "-";
+		const color = POPUP_COLORS[popupType];
+
 		const text = new Text({
-			text: `-${damage}`,
+			text: `${prefix}${amount}`,
 			style: {
 				fontSize: DAMAGE_POPUP_FONT_SIZE,
 				fontWeight: "bold",
-				fill: DAMAGE_POPUP_COLOR,
+				fill: color,
+				stroke: {
+					color: DAMAGE_POPUP_STROKE_COLOR,
+					width: DAMAGE_POPUP_STROKE_WIDTH,
+				},
 			},
 		});
 
@@ -489,6 +514,19 @@ export class MapRenderer {
 			this.animateDamagePopup(this.playerGridPos, damage),
 		]);
 		await this.animatePlayerBlink();
+	}
+
+	/**
+	 * タイル効果のポップアップアニメーション
+	 * @param tileType 発動した特殊タイル種別
+	 * @param amount 数値（ダメージ量または回復量）
+	 */
+	async animateTileEffectPopup(
+		tileType: "trap" | "treasure" | "rest_area",
+		amount: number,
+	): Promise<void> {
+		const popupType: PopupType = tileType === "trap" ? "trap_damage" : "heal";
+		await this.animateDamagePopup(this.playerGridPos, amount, popupType);
 	}
 
 	/**
