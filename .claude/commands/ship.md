@@ -29,7 +29,7 @@
 
 - 未コミットの変更がある場合のみコミットする（変更がなければスキップ）
 - Conventional Commits形式、日本語、50文字以内
-- 変更内容を分析し、適切なtype（feat/fix/docs/refactor/test/chore）を選択
+- 変更内容を分析し、適切なtype（feat/fix/docs/refactor/test/chore/build/ci/perf/style）を選択
 - 関連ファイルを個別に `git add` する（`git add .` は使わない）
 
 ### 4. Push
