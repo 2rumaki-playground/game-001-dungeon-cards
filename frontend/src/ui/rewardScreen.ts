@@ -545,7 +545,7 @@ export class RewardScreen {
 
 		// パーティクルエフェクト（レアリティで差別化）
 		// カード中心のグローバル座標をパーティクルシステムのローカル座標に変換
-		let particlePromise: Promise<void> | undefined;
+		// パーティクルはUXフローをブロックしないよう待機せず並列実行
 		if (this.particleSystem) {
 			const globalPos = cardContainer.toGlobal({
 				x: REWARD_CARD_WIDTH / 2,
@@ -555,7 +555,7 @@ export class RewardScreen {
 				.getContainer()
 				.toLocal(globalPos);
 
-			particlePromise = this.particleSystem.emit({
+			this.particleSystem.emit({
 				count: ACQUIRE_PARTICLE_COUNT[rarity],
 				origin: particleOrigin,
 				color: ACQUIRE_PARTICLE_COLORS[rarity],
@@ -583,8 +583,6 @@ export class RewardScreen {
 			{ scaleX: 0, scaleY: 0, alpha: 0 },
 			{ duration: ACQUIRE_SHRINK_DURATION, easing: Easing.easeInOut },
 		);
-
-		await particlePromise;
 	}
 
 	/**
