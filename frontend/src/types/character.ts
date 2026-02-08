@@ -19,7 +19,7 @@ export type Player = {
 /**
  * 敵タイプ
  */
-export type EnemyType = "normal" | "heavy" | "scout";
+export type EnemyType = "normal" | "heavy" | "scout" | "miniboss" | "boss";
 
 /**
  * 敵

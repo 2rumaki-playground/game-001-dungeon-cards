@@ -785,6 +785,76 @@ describe("executeEnemyTurn", () => {
 		expect(result.enemies[0].position).toEqual({ x: 3, y: 4 });
 	});
 
+	it("miniboss敵が隣接時にattackDamage分のダメージを与える", () => {
+		const enemies: Enemy[] = [
+			{
+				id: "enemy-1",
+				type: "miniboss",
+				position: { x: 4, y: 3 },
+				hp: ENEMY_PARAMS.miniboss.hp,
+				maxHp: ENEMY_PARAMS.miniboss.hp,
+			},
+		];
+		const state = createTestState({ turn: "enemy", enemies });
+		const { state: result, totalDamage } = executeEnemyTurn(state);
+
+		expect(result.player.hp).toBe(
+			PLAYER_INITIAL_HP - ENEMY_PARAMS.miniboss.attackDamage,
+		);
+		expect(totalDamage).toBe(ENEMY_PARAMS.miniboss.attackDamage);
+	});
+
+	it("miniboss敵がプレイヤーに近づく（moveDistance=1）", () => {
+		const enemies: Enemy[] = [
+			{
+				id: "enemy-1",
+				type: "miniboss",
+				position: { x: 5, y: 3 },
+				hp: ENEMY_PARAMS.miniboss.hp,
+				maxHp: ENEMY_PARAMS.miniboss.hp,
+			},
+		];
+		const state = createTestState({ turn: "enemy", enemies });
+		const { state: result } = executeEnemyTurn(state);
+
+		expect(result.enemies[0].position).toEqual({ x: 4, y: 3 });
+	});
+
+	it("boss敵が隣接時にattackDamage分のダメージを与える", () => {
+		const enemies: Enemy[] = [
+			{
+				id: "enemy-1",
+				type: "boss",
+				position: { x: 4, y: 3 },
+				hp: ENEMY_PARAMS.boss.hp,
+				maxHp: ENEMY_PARAMS.boss.hp,
+			},
+		];
+		const state = createTestState({ turn: "enemy", enemies });
+		const { state: result, totalDamage } = executeEnemyTurn(state);
+
+		expect(result.player.hp).toBe(
+			PLAYER_INITIAL_HP - ENEMY_PARAMS.boss.attackDamage,
+		);
+		expect(totalDamage).toBe(ENEMY_PARAMS.boss.attackDamage);
+	});
+
+	it("boss敵がプレイヤーに近づく（moveDistance=1）", () => {
+		const enemies: Enemy[] = [
+			{
+				id: "enemy-1",
+				type: "boss",
+				position: { x: 5, y: 3 },
+				hp: ENEMY_PARAMS.boss.hp,
+				maxHp: ENEMY_PARAMS.boss.hp,
+			},
+		];
+		const state = createTestState({ turn: "enemy", enemies });
+		const { state: result } = executeEnemyTurn(state);
+
+		expect(result.enemies[0].position).toEqual({ x: 4, y: 3 });
+	});
+
 	it("異なるタイプの敵が混在した場合のtotalDamageが正しい", () => {
 		// normal(隣接) + heavy(隣接) → totalDamage = 1 + 2 = 3
 		const enemies: Enemy[] = [

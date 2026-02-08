@@ -74,11 +74,26 @@ const DEFEAT_DURATION = 400;
 const DEFEAT_ROTATION = Math.PI;
 
 /** 敵タイプ別パディング（セルサイズからの余白） */
-const ENEMY_PADDING = {
+const ENEMY_PADDING: Record<EnemyType, number> = {
 	normal: 12, // 標準サイズ
 	heavy: 8, // 大きめ（パディング小）
 	scout: 16, // 小さめ（パディング大）
-} as const;
+	miniboss: 6, // heavyより大きい
+	boss: 4, // 最大サイズ
+};
+
+/** HPバーの高さ（px） */
+const HP_BAR_HEIGHT = 4;
+
+/** HPバー背景色 */
+const HP_BAR_BG_COLOR = 0x333333;
+
+/**
+ * ボスタイプ判定（miniboss/boss）
+ */
+function isBossType(type: EnemyType): boolean {
+	return type === "miniboss" || type === "boss";
+}
 
 /**
  * タイル種別に対応する色を取得
@@ -112,7 +127,10 @@ export class MapRenderer {
 	private playerGraphics: Graphics;
 	private enemiesContainer: Container;
 	private isPlayerInitialized = false;
+	private enemyContainerMap: Map<string, Container> = new Map();
 	private enemyGraphicsMap: Map<string, Graphics> = new Map();
+	private enemyHpBarMap: Map<string, Graphics> = new Map();
+	private enemyTypeMap: Map<string, EnemyType> = new Map();
 	private playerGridPos: Position = { x: 0, y: 0 };
 	private enemyGridPosMap: Map<string, Position> = new Map();
 
@@ -233,19 +251,19 @@ export class MapRenderer {
 
 		for (let i = 0; i < moves.length; i++) {
 			const move = moves[i];
-			const graphics = this.enemyGraphicsMap.get(move.id);
-			if (!graphics) continue;
+			const enemyContainer = this.enemyContainerMap.get(move.id);
+			if (!enemyContainer) continue;
 
 			// from位置にセット
 			const fromPixel = gridToPixel(move.from);
-			graphics.x = fromPixel.x;
-			graphics.y = fromPixel.y;
+			enemyContainer.x = fromPixel.x;
+			enemyContainer.y = fromPixel.y;
 
 			// to位置へアニメーション（スタッガー付き）
 			const toPixel = gridToPixel(move.to);
 			tweens.push(
 				tween(
-					graphics,
+					enemyContainer,
 					{ x: toPixel.x, y: toPixel.y },
 					{
 						duration: ENEMY_MOVE_DURATION,
@@ -270,16 +288,24 @@ export class MapRenderer {
 				return COLORS.enemyHeavy;
 			case "scout":
 				return COLORS.enemyScout;
+			case "miniboss":
+				return COLORS.enemyMiniboss;
+			case "boss":
+				return COLORS.enemyBoss;
 			default:
 				return COLORS.enemyNormal;
 		}
 	}
 
 	/**
-	 * 敵のGraphicsを作成（ローカル座標ベース）
-	 * @param type 敵タイプ
+	 * 敵1体分のコンテナを作成（Graphics + HPバーを子要素として含む）
+	 * コンテナ単位で座標移動するため、アニメーション時にHPバーも追従する
 	 */
-	private createEnemyGraphics(type: EnemyType): Graphics {
+	private createEnemyContainer(type: EnemyType): {
+		container: Container;
+		graphics: Graphics;
+	} {
+		const enemyContainer = new Container();
 		const graphics = new Graphics();
 		const padding = ENEMY_PADDING[type];
 		const size = CELL_SIZE - padding * 2;
@@ -288,8 +314,57 @@ export class MapRenderer {
 		// ローカル座標でセル内に四角を描画
 		graphics.rect(padding, padding, size, size);
 		graphics.fill(color);
+		enemyContainer.addChild(graphics);
 
-		return graphics;
+		return { container: enemyContainer, graphics };
+	}
+
+	/**
+	 * ボスタイプ敵のHPバーを描画・更新
+	 * HPバーは敵コンテナの子要素として配置（移動アニメーションに追従）
+	 */
+	private renderHpBar(enemy: Enemy): void {
+		let hpBar = this.enemyHpBarMap.get(enemy.id);
+		const enemyContainer = this.enemyContainerMap.get(enemy.id);
+		if (!enemyContainer) return;
+
+		if (!hpBar) {
+			hpBar = new Graphics();
+			this.enemyHpBarMap.set(enemy.id, hpBar);
+			enemyContainer.addChild(hpBar);
+		}
+
+		const padding = ENEMY_PADDING[enemy.type];
+		const barWidth = CELL_SIZE - padding * 2;
+		const hpRatio = Math.max(0, enemy.hp / enemy.maxHp);
+		const barY = padding - HP_BAR_HEIGHT - 2;
+
+		hpBar.clear();
+		// 背景
+		hpBar.rect(padding, barY, barWidth, HP_BAR_HEIGHT);
+		hpBar.fill(HP_BAR_BG_COLOR);
+		// HP部分
+		if (hpRatio > 0) {
+			const color = this.getEnemyColor(enemy.type);
+			hpBar.rect(padding, barY, barWidth * hpRatio, HP_BAR_HEIGHT);
+			hpBar.fill(color);
+		}
+	}
+
+	/**
+	 * 敵1体分のコンテナを破棄
+	 */
+	private destroyEnemyEntry(id: string): void {
+		const enemyContainer = this.enemyContainerMap.get(id);
+		if (enemyContainer) {
+			this.enemiesContainer.removeChild(enemyContainer);
+			enemyContainer.destroy({ children: true });
+		}
+		this.enemyContainerMap.delete(id);
+		this.enemyGraphicsMap.delete(id);
+		this.enemyHpBarMap.delete(id);
+		this.enemyTypeMap.delete(id);
+		this.enemyGridPosMap.delete(id);
 	}
 
 	/**
@@ -298,29 +373,51 @@ export class MapRenderer {
 	renderEnemies(enemies: Enemy[]): void {
 		const currentIds = new Set(enemies.map((e) => e.id));
 
-		// 不要になった敵のGraphicsを削除
-		for (const [id, graphics] of this.enemyGraphicsMap) {
+		// 不要になった敵を削除
+		for (const id of this.enemyContainerMap.keys()) {
 			if (!currentIds.has(id)) {
-				this.enemiesContainer.removeChild(graphics);
-				graphics.destroy();
-				this.enemyGraphicsMap.delete(id);
-				this.enemyGridPosMap.delete(id);
+				this.destroyEnemyEntry(id);
 			}
 		}
 
-		// 各敵のGraphicsを更新または作成
+		// 各敵のコンテナを更新または作成
 		for (const enemy of enemies) {
-			let graphics = this.enemyGraphicsMap.get(enemy.id);
-			if (!graphics) {
-				graphics = this.createEnemyGraphics(enemy.type);
+			const prevType = this.enemyTypeMap.get(enemy.id);
+
+			// タイプが変わった場合は再作成
+			if (prevType !== undefined && prevType !== enemy.type) {
+				this.destroyEnemyEntry(enemy.id);
+			}
+
+			let enemyContainer = this.enemyContainerMap.get(enemy.id);
+			if (!enemyContainer) {
+				const { container, graphics } = this.createEnemyContainer(enemy.type);
+				enemyContainer = container;
+				this.enemyContainerMap.set(enemy.id, enemyContainer);
 				this.enemyGraphicsMap.set(enemy.id, graphics);
-				this.enemiesContainer.addChild(graphics);
+				this.enemyTypeMap.set(enemy.id, enemy.type);
+				this.enemiesContainer.addChild(enemyContainer);
 			}
 
 			this.enemyGridPosMap.set(enemy.id, enemy.position);
 			const pixelPos = gridToPixel(enemy.position);
-			graphics.x = pixelPos.x;
-			graphics.y = pixelPos.y;
+			enemyContainer.x = pixelPos.x;
+			enemyContainer.y = pixelPos.y;
+
+			// ボスタイプのHPバー描画
+			if (isBossType(enemy.type)) {
+				this.renderHpBar(enemy);
+			} else {
+				// 非ボスタイプの場合、既存HPバーを削除
+				const hpBar = this.enemyHpBarMap.get(enemy.id);
+				if (hpBar) {
+					if (hpBar.parent) {
+						hpBar.parent.removeChild(hpBar);
+					}
+					hpBar.destroy();
+					this.enemyHpBarMap.delete(enemy.id);
+				}
+			}
 		}
 	}
 
@@ -456,25 +553,22 @@ export class MapRenderer {
 	 * @param enemyId 撃破された敵のID
 	 */
 	async animateEnemyDefeat(enemyId: string): Promise<void> {
-		const graphics = this.enemyGraphicsMap.get(enemyId);
-		if (!graphics) return;
+		const enemyContainer = this.enemyContainerMap.get(enemyId);
+		if (!enemyContainer) return;
 
 		// pivotを中心に設定し、座標を補正
-		graphics.pivot.set(CELL_SIZE / 2, CELL_SIZE / 2);
-		graphics.x += CELL_SIZE / 2;
-		graphics.y += CELL_SIZE / 2;
+		enemyContainer.pivot.set(CELL_SIZE / 2, CELL_SIZE / 2);
+		enemyContainer.x += CELL_SIZE / 2;
+		enemyContainer.y += CELL_SIZE / 2;
 
 		await tween(
-			graphics,
+			enemyContainer,
 			{ scaleX: 0, scaleY: 0, alpha: 0, rotation: DEFEAT_ROTATION },
 			{ duration: DEFEAT_DURATION, easing: Easing.easeInOut },
 		);
 
-		// Graphics削除
-		this.enemiesContainer.removeChild(graphics);
-		graphics.destroy();
-		this.enemyGraphicsMap.delete(enemyId);
-		this.enemyGridPosMap.delete(enemyId);
+		// コンテナごと削除（Graphics + HPバーも含む）
+		this.destroyEnemyEntry(enemyId);
 	}
 
 	/**
@@ -520,10 +614,13 @@ export class MapRenderer {
 		this.playerGraphics.clear();
 		this.isPlayerInitialized = false;
 		this.enemiesContainer.removeChildren();
-		for (const graphics of this.enemyGraphicsMap.values()) {
-			graphics.destroy();
+		for (const container of this.enemyContainerMap.values()) {
+			container.destroy({ children: true });
 		}
+		this.enemyContainerMap.clear();
 		this.enemyGraphicsMap.clear();
+		this.enemyHpBarMap.clear();
+		this.enemyTypeMap.clear();
 		this.enemyGridPosMap.clear();
 	}
 }
