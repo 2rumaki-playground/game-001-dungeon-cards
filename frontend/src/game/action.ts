@@ -184,8 +184,8 @@ function executeAttackBase(
 	// カードを捨て札へ
 	next = setDeck(next, playCard(next.deck, cardId));
 
-	// 攻撃判定
-	const result = canAttack(state, direction);
+	// 攻撃判定（AP消費・カード使用後の状態で判定）
+	const result = canAttack(next, direction);
 	if (!result.hit) {
 		return { state: addActionLog(next, missLog), hit: false };
 	}
