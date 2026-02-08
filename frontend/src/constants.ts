@@ -58,29 +58,11 @@ export const ENEMY_ATTACK_DAMAGE = ENEMY_PARAMS.normal.attackDamage;
 
 // 階層
 export const INITIAL_FLOOR = 1;
-export const MAX_FLOOR = 20;
-
-// ボス階層定義
-export const BOSS_FLOORS: { floor: number; type: "miniboss" | "boss" }[] = [
-	{ floor: 5, type: "miniboss" },
-	{ floor: 10, type: "boss" },
-	{ floor: 15, type: "miniboss" },
-	{ floor: 20, type: "boss" },
-];
-
-export function isBossFloor(floor: number): boolean {
-	return BOSS_FLOORS.some((bf) => bf.floor === floor);
-}
-
-export function getBossType(floor: number): "miniboss" | "boss" | null {
-	const entry = BOSS_FLOORS.find((bf) => bf.floor === floor);
-	return entry?.type ?? null;
-}
-
 // マップ
 export const MAP_WIDTH = 7;
 export const MAP_HEIGHT = 7;
 export const STAIRS_COUNT = 1;
+/** 構成テーブル用の基準人数（敵タイプ比率はこの人数分を定義する） */
 export const ENEMY_COUNT = 3;
 
 // 階層別敵構成
@@ -114,10 +96,6 @@ export const ENEMY_COMPOSITION_TABLE: {
 	{
 		maxFloor: 6,
 		composition: { normal: 1, heavy: 1, scout: 1, miniboss: 0, boss: 0 },
-	},
-	{
-		maxFloor: 8,
-		composition: { normal: 0, heavy: 1, scout: 2, miniboss: 0, boss: 0 },
 	},
 	{
 		maxFloor: 9,
@@ -167,6 +145,28 @@ export function getEnemyComposition(floor: number): EnemyComposition {
 	const entry = ENEMY_COMPOSITION_TABLE.find((e) => floor <= e.maxFloor);
 	// 最後のエントリがInfinityなので必ずマッチする
 	return (entry as (typeof ENEMY_COMPOSITION_TABLE)[number]).composition;
+}
+
+// ボス階層定義（ENEMY_COMPOSITION_TABLEから導出）
+// ボス/ミニボスを含み、かつレンジが1階層分のエントリのみを抽出
+export const BOSS_FLOORS: { floor: number; type: "miniboss" | "boss" }[] =
+	ENEMY_COMPOSITION_TABLE.filter((e, i) => {
+		if (e.maxFloor === Infinity) return false;
+		if (e.composition.boss === 0 && e.composition.miniboss === 0) return false;
+		const prevMax = i > 0 ? ENEMY_COMPOSITION_TABLE[i - 1].maxFloor : 0;
+		return e.maxFloor - prevMax === 1;
+	}).map((e) => ({
+		floor: e.maxFloor,
+		type: e.composition.boss > 0 ? ("boss" as const) : ("miniboss" as const),
+	}));
+
+export function isBossFloor(floor: number): boolean {
+	return BOSS_FLOORS.some((bf) => bf.floor === floor);
+}
+
+export function getBossType(floor: number): "miniboss" | "boss" | null {
+	const entry = BOSS_FLOORS.find((bf) => bf.floor === floor);
+	return entry?.type ?? null;
 }
 
 // デッキ構築（v1.2）
