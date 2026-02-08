@@ -152,6 +152,7 @@ export class RewardScreen {
 		titleText = "除去するカードを選択",
 	): void {
 		this.container.removeChildren();
+		this.cardContainers = [];
 
 		// 半透明オーバーレイ（背面UIへのポインタ入力を吸収）
 		const overlay = new Graphics();
