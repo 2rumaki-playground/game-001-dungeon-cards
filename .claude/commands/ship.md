@@ -16,14 +16,12 @@
 
 ### 2. コミット前チェック
 
-以下を**リポジトリルートから**順に実行し、問題があれば修正する:
+以下を**リポジトリルートから**順に実行し、問題があれば修正する。各コマンドはサブシェルで実行し、カレントディレクトリが戻るようにする:
 
-```bash
-cd frontend && pnpm format   # フォーマット適用
-cd frontend && pnpm lint     # リントチェック
-cd frontend && pnpm build    # TypeScriptビルド確認
-cd frontend && pnpm test:run # ユニットテスト全通過を確認
-```
+1. `(cd frontend && pnpm format)` — フォーマット適用
+2. `(cd frontend && pnpm lint)` — リントチェック
+3. `(cd frontend && pnpm build)` — TypeScriptビルド確認
+4. `(cd frontend && pnpm test:run)` — ユニットテスト全通過を確認
 
 **注意**: `pnpm` コマンドはすべて `frontend/` ディレクトリで実行すること（`package.json` は `frontend/` にのみ存在する）。問題が見つかった場合は修正してから次に進む。
 
