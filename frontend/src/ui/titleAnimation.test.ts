@@ -39,8 +39,10 @@ describe("titleAnimation", () => {
 
 		it("色配列が空でない", () => {
 			const config = createBgParticleConfig(800, 600);
-			expect(Array.isArray(config.color)).toBe(true);
-			expect((config.color as number[]).length).toBeGreaterThan(0);
+			if (!Array.isArray(config.color)) {
+				throw new Error("config.color should be an array");
+			}
+			expect(config.color.length).toBeGreaterThan(0);
 		});
 
 		it("パターンがrandom", () => {
