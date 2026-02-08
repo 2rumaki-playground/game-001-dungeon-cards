@@ -1,7 +1,14 @@
 import type { FederatedPointerEvent } from "pixi.js";
 import { describe, expect, it, vi } from "vitest";
+import { createTweenMock, mockEasing } from "../test-utils/mockTween";
 import type { Card } from "../types";
+import type { ParticleSystem } from "./particleSystem";
 import { RewardScreen } from "./rewardScreen";
+
+vi.mock("../utils/tween", () => ({
+	Easing: mockEasing,
+	tween: createTweenMock(),
+}));
 
 describe("RewardScreen", () => {
 	describe("コンストラクタ", () => {
@@ -110,7 +117,7 @@ describe("RewardScreen", () => {
 			expect(container.children.length).toBeGreaterThan(0);
 		});
 
-		it("除去ボタンクリックでコールバックが呼ばれる", () => {
+		it("除去ボタンクリックでコールバックが呼ばれる", async () => {
 			const screen = new RewardScreen();
 			const callback = vi.fn();
 			screen.setOnRemoveCard(callback);
@@ -140,7 +147,10 @@ describe("RewardScreen", () => {
 			expect(removeBtn).toBeDefined();
 			removeBtn?.emit("pointerdown", {} as FederatedPointerEvent);
 
-			expect(callback).toHaveBeenCalledWith("card-1");
+			// animateCardRemoveが非同期のためmicrotask flush
+			await vi.waitFor(() => {
+				expect(callback).toHaveBeenCalledWith("card-1");
+			});
 		});
 
 		it("スキップボタンクリックでコールバックが呼ばれる", () => {
@@ -169,6 +179,213 @@ describe("RewardScreen", () => {
 			cancelBtn?.emit("pointerdown", {} as FederatedPointerEvent);
 
 			expect(callback).toHaveBeenCalled();
+		});
+	});
+
+	describe("setParticleSystem", () => {
+		it("パーティクルシステムを設定できる", () => {
+			const screen = new RewardScreen();
+			const mockParticle = {
+				emit: vi.fn().mockResolvedValue(undefined),
+			} as unknown as ParticleSystem;
+			// エラーなく設定できること
+			screen.setParticleSystem(mockParticle);
+		});
+	});
+
+	describe("animateCardRemove（ParticleSystem設定済み）", () => {
+		const testCards: Card[] = [
+			{ id: "rm-1", type: "move" },
+			{ id: "rm-2", type: "attack" },
+		];
+
+		function findRemoveButton(
+			parent: import("pixi.js").Container,
+		): import("pixi.js").Container | null {
+			for (const child of parent.children) {
+				if (child.eventMode === "static" && child.cursor === "pointer") {
+					return child as import("pixi.js").Container;
+				}
+				if ("children" in child) {
+					const c = child as import("pixi.js").Container;
+					if (c.children?.length > 0) {
+						const found = findRemoveButton(c);
+						if (found) return found;
+					}
+				}
+			}
+			return null;
+		}
+
+		it("除去ボタンクリックでemitが呼ばれonRemoveCardが発火する", async () => {
+			const screen = new RewardScreen();
+			const mockEmit = vi.fn().mockResolvedValue(undefined);
+			const mockGetContainer = vi.fn().mockReturnValue({
+				toLocal: (pos: { x: number; y: number }) => pos,
+			});
+			const mockParticle = {
+				emit: mockEmit,
+				getContainer: mockGetContainer,
+			} as unknown as ParticleSystem;
+			screen.setParticleSystem(mockParticle);
+
+			const onRemove = vi.fn();
+			screen.setOnRemoveCard(onRemove);
+			screen.renderRemoveSelection(testCards, 600, 400);
+
+			const removeBtn = findRemoveButton(screen.getContainer());
+			expect(removeBtn).toBeDefined();
+			removeBtn?.emit("pointerdown", {} as FederatedPointerEvent);
+
+			// tween/emitは非同期なのでmicrotask flush
+			await vi.waitFor(() => {
+				expect(mockEmit).toHaveBeenCalledTimes(1);
+				expect(onRemove).toHaveBeenCalledWith("rm-1");
+			});
+		});
+
+		it("除去アニメーション中はキャンセルボタンのeventModeがnoneになる", () => {
+			const screen = new RewardScreen();
+			const mockEmit = vi.fn().mockResolvedValue(undefined);
+			const mockGetContainer = vi.fn().mockReturnValue({
+				toLocal: (pos: { x: number; y: number }) => pos,
+			});
+			const mockParticle = {
+				emit: mockEmit,
+				getContainer: mockGetContainer,
+			} as unknown as ParticleSystem;
+			screen.setParticleSystem(mockParticle);
+
+			screen.setOnRemoveCard(vi.fn());
+			screen.setOnSkip(vi.fn());
+			screen.renderRemoveSelection(testCards, 600, 400);
+
+			// キャンセルボタンを取得
+			const container = screen.getContainer();
+			function findDirectButtons(
+				parent: import("pixi.js").Container,
+			): import("pixi.js").Container[] {
+				const result: import("pixi.js").Container[] = [];
+				for (const child of parent.children) {
+					if (child.eventMode === "static" && child.cursor === "pointer") {
+						result.push(child as import("pixi.js").Container);
+					}
+				}
+				return result;
+			}
+			const directButtons = findDirectButtons(container);
+			const cancelBtn = directButtons[directButtons.length - 1];
+			expect(cancelBtn?.eventMode).toBe("static");
+
+			const removeBtn = findRemoveButton(container);
+			removeBtn?.emit("pointerdown", {} as FederatedPointerEvent);
+
+			// 除去クリック後にキャンセルボタンが無効化される
+			expect(cancelBtn?.eventMode).toBe("none");
+		});
+
+		it("除去ボタンクリック後にスクロールコンテナとキャンセルボタンが無効化される", () => {
+			const screen = new RewardScreen();
+			const mockEmit = vi.fn().mockResolvedValue(undefined);
+			const mockGetContainer = vi.fn().mockReturnValue({
+				toLocal: (pos: { x: number; y: number }) => pos,
+			});
+			const mockParticle = {
+				emit: mockEmit,
+				getContainer: mockGetContainer,
+			} as unknown as ParticleSystem;
+			screen.setParticleSystem(mockParticle);
+
+			screen.setOnRemoveCard(vi.fn());
+			screen.renderRemoveSelection(testCards, 600, 400);
+
+			const container = screen.getContainer();
+			const removeBtn = findRemoveButton(container);
+			expect(removeBtn).toBeDefined();
+			removeBtn?.emit("pointerdown", {} as FederatedPointerEvent);
+
+			// スクロールコンテナのinteractiveChildrenがfalseになる
+			const scrollContainer = container.children.find(
+				(c) => "interactiveChildren" in c && c.mask != null,
+			) as import("pixi.js").Container | undefined;
+			expect(scrollContainer?.interactiveChildren).toBe(false);
+
+			// キャンセルボタンのeventModeがnoneになる
+			function findDirectButtons(
+				parent: import("pixi.js").Container,
+			): import("pixi.js").Container[] {
+				const result: import("pixi.js").Container[] = [];
+				for (const child of parent.children) {
+					if (
+						child.cursor === "pointer" &&
+						!("mask" in child && child.mask != null)
+					) {
+						result.push(child as import("pixi.js").Container);
+					}
+				}
+				return result;
+			}
+			const directButtons = findDirectButtons(container);
+			const cancelBtn = directButtons[directButtons.length - 1];
+			expect(cancelBtn?.eventMode).toBe("none");
+		});
+	});
+
+	describe("animateCardAcquire", () => {
+		it("存在しないインデックスでもエラーにならない", async () => {
+			const screen = new RewardScreen();
+			// renderなしで呼んでもエラーにならない
+			await expect(
+				screen.animateCardAcquire(999, "move"),
+			).resolves.toBeUndefined();
+		});
+
+		it("render後にemitがレアリティに応じた引数で呼ばれる（common）", async () => {
+			const screen = new RewardScreen();
+			const mockEmit = vi.fn().mockResolvedValue(undefined);
+			const mockGetContainer = vi.fn().mockReturnValue({
+				toLocal: (pos: { x: number; y: number }) => pos,
+			});
+			const mockParticle = {
+				emit: mockEmit,
+				getContainer: mockGetContainer,
+			} as unknown as ParticleSystem;
+			screen.setParticleSystem(mockParticle);
+			screen.render(["move"], 600, 400);
+
+			await screen.animateCardAcquire(0, "move");
+			expect(mockEmit).toHaveBeenCalledTimes(1);
+			expect(mockEmit).toHaveBeenCalledWith(
+				expect.objectContaining({
+					count: 12,
+					color: [0xaaaaaa, 0xcccccc],
+					life: { min: 300, max: 500 },
+				}),
+			);
+		});
+
+		it("render後にemitがレアリティに応じた引数で呼ばれる（rare）", async () => {
+			const screen = new RewardScreen();
+			const mockEmit = vi.fn().mockResolvedValue(undefined);
+			const mockGetContainer = vi.fn().mockReturnValue({
+				toLocal: (pos: { x: number; y: number }) => pos,
+			});
+			const mockParticle = {
+				emit: mockEmit,
+				getContainer: mockGetContainer,
+			} as unknown as ParticleSystem;
+			screen.setParticleSystem(mockParticle);
+			screen.render(["rush"], 600, 400);
+
+			await screen.animateCardAcquire(0, "rush");
+			expect(mockEmit).toHaveBeenCalledTimes(1);
+			expect(mockEmit).toHaveBeenCalledWith(
+				expect.objectContaining({
+					count: 30,
+					color: [0xddaa22, 0xffdd44, 0xffcc00, 0xffffff],
+					life: { min: 300, max: 800 },
+				}),
+			);
 		});
 	});
 });

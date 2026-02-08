@@ -6,6 +6,7 @@
 import { Container, Graphics, Text } from "pixi.js";
 import { CARD_COST, CARD_RARITY } from "../constants";
 import type { Card, CardType, Rarity } from "../types";
+import { Easing, tween } from "../utils/tween";
 import {
 	CARD_COLORS,
 	CARD_EFFECT_TEXT,
@@ -18,6 +19,7 @@ import {
 	drawRoundedRect,
 	makeInteractive,
 } from "./graphicsHelpers";
+import type { ParticleSystem } from "./particleSystem";
 import { UI_COLOR_GOLD, UI_COLORS_BUTTON_SECONDARY } from "./uiColors";
 
 /** カードサイズ */
@@ -38,6 +40,25 @@ const RARITY_NAME: Record<Rarity, string> = {
 	rare: "レア",
 };
 
+/** カード取得アニメーション定数 */
+const ACQUIRE_SCALE_DURATION = 200;
+const ACQUIRE_SHRINK_DURATION = 300;
+const ACQUIRE_PARTICLE_COLORS: Record<Rarity, number[]> = {
+	common: [0xaaaaaa, 0xcccccc],
+	uncommon: [0x44aa44, 0x88ff88, 0x22cc22],
+	rare: [0xddaa22, 0xffdd44, 0xffcc00, 0xffffff],
+};
+const ACQUIRE_PARTICLE_COUNT: Record<Rarity, number> = {
+	common: 12,
+	uncommon: 20,
+	rare: 30,
+};
+
+/** カード除去アニメーション定数 */
+const REMOVE_FADE_DURATION = 400;
+const REMOVE_PARTICLE_COLORS = [0xff4444, 0xff6644, 0xcc2222];
+const REMOVE_PARTICLE_COUNT = 15;
+
 /** 除去モードのカード一覧設定 */
 const REMOVE_CARD_HEIGHT = 28;
 const REMOVE_CARD_GAP = 4;
@@ -51,10 +72,18 @@ export class RewardScreen {
 	private onCardSelect: ((index: number) => void) | null = null;
 	private onSkip: ((index: number) => void) | null = null;
 	private onRemoveCard: ((cardId: string) => void) | null = null;
+	private particleSystem: ParticleSystem | null = null;
+	private cardContainers: Container[] = [];
+	private scrollContainer: Container | null = null;
+	private cancelButton: Container | null = null;
 
 	constructor() {
 		this.container = new Container();
 		this.container.visible = false;
+	}
+
+	setParticleSystem(particleSystem: ParticleSystem): void {
+		this.particleSystem = particleSystem;
 	}
 
 	getContainer(): Container {
@@ -78,6 +107,9 @@ export class RewardScreen {
 	 */
 	render(choices: CardType[], screenWidth: number, screenHeight: number): void {
 		this.container.removeChildren();
+		this.cardContainers = [];
+		this.scrollContainer = null;
+		this.cancelButton = null;
 
 		// 半透明オーバーレイ（背面UIへのポインタ入力を吸収）
 		const overlay = new Graphics();
@@ -110,6 +142,7 @@ export class RewardScreen {
 			const cardX = startX + i * (REWARD_CARD_WIDTH + REWARD_CARD_GAP);
 			const cardContainer = this.createRewardCard(choices[i], cardX, cardY, i);
 			this.container.addChild(cardContainer);
+			this.cardContainers.push(cardContainer);
 		}
 	}
 
@@ -123,6 +156,9 @@ export class RewardScreen {
 		titleText = "除去するカードを選択",
 	): void {
 		this.container.removeChildren();
+		this.cardContainers = [];
+		this.scrollContainer = null;
+		this.cancelButton = null;
 
 		// 半透明オーバーレイ（背面UIへのポインタ入力を吸収）
 		const overlay = new Graphics();
@@ -155,7 +191,8 @@ export class RewardScreen {
 					(deckCards.length - 1) * REMOVE_CARD_GAP;
 
 		// スクロールコンテナ
-		const scrollContainer = new Container();
+		this.scrollContainer = new Container();
+		const scrollContainer = this.scrollContainer;
 		for (let i = 0; i < deckCards.length; i++) {
 			const card = deckCards[i];
 			const y = i * (REMOVE_CARD_HEIGHT + REMOVE_CARD_GAP);
@@ -211,7 +248,7 @@ export class RewardScreen {
 
 		// キャンセルボタン
 		const cancelY = listStartY + visibleHeight + 10;
-		const cancelButton = this.createButton(
+		this.cancelButton = this.createButton(
 			"スキップ",
 			screenWidth / 2 - BUTTON_WIDTH / 2,
 			cancelY,
@@ -222,7 +259,7 @@ export class RewardScreen {
 				this.onSkip?.(0);
 			},
 		);
-		this.container.addChild(cancelButton);
+		this.container.addChild(this.cancelButton);
 	}
 
 	/**
@@ -424,9 +461,28 @@ export class RewardScreen {
 		removeBtnText.y = removeBtnHeight / 2;
 		removeBtn.addChild(removeBtnText);
 
-		makeInteractive(removeBtn, (e) => {
+		makeInteractive(removeBtn, async (e) => {
 			e.stopPropagation?.();
-			this.onRemoveCard?.(card.id);
+			// アニメーション中は全除去ボタン・スキップボタンへの入力を一括無効化
+			if (this.scrollContainer) {
+				this.scrollContainer.interactiveChildren = false;
+			}
+			if (this.cancelButton) {
+				this.cancelButton.eventMode = "none";
+			}
+			try {
+				await this.animateCardRemove(item, width);
+				this.onRemoveCard?.(card.id);
+			} catch (error) {
+				console.error("カード除去処理中にエラーが発生しました", error);
+			} finally {
+				if (this.scrollContainer) {
+					this.scrollContainer.interactiveChildren = true;
+				}
+				if (this.cancelButton) {
+					this.cancelButton.eventMode = "static";
+				}
+			}
 		});
 		item.addChild(removeBtn);
 
@@ -480,5 +536,91 @@ export class RewardScreen {
 
 	hide(): void {
 		this.container.visible = false;
+	}
+
+	/**
+	 * カード取得アニメーション
+	 * レアリティに応じたパーティクルエフェクト + カードが縮小してフェードアウト
+	 */
+	async animateCardAcquire(index: number, cardType: CardType): Promise<void> {
+		const cardContainer = this.cardContainers[index];
+		if (!cardContainer) return;
+
+		const rarity = CARD_RARITY[cardType];
+
+		// パーティクルエフェクト（レアリティで差別化）
+		// カード中心のグローバル座標をパーティクルシステムのローカル座標に変換
+		// パーティクルはUXフローをブロックしないよう待機せず並列実行
+		if (this.particleSystem) {
+			const globalPos = cardContainer.toGlobal({
+				x: REWARD_CARD_WIDTH / 2,
+				y: REWARD_CARD_HEIGHT / 2,
+			});
+			const particleOrigin = this.particleSystem
+				.getContainer()
+				.toLocal(globalPos);
+
+			this.particleSystem.emit({
+				count: ACQUIRE_PARTICLE_COUNT[rarity],
+				origin: particleOrigin,
+				color: ACQUIRE_PARTICLE_COLORS[rarity],
+				speed: { min: 0.02, max: rarity === "rare" ? 0.12 : 0.08 },
+				life: { min: 300, max: rarity === "rare" ? 800 : 500 },
+				size: { min: 1, max: rarity === "rare" ? 4 : 3 },
+				pattern: { type: "radial" },
+			});
+		}
+
+		// カード拡大 → 縮小フェードアウト
+		// pivotをカード中心に設定してスケールアニメーション
+		cardContainer.pivot.set(REWARD_CARD_WIDTH / 2, REWARD_CARD_HEIGHT / 2);
+		cardContainer.x += REWARD_CARD_WIDTH / 2;
+		cardContainer.y += REWARD_CARD_HEIGHT / 2;
+
+		await tween(
+			cardContainer,
+			{ scaleX: 1.15, scaleY: 1.15 },
+			{ duration: ACQUIRE_SCALE_DURATION, easing: Easing.easeOutBack },
+		);
+
+		await tween(
+			cardContainer,
+			{ scaleX: 0, scaleY: 0, alpha: 0 },
+			{ duration: ACQUIRE_SHRINK_DURATION, easing: Easing.easeInOut },
+		);
+	}
+
+	/**
+	 * カード除去アニメーション
+	 * 赤いパーティクル + フェードアウト
+	 */
+	async animateCardRemove(
+		itemContainer: Container,
+		itemWidth: number,
+	): Promise<void> {
+		// アイテム中心のグローバル座標をパーティクルシステムのローカル座標に変換
+		const globalPos = itemContainer.toGlobal({
+			x: itemWidth / 2,
+			y: REMOVE_CARD_HEIGHT / 2,
+		});
+		const particleOrigin = this.particleSystem
+			? this.particleSystem.getContainer().toLocal(globalPos)
+			: { x: 0, y: 0 };
+
+		this.particleSystem?.emit({
+			count: REMOVE_PARTICLE_COUNT,
+			origin: particleOrigin,
+			color: REMOVE_PARTICLE_COLORS,
+			speed: { min: 0.02, max: 0.06 },
+			life: { min: 200, max: 500 },
+			size: { min: 1, max: 3 },
+			pattern: { type: "radial" },
+		});
+
+		await tween(
+			itemContainer,
+			{ alpha: 0, scaleX: 0.8, scaleY: 0.8 },
+			{ duration: REMOVE_FADE_DURATION, easing: Easing.easeInOut },
+		);
 	}
 }

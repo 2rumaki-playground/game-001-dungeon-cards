@@ -178,11 +178,20 @@ function showRewardCardSelection(
 		ctx.ui.rewardScreen.render(choices, screenWidth, screenHeight);
 		ctx.ui.rewardScreen.show();
 
-		ctx.ui.rewardScreen.setOnCardSelect((index) => {
+		ctx.ui.rewardScreen.setOnCardSelect(async (index) => {
+			ctx.ui.rewardScreen.setOnCardSelect(() => {});
+			ctx.ui.rewardScreen.setOnSkip(() => {});
+			try {
+				await ctx.ui.rewardScreen.animateCardAcquire(index, choices[index]);
+			} catch (error) {
+				console.warn("カード取得アニメーション中にエラー:", error);
+			}
 			resolve(index);
 		});
 
 		ctx.ui.rewardScreen.setOnSkip(() => {
+			ctx.ui.rewardScreen.setOnCardSelect(() => {});
+			ctx.ui.rewardScreen.setOnSkip(() => {});
 			resolve(null);
 		});
 	});

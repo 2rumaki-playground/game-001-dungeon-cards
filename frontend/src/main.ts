@@ -111,6 +111,7 @@ function initializeUIComponents(
 	app.stage.addChild(deckViewer.getContainer());
 
 	const rewardScreen = new RewardScreen();
+	rewardScreen.setParticleSystem(particleSystem);
 	app.stage.addChild(rewardScreen.getContainer());
 
 	const totalWidth =
