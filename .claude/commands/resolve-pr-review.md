@@ -60,7 +60,7 @@ gh pr ready --undo <番号>
 git worktree add /tmp/wt-pr-<番号>
 
 # worktree側でPRブランチをcheckoutし、依存関係をインストール
-(cd /tmp/wt-pr-<番号> && gh pr checkout <番号> && cd frontend && pnpm install)
+(cd /tmp/wt-pr-<番号> && gh pr checkout <番号> && pnpm install)
 ```
 
 ### P-5. エージェントの並列起動
@@ -97,10 +97,10 @@ git worktree add /tmp/wt-pr-<番号>
    - 当該コメントの指摘範囲外の変更はしない
 
 2. **コミット前チェック**（各コミットの前に必ず実行）:
-   - `cd /tmp/wt-pr-<番号>/frontend && pnpm format`
-   - `cd /tmp/wt-pr-<番号>/frontend && pnpm lint`
-   - `cd /tmp/wt-pr-<番号>/frontend && pnpm build`
-   - `cd /tmp/wt-pr-<番号>/frontend && pnpm test:run`
+   - `cd /tmp/wt-pr-<番号> && pnpm format`
+   - `cd /tmp/wt-pr-<番号> && pnpm lint`
+   - `cd /tmp/wt-pr-<番号> && pnpm build`
+   - `cd /tmp/wt-pr-<番号> && pnpm test:run`
 
 3. **コミット・push**:
    - Conventional Commits形式、日本語、50文字以内
@@ -218,10 +218,10 @@ gh pr checkout <番号>
 
 コミット前に以下を**リポジトリルートから**実行し、問題があれば修正する。各コマンドはサブシェルで実行し、カレントディレクトリが戻るようにする:
 
-1. `(cd frontend && pnpm format)` — フォーマット適用
-2. `(cd frontend && pnpm lint)` — リントチェック
-3. `(cd frontend && pnpm build)` — TypeScriptビルド確認
-4. `(cd frontend && pnpm test:run)` — ユニットテスト全通過を確認
+1. `pnpm format` — フォーマット適用
+2. `pnpm lint` — リントチェック
+3. `pnpm build` — TypeScriptビルド確認
+4. `pnpm test:run` — ユニットテスト全通過を確認
 
 #### 5c. コミット・push
 
