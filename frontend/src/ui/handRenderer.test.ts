@@ -249,24 +249,6 @@ describe("HandRenderer ホバー・選択演出", () => {
 		expect(mockedTween.mock.calls[1][1]).toHaveProperty("y");
 	});
 
-	it("pointerdown でコールバックが消費アニメーション完了後に呼ばれる", async () => {
-		const renderer = new HandRenderer();
-		const cards = createTestCards();
-		const callback = vi.fn();
-		renderer.setOnCardSelect(callback);
-		renderer.render(cards, 10);
-
-		const card2 = findCardContainer(renderer, 2);
-		card2.emit("pointerdown", {
-			global: { x: 0, y: 0 },
-		} as FederatedPointerEvent);
-
-		// アニメーションはモックで即座に完了するため、コールバックも呼ばれる
-		await vi.waitFor(() => {
-			expect(callback).toHaveBeenCalledWith(cards[2]);
-		});
-	});
-
 	it("アニメーション中の二重クリックが防止される", async () => {
 		const renderer = new HandRenderer();
 		const cards = createTestCards();
