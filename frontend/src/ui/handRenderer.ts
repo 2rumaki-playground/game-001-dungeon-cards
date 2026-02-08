@@ -13,7 +13,7 @@ import {
 	CARD_TYPE_NAME,
 	CARD_TYPE_SYMBOL,
 } from "./cardConstants";
-import { drawRoundedRect } from "./graphicsHelpers";
+import { drawRoundedRect, makeInteractive } from "./graphicsHelpers";
 import { UI_COLOR_GOLD, UI_COLORS_DISABLED } from "./uiColors";
 
 /** カード描画定数 */
@@ -356,22 +356,7 @@ export class HandRenderer {
 
 		// インタラクション
 		if (enabled) {
-			cardContainer.eventMode = "static";
-			cardContainer.cursor = "pointer";
-
-			cardContainer.on("pointerover", () => {
-				if (this.hoveredCardId === card.id) return;
-				this.hoveredCardId = card.id;
-				this.render(this.currentHand, this.currentAp);
-			});
-
-			cardContainer.on("pointerout", () => {
-				if (this.hoveredCardId !== card.id) return;
-				this.hoveredCardId = null;
-				this.render(this.currentHand, this.currentAp);
-			});
-
-			cardContainer.on("pointerdown", (event) => {
+			makeInteractive(cardContainer, (event) => {
 				this.animateCardPulse(cardContainer);
 				// 方向パラメータを持つカードの場合、クリック位置から方向を判定
 				if (
@@ -388,6 +373,18 @@ export class HandRenderer {
 				} else {
 					this.onCardSelect?.(card);
 				}
+			});
+
+			cardContainer.on("pointerover", () => {
+				if (this.hoveredCardId === card.id) return;
+				this.hoveredCardId = card.id;
+				this.render(this.currentHand, this.currentAp);
+			});
+
+			cardContainer.on("pointerout", () => {
+				if (this.hoveredCardId !== card.id) return;
+				this.hoveredCardId = null;
+				this.render(this.currentHand, this.currentAp);
 			});
 		}
 
