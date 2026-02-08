@@ -21,6 +21,8 @@ import type { GameContext } from "../gameContext";
 import type { Direction, Position } from "../types";
 import { DIRECTION_DELTA } from "../types";
 import { deleteSaveData, hasSaveData, loadGame } from "../utils/storage";
+import { createRushParticleConfig } from "./battleParticles";
+import { gridToCenterPixel } from "./coordinates";
 import { detectEnemyMoves } from "./enemyMoveDetector";
 import {
 	animateRushWithStairs,
@@ -126,7 +128,7 @@ async function handleAttackCardExecution(
 	ctx.ui.directionSelector.hide();
 	ctx.pendingCard = null;
 	if (hit && enemyId) {
-		await updateStateWithAttackAnimation(ctx, next, enemyId);
+		await updateStateWithAttackAnimation(ctx, next, enemyId, "attack");
 	} else {
 		await updateStateWithMissAnimation(ctx, next, direction);
 	}
@@ -148,10 +150,22 @@ async function handleStrongAttackCardExecution(
 	ctx.ui.directionSelector.hide();
 	ctx.pendingCard = null;
 	if (hit && enemyId) {
-		await updateStateWithAttackAnimation(ctx, next, enemyId);
+		await updateStateWithAttackAnimation(ctx, next, enemyId, "strong_attack");
 	} else {
 		await updateStateWithMissAnimation(ctx, next, direction);
 	}
+}
+
+/**
+ * 突進パーティクル（スピードライン）を発射
+ */
+function emitRushParticles(
+	ctx: GameContext,
+	targetPos: Position,
+	moveAngle: number,
+): void {
+	const center = gridToCenterPixel(targetPos);
+	ctx.ui.particleSystem.emit(createRushParticleConfig(center, moveAngle));
 }
 
 /**
@@ -168,22 +182,27 @@ async function handleRushCardExecution(
 	ctx.ui.directionSelector.hide();
 	ctx.pendingCard = null;
 
+	const delta = DIRECTION_DELTA[direction];
+	const moveAngle = Math.atan2(delta.y, delta.x);
+
 	if (result.movedDistance === 0) {
 		// 移動失敗: バンプアニメーション
 		await updateStateWithBumpAnimation(ctx, result.state, direction);
 	} else if (result.reachedStairs && result.movedDistance === 1) {
 		// 1マス目が階段: 階段アニメーション
 		const stairsPos = {
-			x: prevPosition.x + DIRECTION_DELTA[direction].x,
-			y: prevPosition.y + DIRECTION_DELTA[direction].y,
+			x: prevPosition.x + delta.x,
+			y: prevPosition.y + delta.y,
 		};
+		emitRushParticles(ctx, prevPosition, moveAngle);
 		await updateStateWithStairsAnimation(ctx, result.state, stairsPos);
 	} else if (result.reachedStairs && result.intermediatePosition) {
 		// 2マス目が階段: 2段階移動→階層遷移アニメーション
 		const stairsPos = {
-			x: result.intermediatePosition.x + DIRECTION_DELTA[direction].x,
-			y: result.intermediatePosition.y + DIRECTION_DELTA[direction].y,
+			x: result.intermediatePosition.x + delta.x,
+			y: result.intermediatePosition.y + delta.y,
 		};
+		emitRushParticles(ctx, prevPosition, moveAngle);
 		await animateRushWithStairs(
 			ctx,
 			result.state,
@@ -192,6 +211,8 @@ async function handleRushCardExecution(
 		);
 	} else {
 		// 通常移動(1or2マス): 最終位置へ直接移動アニメーション
+		emitRushParticles(ctx, prevPosition, moveAngle);
+
 		await updateStateWithMoveAnimation(
 			ctx,
 			result.state,
