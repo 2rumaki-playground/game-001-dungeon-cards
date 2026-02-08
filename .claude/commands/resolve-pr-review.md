@@ -86,7 +86,7 @@ push後、対応したレビューコメントに対して以下を行う:
 2. **resolve**: 対応したコメントが属するreview threadをresolveする
    - まずPRのreview threadsを取得してthread IDを特定する:
      ```
-     gh api graphql -f query='{ repository(owner:"{owner}", name:"{repo}") { pullRequest(number:<番号>) { reviewThreads(first:100) { nodes { id isResolved comments(first:1) { nodes { databaseId } } } } } } }'
+     gh api graphql -f query='{ repository(owner:"{owner}", name:"{repo}") { pullRequest(number:<番号>) { reviewThreads(first:100) { nodes { id isResolved comments(first:10) { nodes { databaseId } } } } } } }'
      ```
    - 対応したコメントの `databaseId` と一致するthreadの `id` を使ってresolveする:
      ```
