@@ -437,7 +437,7 @@ export async function animateRushWithStairs(
 
 /**
  * プレイヤー攻撃ヒット時のアニメーション付きで状態を更新
- * @param cardType 使用したカードタイプ（パーティクル演出に使用）
+ * @param cardType 使用したカードタイプ（ダメージ値算出・パーティクル演出に使用）
  */
 export async function updateStateWithAttackAnimation(
 	ctx: GameContext,
