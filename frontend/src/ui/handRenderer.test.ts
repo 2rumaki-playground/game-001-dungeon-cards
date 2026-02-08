@@ -272,11 +272,18 @@ describe("HandRenderer ホバー・選択演出", () => {
 			global: { x: 0, y: 0 },
 		} as FederatedPointerEvent);
 
-		// アニメーション中に手札コンテナのeventModeがnoneになり、
-		// PixiJSが子要素へのイベント伝播をブロックする
-		// （テスト環境ではemit()がeventModeをバイパスするが、
-		//   本番のPixiJSイベントシステムではnoneで子要素への伝播がブロックされる）
+		// アニメーション中にeventModeがnoneになる
 		expect(renderer.getContainer().eventMode).toBe("none");
+
+		const tweenCallCountAfterFirst = mockedTween.mock.calls.length;
+
+		// 2回目のクリックを試行（eventMode=noneガードで早期return）
+		card2.emit("pointerdown", {
+			global: { x: 0, y: 0 },
+		} as FederatedPointerEvent);
+
+		// tween呼び出し回数が増えていない（2回目は無視された）
+		expect(mockedTween.mock.calls.length).toBe(tweenCallCountAfterFirst);
 
 		// アニメーション完了前にコールバックは呼ばれない
 		expect(callback).not.toHaveBeenCalled();

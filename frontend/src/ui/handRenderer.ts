@@ -371,7 +371,8 @@ export class HandRenderer {
 		// インタラクション
 		if (enabled) {
 			makeInteractive(cardContainer, (event) => {
-				// 二重クリック防止：アニメーション中は手札全体を非インタラクティブ化
+				// 二重クリック防止：アニメーション中は追加クリックを無視
+				if (this.container.eventMode === "none") return;
 				this.container.eventMode = "none";
 				this.hoveredCardId = null;
 
