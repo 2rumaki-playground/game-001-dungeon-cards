@@ -68,7 +68,7 @@ cd /tmp/wt-issue-<番号>/frontend && pnpm install
 各エージェントへのプロンプトには以下を含める:
 
 ```
-あなはIssue #<番号> の実装担当です。
+あなたはIssue #<番号> の実装担当です。
 
 ## 作業ディレクトリ
 /tmp/wt-issue-<番号>
@@ -103,7 +103,7 @@ cd /tmp/wt-issue-<番号>/frontend && pnpm install
 5. **push**: `git -C /tmp/wt-issue-<番号> push -u origin <ブランチ名>`
 6. **PR作成**:
    ```
-   gh pr create --repo <owner>/<repo> --base main --head <ブランチ名> --title "<type>: <日本語の説明>" --body "$(cat <<'PREOF'
+   gh pr create --repo <owner>/<repo> --base main --head <ブランチ名> --title "<type>: <日本語の説明>" --body "$(cat <<'EOF'
    ## 概要
    <変更内容の箇条書き>
 
@@ -113,7 +113,7 @@ cd /tmp/wt-issue-<番号>/frontend && pnpm install
    <テスト方法のチェックリスト>
 
    🤖 Generated with [Claude Code](https://claude.com/claude-code)
-   PREOF
+   EOF
    )"
    ```
    - PRタイトルはConventional Commits形式、日本語、70文字以内
