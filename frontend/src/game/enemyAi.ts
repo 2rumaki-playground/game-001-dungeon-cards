@@ -1,14 +1,20 @@
 /**
  * 敵AI
- * @see docs/spec/mvp/rules.md
+ * @see docs/spec/rules.md
  */
 
-import { ENEMY_PARAMS } from "../constants";
+import { BOSS_SKILL, ENEMY_PARAMS } from "../constants";
 import type { Direction, Enemy, GameState, Position } from "../types";
 import { DIRECTION_DELTA } from "../types";
+import {
+	checkEnrage,
+	decideBossSkill,
+	decideMinibossSkill,
+	executePendingSkill,
+} from "./bossSkill";
 import { applyDamageToPlayer, checkGameOver, isDefeated } from "./combat";
 import { isInBounds } from "./map";
-import { addActionLog, setEnemies } from "./state";
+import { addActionLog, setEnemies, updateEnemy } from "./state";
 
 /**
  * 2点が4近傍で隣接しているか判定
@@ -181,7 +187,7 @@ export type EnemyTurnResult = {
  */
 export function executeEnemyTurn(state: GameState): EnemyTurnResult {
 	// RNGをcloneして入力stateを変更しない
-	const rng = state.rng.clone();
+	let rng = state.rng.clone();
 	const order = rng.shuffle(state.enemies.map((_e, i) => i));
 
 	let next = { ...state, enemies: state.enemies.map((e) => ({ ...e })), rng };
@@ -194,14 +200,62 @@ export function executeEnemyTurn(state: GameState): EnemyTurnResult {
 		const enemy = next.enemies[idx];
 		const params = ENEMY_PARAMS[enemy.type];
 
-		if (isAdjacent(enemy.position, next.player.position)) {
-			// 攻撃
-			next = applyDamageToPlayer(next, params.attackDamage);
+		// ボス激昂チェック
+		if (enemy.type === "boss") {
+			const enragedEnemy = checkEnrage(enemy);
+			if (enragedEnemy.enraged && !enemy.enraged) {
+				next = updateEnemy(next, enemy.id, () => enragedEnemy);
+				next = addActionLog(next, "ボスが激昂した");
+			}
+		}
+
+		// 激昂後の敵状態を再取得（enrageBonus等に反映するため）
+		const currentEnemy = next.enemies[idx];
+
+		// 予告済みスキルの発動
+		if (currentEnemy.pendingSkill) {
+			const skillResult = executePendingSkill(next, currentEnemy);
+			next = skillResult.state;
+			totalDamage += skillResult.damage;
+
+			// ゲームオーバー判定
+			next = checkGameOver(next);
+
+			// スキルが実際に発動したターンのみ、通常行動をスキップする
+			if (skillResult.executed) {
+				continue;
+			}
+		}
+
+		if (isAdjacent(currentEnemy.position, next.player.position)) {
+			// 攻撃（激昂時はボーナスダメージ）
+			const enrageBonus = currentEnemy.enraged
+				? BOSS_SKILL.enrageBonusDamage
+				: 0;
+			const damage = params.attackDamage + enrageBonus;
+			next = applyDamageToPlayer(next, damage);
 			next = addActionLog(next, "敵が攻撃した");
-			totalDamage += params.attackDamage;
+			totalDamage += damage;
 		} else {
 			// 移動
-			next = moveEnemyByType(next, enemy, params.moveDistance);
+			next = moveEnemyByType(next, currentEnemy, params.moveDistance);
+			rng = next.rng;
+
+			// ボス/ミニボス: スキル予告判定（移動後の敵をインデックスで取得）
+			const movedEnemy = next.enemies[idx];
+			if (movedEnemy.type === "miniboss") {
+				const updated = decideMinibossSkill(movedEnemy, rng);
+				if (updated.pendingSkill) {
+					next = updateEnemy(next, movedEnemy.id, () => updated);
+					next = addActionLog(next, "ミニボスが力を溜めている…");
+				}
+			} else if (movedEnemy.type === "boss") {
+				const updated = decideBossSkill(movedEnemy, rng);
+				if (updated.pendingSkill) {
+					next = updateEnemy(next, movedEnemy.id, () => updated);
+					next = addActionLog(next, "ボスが大技を構えている…");
+				}
+			}
 		}
 	}
 
