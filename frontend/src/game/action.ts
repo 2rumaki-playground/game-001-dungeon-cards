@@ -198,6 +198,10 @@ function executeAttackBase(
 
 /**
  * 攻撃カード使用時のプレイヤー攻撃処理
+ *
+ * 成功/失敗に関わらずAP消費・カード使用を行う。
+ * 成功時は敵にダメージを与え、HP0以下で敵を削除。
+ * 戻り値の hit でヒット情報を返す。
  */
 export function executeAttack(
 	state: GameState,
@@ -216,6 +220,10 @@ export function executeAttack(
 
 /**
  * 強攻撃カード使用時のプレイヤー攻撃処理
+ *
+ * 成功/失敗に関わらずAP消費・カード使用を行う。
+ * 成功時は敵に大ダメージを与え、HP0以下で敵を削除。
+ * 戻り値の hit でヒット情報を返す。
  */
 export function executeStrongAttack(
 	state: GameState,
