@@ -292,13 +292,20 @@ describe("HandRenderer ホバー・選択演出", () => {
 
 		// アニメーション中に手札コンテナのeventModeがnoneになり、
 		// PixiJSが子要素へのイベント伝播をブロックする
+		// （テスト環境ではemit()がeventModeをバイパスするが、
+		//   本番のPixiJSイベントシステムではnoneで子要素への伝播がブロックされる）
 		expect(renderer.getContainer().eventMode).toBe("none");
 
 		// アニメーション完了前にコールバックは呼ばれない
 		expect(callback).not.toHaveBeenCalled();
 
-		// tweenを完了させる
+		// tweenを完了させてアニメーション完了
 		resolveTween();
+
+		// アニメーション完了後もコールバックは1回のみ
+		await vi.waitFor(() => {
+			expect(callback).toHaveBeenCalledTimes(1);
+		});
 	});
 
 	it("render後にeventModeがpassiveに復帰する", () => {
