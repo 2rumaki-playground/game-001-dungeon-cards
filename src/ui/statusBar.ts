@@ -167,10 +167,10 @@ export class StatusBar {
 	/**
 	 * ステータスバーを描画（即座にスナップ更新）
 	 */
-	render(player: Player, floor: number): void {
+	render(player: Player, floor: number, isCleared = false): void {
 		this.hpText.text = `HP: ${player.hp}/${player.maxHp}`;
 		this.apText.text = `AP: ${player.ap}/${player.maxAp}`;
-		this.floorText.text = `階層: ${floor}`;
+		this.floorText.text = isCleared ? `階層: ${floor} ★` : `階層: ${floor}`;
 
 		this.currentHpRatio = player.maxHp > 0 ? player.hp / player.maxHp : 0;
 		this.currentApRatio = player.maxAp > 0 ? player.ap / player.maxAp : 0;

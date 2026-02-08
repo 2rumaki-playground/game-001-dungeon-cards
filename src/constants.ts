@@ -58,6 +58,7 @@ export const ENEMY_ATTACK_DAMAGE = ENEMY_PARAMS.normal.attackDamage;
 
 // 階層
 export const INITIAL_FLOOR = 1;
+export const CLEAR_FLOOR = 20;
 // マップ
 export const MAP_WIDTH = 7;
 export const MAP_HEIGHT = 7;

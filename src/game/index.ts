@@ -7,3 +7,4 @@ export * from "./map";
 export * from "./reward";
 export * from "./state";
 export * from "./turn";
+export * from "./victory";

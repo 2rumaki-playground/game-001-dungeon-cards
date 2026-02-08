@@ -25,6 +25,7 @@ import {
 	TitleScreen,
 	TurnBanner,
 	TurnEndButton,
+	VictoryScreen,
 } from "./ui";
 import { setupEventHandlers } from "./ui/eventHandlers";
 import { render, updateState } from "./ui/gameRenderer";
@@ -122,6 +123,9 @@ function initializeUIComponents(
 	const floorBanner = new FloorBanner(totalWidth, totalHeight);
 	screenTransition.getContainer().addChild(floorBanner.getContainer());
 
+	const victoryScreen = new VictoryScreen();
+	app.stage.addChild(victoryScreen.getContainer());
+
 	return {
 		titleScreen,
 		gameOverScreen,
@@ -137,6 +141,7 @@ function initializeUIComponents(
 		screenTransition,
 		floorBanner,
 		particleSystem,
+		victoryScreen,
 	};
 }
 

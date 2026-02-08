@@ -19,6 +19,7 @@ import type {
 	TitleScreen,
 	TurnBanner,
 	TurnEndButton,
+	VictoryScreen,
 } from "./ui";
 
 /** UIコンポーネント参照 */
@@ -37,6 +38,7 @@ export interface UIComponents {
 	screenTransition: ScreenTransition;
 	floorBanner: FloorBanner;
 	particleSystem: ParticleSystem;
+	victoryScreen: VictoryScreen;
 }
 
 /** アプリケーションの共有状態 */

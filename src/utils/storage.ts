@@ -55,8 +55,8 @@ export function loadGame(): GameState | null {
 			return null;
 		}
 
-		// screen の検証（reward画面はgameに復帰、撃破数もリセット）
-		if (data.screen === "reward") {
+		// screen の検証（reward/victory画面はgameに復帰、撃破数もリセット）
+		if (data.screen === "reward" || data.screen === "victory") {
 			data.screen = "game";
 			data.defeatedEnemyCount = 0;
 		}
@@ -81,6 +81,7 @@ export function loadGame(): GameState | null {
 			...data,
 			enemies,
 			rng: RNG.deserialize(data.rng),
+			isCleared: data.isCleared === true,
 			defeatedEnemyCount:
 				typeof data.defeatedEnemyCount === "number" &&
 				Number.isFinite(data.defeatedEnemyCount) &&
