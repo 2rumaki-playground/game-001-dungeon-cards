@@ -198,26 +198,19 @@ async function handleRushCardExecution(
 			result.state.player.position,
 		);
 		// カーソルHPを用いて、タイルごとのHP変化量を順次計算する
-		// 各ステップの座標を方向ベクトルから算出
 		let cursorHp = prevHp;
 		const maxHp = result.state.player.maxHp;
-		const delta = DIRECTION_DELTA[direction];
-		for (let i = 0; i < result.tileEffects.length; i++) {
-			const effect = result.tileEffects[i];
+		for (const { tile, position } of result.tileEffects) {
 			const hpBefore = cursorHp;
 			let hpAfter: number;
-			if (effect === "trap") {
+			if (tile === "trap") {
 				hpAfter = Math.max(0, hpBefore - TRAP_DAMAGE);
-			} else if (effect === "rest_area") {
+			} else if (tile === "rest_area") {
 				hpAfter = maxHp;
 			} else {
 				hpAfter = Math.min(maxHp, hpBefore + TREASURE_HEAL);
 			}
-			const stepPos: Position = {
-				x: prevPosition.x + delta.x * (i + 1),
-				y: prevPosition.y + delta.y * (i + 1),
-			};
-			await showTileEffectPopup(ctx, effect, hpBefore, hpAfter, stepPos);
+			await showTileEffectPopup(ctx, tile, hpBefore, hpAfter, position);
 			cursorHp = hpAfter;
 		}
 		if (result.gameOver) {
