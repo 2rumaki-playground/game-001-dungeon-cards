@@ -331,6 +331,46 @@ describe("HandRenderer ホバー・選択演出", () => {
 		});
 	});
 
+	it("非同期コールバック完了までeventModeがnoneを維持する", async () => {
+		const renderer = new HandRenderer();
+		const cards = createTestCards();
+
+		// 非同期コールバック（未解決Promiseで保留）
+		let resolveCallback!: () => void;
+		const asyncCallback = vi.fn(
+			() =>
+				new Promise<void>((resolve) => {
+					resolveCallback = resolve;
+				}),
+		);
+		renderer.setOnCardSelect(asyncCallback);
+		renderer.render(cards, 10);
+
+		// tweenの1回目（パルス拡大）を即座に解決、2回目（飛行）も即座に解決
+		// → animateCardConsume完了 → invokeCallback呼び出し → 非同期コールバック保留
+		const card2 = findCardContainer(renderer, 2);
+		card2.emit("pointerdown", {
+			global: { x: 0, y: 0 },
+		} as FederatedPointerEvent);
+
+		// コールバックが呼ばれるまで待機（tweenモックは即座に解決）
+		await vi.waitFor(() => {
+			expect(asyncCallback).toHaveBeenCalledTimes(1);
+		});
+
+		// コールバックのPromise未解決中はeventModeがnoneのまま
+		// （.then(() => Promise.resolve(invokeCallback())) が未解決なのでfinallyは未実行）
+		expect(renderer.getContainer().eventMode).toBe("none");
+
+		// コールバックのPromiseを解決
+		resolveCallback();
+
+		// 解決後にpassiveに復帰する
+		await vi.waitFor(() => {
+			expect(renderer.getContainer().eventMode).toBe("passive");
+		});
+	});
+
 	it("ParticleSystem付きの場合、消費アニメーション後にemitが呼ばれる", async () => {
 		const mockContainer = {
 			toLocal: vi.fn((pos: { x: number; y: number }) => ({

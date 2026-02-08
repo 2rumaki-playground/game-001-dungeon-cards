@@ -393,10 +393,9 @@ export class HandRenderer {
 
 				const invokeCallback = () => {
 					if (direction !== undefined) {
-						this.onCardSelect?.(card, direction);
-					} else {
-						this.onCardSelect?.(card);
+						return this.onCardSelect?.(card, direction);
 					}
+					return this.onCardSelect?.(card);
 				};
 
 				this.animateCardConsume(cardContainer, card.type)
