@@ -6,6 +6,8 @@
 import { CELL_GAP, CELL_SIZE } from "../constants";
 import type { Position } from "../types";
 
+const CELL_WITH_GAP = CELL_SIZE + CELL_GAP;
+
 /**
  * グリッド座標からピクセル座標（左上）を計算
  * @param gridPos グリッド座標（0-indexed）
@@ -13,8 +15,8 @@ import type { Position } from "../types";
  */
 export function gridToPixel(gridPos: Position): Position {
 	return {
-		x: gridPos.x * (CELL_SIZE + CELL_GAP) + CELL_GAP,
-		y: gridPos.y * (CELL_SIZE + CELL_GAP) + CELL_GAP,
+		x: gridPos.x * CELL_WITH_GAP + CELL_GAP,
+		y: gridPos.y * CELL_WITH_GAP + CELL_GAP,
 	};
 }
 
@@ -43,13 +45,12 @@ export function pixelToGrid(
 	mapWidth: number,
 	mapHeight: number,
 ): Position | null {
-	const cellWithGap = CELL_SIZE + CELL_GAP;
 	const adjustedX = pixelPos.x - CELL_GAP;
 	const adjustedY = pixelPos.y - CELL_GAP;
 
 	// グリッド座標を計算
-	const x = Math.floor(adjustedX / cellWithGap);
-	const y = Math.floor(adjustedY / cellWithGap);
+	const x = Math.floor(adjustedX / CELL_WITH_GAP);
+	const y = Math.floor(adjustedY / CELL_WITH_GAP);
 
 	// 範囲外チェック
 	if (x < 0 || x >= mapWidth || y < 0 || y >= mapHeight) {
@@ -57,8 +58,8 @@ export function pixelToGrid(
 	}
 
 	// セル内の相対位置を計算してギャップ領域でないか確認
-	const xRemainder = adjustedX % cellWithGap;
-	const yRemainder = adjustedY % cellWithGap;
+	const xRemainder = adjustedX % CELL_WITH_GAP;
+	const yRemainder = adjustedY % CELL_WITH_GAP;
 
 	// 余りがCELL_SIZE以上の場合はギャップ領域
 	if (xRemainder >= CELL_SIZE || yRemainder >= CELL_SIZE) {
@@ -79,7 +80,7 @@ export function getMapPixelSize(
 	mapHeight: number,
 ): { width: number; height: number } {
 	return {
-		width: mapWidth * (CELL_SIZE + CELL_GAP) + CELL_GAP,
-		height: mapHeight * (CELL_SIZE + CELL_GAP) + CELL_GAP,
+		width: mapWidth * CELL_WITH_GAP + CELL_GAP,
+		height: mapHeight * CELL_WITH_GAP + CELL_GAP,
 	};
 }
