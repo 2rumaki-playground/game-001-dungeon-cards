@@ -1,6 +1,7 @@
 import type { FederatedPointerEvent } from "pixi.js";
 import { describe, expect, it, vi } from "vitest";
 import type { Card } from "../types";
+import type { ParticleSystem } from "./particleSystem";
 import { RewardScreen } from "./rewardScreen";
 
 describe("RewardScreen", () => {
@@ -169,6 +170,27 @@ describe("RewardScreen", () => {
 			cancelBtn?.emit("pointerdown", {} as FederatedPointerEvent);
 
 			expect(callback).toHaveBeenCalled();
+		});
+	});
+
+	describe("setParticleSystem", () => {
+		it("パーティクルシステムを設定できる", () => {
+			const screen = new RewardScreen();
+			const mockParticle = {
+				emit: vi.fn().mockResolvedValue(undefined),
+			} as unknown as ParticleSystem;
+			// エラーなく設定できること
+			screen.setParticleSystem(mockParticle);
+		});
+	});
+
+	describe("animateCardAcquire", () => {
+		it("存在しないインデックスでもエラーにならない", async () => {
+			const screen = new RewardScreen();
+			// renderなしで呼んでもエラーにならない
+			await expect(
+				screen.animateCardAcquire(999, "move"),
+			).resolves.toBeUndefined();
 		});
 	});
 });

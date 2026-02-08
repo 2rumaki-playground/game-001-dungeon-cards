@@ -177,7 +177,8 @@ function showRewardCardSelection(
 		ctx.ui.rewardScreen.render(choices, screenWidth, screenHeight);
 		ctx.ui.rewardScreen.show();
 
-		ctx.ui.rewardScreen.setOnCardSelect((index) => {
+		ctx.ui.rewardScreen.setOnCardSelect(async (index) => {
+			await ctx.ui.rewardScreen.animateCardAcquire(index, choices[index]);
 			resolve(index);
 		});
 
