@@ -370,6 +370,7 @@ export class HandRenderer {
 			makeInteractive(cardContainer, (event) => {
 				// 二重クリック防止：アニメーション中は手札全体を非インタラクティブ化
 				this.container.eventMode = "none";
+				this.hoveredCardId = null;
 
 				// 方向判定はアニメーション前に計算して保持
 				let direction: Direction | undefined;
