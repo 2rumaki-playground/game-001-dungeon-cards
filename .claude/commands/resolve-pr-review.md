@@ -156,7 +156,7 @@ git worktree add /tmp/wt-pr-<番号>
 全エージェントの完了を待ち、以下を行う:
 
 1. 各エージェントの結果（対応コメント数、PRのURL等）をまとめてユーザーに報告する
-2. 各PRがOPENに戻っているか確認し、ドラフトのまま残っている場合は `gh pr ready <番号>` でOPENに戻す
+2. 各PRのドラフトが解除されているか確認し、ドラフトのまま残っている場合は `gh pr ready <番号>` で解除する
 3. git worktreeを削除する:
    ```bash
    git worktree remove /tmp/wt-pr-<番号>
