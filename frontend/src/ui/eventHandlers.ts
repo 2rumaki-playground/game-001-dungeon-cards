@@ -207,7 +207,7 @@ export function setupEventHandlers(ctx: GameContext): void {
 	// 手札選択のコールバック設定
 	// 方向パラメータを持つカードはクリック位置で方向が決まる
 	ctx.ui.handRenderer.setOnCardSelect(async (card, direction) => {
-		if (ctx.isAnimating) return; // アニメーション中は無効
+		if (ctx.isAnimating) return false; // アニメーション中は無効
 		if (card.type === "wait") {
 			updateState(ctx, executeWait(ctx.state, card.id));
 		} else if (direction) {

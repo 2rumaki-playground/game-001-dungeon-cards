@@ -108,7 +108,10 @@ export class HandRenderer {
 	private currentHand: Card[] = [];
 	private currentAp = 0;
 	private onCardSelect:
-		| ((card: Card, direction?: Direction) => void | Promise<void>)
+		| ((
+				card: Card,
+				direction?: Direction,
+		  ) => undefined | false | Promise<undefined | false>)
 		| null = null;
 	private isInputLocked = false;
 
@@ -129,7 +132,10 @@ export class HandRenderer {
 	 * @param callback カード選択時のコールバック。方向パラメータを持つカードの場合、クリック位置に応じた方向も渡される
 	 */
 	setOnCardSelect(
-		callback: (card: Card, direction?: Direction) => void | Promise<void>,
+		callback: (
+			card: Card,
+			direction?: Direction,
+		) => undefined | false | Promise<undefined | false>,
 	): void {
 		this.onCardSelect = callback;
 	}
@@ -398,17 +404,17 @@ export class HandRenderer {
 					return this.onCardSelect?.(card);
 				};
 
-				this.animateCardConsume(cardContainer, card.type)
-					.then(() =>
-						Promise.resolve()
-							.then(invokeCallback)
-							.catch((error) => {
-								console.error("onCardSelect callback failed:", error);
-							}),
-					)
+				Promise.resolve()
+					.then(invokeCallback)
+					.then((result) => {
+						// onCardSelectがfalseを返した場合は無効クリック（アニメーションスキップ）
+						if (result === false) return;
+						return this.animateCardConsume(cardContainer, card.type);
+					})
+					.catch((error) => {
+						console.error("onCardSelect callback failed:", error);
+					})
 					.finally(() => {
-						// onCardSelect側で入力が無効化されていた場合でも、
-						// 手札UIがフェードアウトしたまま残らないように必ず再描画する
 						this.isInputLocked = false;
 						this.render(this.currentHand, this.currentAp);
 					});

@@ -214,10 +214,35 @@ describe("HandRenderer ホバー・選択演出", () => {
 			global: { x: 0, y: 0 },
 		} as FederatedPointerEvent);
 
-		// 消費アニメーション完了後にコールバックが呼ばれる
+		// コールバックが呼ばれ、その後に消費アニメーションが実行される
 		await vi.waitFor(() => {
 			expect(callback).toHaveBeenCalledWith(cards[2]);
 		});
+	});
+
+	it("onCardSelectがfalseを返した場合、消費アニメーションがスキップされる", async () => {
+		const renderer = new HandRenderer();
+		const cards = createTestCards();
+		// falseを返すコールバック（無効クリック）
+		const callback = vi.fn().mockReturnValue(false);
+		renderer.setOnCardSelect(callback);
+		renderer.render(cards, 10);
+
+		const mockedTween = vi.mocked(tween);
+		mockedTween.mockClear();
+
+		const card2 = findCardContainer(renderer, 2);
+		card2.emit("pointerdown", {
+			global: { x: 0, y: 0 },
+		} as FederatedPointerEvent);
+
+		// コールバックは呼ばれる
+		await vi.waitFor(() => {
+			expect(callback).toHaveBeenCalledTimes(1);
+		});
+
+		// 消費アニメーション（tween）は呼ばれない
+		expect(mockedTween).not.toHaveBeenCalled();
 	});
 
 	it("pointerdown で消費アニメーション（パルス拡大→飛行+縮小+フェード）が実行される", async () => {
@@ -257,6 +282,7 @@ describe("HandRenderer ホバー・選択演出", () => {
 		renderer.render(cards, 10);
 
 		const mockedTween = vi.mocked(tween);
+		const tweenCountBefore = mockedTween.mock.calls.length;
 
 		// tweenを未解決のPromiseにしてアニメーション継続中を再現
 		let resolveTween!: () => void;
@@ -272,6 +298,11 @@ describe("HandRenderer ホバー・選択演出", () => {
 			global: { x: 0, y: 0 },
 		} as FederatedPointerEvent);
 
+		// コールバック→tweenの順で呼ばれるので、tweenが呼ばれるまで待機
+		await vi.waitFor(() => {
+			expect(mockedTween.mock.calls.length).toBeGreaterThan(tweenCountBefore);
+		});
+
 		const tweenCallCountAfterFirst = mockedTween.mock.calls.length;
 
 		// 2回目のクリックを試行（isInputLockedガードで早期return）
@@ -282,8 +313,8 @@ describe("HandRenderer ホバー・選択演出", () => {
 		// tween呼び出し回数が増えていない（2回目は無視された）
 		expect(mockedTween.mock.calls.length).toBe(tweenCallCountAfterFirst);
 
-		// アニメーション完了前にコールバックは呼ばれない
-		expect(callback).not.toHaveBeenCalled();
+		// コールバックは1回のみ（アニメーション前に呼ばれる）
+		expect(callback).toHaveBeenCalledTimes(1);
 
 		// tweenを完了させてアニメーション完了
 		resolveTween();
@@ -302,6 +333,7 @@ describe("HandRenderer ホバー・選択演出", () => {
 		renderer.render(cards, 10);
 
 		const mockedTween = vi.mocked(tween);
+		const tweenCountBefore = mockedTween.mock.calls.length;
 
 		// tweenを未解決のPromiseにしてアニメーション中を再現
 		let resolveTween!: () => void;
@@ -316,6 +348,11 @@ describe("HandRenderer ホバー・選択演出", () => {
 		card0.emit("pointerdown", {
 			global: { x: 0, y: 0 },
 		} as FederatedPointerEvent);
+
+		// コールバック→tweenの順で呼ばれるので、tweenが呼ばれるまで待機
+		await vi.waitFor(() => {
+			expect(mockedTween.mock.calls.length).toBeGreaterThan(tweenCountBefore);
+		});
 
 		const tweenCountAfterFirst = mockedTween.mock.calls.length;
 
@@ -341,6 +378,7 @@ describe("HandRenderer ホバー・選択演出", () => {
 		renderer.render(cards, 10);
 
 		const mockedTween = vi.mocked(tween);
+		const tweenCountBefore = mockedTween.mock.calls.length;
 
 		// tweenを未解決Promiseにしてアニメーション中を再現
 		let resolveTween!: () => void;
@@ -354,6 +392,11 @@ describe("HandRenderer ホバー・選択演出", () => {
 		card2.emit("pointerdown", {
 			global: { x: 0, y: 0 },
 		} as FederatedPointerEvent);
+
+		// コールバック→tweenの順で呼ばれるので、tweenが呼ばれるまで待機
+		await vi.waitFor(() => {
+			expect(mockedTween.mock.calls.length).toBeGreaterThan(tweenCountBefore);
+		});
 
 		const tweenCountAfterFirst = mockedTween.mock.calls.length;
 
