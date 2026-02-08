@@ -17,6 +17,7 @@ export * from "./particleSystem";
 export * from "./rewardScreen";
 export * from "./screenTransition";
 export * from "./statusBar";
+export * from "./titleAnimation";
 export * from "./titleScreen";
 export * from "./turnBanner";
 export * from "./turnEndButton";

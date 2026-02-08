@@ -88,6 +88,115 @@ describe("tween", () => {
 		expect(receivedProgress).toBe(1);
 	});
 
+	it("signal abort済みの場合、Tickerに登録されずresolveする", async () => {
+		mockTickerAdd.mockClear();
+		mockTickerRemove.mockClear();
+
+		const target = {
+			x: 0,
+			y: 0,
+			alpha: 1,
+			scale: { x: 1, y: 1 },
+			rotation: 0,
+		};
+
+		const controller = new AbortController();
+		controller.abort();
+
+		const onComplete = vi.fn();
+		await tween(
+			target,
+			{ x: 100 },
+			{ duration: 100, signal: controller.signal, onComplete },
+		);
+
+		expect(mockTickerAdd).not.toHaveBeenCalled();
+		expect(onComplete).not.toHaveBeenCalled();
+		expect(target.x).toBe(0);
+	});
+
+	it("実行中にsignal abortでTickerからremoveされonCompleteが呼ばれない", async () => {
+		mockTickerAdd.mockClear();
+		mockTickerRemove.mockClear();
+
+		const target = {
+			x: 0,
+			y: 0,
+			alpha: 1,
+			scale: { x: 1, y: 1 },
+			rotation: 0,
+		};
+
+		const controller = new AbortController();
+		const onComplete = vi.fn();
+
+		const promise = tween(
+			target,
+			{ x: 100 },
+			{ duration: 100, signal: controller.signal, onComplete },
+		);
+
+		expect(mockTickerAdd).toHaveBeenCalledTimes(1);
+		const updateFn = mockTickerAdd.mock.calls[0][0];
+
+		// 50ms経過（途中）
+		updateFn({ deltaMS: 50 });
+
+		// abort
+		controller.abort();
+
+		// abort後のupdate呼び出しは無視される
+		updateFn({ deltaMS: 50 });
+
+		await promise;
+
+		expect(mockTickerRemove).toHaveBeenCalledWith(updateFn);
+		expect(onComplete).not.toHaveBeenCalled();
+	});
+
+	it("onUpdate内でabortした場合、同フレームでonCompleteが呼ばれない", async () => {
+		mockTickerAdd.mockClear();
+		mockTickerRemove.mockClear();
+
+		const target = {
+			x: 0,
+			y: 0,
+			alpha: 1,
+			scale: { x: 1, y: 1 },
+			rotation: 0,
+		};
+
+		const controller = new AbortController();
+		const onComplete = vi.fn();
+
+		const promise = tween(
+			target,
+			{ x: 100 },
+			{
+				duration: 100,
+				signal: controller.signal,
+				onComplete,
+				onUpdate: (progress) => {
+					// progress>=1のフレームでabort
+					if (progress >= 1) {
+						controller.abort();
+					}
+				},
+			},
+		);
+
+		const updateFn = mockTickerAdd.mock.calls[0][0];
+
+		// 100ms一気に経過（progress=1.0到達フレーム）
+		updateFn({ deltaMS: 100 });
+
+		await promise;
+
+		// onUpdate内でabortしたため、onCompleteは呼ばれない
+		expect(onComplete).not.toHaveBeenCalled();
+		expect(mockTickerRemove).toHaveBeenCalled();
+	});
+
 	it("デフォルトのイージングでもeased progressが渡される", async () => {
 		mockTickerAdd.mockClear();
 		mockTickerRemove.mockClear();

@@ -62,6 +62,8 @@ export interface TweenOptions {
 	onComplete?: () => void;
 	/** フレームごとのコールバック（eased progressを受け取る） */
 	onUpdate?: (progress: number) => void;
+	/** キャンセル用のAbortSignal */
+	signal?: AbortSignal;
 }
 
 /** tweenValueオプション */
@@ -153,7 +155,14 @@ export function tween(
 			delay = 0,
 			onComplete,
 			onUpdate,
+			signal,
 		} = options;
+
+		// 既にキャンセル済みの場合は即座にresolve
+		if (signal?.aborted) {
+			resolve();
+			return;
+		}
 
 		// duration が 0 以下の場合は即座に目標値を適用して完了
 		if (duration <= 0) {
@@ -184,9 +193,18 @@ export function tween(
 		};
 
 		let elapsed = -delay;
+		let aborted = false;
 		const ticker = Ticker.shared;
 
+		const cleanup = (): void => {
+			if (signal && onAbort) {
+				signal.removeEventListener("abort", onAbort);
+			}
+		};
+
 		const update = (tick: Ticker): void => {
+			if (aborted) return;
+
 			try {
 				elapsed += tick.deltaMS;
 
@@ -223,16 +241,33 @@ export function tween(
 
 				onUpdate?.(easedProgress);
 
+				// onUpdate内でabortされた場合、完了処理に進まない
+				if (aborted) return;
+
 				if (progress >= 1) {
 					ticker.remove(update);
+					cleanup();
 					onComplete?.();
 					resolve();
 				}
 			} catch (error) {
 				ticker.remove(update);
+				cleanup();
 				reject(error);
 			}
 		};
+
+		// signalでキャンセル時にTickerから外す
+		const onAbort = signal
+			? () => {
+					aborted = true;
+					ticker.remove(update);
+					resolve();
+				}
+			: undefined;
+		if (signal && onAbort) {
+			signal.addEventListener("abort", onAbort, { once: true });
+		}
 
 		ticker.add(update);
 	});
