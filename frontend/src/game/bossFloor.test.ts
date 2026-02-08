@@ -66,6 +66,15 @@ describe("ボス階層判定", () => {
 			expect(getBossType(3)).toBeNull();
 			expect(getBossType(7)).toBeNull();
 		});
+
+		it("非ボス階層すべてでnullを返す", () => {
+			const nonBossFloors = [
+				1, 2, 3, 4, 6, 7, 8, 9, 11, 12, 13, 14, 16, 17, 18, 19,
+			];
+			for (const floor of nonBossFloors) {
+				expect(getBossType(floor), `${floor}Fでnullであるべき`).toBeNull();
+			}
+		});
 	});
 });
 
