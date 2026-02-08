@@ -223,7 +223,11 @@ export function executeEnemyTurn(state: GameState): EnemyTurnResult {
 
 			// ゲームオーバー判定
 			next = checkGameOver(next);
-			continue;
+
+			// スキルが実際に発動したターンのみ、通常行動をスキップする
+			if (skillResult.executed) {
+				continue;
+			}
 		}
 
 		if (isAdjacent(currentEnemy.position, next.player.position)) {
