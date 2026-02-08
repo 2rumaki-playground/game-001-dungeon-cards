@@ -241,6 +241,9 @@ export function tween(
 
 				onUpdate?.(easedProgress);
 
+				// onUpdate内でabortされた場合、完了処理に進まない
+				if (aborted) return;
+
 				if (progress >= 1) {
 					ticker.remove(update);
 					cleanup();

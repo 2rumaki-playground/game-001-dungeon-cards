@@ -154,6 +154,49 @@ describe("tween", () => {
 		expect(onComplete).not.toHaveBeenCalled();
 	});
 
+	it("onUpdate内でabortした場合、同フレームでonCompleteが呼ばれない", async () => {
+		mockTickerAdd.mockClear();
+		mockTickerRemove.mockClear();
+
+		const target = {
+			x: 0,
+			y: 0,
+			alpha: 1,
+			scale: { x: 1, y: 1 },
+			rotation: 0,
+		};
+
+		const controller = new AbortController();
+		const onComplete = vi.fn();
+
+		const promise = tween(
+			target,
+			{ x: 100 },
+			{
+				duration: 100,
+				signal: controller.signal,
+				onComplete,
+				onUpdate: (progress) => {
+					// progress>=1のフレームでabort
+					if (progress >= 1) {
+						controller.abort();
+					}
+				},
+			},
+		);
+
+		const updateFn = mockTickerAdd.mock.calls[0][0];
+
+		// 100ms一気に経過（progress=1.0到達フレーム）
+		updateFn({ deltaMS: 100 });
+
+		await promise;
+
+		// onUpdate内でabortしたため、onCompleteは呼ばれない
+		expect(onComplete).not.toHaveBeenCalled();
+		expect(mockTickerRemove).toHaveBeenCalled();
+	});
+
 	it("デフォルトのイージングでもeased progressが渡される", async () => {
 		mockTickerAdd.mockClear();
 		mockTickerRemove.mockClear();
