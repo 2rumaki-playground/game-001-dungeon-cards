@@ -9,7 +9,7 @@ import {
 	PLAYER_STRONG_ATTACK_DAMAGE,
 	RUSH_MAX_DISTANCE,
 } from "../constants";
-import type { Direction, GameState } from "../types";
+import type { Direction, GameState, Position } from "../types";
 import { DIRECTION_DELTA } from "../types";
 import { applyDamageToEnemy } from "./combat";
 import { playCard } from "./deck";
@@ -249,8 +249,8 @@ export type RushResult = {
 	reachedStairs: boolean;
 	/** 階段到達前に移動した位置（アニメーション用） */
 	intermediatePosition?: { x: number; y: number };
-	/** 発動した特殊タイル効果の一覧 */
-	tileEffects: SpecialTileType[];
+	/** 発動した特殊タイル効果の一覧（発動位置付き） */
+	tileEffects: { tile: SpecialTileType; position: Position }[];
 	/** 特殊タイル効果によるゲームオーバー */
 	gameOver: boolean;
 };
@@ -283,7 +283,7 @@ export function executeRush(
 
 	let movedDistance = 0;
 	let intermediatePosition: { x: number; y: number } | undefined;
-	const tileEffects: SpecialTileType[] = [];
+	const tileEffects: { tile: SpecialTileType; position: Position }[] = [];
 
 	for (let step = 0; step < RUSH_MAX_DISTANCE; step++) {
 		if (!canMove(next, direction)) {
@@ -320,7 +320,10 @@ export function executeRush(
 		const effect = applyTileEffect(next);
 		next = effect.state;
 		if (effect.triggeredTile) {
-			tileEffects.push(effect.triggeredTile);
+			tileEffects.push({
+				tile: effect.triggeredTile,
+				position: { ...next.player.position },
+			});
 		}
 		if (effect.gameOver) {
 			return {
