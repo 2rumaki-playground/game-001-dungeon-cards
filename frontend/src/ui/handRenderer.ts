@@ -107,8 +107,9 @@ export class HandRenderer {
 	private hoveredCardId: string | null = null;
 	private currentHand: Card[] = [];
 	private currentAp = 0;
-	private onCardSelect: ((card: Card, direction?: Direction) => void) | null =
-		null;
+	private onCardSelect:
+		| ((card: Card, direction?: Direction) => void | Promise<void>)
+		| null = null;
 
 	constructor(particleSystem?: ParticleSystem) {
 		this.container = new Container();
@@ -126,7 +127,9 @@ export class HandRenderer {
 	 * カード選択コールバックを設定
 	 * @param callback カード選択時のコールバック。方向パラメータを持つカードの場合、クリック位置に応じた方向も渡される
 	 */
-	setOnCardSelect(callback: (card: Card, direction?: Direction) => void): void {
+	setOnCardSelect(
+		callback: (card: Card, direction?: Direction) => void | Promise<void>,
+	): void {
 		this.onCardSelect = callback;
 	}
 
@@ -396,7 +399,7 @@ export class HandRenderer {
 				};
 
 				this.animateCardConsume(cardContainer, card.type)
-					.then(invokeCallback)
+					.then(() => Promise.resolve(invokeCallback()))
 					.finally(() => {
 						// onCardSelect側で入力が無効化されていた場合でも、
 						// 手札UIがフェードアウトしたまま残らないように必ず再描画する
