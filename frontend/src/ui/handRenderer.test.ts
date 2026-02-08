@@ -275,6 +275,7 @@ describe("HandRenderer ホバー・選択演出", () => {
 		renderer.render(cards, 10);
 
 		const mockedTween = vi.mocked(tween);
+
 		// tweenを未解決のPromiseにしてアニメーション継続中を再現
 		let resolveTween!: () => void;
 		mockedTween.mockImplementationOnce(() => {
@@ -289,7 +290,8 @@ describe("HandRenderer ホバー・選択演出", () => {
 			global: { x: 0, y: 0 },
 		} as FederatedPointerEvent);
 
-		// アニメーション中に手札コンテナのeventModeがnoneになっている
+		// アニメーション中に手札コンテナのeventModeがnoneになり、
+		// PixiJSが子要素へのイベント伝播をブロックする
 		expect(renderer.getContainer().eventMode).toBe("none");
 
 		// アニメーション完了前にコールバックは呼ばれない
@@ -297,6 +299,19 @@ describe("HandRenderer ホバー・選択演出", () => {
 
 		// tweenを完了させる
 		resolveTween();
+	});
+
+	it("render後にeventModeがpassiveに復帰する", () => {
+		const renderer = new HandRenderer();
+		const cards = createTestCards();
+		renderer.render(cards, 10);
+
+		// eventModeを手動でnoneに設定（アニメーション中を模擬）
+		renderer.getContainer().eventMode = "none";
+
+		// render()で復帰する
+		renderer.render(cards, 10);
+		expect(renderer.getContainer().eventMode).toBe("passive");
 	});
 
 	it("ParticleSystem付きの場合、消費アニメーション後にemitが呼ばれる", async () => {
