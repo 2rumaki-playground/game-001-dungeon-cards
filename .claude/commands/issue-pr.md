@@ -103,7 +103,7 @@ git worktree add /tmp/wt-issue-<番号> <ブランチ名>
 5. **push**: `git -C /tmp/wt-issue-<番号> push -u origin <ブランチ名>`
 6. **PR作成**:
    ```
-   gh pr create --repo <owner>/<repo> --base main --head <ブランチ名> --title "<type>: <日本語の説明>" --body "$(cat <<'EOF'
+   gh pr create --base main --head <ブランチ名> --title "<type>: <日本語の説明>" --body "$(cat <<'EOF'
    ## 概要
    <変更内容の箇条書き>
 
@@ -181,12 +181,12 @@ Issue の内容に従い、TDD（テスト駆動開発）で実装を行って�
 - Conventional Commits形式、日本語、50文字以内
 - 例: `feat: カード効果の実装`
 - **粒度**: 意味のあるまとまりごとにコミットする。1つのIssueに対して複数コミットでよい（例: テスト追加、実装、リファクタリングを分けるなど）。ただし、Red（失敗するテストのみ）の状態ではコミットしない
-- **コミット前チェック**: 各コミットの前に以下を実行し、問題があれば修正してからコミットする
-  1. `pnpm format` — フォーマット適用
-  2. `pnpm lint` — リントチェック
-  3. `pnpm build` — TypeScriptビルド確認
-  4. `pnpm test:run` — ユニットテスト全通過を確認
-  5. `pnpm test:e2e` — E2Eテスト全通過を確認
+- **コミット前チェック**: 各コミットの前に以下を**リポジトリルートから**実行し、問題があれば修正してからコミットする（`package.json` は `frontend/` にのみ存在する）
+  1. `cd frontend && pnpm format` — フォーマット適用
+  2. `cd frontend && pnpm lint` — リントチェック
+  3. `cd frontend && pnpm build` — TypeScriptビルド確認
+  4. `cd frontend && pnpm test:run` — ユニットテスト全通過を確認
+  5. `cd frontend && pnpm test:e2e` — E2Eテスト全通過を確認
 
 ### 7. 仕様の曖昧さへの対応
 
