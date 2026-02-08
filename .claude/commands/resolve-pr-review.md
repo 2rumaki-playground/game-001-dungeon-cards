@@ -107,7 +107,8 @@ git worktree add /tmp/wt-pr-<番号>
    - コミットメッセージは当該コメントの指摘内容を反映させる
    - `git -C /tmp/wt-pr-<番号> add <files>`（対象ファイルを個別指定、`git add .` は使わない）
    - `git -C /tmp/wt-pr-<番号> commit -m "<message>"`
-   - `git -C /tmp/wt-pr-<番号> push`
+   - `branch=$(git -C /tmp/wt-pr-<番号> rev-parse --abbrev-ref HEAD)`
+   - `git -C /tmp/wt-pr-<番号> push -u origin "$branch"`
 
 4. **レビューコメントへの返信・resolve**:
    push後、対応したレビューコメントに対して以下を行う:
