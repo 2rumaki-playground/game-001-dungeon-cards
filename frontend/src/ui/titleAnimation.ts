@@ -19,6 +19,9 @@ export const INTRO_TIMING = {
 	buttonStagger: 150,
 } as const;
 
+/** 背景パーティクル発射間隔（ms） */
+export const BG_PARTICLE_INTERVAL = 2000;
+
 /** ホバー演出の定数 */
 export const HOVER_EFFECT = {
 	/** ホバー時のスケール倍率 */

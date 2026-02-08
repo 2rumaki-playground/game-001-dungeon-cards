@@ -12,6 +12,7 @@ import {
 	updateParticles,
 } from "./particleLogic";
 import {
+	BG_PARTICLE_INTERVAL,
 	createBgParticleConfig,
 	getButtonDelay,
 	HOVER_EFFECT,
@@ -30,9 +31,6 @@ const BUTTON_COLORS = {
 	active: UI_COLORS_BUTTON_PRIMARY,
 	disabled: UI_COLORS_DISABLED,
 } as const;
-
-/** 背景パーティクル発射間隔（ms） */
-const BG_PARTICLE_INTERVAL = 2000;
 
 /**
  * タイトル画面レンダラー
