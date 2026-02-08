@@ -282,9 +282,13 @@ export class TitleScreen {
 			Ticker.shared.remove(this.bgTickerCallback);
 			this.bgTickerCallback = null;
 		}
+		if (this.bgParticleGraphics) {
+			this.bgParticleGraphics.removeFromParent();
+			this.bgParticleGraphics.destroy();
+			this.bgParticleGraphics = null;
+		}
 		this.bgParticles = [];
 		this.bgParticleConfig = null;
-		this.bgParticleGraphics = null;
 		this.bgParticleTimer = 0;
 	}
 
