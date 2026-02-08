@@ -46,7 +46,7 @@ function createTestMap() {
 	return map;
 }
 
-describe("MapRenderer ダメージポップアップ", () => {
+describe("MapRenderer ダメージ/タイル効果ポップアップ", () => {
 	it("animateDamagePopupが正常に完了する", async () => {
 		const renderer = new MapRenderer();
 		const map = createTestMap();
