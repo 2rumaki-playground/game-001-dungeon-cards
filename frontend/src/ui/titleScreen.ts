@@ -216,19 +216,33 @@ export class TitleScreen {
 		button.x += BUTTON_WIDTH / 2;
 		button.y += BUTTON_HEIGHT / 2;
 
+		let hoverAbort: AbortController | null = null;
+
 		button.on("pointerover", () => {
+			hoverAbort?.abort();
+			hoverAbort = new AbortController();
 			tween(
 				button,
 				{ scaleX: HOVER_EFFECT.scale, scaleY: HOVER_EFFECT.scale },
-				{ duration: HOVER_EFFECT.duration, easing: Easing.easeOut },
+				{
+					duration: HOVER_EFFECT.duration,
+					easing: Easing.easeOut,
+					signal: hoverAbort.signal,
+				},
 			);
 		});
 
 		button.on("pointerout", () => {
+			hoverAbort?.abort();
+			hoverAbort = new AbortController();
 			tween(
 				button,
 				{ scaleX: 1, scaleY: 1 },
-				{ duration: HOVER_EFFECT.duration, easing: Easing.easeOut },
+				{
+					duration: HOVER_EFFECT.duration,
+					easing: Easing.easeOut,
+					signal: hoverAbort.signal,
+				},
 			);
 		});
 	}

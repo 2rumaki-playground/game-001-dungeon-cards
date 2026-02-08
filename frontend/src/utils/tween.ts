@@ -62,6 +62,8 @@ export interface TweenOptions {
 	onComplete?: () => void;
 	/** フレームごとのコールバック（eased progressを受け取る） */
 	onUpdate?: (progress: number) => void;
+	/** キャンセル用のAbortSignal */
+	signal?: AbortSignal;
 }
 
 /** tweenValueオプション */
@@ -153,7 +155,14 @@ export function tween(
 			delay = 0,
 			onComplete,
 			onUpdate,
+			signal,
 		} = options;
+
+		// 既にキャンセル済みの場合は即座にresolve
+		if (signal?.aborted) {
+			resolve();
+			return;
+		}
 
 		// duration が 0 以下の場合は即座に目標値を適用して完了
 		if (duration <= 0) {
@@ -233,6 +242,16 @@ export function tween(
 				reject(error);
 			}
 		};
+
+		// signalでキャンセル時にTickerから外す
+		signal?.addEventListener(
+			"abort",
+			() => {
+				ticker.remove(update);
+				resolve();
+			},
+			{ once: true },
+		);
 
 		ticker.add(update);
 	});
