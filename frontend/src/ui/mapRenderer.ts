@@ -67,6 +67,18 @@ const DAMAGE_POPUP_RISE = 24;
 /** ダメージポップアップのアニメーション時間（ms） */
 const DAMAGE_POPUP_DURATION = 600;
 
+/** ミスポップアップの色（グレー） */
+const MISS_POPUP_COLOR = 0xaaaaaa;
+
+/** ミスポップアップのフォントサイズ */
+const MISS_POPUP_FONT_SIZE = 18;
+
+/** ミスポップアップの上昇距離（px） */
+const MISS_POPUP_RISE = 20;
+
+/** ミスポップアップのアニメーション時間（ms） */
+const MISS_POPUP_DURATION = 500;
+
 /** 敵撃破アニメーションの時間（ms） */
 const DEFEAT_DURATION = 400;
 
@@ -583,6 +595,39 @@ export class MapRenderer {
 			this.animateDamagePopup(this.playerGridPos, damage),
 		]);
 		await this.animatePlayerBlink();
+	}
+
+	/**
+	 * ミスポップアップアニメーション
+	 * 対象セルの中央上部にグレー文字で「MISS」を表示し、上昇しながらフェードアウト
+	 * @param gridPos 対象のグリッド座標
+	 */
+	async animateMissPopup(gridPos: Position): Promise<void> {
+		const pixelPos = gridToPixel(gridPos);
+		const text = new Text({
+			text: "MISS",
+			style: {
+				fontSize: MISS_POPUP_FONT_SIZE,
+				fontWeight: "bold",
+				fontStyle: "italic",
+				fill: MISS_POPUP_COLOR,
+			},
+		});
+
+		text.anchor.set(0.5, 1);
+		text.x = pixelPos.x + CELL_SIZE / 2;
+		text.y = pixelPos.y;
+
+		this.container.addChild(text);
+
+		await tween(
+			text,
+			{ y: text.y - MISS_POPUP_RISE, alpha: 0 },
+			{ duration: MISS_POPUP_DURATION },
+		);
+
+		this.container.removeChild(text);
+		text.destroy();
 	}
 
 	/**

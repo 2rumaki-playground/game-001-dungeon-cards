@@ -18,6 +18,7 @@ import {
 } from "../game";
 import type { GameContext } from "../gameContext";
 import type { CardType, Direction, GameState, Position } from "../types";
+import { DIRECTION_DELTA } from "../types";
 import { getMapPixelSize } from "./coordinates";
 import { applyState, render } from "./gameRenderer";
 import { HAND_AREA_HEIGHT } from "./layout";
@@ -459,6 +460,50 @@ export async function updateStateWithAttackAnimation(
 			// 撃破後、敵描画を反映
 			render(ctx);
 		}
+	} finally {
+		ctx.isAnimating = false;
+	}
+}
+
+/**
+ * プレイヤー攻撃ミス時のアニメーション付きで状態を更新
+ */
+export async function updateStateWithMissAnimation(
+	ctx: GameContext,
+	newState: GameState,
+	direction: Direction,
+): Promise<void> {
+	if (ctx.isAnimating) return;
+	ctx.isAnimating = true;
+
+	const prevAp = ctx.state.player.ap;
+	const delta = DIRECTION_DELTA[direction];
+	const rawTargetX = ctx.state.player.position.x + delta.x;
+	const rawTargetY = ctx.state.player.position.y + delta.y;
+	const mapWidth = newState.map[0]?.length ?? 0;
+	const mapHeight = newState.map.length;
+	const targetGridPos: Position = {
+		x: Math.max(0, Math.min(mapWidth - 1, rawTargetX)),
+		y: Math.max(0, Math.min(mapHeight - 1, rawTargetY)),
+	};
+	applyState(ctx, newState);
+
+	try {
+		render(ctx);
+
+		const animations: Promise<void>[] = [
+			ctx.ui.mapRenderer.animateMissPopup(targetGridPos),
+		];
+		if (prevAp !== newState.player.ap) {
+			animations.push(
+				ctx.ui.statusBar.animateApChange(
+					prevAp,
+					newState.player.ap,
+					newState.player.maxAp,
+				),
+			);
+		}
+		await Promise.all(animations);
 	} finally {
 		ctx.isAnimating = false;
 	}
