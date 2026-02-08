@@ -533,23 +533,26 @@ export class RewardScreen {
 
 		// パーティクルエフェクト（レアリティで差別化）
 		// カード中心のグローバル座標をパーティクルシステムのローカル座標に変換
-		const globalPos = cardContainer.toGlobal({
-			x: REWARD_CARD_WIDTH / 2,
-			y: REWARD_CARD_HEIGHT / 2,
-		});
-		const particleOrigin = this.particleSystem
-			.getContainer()
-			.toLocal(globalPos);
+		let particlePromise: Promise<void> | undefined;
+		if (this.particleSystem) {
+			const globalPos = cardContainer.toGlobal({
+				x: REWARD_CARD_WIDTH / 2,
+				y: REWARD_CARD_HEIGHT / 2,
+			});
+			const particleOrigin = this.particleSystem
+				.getContainer()
+				.toLocal(globalPos);
 
-		const particlePromise = this.particleSystem?.emit({
-			count: ACQUIRE_PARTICLE_COUNT[rarity],
-			origin: particleOrigin,
-			color: ACQUIRE_PARTICLE_COLORS[rarity],
-			speed: { min: 0.02, max: rarity === "rare" ? 0.12 : 0.08 },
-			life: { min: 300, max: rarity === "rare" ? 800 : 500 },
-			size: { min: 1, max: rarity === "rare" ? 4 : 3 },
-			pattern: { type: "radial" },
-		});
+			particlePromise = this.particleSystem.emit({
+				count: ACQUIRE_PARTICLE_COUNT[rarity],
+				origin: particleOrigin,
+				color: ACQUIRE_PARTICLE_COLORS[rarity],
+				speed: { min: 0.02, max: rarity === "rare" ? 0.12 : 0.08 },
+				life: { min: 300, max: rarity === "rare" ? 800 : 500 },
+				size: { min: 1, max: rarity === "rare" ? 4 : 3 },
+				pattern: { type: "radial" },
+			});
+		}
 
 		// カード拡大 → 縮小フェードアウト
 		// pivotをカード中心に設定してスケールアニメーション
