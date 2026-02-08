@@ -471,6 +471,7 @@ export class RewardScreen {
 				this.onRemoveCard?.(card.id);
 			} catch (error) {
 				console.error("カード除去処理中にエラーが発生しました", error);
+			} finally {
 				if (this.scrollContainer) {
 					this.scrollContainer.interactiveChildren = true;
 				}
