@@ -124,8 +124,11 @@ describe("難易度テーブル拡張（10F〜20F）", () => {
 			const midComp = getEnemyComposition(7);
 			const lateComp = getEnemyComposition(17);
 
-			const strongRatio = (c: EnemyComposition) =>
-				c.heavy + c.scout + c.miniboss + c.boss;
+			const strongRatio = (c: EnemyComposition) => {
+				const strongCount = c.heavy + c.scout + c.miniboss + c.boss;
+				const total = c.normal + c.heavy + c.scout + c.miniboss + c.boss;
+				return total === 0 ? 0 : strongCount / total;
+			};
 
 			expect(strongRatio(midComp)).toBeGreaterThanOrEqual(
 				strongRatio(earlyComp),
