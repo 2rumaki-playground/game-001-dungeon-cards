@@ -147,10 +147,10 @@ describe("RewardScreen", () => {
 			expect(removeBtn).toBeDefined();
 			removeBtn?.emit("pointerdown", {} as FederatedPointerEvent);
 
-			// animateCardRemoveが非同期のためflush
-			await new Promise((r) => setTimeout(r, 0));
-
-			expect(callback).toHaveBeenCalledWith("card-1");
+			// animateCardRemoveが非同期のためmicrotask flush
+			await vi.waitFor(() => {
+				expect(callback).toHaveBeenCalledWith("card-1");
+			});
 		});
 
 		it("スキップボタンクリックでコールバックが呼ばれる", () => {
