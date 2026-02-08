@@ -2,6 +2,7 @@
  * イベントハンドラ設定
  */
 
+import { TRAP_DAMAGE, TREASURE_HEAL } from "../constants";
 import {
 	endPlayerTurn,
 	executeAttack,
@@ -187,9 +188,15 @@ async function handleRushCardExecution(
 			result.state,
 			result.state.player.position,
 		);
-		// 突進中に発動したタイル効果のポップアップ
+		// カーソルHPを用いて、タイルごとのHP変化量を順次計算する
+		let cursorHp = prevHp;
+		const maxHp = result.state.player.maxHp;
 		for (const effect of result.tileEffects) {
-			await showTileEffectPopup(ctx, effect, prevHp, result.state.player.hp);
+			const hpBefore = cursorHp;
+			const rawChange = effect === "trap" ? -TRAP_DAMAGE : TREASURE_HEAL;
+			const hpAfter = Math.max(0, Math.min(maxHp, hpBefore + rawChange));
+			await showTileEffectPopup(ctx, effect, hpBefore, hpAfter);
+			cursorHp = hpAfter;
 		}
 		if (result.gameOver) {
 			deleteSaveData();
