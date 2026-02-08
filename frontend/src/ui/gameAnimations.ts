@@ -180,7 +180,11 @@ function showRewardCardSelection(
 		ctx.ui.rewardScreen.setOnCardSelect(async (index) => {
 			ctx.ui.rewardScreen.setOnCardSelect(() => {});
 			ctx.ui.rewardScreen.setOnSkip(() => {});
-			await ctx.ui.rewardScreen.animateCardAcquire(index, choices[index]);
+			try {
+				await ctx.ui.rewardScreen.animateCardAcquire(index, choices[index]);
+			} catch (error) {
+				console.warn("カード取得アニメーション中にエラー:", error);
+			}
 			resolve(index);
 		});
 
