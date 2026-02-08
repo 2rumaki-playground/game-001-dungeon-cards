@@ -139,7 +139,7 @@ cd /tmp/wt-issue-<番号>/frontend && pnpm install
 2. git worktreeを削除する:
    ```bash
    git worktree remove /tmp/wt-issue-<番号>
-   git branch -d <ブランチ名>  # リモートにpush済みなのでローカルブランチは削除
+   git branch -d <ブランチ名>  # push -u でupstream設定済みのため -d で削除可能
    ```
 3. チームを削除する（TeamDelete）
 
