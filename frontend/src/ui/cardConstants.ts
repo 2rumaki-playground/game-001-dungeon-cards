@@ -46,6 +46,15 @@ export const CARD_TYPE_NAME: Record<CardType, string> = {
 	wait: "待機",
 };
 
+/** カードタイプ別発光色（パーティクルエフェクト用） */
+export const CARD_GLOW_COLORS: Record<CardType, number[]> = {
+	move: [0x44ccff, 0x2288cc],
+	attack: [0xff4444, 0xcc2222],
+	strong_attack: [0xff66cc, 0xcc44aa],
+	rush: [0x44ff66, 0x22cc44],
+	wait: [0x888888, 0x666666],
+};
+
 /** レアリティ色 */
 export const RARITY_COLORS: Record<Rarity, number> = {
 	common: 0x888888,

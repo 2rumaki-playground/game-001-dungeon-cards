@@ -14,6 +14,7 @@ import {
 	returnToTitle,
 	startNewGame,
 	startPlayerTurn,
+	willReshuffle,
 } from "../game";
 import type { SpecialTileType } from "../game/tileEffect";
 import type { GameContext } from "../gameContext";
@@ -26,6 +27,7 @@ import {
 	getScreenSize,
 	updateStateWithAttackAnimation,
 	updateStateWithBumpAnimation,
+	updateStateWithMissAnimation,
 	updateStateWithMoveAnimation,
 	updateStateWithStairsAnimation,
 } from "./gameAnimations";
@@ -126,7 +128,7 @@ async function handleAttackCardExecution(
 	if (hit && enemyId) {
 		await updateStateWithAttackAnimation(ctx, next, enemyId);
 	} else {
-		updateState(ctx, next);
+		await updateStateWithMissAnimation(ctx, next, direction);
 	}
 }
 
@@ -148,7 +150,7 @@ async function handleStrongAttackCardExecution(
 	if (hit && enemyId) {
 		await updateStateWithAttackAnimation(ctx, next, enemyId);
 	} else {
-		updateState(ctx, next);
+		await updateStateWithMissAnimation(ctx, next, direction);
 	}
 }
 
@@ -265,7 +267,7 @@ export function setupEventHandlers(ctx: GameContext): void {
 	// 手札選択のコールバック設定
 	// 方向パラメータを持つカードはクリック位置で方向が決まる
 	ctx.ui.handRenderer.setOnCardSelect(async (card, direction) => {
-		if (ctx.isAnimating) return; // アニメーション中は無効
+		if (ctx.isAnimating) return false; // アニメーション中は無効
 		if (card.type === "wait") {
 			updateState(ctx, executeWait(ctx.state, card.id));
 		} else if (direction) {
@@ -402,6 +404,9 @@ export function setupEventHandlers(ctx: GameContext): void {
 			}
 
 			if (next.screen !== "gameOver") {
+				// リシャッフル判定（startPlayerTurn内のdrawCards前の状態で判定）
+				const needsShuffle = willReshuffle(next.deck);
+
 				next = startPlayerTurn(next);
 
 				// プレイヤーターンバナー表示
@@ -409,6 +414,12 @@ export function setupEventHandlers(ctx: GameContext): void {
 
 				applyState(ctx, next);
 				render(ctx, true);
+
+				// リシャッフル演出（ドロー前に実行）
+				if (needsShuffle) {
+					await ctx.ui.handRenderer.animateShuffle();
+				}
+
 				await ctx.ui.handRenderer.renderWithAnimation(
 					ctx.state.deck.hand,
 					ctx.state.player.ap,

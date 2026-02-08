@@ -3,6 +3,7 @@ import type { CardType, Rarity } from "../types";
 import {
 	CARD_COLORS,
 	CARD_EFFECT_TEXT,
+	CARD_GLOW_COLORS,
 	CARD_TYPE_NAME,
 	CARD_TYPE_SYMBOL,
 	RARITY_COLORS,
@@ -52,6 +53,24 @@ describe("cardConstants", () => {
 			for (const type of ALL_CARD_TYPES) {
 				expect(typeof CARD_EFFECT_TEXT[type]).toBe("string");
 				expect(CARD_EFFECT_TEXT[type].length).toBeGreaterThan(0);
+			}
+		});
+	});
+
+	describe("CARD_GLOW_COLORS", () => {
+		it("全カード種別に発光色が定義されている", () => {
+			for (const type of ALL_CARD_TYPES) {
+				expect(CARD_GLOW_COLORS[type]).toBeDefined();
+				expect(Array.isArray(CARD_GLOW_COLORS[type])).toBe(true);
+				expect(CARD_GLOW_COLORS[type].length).toBeGreaterThan(0);
+			}
+		});
+
+		it("各発光色はnumber型の配列である", () => {
+			for (const type of ALL_CARD_TYPES) {
+				for (const color of CARD_GLOW_COLORS[type]) {
+					expect(typeof color).toBe("number");
+				}
 			}
 		});
 	});

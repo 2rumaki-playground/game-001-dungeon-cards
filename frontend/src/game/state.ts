@@ -55,6 +55,8 @@ export function createEnemiesForFloor(
 ): Enemy[] {
 	const composition = getEnemyComposition(floor);
 	const types: EnemyType[] = [
+		...Array<EnemyType>(composition.boss).fill("boss"),
+		...Array<EnemyType>(composition.miniboss).fill("miniboss"),
 		...Array<EnemyType>(composition.normal).fill("normal"),
 		...Array<EnemyType>(composition.heavy).fill("heavy"),
 		...Array<EnemyType>(composition.scout).fill("scout"),
