@@ -190,6 +190,8 @@ function showRewardCardSelection(
 		});
 
 		ctx.ui.rewardScreen.setOnSkip(() => {
+			ctx.ui.rewardScreen.setOnCardSelect(() => {});
+			ctx.ui.rewardScreen.setOnSkip(() => {});
 			resolve(null);
 		});
 	});
