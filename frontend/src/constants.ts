@@ -222,6 +222,8 @@ export const BOSS_SKILL = {
 	areaAttackChance: 0.25,
 	/** ボス: 範囲攻撃のダメージ */
 	areaAttackDamage: 2,
+	/** ボス: 範囲攻撃の射程（マンハッタン距離） */
+	areaAttackRange: 2,
 	/** ボス: 激昂発動のHP閾値（maxHpに対する割合） */
 	enrageThreshold: 0.5,
 	/** ボス: 激昂時の攻撃ダメージ加算 */

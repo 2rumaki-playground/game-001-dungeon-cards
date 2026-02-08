@@ -5,11 +5,18 @@
  */
 
 import { BOSS_SKILL, ENEMY_PARAMS } from "../constants";
-import type { Enemy, GameState } from "../types";
+import type { Enemy, GameState, Position } from "../types";
 import type { RNG } from "../utils/rng";
 import { applyDamageToPlayer } from "./combat";
-import { isAdjacent, manhattanDistance } from "./enemyAi";
 import { addActionLog, updateEnemy } from "./state";
+
+function manhattanDistance(a: Position, b: Position): number {
+	return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
+}
+
+function isAdjacent(a: Position, b: Position): boolean {
+	return manhattanDistance(a, b) === 1;
+}
 
 /**
  * ボスの激昂チェック
@@ -30,7 +37,7 @@ export function checkEnrage(enemy: Enemy): Enemy {
 /**
  * ミニボスのスキル決定
  *
- * 隣接していない場合、確率でpower_strikeを予告する
+ * 移動後に確率でpower_strikeを予告する
  */
 export function decideMinibossSkill(enemy: Enemy, rng: RNG): Enemy {
 	if (enemy.pendingSkill) return enemy;
@@ -45,7 +52,7 @@ export function decideMinibossSkill(enemy: Enemy, rng: RNG): Enemy {
 /**
  * ボスのスキル決定
  *
- * 隣接していない場合、確率でarea_attackを予告する
+ * 移動後に確率でarea_attackを予告する
  */
 export function decideBossSkill(enemy: Enemy, rng: RNG): Enemy {
 	if (enemy.pendingSkill) return enemy;
@@ -132,7 +139,7 @@ function executeAreaAttack(state: GameState, enemy: Enemy): SkillResult {
 	}));
 
 	const dist = manhattanDistance(enemy.position, state.player.position);
-	if (dist > 2) {
+	if (dist > BOSS_SKILL.areaAttackRange) {
 		return { state: next, damage: 0, executed: false };
 	}
 
