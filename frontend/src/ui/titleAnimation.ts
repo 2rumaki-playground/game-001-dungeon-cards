@@ -33,7 +33,7 @@ const BG_PARTICLE_COLORS = [0x4a8cca, 0x3a6a9a, 0x2a4a6a, 0x5a9cda];
 /**
  * 背景パーティクル設定を生成
  * @param screenWidth 画面幅
- * @param screenHeight 画面高
+ * @param screenHeight 画面高さ
  */
 export function createBgParticleConfig(
 	screenWidth: number,
