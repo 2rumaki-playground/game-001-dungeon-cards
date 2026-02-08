@@ -294,7 +294,7 @@ describe("HandRenderer ホバー・選択演出", () => {
 		});
 	});
 
-	it("render後に入力ロックが解除される", async () => {
+	it("外部からのrender()では入力ロックが解除されない", async () => {
 		const renderer = new HandRenderer();
 		const cards = createTestCards();
 		const callback = vi.fn();
@@ -312,22 +312,22 @@ describe("HandRenderer ホバー・選択演出", () => {
 		});
 
 		// 1回目のクリックで入力ロック
-		const card2 = findCardContainer(renderer, 0);
-		card2.emit("pointerdown", {
+		const card0 = findCardContainer(renderer, 0);
+		card0.emit("pointerdown", {
 			global: { x: 0, y: 0 },
 		} as FederatedPointerEvent);
 
 		const tweenCountAfterFirst = mockedTween.mock.calls.length;
 
-		// render()でロック解除
+		// 外部からrender()を呼んでもロックは解除されない
 		renderer.render(cards, 10);
 
-		// 再度クリック可能（tween呼び出しが増える）
-		const card2After = findCardContainer(renderer, 0);
-		card2After.emit("pointerdown", {
+		// クリックしてもtweenは増えない（ロック維持）
+		const card0After = findCardContainer(renderer, 0);
+		card0After.emit("pointerdown", {
 			global: { x: 0, y: 0 },
 		} as FederatedPointerEvent);
-		expect(mockedTween.mock.calls.length).toBeGreaterThan(tweenCountAfterFirst);
+		expect(mockedTween.mock.calls.length).toBe(tweenCountAfterFirst);
 
 		// cleanup
 		resolveTween();
