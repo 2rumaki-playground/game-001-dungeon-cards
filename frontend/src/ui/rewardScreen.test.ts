@@ -237,12 +237,11 @@ describe("RewardScreen", () => {
 			expect(removeBtn).toBeDefined();
 			removeBtn?.emit("pointerdown", {} as FederatedPointerEvent);
 
-			// tween/emitは非同期なのでflush
-			await vi.dynamicImportSettled();
-			await new Promise((r) => setTimeout(r, 0));
-
-			expect(mockEmit).toHaveBeenCalledTimes(1);
-			expect(onRemove).toHaveBeenCalledWith("rm-1");
+			// tween/emitは非同期なのでmicrotask flush
+			await vi.waitFor(() => {
+				expect(mockEmit).toHaveBeenCalledTimes(1);
+				expect(onRemove).toHaveBeenCalledWith("rm-1");
+			});
 		});
 
 		it("除去ボタンクリック後にeventModeがnoneに設定される", () => {
