@@ -244,7 +244,7 @@ describe("RewardScreen", () => {
 			});
 		});
 
-		it("除去アニメーション中はonSkipが無効化される", async () => {
+		it("除去アニメーション中はキャンセルボタンのeventModeがnoneになる", () => {
 			const screen = new RewardScreen();
 			const mockEmit = vi.fn().mockResolvedValue(undefined);
 			const mockGetContainer = vi.fn().mockReturnValue({
@@ -256,13 +256,11 @@ describe("RewardScreen", () => {
 			} as unknown as ParticleSystem;
 			screen.setParticleSystem(mockParticle);
 
-			const onRemove = vi.fn();
-			const onSkip = vi.fn();
-			screen.setOnRemoveCard(onRemove);
-			screen.setOnSkip(onSkip);
+			screen.setOnRemoveCard(vi.fn());
+			screen.setOnSkip(vi.fn());
 			screen.renderRemoveSelection(testCards, 600, 400);
 
-			// スキップボタンを取得
+			// キャンセルボタンを取得
 			const container = screen.getContainer();
 			function findDirectButtons(
 				parent: import("pixi.js").Container,
@@ -277,20 +275,16 @@ describe("RewardScreen", () => {
 			}
 			const directButtons = findDirectButtons(container);
 			const cancelBtn = directButtons[directButtons.length - 1];
+			expect(cancelBtn?.eventMode).toBe("static");
 
 			const removeBtn = findRemoveButton(container);
 			removeBtn?.emit("pointerdown", {} as FederatedPointerEvent);
 
-			// アニメーション中にスキップボタンを押してもコールバックは呼ばれない
-			cancelBtn?.emit("pointerdown", {} as FederatedPointerEvent);
-			expect(onSkip).not.toHaveBeenCalled();
-
-			await vi.waitFor(() => {
-				expect(onRemove).toHaveBeenCalledWith("rm-1");
-			});
+			// 除去クリック後にキャンセルボタンが無効化される
+			expect(cancelBtn?.eventMode).toBe("none");
 		});
 
-		it("除去ボタンクリック後にeventModeがnoneに設定される", () => {
+		it("除去ボタンクリック後にスクロールコンテナとキャンセルボタンが無効化される", () => {
 			const screen = new RewardScreen();
 			const mockEmit = vi.fn().mockResolvedValue(undefined);
 			const mockGetContainer = vi.fn().mockReturnValue({
@@ -305,12 +299,35 @@ describe("RewardScreen", () => {
 			screen.setOnRemoveCard(vi.fn());
 			screen.renderRemoveSelection(testCards, 600, 400);
 
-			const removeBtn = findRemoveButton(screen.getContainer());
+			const container = screen.getContainer();
+			const removeBtn = findRemoveButton(container);
 			expect(removeBtn).toBeDefined();
 			removeBtn?.emit("pointerdown", {} as FederatedPointerEvent);
 
-			// クリック直後にeventModeがnoneになる（多重実行防止）
-			expect(removeBtn?.eventMode).toBe("none");
+			// スクロールコンテナのinteractiveChildrenがfalseになる
+			const scrollContainer = container.children.find(
+				(c) => "interactiveChildren" in c && c.mask != null,
+			) as import("pixi.js").Container | undefined;
+			expect(scrollContainer?.interactiveChildren).toBe(false);
+
+			// キャンセルボタンのeventModeがnoneになる
+			function findDirectButtons(
+				parent: import("pixi.js").Container,
+			): import("pixi.js").Container[] {
+				const result: import("pixi.js").Container[] = [];
+				for (const child of parent.children) {
+					if (
+						child.cursor === "pointer" &&
+						!("mask" in child && child.mask != null)
+					) {
+						result.push(child as import("pixi.js").Container);
+					}
+				}
+				return result;
+			}
+			const directButtons = findDirectButtons(container);
+			const cancelBtn = directButtons[directButtons.length - 1];
+			expect(cancelBtn?.eventMode).toBe("none");
 		});
 	});
 

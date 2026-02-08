@@ -74,6 +74,8 @@ export class RewardScreen {
 	private onRemoveCard: ((cardId: string) => void) | null = null;
 	private particleSystem: ParticleSystem | null = null;
 	private cardContainers: Container[] = [];
+	private scrollContainer: Container | null = null;
+	private cancelButton: Container | null = null;
 
 	constructor() {
 		this.container = new Container();
@@ -185,7 +187,8 @@ export class RewardScreen {
 					(deckCards.length - 1) * REMOVE_CARD_GAP;
 
 		// スクロールコンテナ
-		const scrollContainer = new Container();
+		this.scrollContainer = new Container();
+		const scrollContainer = this.scrollContainer;
 		for (let i = 0; i < deckCards.length; i++) {
 			const card = deckCards[i];
 			const y = i * (REMOVE_CARD_HEIGHT + REMOVE_CARD_GAP);
@@ -241,7 +244,7 @@ export class RewardScreen {
 
 		// キャンセルボタン
 		const cancelY = listStartY + visibleHeight + 10;
-		const cancelButton = this.createButton(
+		this.cancelButton = this.createButton(
 			"スキップ",
 			screenWidth / 2 - BUTTON_WIDTH / 2,
 			cancelY,
@@ -252,7 +255,7 @@ export class RewardScreen {
 				this.onSkip?.(0);
 			},
 		);
-		this.container.addChild(cancelButton);
+		this.container.addChild(this.cancelButton);
 	}
 
 	/**
@@ -456,20 +459,24 @@ export class RewardScreen {
 
 		makeInteractive(removeBtn, async (e) => {
 			e.stopPropagation?.();
-			removeBtn.eventMode = "none";
-			// アニメーション中に他の除去ボタンやスキップボタンが押されないようロック
-			const originalOnRemoveCard = this.onRemoveCard;
-			const originalOnSkip = this.onSkip;
-			this.onRemoveCard = () => {};
-			this.onSkip = () => {};
+			// アニメーション中は全除去ボタン・スキップボタンへの入力を一括無効化
+			if (this.scrollContainer) {
+				this.scrollContainer.interactiveChildren = false;
+			}
+			if (this.cancelButton) {
+				this.cancelButton.eventMode = "none";
+			}
 			try {
 				await this.animateCardRemove(item, width);
-				originalOnRemoveCard?.(card.id);
+				this.onRemoveCard?.(card.id);
 			} catch (error) {
 				console.error("カード除去処理中にエラーが発生しました", error);
-				removeBtn.eventMode = "static";
-				this.onRemoveCard = originalOnRemoveCard;
-				this.onSkip = originalOnSkip;
+				if (this.scrollContainer) {
+					this.scrollContainer.interactiveChildren = true;
+				}
+				if (this.cancelButton) {
+					this.cancelButton.eventMode = "static";
+				}
 			}
 		});
 		item.addChild(removeBtn);
