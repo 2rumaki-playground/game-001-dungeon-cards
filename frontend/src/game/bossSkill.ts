@@ -88,8 +88,22 @@ export function executePendingSkill(
 
 	switch (skill.type) {
 		case "power_strike":
+			if (enemy.type !== "miniboss") {
+				const next = updateEnemy(state, enemy.id, (e) => ({
+					...e,
+					pendingSkill: undefined,
+				}));
+				return { state: next, damage: 0, executed: false };
+			}
 			return executePowerStrike(state, enemy);
 		case "area_attack":
+			if (enemy.type !== "boss") {
+				const next = updateEnemy(state, enemy.id, (e) => ({
+					...e,
+					pendingSkill: undefined,
+				}));
+				return { state: next, damage: 0, executed: false };
+			}
 			return executeAreaAttack(state, enemy);
 		default: {
 			// 想定外のスキルtypeの場合はpendingSkillをクリアして未実行扱い

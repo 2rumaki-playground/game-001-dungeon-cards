@@ -291,6 +291,44 @@ describe("executePendingSkill", () => {
 		});
 	});
 
+	describe("enemy.typeとスキルの不整合ガード", () => {
+		it("通常敵がpower_strikeを持つ場合はpendingSkillクリアで未実行", () => {
+			const enemy: Enemy = {
+				id: "enemy-1",
+				type: "normal",
+				position: { x: 4, y: 3 },
+				hp: 3,
+				maxHp: 3,
+				pendingSkill: { type: "power_strike" },
+			};
+			const state = createTestState({ enemies: [enemy] });
+			const result = executePendingSkill(state, enemy);
+
+			const updatedEnemy = result.state.enemies.find((e) => e.id === "enemy-1");
+			expect(updatedEnemy?.pendingSkill).toBeUndefined();
+			expect(result.executed).toBe(false);
+			expect(result.damage).toBe(0);
+		});
+
+		it("通常敵がarea_attackを持つ場合はpendingSkillクリアで未実行", () => {
+			const enemy: Enemy = {
+				id: "enemy-1",
+				type: "normal",
+				position: { x: 4, y: 3 },
+				hp: 3,
+				maxHp: 3,
+				pendingSkill: { type: "area_attack" },
+			};
+			const state = createTestState({ enemies: [enemy] });
+			const result = executePendingSkill(state, enemy);
+
+			const updatedEnemy = result.state.enemies.find((e) => e.id === "enemy-1");
+			expect(updatedEnemy?.pendingSkill).toBeUndefined();
+			expect(result.executed).toBe(false);
+			expect(result.damage).toBe(0);
+		});
+	});
+
 	describe("想定外のスキルタイプ", () => {
 		it("未知のスキルタイプはpendingSkillをクリアして未実行扱い", () => {
 			const enemy: Enemy = {
