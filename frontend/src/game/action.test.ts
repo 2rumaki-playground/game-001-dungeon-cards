@@ -843,7 +843,9 @@ describe("executeRush", () => {
 		expect(result.gameOver).toBe(true);
 		expect(result.movedDistance).toBe(1);
 		expect(result.state.player.position).toEqual({ x: 4, y: 3 });
-		expect(result.tileEffects).toContain("trap");
+		expect(result.tileEffects).toContainEqual(
+			expect.objectContaining({ tile: "trap" }),
+		);
 	});
 
 	it("1マス目で罠→HP残存→2マス目に進む", () => {
@@ -870,7 +872,9 @@ describe("executeRush", () => {
 		expect(result.movedDistance).toBe(2);
 		expect(result.state.player.position).toEqual({ x: 5, y: 3 });
 		expect(result.state.player.hp).toBe(PLAYER_INITIAL_HP - TRAP_DAMAGE);
-		expect(result.tileEffects).toEqual(["trap"]);
+		expect(result.tileEffects).toEqual([
+			{ tile: "trap", position: { x: 4, y: 3 } },
+		]);
 	});
 
 	it("1マス目と2マス目の両方に特殊タイル: 両方発動", () => {
@@ -894,7 +898,10 @@ describe("executeRush", () => {
 		});
 		const result = executeRush(state, "rush-1", "right");
 
-		expect(result.tileEffects).toEqual(["trap", "treasure"]);
+		expect(result.tileEffects).toEqual([
+			{ tile: "trap", position: { x: 4, y: 3 } },
+			{ tile: "treasure", position: { x: 5, y: 3 } },
+		]);
 		expect(result.movedDistance).toBe(2);
 		// HP: 10 - 1(trap) + 3(treasure) = 12 → maxHpで10
 		expect(result.state.player.hp).toBe(PLAYER_INITIAL_HP);
