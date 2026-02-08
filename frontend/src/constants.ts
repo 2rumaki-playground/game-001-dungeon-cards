@@ -109,7 +109,7 @@ export const ENEMY_COMPOSITION_TABLE: {
 	// 後半（11-14F）
 	{
 		maxFloor: 12,
-		composition: { normal: 0, heavy: 1, scout: 1, miniboss: 1, boss: 0 },
+		composition: { normal: 0, heavy: 1, scout: 2, miniboss: 0, boss: 0 },
 	},
 	{
 		maxFloor: 14,
@@ -148,25 +148,20 @@ export function getEnemyComposition(floor: number): EnemyComposition {
 }
 
 // ボス階層定義（ENEMY_COMPOSITION_TABLEから導出）
-// ボス/ミニボスを含み、かつレンジが1階層分のエントリのみを抽出
-export const BOSS_FLOORS: { floor: number; type: "miniboss" | "boss" }[] =
-	ENEMY_COMPOSITION_TABLE.filter((e, i) => {
-		if (e.maxFloor === Infinity) return false;
-		if (e.composition.boss === 0 && e.composition.miniboss === 0) return false;
-		const prevMax = i > 0 ? ENEMY_COMPOSITION_TABLE[i - 1].maxFloor : 0;
-		return e.maxFloor - prevMax === 1;
-	}).map((e) => ({
-		floor: e.maxFloor,
-		type: e.composition.boss > 0 ? ("boss" as const) : ("miniboss" as const),
-	}));
-
 export function isBossFloor(floor: number): boolean {
-	return BOSS_FLOORS.some((bf) => bf.floor === floor);
+	const composition = getEnemyComposition(floor);
+	return (composition.boss ?? 0) > 0 || (composition.miniboss ?? 0) > 0;
 }
 
 export function getBossType(floor: number): "miniboss" | "boss" | null {
-	const entry = BOSS_FLOORS.find((bf) => bf.floor === floor);
-	return entry?.type ?? null;
+	const composition = getEnemyComposition(floor);
+	if ((composition.boss ?? 0) > 0) {
+		return "boss";
+	}
+	if ((composition.miniboss ?? 0) > 0) {
+		return "miniboss";
+	}
+	return null;
 }
 
 // デッキ構築（v1.2）
