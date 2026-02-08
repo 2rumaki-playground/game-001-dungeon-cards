@@ -157,6 +157,18 @@ async function handleStrongAttackCardExecution(
 }
 
 /**
+ * 突進パーティクル（スピードライン）を発射
+ */
+function emitRushParticles(
+	ctx: GameContext,
+	targetPos: Position,
+	moveAngle: number,
+): void {
+	const center = gridToCenterPixel(targetPos);
+	ctx.ui.particleSystem.emit(createRushParticleConfig(center, moveAngle));
+}
+
+/**
  * 突進カードの実行と対応するアニメーション
  */
 async function handleRushCardExecution(
@@ -170,32 +182,27 @@ async function handleRushCardExecution(
 	ctx.ui.directionSelector.hide();
 	ctx.pendingCard = null;
 
+	const delta = DIRECTION_DELTA[direction];
+	const moveAngle = Math.atan2(delta.y, delta.x);
+
 	if (result.movedDistance === 0) {
 		// 移動失敗: バンプアニメーション
 		await updateStateWithBumpAnimation(ctx, result.state, direction);
 	} else if (result.reachedStairs && result.movedDistance === 1) {
 		// 1マス目が階段: 階段アニメーション
-		// 突進パーティクル（移動軌跡のスピードライン）
-		const delta = DIRECTION_DELTA[direction];
-		const moveAngle = Math.atan2(delta.y, delta.x);
 		const stairsPos = {
 			x: prevPosition.x + delta.x,
 			y: prevPosition.y + delta.y,
 		};
-		const rushCenter = gridToCenterPixel(stairsPos);
-		ctx.ui.particleSystem.emit(createRushParticleConfig(rushCenter, moveAngle));
+		emitRushParticles(ctx, stairsPos, moveAngle);
 		await updateStateWithStairsAnimation(ctx, result.state, stairsPos);
 	} else if (result.reachedStairs && result.intermediatePosition) {
 		// 2マス目が階段: 2段階移動→階層遷移アニメーション
-		// 突進パーティクル（移動軌跡のスピードライン）
-		const delta = DIRECTION_DELTA[direction];
-		const moveAngle = Math.atan2(delta.y, delta.x);
 		const stairsPos = {
 			x: result.intermediatePosition.x + delta.x,
 			y: result.intermediatePosition.y + delta.y,
 		};
-		const rushCenter = gridToCenterPixel(stairsPos);
-		ctx.ui.particleSystem.emit(createRushParticleConfig(rushCenter, moveAngle));
+		emitRushParticles(ctx, stairsPos, moveAngle);
 		await animateRushWithStairs(
 			ctx,
 			result.state,
@@ -204,11 +211,7 @@ async function handleRushCardExecution(
 		);
 	} else {
 		// 通常移動(1or2マス): 最終位置へ直接移動アニメーション
-		// 突進パーティクル（移動軌跡のスピードライン）
-		const delta = DIRECTION_DELTA[direction];
-		const moveAngle = Math.atan2(delta.y, delta.x);
-		const rushCenter = gridToCenterPixel(result.state.player.position);
-		ctx.ui.particleSystem.emit(createRushParticleConfig(rushCenter, moveAngle));
+		emitRushParticles(ctx, result.state.player.position, moveAngle);
 
 		await updateStateWithMoveAnimation(
 			ctx,
