@@ -108,6 +108,8 @@ export class RewardScreen {
 	render(choices: CardType[], screenWidth: number, screenHeight: number): void {
 		this.container.removeChildren();
 		this.cardContainers = [];
+		this.scrollContainer = null;
+		this.cancelButton = null;
 
 		// 半透明オーバーレイ（背面UIへのポインタ入力を吸収）
 		const overlay = new Graphics();
@@ -155,6 +157,8 @@ export class RewardScreen {
 	): void {
 		this.container.removeChildren();
 		this.cardContainers = [];
+		this.scrollContainer = null;
+		this.cancelButton = null;
 
 		// 半透明オーバーレイ（背面UIへのポインタ入力を吸収）
 		const overlay = new Graphics();
