@@ -144,6 +144,7 @@ export class HandRenderer {
 		this.currentHand = hand;
 		this.currentAp = currentAp;
 		this.container.removeChildren();
+		this.container.eventMode = "passive";
 
 		const totalWidth = hand.length * CARD_WIDTH + (hand.length - 1) * CARD_GAP;
 		const startX = -totalWidth / 2;
