@@ -53,8 +53,8 @@ git branch <ブランチ名> main
 # worktreeを作成（/tmp配下に作成し、メインリポジトリを汚さない）
 git worktree add /tmp/wt-issue-<番号> <ブランチ名>
 
-# worktreeで依存関係をインストール
-cd /tmp/wt-issue-<番号>/frontend && pnpm install
+# worktreeで依存関係をインストール（サブシェルで実行し、カレントディレクトリを維持）
+(cd /tmp/wt-issue-<番号>/frontend && pnpm install)
 ```
 
 - ブランチ名の規則は [単一処理モードのステップ3](#3-ブランチの作成) と同じ
