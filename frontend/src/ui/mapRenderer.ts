@@ -627,6 +627,7 @@ export class MapRenderer {
 	 * タイル効果のポップアップアニメーション
 	 * @param tileType 発動した特殊タイル種別
 	 * @param amount 数値（ダメージ量または回復量）
+	 * @param gridPos 表示先のグリッド座標（省略時はplayerGridPosを使用）
 	 */
 	async animateTileEffectPopup(
 		tileType: SpecialTileType,
