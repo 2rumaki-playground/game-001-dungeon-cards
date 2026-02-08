@@ -89,10 +89,8 @@ gh api repos/{owner}/{repo}/pulls/comments/<databaseId> --jq '{id, path, line, b
 
 ```
 gh pr ready --undo <番号>
-git checkout <ブランチ名>
+gh pr checkout <番号>
 ```
-
-ブランチ名は `gh pr view <番号> --json headRefName -q '.headRefName'` で取得する。
 
 ### 5. 実装・コミット・push（1コメントずつ）
 
