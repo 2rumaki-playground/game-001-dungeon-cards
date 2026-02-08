@@ -525,9 +525,11 @@ export class MapRenderer {
 	async animateTileEffectPopup(
 		tileType: SpecialTileType,
 		amount: number,
+		gridPos?: Position,
 	): Promise<void> {
 		const popupType: PopupType = tileType === "trap" ? "trap_damage" : "heal";
-		await this.animateDamagePopup(this.playerGridPos, amount, popupType);
+		const popupPos = gridPos ?? this.playerGridPos;
+		await this.animateDamagePopup(popupPos, amount, popupType);
 	}
 
 	/**

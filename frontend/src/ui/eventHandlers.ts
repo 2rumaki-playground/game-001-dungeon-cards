@@ -17,7 +17,7 @@ import {
 } from "../game";
 import type { SpecialTileType } from "../game/tileEffect";
 import type { GameContext } from "../gameContext";
-import type { Direction } from "../types";
+import type { Direction, Position } from "../types";
 import { DIRECTION_DELTA } from "../types";
 import { deleteSaveData, hasSaveData, loadGame } from "../utils/storage";
 import { detectEnemyMoves } from "./enemyMoveDetector";
@@ -45,6 +45,7 @@ async function showTileEffectPopup(
 	tileType: SpecialTileType,
 	hpBefore: number,
 	hpAfter: number,
+	gridPos: Position,
 ): Promise<void> {
 	let amount: number;
 
@@ -55,7 +56,7 @@ async function showTileEffectPopup(
 	}
 
 	if (amount <= 0) return;
-	await ctx.ui.mapRenderer.animateTileEffectPopup(tileType, amount);
+	await ctx.ui.mapRenderer.animateTileEffectPopup(tileType, amount, gridPos);
 }
 
 /**
@@ -88,7 +89,13 @@ async function handleMoveCardExecution(
 	} else if (moved) {
 		await updateStateWithMoveAnimation(ctx, next, next.player.position);
 		if (tileEffect) {
-			await showTileEffectPopup(ctx, tileEffect, prevHp, next.player.hp);
+			await showTileEffectPopup(
+				ctx,
+				tileEffect,
+				prevHp,
+				next.player.hp,
+				next.player.position,
+			);
 		}
 		if (gameOver) {
 			deleteSaveData();
@@ -201,7 +208,13 @@ async function handleRushCardExecution(
 			} else {
 				hpAfter = Math.min(maxHp, hpBefore + TREASURE_HEAL);
 			}
-			await showTileEffectPopup(ctx, effect, hpBefore, hpAfter);
+			await showTileEffectPopup(
+				ctx,
+				effect,
+				hpBefore,
+				hpAfter,
+				result.state.player.position,
+			);
 			cursorHp = hpAfter;
 		}
 		if (result.gameOver) {
