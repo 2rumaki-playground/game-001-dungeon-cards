@@ -58,6 +58,24 @@ export const ENEMY_ATTACK_DAMAGE = ENEMY_PARAMS.normal.attackDamage;
 
 // 階層
 export const INITIAL_FLOOR = 1;
+export const MAX_FLOOR = 20;
+
+// ボス階層定義
+export const BOSS_FLOORS: { floor: number; type: "miniboss" | "boss" }[] = [
+	{ floor: 5, type: "miniboss" },
+	{ floor: 10, type: "boss" },
+	{ floor: 15, type: "miniboss" },
+	{ floor: 20, type: "boss" },
+];
+
+export function isBossFloor(floor: number): boolean {
+	return BOSS_FLOORS.some((bf) => bf.floor === floor);
+}
+
+export function getBossType(floor: number): "miniboss" | "boss" | null {
+	const entry = BOSS_FLOORS.find((bf) => bf.floor === floor);
+	return entry?.type ?? null;
+}
 
 // マップ
 export const MAP_WIDTH = 7;
@@ -78,6 +96,7 @@ export const ENEMY_COMPOSITION_TABLE: {
 	maxFloor: number;
 	composition: EnemyComposition;
 }[] = [
+	// 序盤（1-4F）
 	{
 		maxFloor: 2,
 		composition: { normal: 3, heavy: 0, scout: 0, miniboss: 0, boss: 0 },
@@ -86,17 +105,61 @@ export const ENEMY_COMPOSITION_TABLE: {
 		maxFloor: 4,
 		composition: { normal: 2, heavy: 0, scout: 1, miniboss: 0, boss: 0 },
 	},
+	// 5F: 中ボス階層
 	{
-		maxFloor: 6,
+		maxFloor: 5,
 		composition: { normal: 1, heavy: 1, scout: 0, miniboss: 1, boss: 0 },
 	},
+	// 中盤（6-9F）
 	{
-		maxFloor: 8,
+		maxFloor: 6,
 		composition: { normal: 1, heavy: 1, scout: 1, miniboss: 0, boss: 0 },
 	},
 	{
-		maxFloor: Infinity,
+		maxFloor: 8,
 		composition: { normal: 0, heavy: 1, scout: 2, miniboss: 0, boss: 0 },
+	},
+	{
+		maxFloor: 9,
+		composition: { normal: 0, heavy: 1, scout: 2, miniboss: 0, boss: 0 },
+	},
+	// 10F: 大ボス階層
+	{
+		maxFloor: 10,
+		composition: { normal: 0, heavy: 1, scout: 1, miniboss: 0, boss: 1 },
+	},
+	// 後半（11-14F）
+	{
+		maxFloor: 12,
+		composition: { normal: 0, heavy: 1, scout: 1, miniboss: 1, boss: 0 },
+	},
+	{
+		maxFloor: 14,
+		composition: { normal: 0, heavy: 2, scout: 1, miniboss: 0, boss: 0 },
+	},
+	// 15F: 中ボス階層
+	{
+		maxFloor: 15,
+		composition: { normal: 0, heavy: 1, scout: 1, miniboss: 1, boss: 0 },
+	},
+	// 終盤（16-19F）
+	{
+		maxFloor: 18,
+		composition: { normal: 0, heavy: 2, scout: 1, miniboss: 0, boss: 0 },
+	},
+	{
+		maxFloor: 19,
+		composition: { normal: 0, heavy: 1, scout: 2, miniboss: 0, boss: 0 },
+	},
+	// 20F: 大ボス階層
+	{
+		maxFloor: 20,
+		composition: { normal: 0, heavy: 1, scout: 1, miniboss: 0, boss: 1 },
+	},
+	// 21F以降（拡張用）
+	{
+		maxFloor: Infinity,
+		composition: { normal: 0, heavy: 2, scout: 1, miniboss: 0, boss: 0 },
 	},
 ];
 
@@ -152,7 +215,9 @@ export const SPECIAL_TILE_TABLE: {
 	{ maxFloor: 2, composition: { trap: 1, treasure: 1, rest_area: 0 } },
 	{ maxFloor: 4, composition: { trap: 2, treasure: 1, rest_area: 1 } },
 	{ maxFloor: 6, composition: { trap: 2, treasure: 1, rest_area: 1 } },
-	{ maxFloor: Infinity, composition: { trap: 3, treasure: 1, rest_area: 1 } },
+	{ maxFloor: 9, composition: { trap: 3, treasure: 1, rest_area: 1 } },
+	{ maxFloor: 14, composition: { trap: 3, treasure: 2, rest_area: 1 } },
+	{ maxFloor: Infinity, composition: { trap: 4, treasure: 2, rest_area: 1 } },
 ];
 
 export function getSpecialTileComposition(
@@ -176,7 +241,9 @@ export const MAP_SIZE_TABLE: {
 	{ maxFloor: 2, width: 9, height: 9 },
 	{ maxFloor: 4, width: 11, height: 11 },
 	{ maxFloor: 6, width: 13, height: 13 },
-	{ maxFloor: Infinity, width: 15, height: 15 },
+	{ maxFloor: 9, width: 15, height: 15 },
+	{ maxFloor: 14, width: 17, height: 17 },
+	{ maxFloor: Infinity, width: 19, height: 19 },
 ];
 
 export function getMapSize(floor: number): { width: number; height: number } {
@@ -193,7 +260,9 @@ export const ENEMY_COUNT_TABLE: {
 	{ maxFloor: 2, count: 3 },
 	{ maxFloor: 4, count: 4 },
 	{ maxFloor: 6, count: 5 },
-	{ maxFloor: Infinity, count: 6 },
+	{ maxFloor: 9, count: 6 },
+	{ maxFloor: 14, count: 7 },
+	{ maxFloor: Infinity, count: 8 },
 ];
 
 export function getEnemyCount(floor: number): number {
