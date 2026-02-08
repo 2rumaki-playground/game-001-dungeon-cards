@@ -158,6 +158,24 @@ describe("createParticles", () => {
 		expect(particles[0].color).toBe(0xff0000);
 		expect(particles[1].color).toBe(0x00ff00);
 	});
+
+	it("random()=1でも色インデックスが範囲外にならない", () => {
+		const config: ParticleConfig = {
+			...baseConfig,
+			count: 1,
+			color: [0xff0000, 0x00ff00],
+		};
+		const particles = createParticles(config, fixedRandom(1));
+		expect(particles[0].color).toBe(0x00ff00);
+	});
+
+	it("空配列colorで例外が投げられる", () => {
+		const config: ParticleConfig = {
+			...baseConfig,
+			color: [],
+		};
+		expect(() => createParticles(config, fixedRandom(0.5))).toThrow();
+	});
 });
 
 describe("updateParticles", () => {

@@ -78,11 +78,19 @@ export function createParticles(
 	const particles: Particle[] = [];
 	const colors = Array.isArray(config.color) ? config.color : [config.color];
 
+	if (colors.length === 0) {
+		throw new Error("ParticleConfig.color must not be an empty array");
+	}
+
 	for (let i = 0; i < config.count; i++) {
 		const velocity = calcEmitVelocity(config.pattern, config.speed, random);
 		const life = lerp(config.life.min, config.life.max, random());
 		const size = lerp(config.size.min, config.size.max, random());
-		const color = colors[Math.floor(random() * colors.length)];
+		const colorIndex = Math.min(
+			Math.floor(random() * colors.length),
+			colors.length - 1,
+		);
+		const color = colors[colorIndex];
 
 		particles.push({
 			x: config.origin.x,
