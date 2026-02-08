@@ -238,6 +238,7 @@ export function executeEnemyTurn(state: GameState): EnemyTurnResult {
 		} else {
 			// 移動
 			next = moveEnemyByType(next, currentEnemy, params.moveDistance);
+			rng = next.rng;
 
 			// ボス/ミニボス: スキル予告判定（移動後の敵をインデックスで取得）
 			const movedEnemy = next.enemies[idx];
