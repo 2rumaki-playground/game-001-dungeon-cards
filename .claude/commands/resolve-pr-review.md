@@ -53,17 +53,14 @@ TeamCreateでチームを作成する:
 各PRについて以下を実行する:
 
 ```bash
-# PRのブランチ名を取得
-gh pr view <番号> --json headRefName -q .headRefName
-
 # PRをドラフトに変換
 gh pr ready --undo <番号>
 
 # worktreeを作成（/tmp配下に作成し、メインリポジトリを汚さない）
-git worktree add /tmp/wt-pr-<番号> <ブランチ名>
+git worktree add /tmp/wt-pr-<番号>
 
-# worktreeで依存関係をインストール（サブシェルで実行し、カレントディレクトリを維持）
-(cd /tmp/wt-pr-<番号>/frontend && pnpm install)
+# worktree側でPRブランチをcheckoutし、依存関係をインストール
+(cd /tmp/wt-pr-<番号> && gh pr checkout <番号> && cd frontend && pnpm install)
 ```
 
 ### P-5. エージェントの並列起動
