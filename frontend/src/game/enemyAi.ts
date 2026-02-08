@@ -187,13 +187,16 @@ export type EnemyTurnResult = {
  */
 export function executeEnemyTurn(state: GameState): EnemyTurnResult {
 	// RNGをcloneして入力stateを変更しない
-	const rng = state.rng.clone();
+	let rng = state.rng.clone();
 	const order = rng.shuffle(state.enemies.map((_e, i) => i));
 
 	let next = { ...state, enemies: state.enemies.map((e) => ({ ...e })), rng };
 	let totalDamage = 0;
 
 	for (const idx of order) {
+		// 状態更新で差し替わったRNGを再束縛して系列を維持
+		rng = next.rng;
+
 		// プレイヤーが死亡していたら残りの敵は行動しない
 		if (isDefeated(next.player.hp)) break;
 
