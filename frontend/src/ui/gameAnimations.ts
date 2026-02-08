@@ -474,9 +474,13 @@ export async function updateStateWithMissAnimation(
 
 	const prevAp = ctx.state.player.ap;
 	const delta = DIRECTION_DELTA[direction];
+	const rawTargetX = ctx.state.player.position.x + delta.x;
+	const rawTargetY = ctx.state.player.position.y + delta.y;
+	const mapWidth = newState.map.width;
+	const mapHeight = newState.map.height;
 	const targetGridPos: Position = {
-		x: ctx.state.player.position.x + delta.x,
-		y: ctx.state.player.position.y + delta.y,
+		x: Math.max(0, Math.min(mapWidth - 1, rawTargetX)),
+		y: Math.max(0, Math.min(mapHeight - 1, rawTargetY)),
 	};
 	applyState(ctx, newState);
 
