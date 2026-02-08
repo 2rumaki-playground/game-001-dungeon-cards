@@ -468,9 +468,8 @@ export class HandRenderer {
 				});
 			}
 		} catch (e) {
-			// render() でカードが破棄された場合のエラーは無視
-			// それ以外の原因調査のため、例外内容はログに残す
-			console.error("animateCardConsume failed:", e);
+			// render() によるカード破棄等、想定内のタイミングエラーの可能性があるため warn で記録
+			console.warn("animateCardConsume failed:", e);
 		}
 	}
 
