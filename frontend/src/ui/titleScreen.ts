@@ -123,7 +123,7 @@ export class TitleScreen {
 			style: {
 				fontSize: 18,
 				fontFamily: "sans-serif",
-				fill: enabled ? 0xffffff : 0x666666,
+				fill: enabled ? 0xffffff : UI_COLORS_DISABLED.text,
 				fontWeight: "bold",
 			},
 		});
