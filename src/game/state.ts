@@ -127,7 +127,10 @@ export function createInitialGameState(
 	floor: number = INITIAL_FLOOR,
 ): GameState {
 	const rng = new RNG(seed);
-	const safeFloor = Math.max(INITIAL_FLOOR, Math.floor(floor));
+	const normalizedFloor = Number.isFinite(floor)
+		? Math.floor(floor)
+		: INITIAL_FLOOR;
+	const safeFloor = Math.max(INITIAL_FLOOR, normalizedFloor);
 	const { map, player, enemies } = generateMapPlacement(rng, safeFloor);
 	const initialPlayer = createInitialPlayer();
 
