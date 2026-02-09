@@ -6,6 +6,7 @@
 import type { GameState } from "../types";
 import {
 	addActionLog,
+	addRemnant,
 	changeScreen,
 	removeEnemy,
 	updateEnemy,
@@ -44,6 +45,7 @@ export function applyDamageToEnemy(
 
 	const target = next.enemies.find((e) => e.id === enemyId);
 	if (target && isDefeated(target.hp)) {
+		next = addRemnant(next, target.position);
 		next = removeEnemy(next, enemyId);
 		next = {
 			...next,

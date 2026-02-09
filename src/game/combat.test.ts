@@ -206,6 +206,62 @@ describe("applyDamageToEnemy", () => {
 		expect(result.isCleared).toBe(false);
 	});
 
+	it("敵撃破時にremnantsに撃破座標が記録される", () => {
+		const enemies: Enemy[] = [
+			{
+				id: "enemy-1",
+				type: "normal",
+				position: { x: 4, y: 3 },
+				hp: 1,
+				maxHp: ENEMY_HP,
+			},
+		];
+		const state = createTestState({ enemies });
+		const result = applyDamageToEnemy(state, "enemy-1", PLAYER_ATTACK_DAMAGE);
+
+		expect(result.remnants["4,3"]).toBe(1);
+	});
+
+	it("同一座標で2体撃破するとremnantsのカウントが2になる", () => {
+		const enemies: Enemy[] = [
+			{
+				id: "enemy-1",
+				type: "normal",
+				position: { x: 4, y: 3 },
+				hp: 1,
+				maxHp: ENEMY_HP,
+			},
+			{
+				id: "enemy-2",
+				type: "normal",
+				position: { x: 4, y: 3 },
+				hp: 1,
+				maxHp: ENEMY_HP,
+			},
+		];
+		const state = createTestState({ enemies });
+		let result = applyDamageToEnemy(state, "enemy-1", PLAYER_ATTACK_DAMAGE);
+		result = applyDamageToEnemy(result, "enemy-2", PLAYER_ATTACK_DAMAGE);
+
+		expect(result.remnants["4,3"]).toBe(2);
+	});
+
+	it("ダメージのみ（非撃破）ではremnantsが変わらない", () => {
+		const enemies: Enemy[] = [
+			{
+				id: "enemy-1",
+				type: "normal",
+				position: { x: 4, y: 3 },
+				hp: ENEMY_HP,
+				maxHp: ENEMY_HP,
+			},
+		];
+		const state = createTestState({ enemies });
+		const result = applyDamageToEnemy(state, "enemy-1", PLAYER_ATTACK_DAMAGE);
+
+		expect(result.remnants).toEqual({});
+	});
+
 	it("ダメージのみ（非撃破）ではdefeatedEnemyCountが変わらない", () => {
 		const enemies: Enemy[] = [
 			{
