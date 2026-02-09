@@ -91,7 +91,12 @@ export class TitleScreen {
 		this.stopBgParticles();
 		this.container.removeChildren();
 
+		// 背景パーティクル用Graphics（最背面に配置）
+		this.bgParticleGraphics = new Graphics();
+		this.container.addChild(this.bgParticleGraphics);
+
 		// ゲームタイトル（フェードイン + スケールアニメーション）
+		const titleY = screenHeight / 3;
 		const title = new Text({
 			text: "Dungeon Cards",
 			style: {
@@ -103,7 +108,7 @@ export class TitleScreen {
 		});
 		title.anchor.set(0.5);
 		title.x = screenWidth / 2;
-		title.y = screenHeight / 3;
+		title.y = titleY;
 		title.alpha = 0;
 		title.scale.set(0.5);
 		this.container.addChild(title);
@@ -118,11 +123,6 @@ export class TitleScreen {
 				easing: Easing.easeOutBack,
 			},
 		);
-
-		// 背景パーティクル用Graphics（タイトルとボタンの間に配置）
-		this.bgParticleGraphics = new Graphics();
-		this.bgParticleGraphics.eventMode = "none";
-		this.container.addChild(this.bgParticleGraphics);
 
 		// 新規ゲーム開始ボタン
 		const centerY = screenHeight / 2 + 20;
@@ -198,8 +198,9 @@ export class TitleScreen {
 				});
 		}
 
-		// 背景パーティクル開始
-		this.startBgParticles(screenWidth, screenHeight);
+		// 背景パーティクル開始（タイトルとボタンの中間Y座標から発生）
+		const particleOriginY = (titleY + centerY) / 2;
+		this.startBgParticles(screenWidth, screenHeight, particleOriginY);
 	}
 
 	/**
@@ -292,8 +293,16 @@ export class TitleScreen {
 	/**
 	 * 背景パーティクルの更新ループを開始
 	 */
-	private startBgParticles(screenWidth: number, screenHeight: number): void {
-		this.bgParticleConfig = createBgParticleConfig(screenWidth, screenHeight);
+	private startBgParticles(
+		screenWidth: number,
+		screenHeight: number,
+		originY?: number,
+	): void {
+		this.bgParticleConfig = createBgParticleConfig(
+			screenWidth,
+			screenHeight,
+			originY,
+		);
 		this.bgParticles = createParticles(this.bgParticleConfig);
 		this.bgParticleTimer = 0;
 
