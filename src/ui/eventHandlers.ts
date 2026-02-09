@@ -612,7 +612,11 @@ export function setupEventHandlers(ctx: GameContext): void {
 	}
 
 	// ターン終了ボタンのコールバック設定
-	ctx.ui.turnEndButton.setOnEndTurn(handleEndTurn);
+	ctx.ui.turnEndButton.setOnEndTurn(() => {
+		void handleEndTurn().catch((error) => {
+			console.error(error);
+		});
+	});
 
 	// 右クリックでターン終了
 	ctx.app.canvas.addEventListener("contextmenu", (e) => {
