@@ -378,7 +378,9 @@ export class RewardScreen {
 				const cardId = this.selectedRemoveCardId;
 				const item = this.selectedRemoveItem;
 				// アニメーション中は入力を一括無効化
+				const prevEventMode = this.scrollContainer?.eventMode;
 				if (this.scrollContainer) {
+					this.scrollContainer.eventMode = "none";
 					this.scrollContainer.interactiveChildren = false;
 				}
 				if (this.confirmButtonContainer) {
@@ -391,6 +393,7 @@ export class RewardScreen {
 					console.error("カード除去処理中にエラーが発生しました", error);
 				} finally {
 					if (this.scrollContainer) {
+						this.scrollContainer.eventMode = prevEventMode ?? "passive";
 						this.scrollContainer.interactiveChildren = true;
 					}
 					if (this.confirmButtonContainer) {
