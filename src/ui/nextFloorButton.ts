@@ -9,7 +9,7 @@ import {
 	BUTTON_HEIGHT,
 	NEXT_FLOOR_BUTTON_WIDTH as BUTTON_WIDTH,
 } from "./layout";
-import { UI_COLORS_BUTTON_PRIMARY, UI_COLORS_DISABLED } from "./uiColors";
+import { UI_COLORS_BUTTON_PRIMARY } from "./uiColors";
 
 /** ボタンサイズ */
 const BUTTON_RADIUS = 6;
@@ -17,7 +17,6 @@ const BUTTON_RADIUS = 6;
 /** ボタン色定義 */
 const BUTTON_COLORS = {
 	active: { ...UI_COLORS_BUTTON_PRIMARY, text: 0xffffff },
-	disabled: UI_COLORS_DISABLED,
 } as const;
 
 /**
