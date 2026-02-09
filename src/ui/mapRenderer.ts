@@ -264,6 +264,57 @@ function drawStairsIcon(g: Graphics, px: number, py: number): void {
 	g.stroke();
 }
 
+/** 残骸パーティクルの色 */
+const REMNANT_COLOR = 0x999999;
+
+/** 残骸パーティクルの透明度 */
+const REMNANT_ALPHA = 0.4;
+
+/** 残骸パーティクルの最小半径 */
+const REMNANT_MIN_RADIUS = 2;
+
+/** 残骸パーティクルの最大半径 */
+const REMNANT_MAX_RADIUS = 4;
+
+/**
+ * 決定的な疑似乱数を生成（座標ベース）
+ */
+function seededRandom(seed: number): number {
+	const x = Math.sin(seed * 9301 + 49297) * 233280;
+	return x - Math.floor(x);
+}
+
+/**
+ * 残骸オーバーレイを描画
+ * 撃破数に応じてパーティクル風のドットを散らして描画
+ */
+function drawRemnantOverlay(
+	g: Graphics,
+	px: number,
+	py: number,
+	count: number,
+): void {
+	// 撃破数に応じたパーティクル数: 1→2, 2→4, 3+→6（上限）
+	const particleCount = Math.min(count * 2, 6);
+	const margin = 8;
+	const areaSize = CELL_SIZE - margin * 2;
+
+	for (let i = 0; i < particleCount; i++) {
+		const seed = px * 1000 + py * 100 + i;
+		const rx = seededRandom(seed);
+		const ry = seededRandom(seed + 1);
+		const rr = seededRandom(seed + 2);
+
+		const cx = px + margin + rx * areaSize;
+		const cy = py + margin + ry * areaSize;
+		const radius =
+			REMNANT_MIN_RADIUS + rr * (REMNANT_MAX_RADIUS - REMNANT_MIN_RADIUS);
+
+		g.circle(cx, cy, radius);
+		g.fill({ color: REMNANT_COLOR, alpha: REMNANT_ALPHA });
+	}
+}
+
 /**
  * マップレンダラー
  * マップ・プレイヤー・敵の描画を管理
@@ -271,6 +322,7 @@ function drawStairsIcon(g: Graphics, px: number, py: number): void {
 export class MapRenderer {
 	private container: Container;
 	private tilesGraphics: Graphics;
+	private remnantsGraphics: Graphics;
 	private playerGraphics: Graphics;
 	private enemiesContainer: Container;
 	private isPlayerInitialized = false;
@@ -284,10 +336,12 @@ export class MapRenderer {
 	constructor() {
 		this.container = new Container();
 		this.tilesGraphics = new Graphics();
+		this.remnantsGraphics = new Graphics();
 		this.playerGraphics = new Graphics();
 		this.enemiesContainer = new Container();
 
 		this.container.addChild(this.tilesGraphics);
+		this.container.addChild(this.remnantsGraphics);
 		this.container.addChild(this.enemiesContainer);
 		this.container.addChild(this.playerGraphics);
 	}
@@ -810,9 +864,27 @@ export class MapRenderer {
 	}
 
 	/**
+	 * 残骸オーバーレイを描画
+	 */
+	renderRemnants(remnants: Record<string, number>): void {
+		this.remnantsGraphics.clear();
+
+		for (const [key, count] of Object.entries(remnants)) {
+			const [xStr, yStr] = key.split(",");
+			const gx = Number(xStr);
+			const gy = Number(yStr);
+			if (!Number.isFinite(gx) || !Number.isFinite(gy)) continue;
+
+			const pixelPos = gridToPixel({ x: gx, y: gy });
+			drawRemnantOverlay(this.remnantsGraphics, pixelPos.x, pixelPos.y, count);
+		}
+	}
+
+	/**
 	 * 全体を描画（マップ・プレイヤー・敵）
 	 * @param skipPlayer trueの場合、プレイヤー描画をスキップ（アニメーション中に使用）
 	 * @param skipEnemies trueの場合、敵描画をスキップ（敵移動アニメーション中に使用）
+	 * @param remnants 敵撃破の残骸情報
 	 */
 	render(
 		map: GameMap,
@@ -820,8 +892,10 @@ export class MapRenderer {
 		enemies: Enemy[],
 		skipPlayer = false,
 		skipEnemies = false,
+		remnants: Record<string, number> = {},
 	): void {
 		this.renderMap(map);
+		this.renderRemnants(remnants);
 		if (!skipPlayer) {
 			this.renderPlayer(player);
 		}
@@ -835,6 +909,7 @@ export class MapRenderer {
 	 */
 	clear(): void {
 		this.tilesGraphics.clear();
+		this.remnantsGraphics.clear();
 		this.playerGraphics.clear();
 		this.isPlayerInitialized = false;
 		this.enemiesContainer.removeChildren();

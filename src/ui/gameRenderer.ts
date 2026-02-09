@@ -75,6 +75,7 @@ export function renderGameScreen(
 		ctx.state.enemies,
 		skipPlayer,
 		skipEnemies,
+		ctx.state.remnants,
 	);
 	if (!skipHand) {
 		ctx.ui.handRenderer.render(ctx.state.deck.hand, ctx.state.player.ap);
