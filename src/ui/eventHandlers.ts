@@ -192,10 +192,10 @@ async function handleStrongAttackCardExecution(
  */
 function emitJumpParticles(
 	ctx: GameContext,
-	targetPos: Position,
+	originPos: Position,
 	moveAngle: number,
 ): void {
-	const center = gridToCenterPixel(targetPos);
+	const center = gridToCenterPixel(originPos);
 	ctx.ui.particleSystem.emit(createJumpParticleConfig(center, moveAngle));
 }
 
