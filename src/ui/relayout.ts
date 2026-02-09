@@ -6,6 +6,7 @@
 import { LOG_AREA_GAP, STATUS_BAR_HEIGHT } from "../constants";
 import type { GameContext } from "../gameContext";
 import { getMapPixelSize } from "./coordinates";
+import { CARD_HEIGHT } from "./handRenderer";
 import {
 	BUTTON_BOTTOM_MARGIN,
 	BUTTON_GAP,
@@ -68,7 +69,6 @@ export function relayoutUI(ctx: GameContext): void {
 
 	// デバッグカードレンダラー（handRendererの子要素）
 	if (ctx.ui.debugCardRenderer) {
-		ctx.ui.debugCardRenderer.getContainer().y =
-			HAND_AREA_HEIGHT - HAND_AREA_TOP_PADDING;
+		ctx.ui.debugCardRenderer.getContainer().y = CARD_HEIGHT + 10;
 	}
 }

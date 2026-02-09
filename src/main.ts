@@ -11,6 +11,7 @@ import type { GameContext, UIComponents } from "./gameContext";
 import type { GameState } from "./types";
 import {
 	ActionLogRenderer,
+	CARD_HEIGHT,
 	DeckViewer,
 	DirectionSelector,
 	FloorBanner,
@@ -140,7 +141,7 @@ async function initializeUIComponents(
 
 		debugCardRenderer = new DebugCardRenderer();
 		const debugCardContainer = debugCardRenderer.getContainer();
-		debugCardContainer.y = HAND_AREA_HEIGHT - HAND_AREA_TOP_PADDING;
+		debugCardContainer.y = CARD_HEIGHT + 10;
 		handRenderer.getContainer().addChild(debugCardContainer);
 
 		debugTargetSelector = new DebugTargetSelector();
