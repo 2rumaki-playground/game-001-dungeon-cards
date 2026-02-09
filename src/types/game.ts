@@ -62,6 +62,6 @@ export type GameState = {
 	defeatedEnemyCount: number;
 	/** 報酬画面の状態（null = 報酬画面ではない） */
 	rewardState: RewardState | null;
-	/** ゲームクリア済みフラグ（20Fボス撃破） */
+	/** ゲームクリア済みフラグ（クリア階層（CLEAR_FLOOR）のボス撃破） */
 	isCleared: boolean;
 };
