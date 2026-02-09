@@ -286,9 +286,9 @@ describe("MapRenderer 攻撃エフェクト", () => {
 
 		await renderer.animateEnemyAttackHit(1);
 
-		// コンテナ内のプレイヤーグラフィックス（3番目の子要素）のalphaが1であること
+		// コンテナ内のプレイヤーグラフィックス（4番目の子要素）のalphaが1であること
 		const container = renderer.getContainer();
-		const playerGraphics = container.children[2];
+		const playerGraphics = container.children[3];
 		expect(playerGraphics.alpha).toBe(1);
 	});
 
@@ -348,7 +348,7 @@ describe("MapRenderer タイプ別敵描画", () => {
 		renderer.render(map, player, enemies);
 
 		const container = renderer.getContainer();
-		const enemiesContainer = container.children[1];
+		const enemiesContainer = container.children[2];
 		expect(enemiesContainer.children.length).toBe(1);
 	});
 
@@ -374,7 +374,7 @@ describe("MapRenderer タイプ別敵描画", () => {
 		renderer.render(map, player, enemies);
 
 		const container = renderer.getContainer();
-		const enemiesContainer = container.children[1];
+		const enemiesContainer = container.children[2];
 		expect(enemiesContainer.children.length).toBe(1);
 	});
 
@@ -400,7 +400,7 @@ describe("MapRenderer タイプ別敵描画", () => {
 		renderer.render(map, player, enemies);
 
 		const container = renderer.getContainer();
-		const enemiesContainer = container.children[1];
+		const enemiesContainer = container.children[2];
 		expect(enemiesContainer.children.length).toBe(1);
 	});
 
@@ -426,7 +426,7 @@ describe("MapRenderer タイプ別敵描画", () => {
 		renderer.render(map, player, enemies);
 
 		const container = renderer.getContainer();
-		const enemiesContainer = container.children[1];
+		const enemiesContainer = container.children[2];
 		// 敵コンテナ1つ（内部にGraphics + HPバー）
 		expect(enemiesContainer.children.length).toBe(1);
 	});
@@ -453,7 +453,7 @@ describe("MapRenderer タイプ別敵描画", () => {
 		renderer.render(map, player, enemies);
 
 		const container = renderer.getContainer();
-		const enemiesContainer = container.children[1];
+		const enemiesContainer = container.children[2];
 		// 敵コンテナ1つ（内部にGraphics + HPバー）
 		expect(enemiesContainer.children.length).toBe(1);
 	});
@@ -508,7 +508,7 @@ describe("MapRenderer タイプ別敵描画", () => {
 		renderer.render(map, player, enemies);
 
 		const container = renderer.getContainer();
-		const enemiesContainer = container.children[1];
+		const enemiesContainer = container.children[2];
 		// 5体 = 5つの敵コンテナ
 		expect(enemiesContainer.children.length).toBe(5);
 	});
@@ -653,7 +653,7 @@ describe("MapRenderer 敵撃破アニメーション", () => {
 
 		// enemiesContainerに敵Graphicsが存在すること
 		const container = renderer.getContainer();
-		const enemiesContainer = container.children[1];
+		const enemiesContainer = container.children[2];
 		expect(enemiesContainer.children.length).toBe(1);
 
 		await renderer.animateEnemyDefeat("e1");
@@ -684,7 +684,7 @@ describe("MapRenderer 敵撃破アニメーション", () => {
 		renderer.render(map, player, enemies);
 
 		const container = renderer.getContainer();
-		const enemiesContainer = container.children[1];
+		const enemiesContainer = container.children[2];
 		expect(enemiesContainer.children.length).toBe(1);
 
 		await renderer.animateEnemyDefeat("e-miniboss");
@@ -734,7 +734,7 @@ describe("MapRenderer HPバー", () => {
 		renderer.render(map, player, enemies);
 
 		const container = renderer.getContainer();
-		const enemiesContainer = container.children[1];
+		const enemiesContainer = container.children[2];
 		// 敵コンテナ1つ
 		expect(enemiesContainer.children.length).toBe(1);
 		// 敵コンテナ内にGraphics(1) + HPバー(1) = 2
@@ -764,7 +764,7 @@ describe("MapRenderer HPバー", () => {
 		renderer.render(map, player, enemies);
 
 		const container = renderer.getContainer();
-		const enemiesContainer = container.children[1];
+		const enemiesContainer = container.children[2];
 		expect(enemiesContainer.children.length).toBe(1);
 		// 敵コンテナ内にGraphics(1) + HPバー(1) = 2
 		const enemyContainer = enemiesContainer.children[0];
@@ -793,7 +793,7 @@ describe("MapRenderer HPバー", () => {
 		renderer.render(map, player, enemies);
 
 		const container = renderer.getContainer();
-		const enemiesContainer = container.children[1];
+		const enemiesContainer = container.children[2];
 		expect(enemiesContainer.children.length).toBe(1);
 		// 敵コンテナ内にGraphicsのみ
 		const enemyContainer = enemiesContainer.children[0];
@@ -823,7 +823,7 @@ describe("MapRenderer HPバー", () => {
 		renderer.clear();
 
 		const container = renderer.getContainer();
-		const enemiesContainer = container.children[1];
+		const enemiesContainer = container.children[2];
 		expect(enemiesContainer.children.length).toBe(0);
 	});
 });

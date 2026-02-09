@@ -30,6 +30,36 @@ import { generateMapPlacement } from "./map";
 const cloneRng = (rng: RNG): RNG => rng.clone();
 
 /**
+ * 座標を残骸マップのキー文字列に変換
+ */
+export function positionToKey(pos: Position): string {
+	return `${pos.x},${pos.y}`;
+}
+
+/**
+ * 指定座標に撃破残骸を追加
+ */
+export function addRemnant(state: GameState, position: Position): GameState {
+	const key = positionToKey(position);
+	const rawCurrent = state.remnants?.[key];
+	const numericCurrent = Number(rawCurrent);
+	const current =
+		Number.isFinite(numericCurrent) && numericCurrent >= 0
+			? Math.floor(numericCurrent)
+			: 0;
+	const newRemnants: typeof state.remnants = Object.assign(
+		Object.create(null),
+		state.remnants,
+	);
+	newRemnants[key] = current + 1;
+	return {
+		...state,
+		remnants: newRemnants,
+		rng: cloneRng(state.rng),
+	};
+}
+
+/**
  * 座標リストから敵リストを生成
  */
 export function createEnemiesFromPositions(
@@ -116,6 +146,7 @@ export function createTitleScreenState(seed?: number): GameState {
 		defeatedEnemyCount: 0,
 		rewardState: null,
 		isCleared: false,
+		remnants: {},
 	};
 }
 
@@ -147,6 +178,7 @@ export function createInitialGameState(
 		defeatedEnemyCount: 0,
 		rewardState: null,
 		isCleared: false,
+		remnants: {},
 	};
 }
 

@@ -73,6 +73,7 @@ function createTestState(overrides?: Partial<GameState>): GameState {
 		defeatedEnemyCount: 0,
 		rewardState: null,
 		isCleared: false,
+		remnants: {},
 		...overrides,
 	};
 }
@@ -228,6 +229,15 @@ describe("transitionFloor", () => {
 		expect(result.map.length).toBe(11);
 		expect(result.map[0].length).toBe(11);
 		expect(result.enemies).toHaveLength(getEnemyCount(3));
+	});
+
+	it("階層遷移時にremnantsがリセットされる", () => {
+		const state = createTestState({
+			remnants: { "2,2": 1, "4,3": 2 },
+		});
+		const result = transitionFloor(state);
+
+		expect(result.remnants).toEqual({});
 	});
 
 	it("saveGame が呼び出され、更新後の状態が保存される", () => {
