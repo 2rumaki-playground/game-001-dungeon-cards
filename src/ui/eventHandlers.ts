@@ -379,6 +379,10 @@ export function setupEventHandlers(ctx: GameContext): void {
 			if (card.type !== "wait" && !direction) {
 				return false;
 			}
+			// 既に同一カードがキューに存在する場合は重複予約しない
+			if (ctx.cardQueue.some((entry) => entry.card.id === card.id)) {
+				return false;
+			}
 			// AP検証（キュー内の合計コストを考慮）
 			if (!canEnqueueCard(ctx.state.player.ap, ctx.cardQueue, card)) {
 				return false;
