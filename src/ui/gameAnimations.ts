@@ -334,12 +334,11 @@ async function executeCardRemovalEvent(
 /**
  * 階層遷移の共通フロー
  * カード除去→報酬→勝利判定→階層遷移→フェード→手札配布を実行する
- * @returns "title" または "completed" を返す
  */
 async function executeFloorTransitionFlow(
 	ctx: GameContext,
 	baseState: GameState,
-): Promise<"title" | "completed"> {
+): Promise<void> {
 	const { width: screenWidth, height: screenHeight } = getScreenSize(ctx);
 
 	// 1. カード除去イベント（報酬フローの前）
@@ -356,7 +355,7 @@ async function executeFloorTransitionFlow(
 	// 3. 勝利画面（クリア階層のボス撃破済みの場合）
 	if (shouldShowVictoryScreen(afterReward)) {
 		const victoryResult = await showVictoryScreen(ctx, afterReward);
-		if (victoryResult === "title") return "title";
+		if (victoryResult === "title") return;
 	}
 
 	// 4. 階層遷移
@@ -377,8 +376,6 @@ async function executeFloorTransitionFlow(
 		ctx.state.player.ap,
 		transitioned.deck.hand.length,
 	);
-
-	return "completed";
 }
 
 /**
