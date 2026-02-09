@@ -286,9 +286,9 @@ describe("MapRenderer 攻撃エフェクト", () => {
 
 		await renderer.animateEnemyAttackHit(1);
 
-		// コンテナ内のプレイヤーグラフィックス（3番目の子要素）のalphaが1であること
+		// コンテナ内のプレイヤーグラフィックス（4番目の子要素）のalphaが1であること
 		const container = renderer.getContainer();
-		const playerGraphics = container.children[2];
+		const playerGraphics = container.children[3];
 		expect(playerGraphics.alpha).toBe(1);
 	});
 
