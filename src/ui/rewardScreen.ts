@@ -88,6 +88,7 @@ export class RewardScreen {
 	private selectedRemoveCardId: string | null = null;
 	private selectedRemoveItem: { container: Container; width: number } | null =
 		null;
+	private isRemoving = false;
 
 	constructor() {
 		this.container = new Container();
@@ -248,6 +249,7 @@ export class RewardScreen {
 		this.selectedRemoveCardId = null;
 		this.selectedRemoveItem = null;
 		this.confirmButtonContainer = null;
+		this.isRemoving = false;
 
 		// 半透明オーバーレイ（背面UIへのポインタ入力を吸収）
 		const overlay = new Graphics();
@@ -369,11 +371,13 @@ export class RewardScreen {
 			UI_COLORS_DISABLED.bg,
 			UI_COLORS_DISABLED.border,
 			async () => {
+				if (this.isRemoving) return;
 				if (
 					this.selectedRemoveCardId === null ||
 					this.selectedRemoveItem === null
 				)
 					return;
+				this.isRemoving = true;
 				const cardId = this.selectedRemoveCardId;
 				const item = this.selectedRemoveItem;
 				// アニメーション中は入力を一括無効化
@@ -391,6 +395,7 @@ export class RewardScreen {
 				} catch (error) {
 					console.error("カード除去処理中にエラーが発生しました", error);
 				} finally {
+					this.isRemoving = false;
 					if (this.scrollContainer) {
 						this.scrollContainer.eventMode = prevEventMode ?? "passive";
 						this.scrollContainer.interactiveChildren = true;
