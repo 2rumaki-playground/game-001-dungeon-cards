@@ -2,7 +2,7 @@
  * イベントハンドラ設定
  */
 
-import { TRAP_DAMAGE, TREASURE_HEAL } from "../constants";
+import { CARD_COST, TRAP_DAMAGE, TREASURE_HEAL } from "../constants";
 import {
 	endPlayerTurn,
 	executeAttack,
@@ -16,9 +16,10 @@ import {
 	startNewGameAtFloor,
 	startPlayerTurn,
 } from "../game";
+import { canEnqueueCard } from "../game/cardQueue";
 import type { SpecialTileType } from "../game/tileEffect";
 import type { GameContext } from "../gameContext";
-import type { Direction, Position } from "../types";
+import type { Card, Direction, Position } from "../types";
 import { DIRECTION_DELTA } from "../types";
 import { deleteSaveData, hasSaveData, loadGame } from "../utils/storage";
 import { createRushParticleConfig } from "./battleParticles";
@@ -64,6 +65,28 @@ async function showTileEffectPopup(
 }
 
 /**
+ * カードキューをクリアする
+ */
+function clearCardQueue(ctx: GameContext): void {
+	ctx.cardQueue = [];
+}
+
+/**
+ * カード実行後にキューの継続可否を判定
+ * 階段到達・ゲームオーバーの場合はキューをクリアする
+ */
+function shouldContinueQueue(
+	ctx: GameContext,
+	reachedStairs: boolean,
+	gameOver: boolean,
+): void {
+	if (reachedStairs || gameOver) {
+		clearCardQueue(ctx);
+		ctx.isCardActionAnimating = false;
+	}
+}
+
+/**
  * 移動カードの実行と対応するアニメーション
  */
 async function handleMoveCardExecution(
@@ -85,6 +108,7 @@ async function handleMoveCardExecution(
 	ctx.ui.directionSelector.hide();
 	ctx.pendingCard = null;
 	if (reachedStairs) {
+		shouldContinueQueue(ctx, true, false);
 		const stairsPos = {
 			x: prevPosition.x + DIRECTION_DELTA[direction].x,
 			y: prevPosition.y + DIRECTION_DELTA[direction].y,
@@ -102,6 +126,7 @@ async function handleMoveCardExecution(
 			);
 		}
 		if (gameOver) {
+			shouldContinueQueue(ctx, false, true);
 			deleteSaveData();
 			await ctx.ui.screenTransition.fadeTransition(() => {
 				updateState(ctx, next);
@@ -190,6 +215,7 @@ async function handleRushCardExecution(
 		await updateStateWithBumpAnimation(ctx, result.state, direction);
 	} else if (result.reachedStairs && result.movedDistance === 1) {
 		// 1マス目が階段: 階段アニメーション
+		shouldContinueQueue(ctx, true, false);
 		const stairsPos = {
 			x: prevPosition.x + delta.x,
 			y: prevPosition.y + delta.y,
@@ -198,6 +224,7 @@ async function handleRushCardExecution(
 		await updateStateWithStairsAnimation(ctx, result.state, stairsPos);
 	} else if (result.reachedStairs && result.intermediatePosition) {
 		// 2マス目が階段: 2段階移動→階層遷移アニメーション
+		shouldContinueQueue(ctx, true, false);
 		const stairsPos = {
 			x: result.intermediatePosition.x + delta.x,
 			y: result.intermediatePosition.y + delta.y,
@@ -235,6 +262,7 @@ async function handleRushCardExecution(
 			cursorHp = hpAfter;
 		}
 		if (result.gameOver) {
+			shouldContinueQueue(ctx, false, true);
 			deleteSaveData();
 			await ctx.ui.screenTransition.fadeTransition(() => {
 				updateState(ctx, result.state);
@@ -243,31 +271,74 @@ async function handleRushCardExecution(
 	}
 }
 
+/**
+ * カードを実行する（カードタイプに応じてハンドラを呼び分ける）
+ */
+async function executeCard(
+	ctx: GameContext,
+	card: Card,
+	direction?: Direction,
+): Promise<void> {
+	if (card.type === "wait") {
+		updateState(ctx, executeWait(ctx.state, card.id));
+	} else if (direction) {
+		ctx.isCardActionAnimating = true;
+		try {
+			if (card.type === "move") {
+				await handleMoveCardExecution(ctx, card.id, direction);
+			} else if (card.type === "attack") {
+				await handleAttackCardExecution(ctx, card.id, direction);
+			} else if (card.type === "strong_attack") {
+				await handleStrongAttackCardExecution(ctx, card.id, direction);
+			} else if (card.type === "rush") {
+				await handleRushCardExecution(ctx, card.id, direction);
+			}
+		} finally {
+			ctx.isCardActionAnimating = false;
+		}
+	}
+}
+
+/**
+ * キュー内の予約カードを順次実行する
+ * 各カード実行後にキャンセル条件（階段到達、ゲームオーバー、ターン変更）をチェック
+ */
+async function processCardQueue(ctx: GameContext): Promise<void> {
+	while (ctx.cardQueue.length > 0) {
+		// キャンセル条件チェック: ゲーム画面でない、またはプレイヤーターンでない場合
+		if (ctx.state.screen !== "game" || ctx.state.turn !== "player") {
+			clearCardQueue(ctx);
+			return;
+		}
+
+		const entry = ctx.cardQueue.shift();
+		if (!entry) break;
+
+		// 予約時点と状態が変わっている可能性があるため、AP再検証
+		if (ctx.state.player.ap < CARD_COST[entry.card.type]) {
+			clearCardQueue(ctx);
+			return;
+		}
+
+		// 手札に該当カードが存在するか検証
+		if (!ctx.state.deck.hand.some((c) => c.id === entry.card.id)) {
+			clearCardQueue(ctx);
+			return;
+		}
+
+		await executeCard(ctx, entry.card, entry.direction);
+	}
+}
+
 export function setupEventHandlers(ctx: GameContext): void {
 	// 方向選択UIのコールバック設定
 	ctx.ui.directionSelector.setOnDirectionSelect(async (direction) => {
 		if (ctx.isAnimating) return; // アニメーション中は無効
 		if (ctx.pendingCard) {
-			if (ctx.pendingCard.type === "move") {
-				await handleMoveCardExecution(ctx, ctx.pendingCard.id, direction);
-				return;
-			}
-			if (ctx.pendingCard.type === "attack") {
-				await handleAttackCardExecution(ctx, ctx.pendingCard.id, direction);
-				return;
-			}
-			if (ctx.pendingCard.type === "strong_attack") {
-				await handleStrongAttackCardExecution(
-					ctx,
-					ctx.pendingCard.id,
-					direction,
-				);
-				return;
-			}
-			if (ctx.pendingCard.type === "rush") {
-				await handleRushCardExecution(ctx, ctx.pendingCard.id, direction);
-				return;
-			}
+			const card = ctx.pendingCard;
+			await executeCard(ctx, card, direction);
+			await processCardQueue(ctx);
+			return;
 		}
 		ctx.ui.directionSelector.hide();
 		ctx.pendingCard = null;
@@ -282,25 +353,44 @@ export function setupEventHandlers(ctx: GameContext): void {
 	// 手札選択のコールバック設定
 	// 方向パラメータを持つカードはクリック位置で方向が決まる
 	ctx.ui.handRenderer.setOnCardSelect(async (card, direction) => {
-		if (ctx.isAnimating) return false; // アニメーション中は無効
-		if (card.type === "wait") {
-			updateState(ctx, executeWait(ctx.state, card.id));
-		} else if (direction) {
-			// 方向が指定されている場合は即座に実行
-			if (card.type === "move") {
-				await handleMoveCardExecution(ctx, card.id, direction);
-			} else if (card.type === "attack") {
-				await handleAttackCardExecution(ctx, card.id, direction);
-			} else if (card.type === "strong_attack") {
-				await handleStrongAttackCardExecution(ctx, card.id, direction);
-			} else if (card.type === "rush") {
-				await handleRushCardExecution(ctx, card.id, direction);
+		// カードアクションアニメーション中の予約処理
+		if (ctx.isCardActionAnimating) {
+			// プレイヤーターン中のみ予約可能
+			if (ctx.state.turn !== "player" || ctx.state.screen !== "game") {
+				return false;
 			}
-		} else {
-			// 方向が指定されていない場合は方向選択UIを表示（フォールバック）
+			// 方向が必要なカードで方向が未指定の場合は予約不可
+			if (card.type !== "wait" && !direction) {
+				return false;
+			}
+			// 既に同一カードがキューに存在する場合は重複予約しない
+			if (ctx.cardQueue.some((entry) => entry.card.id === card.id)) {
+				return false;
+			}
+			// AP検証（キュー内の合計コストを考慮）
+			if (!canEnqueueCard(ctx.state.player.ap, ctx.cardQueue, card)) {
+				return false;
+			}
+			// キューに追加
+			ctx.cardQueue.push({ card, direction });
+			return false; // 消費アニメーションはスキップ（予約のみ）
+		}
+
+		// カードアクション以外のアニメーション中（フロア遷移等）は無効
+		if (ctx.isAnimating) return false;
+
+		// 方向が必要なカードで方向が未指定の場合は、方向選択UIを表示して処理を保留する
+		if (card.type !== "wait" && !direction) {
 			ctx.pendingCard = card;
 			ctx.ui.directionSelector.show();
+			return false;
 		}
+
+		// 通常実行フロー
+		await executeCard(ctx, card, direction);
+
+		// カード実行後にキューを消化
+		await processCardQueue(ctx);
 	});
 
 	// タイトル画面のコールバック設定
@@ -398,6 +488,8 @@ export function setupEventHandlers(ctx: GameContext): void {
 	// ターン終了ボタンのコールバック設定
 	ctx.ui.turnEndButton.setOnEndTurn(async () => {
 		if (ctx.isAnimating) return; // アニメーション中は無効
+		// ターン終了時にキューをクリア
+		clearCardQueue(ctx);
 		ctx.isAnimating = true;
 
 		try {
