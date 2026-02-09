@@ -108,56 +108,15 @@ export class RewardScreen {
 
 	/**
 	 * 報酬選択画面を描画
+	 * @param gameAreaWidth ゲームエリアの幅（ログエリアを除いた領域）
+	 * @param gameAreaHeight ゲームエリアの高さ
 	 */
-	render(choices: CardType[], screenWidth: number, screenHeight: number): void {
-		this.container.removeChildren();
-		this.cardContainers = [];
-		this.scrollContainer = null;
-		this.cancelButton = null;
-
-		// 半透明オーバーレイ（背面UIへのポインタ入力を吸収）
-		const overlay = new Graphics();
-		createOverlay(overlay, screenWidth, screenHeight);
-		this.container.addChild(overlay);
-
-		// タイトル
-		const title = new Text({
-			text: "カード報酬",
-			style: {
-				fontSize: 28,
-				fontFamily: "sans-serif",
-				fill: UI_COLOR_GOLD,
-				fontWeight: "bold",
-			},
-		});
-		title.anchor.set(0.5);
-		title.x = screenWidth / 2;
-		title.y = 40;
-		this.container.addChild(title);
-
-		// カードを横並びで表示
-		const totalWidth =
-			choices.length * REWARD_CARD_WIDTH +
-			(choices.length - 1) * REWARD_CARD_GAP;
-		const startX = (screenWidth - totalWidth) / 2;
-		const cardY = 80;
-
-		for (let i = 0; i < choices.length; i++) {
-			const cardX = startX + i * (REWARD_CARD_WIDTH + REWARD_CARD_GAP);
-			const cardContainer = this.createRewardCard(choices[i], cardX, cardY, i);
-			this.container.addChild(cardContainer);
-			this.cardContainers.push(cardContainer);
-		}
-	}
-
-	/**
-	 * 除去選択画面のデッキ一覧を描画
-	 */
-	renderRemoveSelection(
-		deckCards: Card[],
+	render(
+		choices: CardType[],
 		screenWidth: number,
 		screenHeight: number,
-		titleText = "除去するカードを選択",
+		gameAreaWidth?: number,
+		gameAreaHeight?: number,
 	): void {
 		this.container.removeChildren();
 		this.cardContainers = [];
@@ -169,29 +128,113 @@ export class RewardScreen {
 		createOverlay(overlay, screenWidth, screenHeight);
 		this.container.addChild(overlay);
 
+		// コンテンツ配置用のエリアサイズ（指定がなければ画面全体を使う）
+		const areaW = gameAreaWidth ?? screenWidth;
+		const areaH = gameAreaHeight ?? screenHeight;
+
+		// カードを横並びで表示
+		const totalCardsWidth =
+			choices.length * REWARD_CARD_WIDTH +
+			(choices.length - 1) * REWARD_CARD_GAP;
+
 		// タイトル
+		const titleFontSize = 28;
+		const titleToCardGap = 16;
+		const contentHeight = titleFontSize + titleToCardGap + REWARD_CARD_HEIGHT;
+
+		const contentStartY = (areaH - contentHeight) / 2;
+
+		const title = new Text({
+			text: "カード報酬",
+			style: {
+				fontSize: titleFontSize,
+				fontFamily: "sans-serif",
+				fill: UI_COLOR_GOLD,
+				fontWeight: "bold",
+			},
+		});
+		title.anchor.set(0.5);
+		title.x = areaW / 2;
+		title.y = contentStartY + titleFontSize / 2;
+		this.container.addChild(title);
+
+		const startX = (areaW - totalCardsWidth) / 2;
+		const cardY = contentStartY + titleFontSize + titleToCardGap;
+
+		for (let i = 0; i < choices.length; i++) {
+			const cardX = startX + i * (REWARD_CARD_WIDTH + REWARD_CARD_GAP);
+			const cardContainer = this.createRewardCard(choices[i], cardX, cardY, i);
+			this.container.addChild(cardContainer);
+			this.cardContainers.push(cardContainer);
+		}
+	}
+
+	/**
+	 * 除去選択画面のデッキ一覧を描画
+	 * @param gameAreaWidth ゲームエリアの幅（ログエリアを除いた領域）
+	 * @param gameAreaHeight ゲームエリアの高さ
+	 */
+	renderRemoveSelection(
+		deckCards: Card[],
+		screenWidth: number,
+		screenHeight: number,
+		titleText = "除去するカードを選択",
+		gameAreaWidth?: number,
+		gameAreaHeight?: number,
+	): void {
+		this.container.removeChildren();
+		this.cardContainers = [];
+		this.scrollContainer = null;
+		this.cancelButton = null;
+
+		// 半透明オーバーレイ（背面UIへのポインタ入力を吸収）
+		const overlay = new Graphics();
+		createOverlay(overlay, screenWidth, screenHeight);
+		this.container.addChild(overlay);
+
+		// コンテンツ配置用のエリアサイズ（指定がなければ画面全体を使う）
+		const areaW = gameAreaWidth ?? screenWidth;
+		const areaH = gameAreaHeight ?? screenHeight;
+
+		// タイトル
+		const titleFontSize = 24;
 		const title = new Text({
 			text: titleText,
 			style: {
-				fontSize: 24,
+				fontSize: titleFontSize,
 				fontFamily: "sans-serif",
 				fill: 0xff6644,
 				fontWeight: "bold",
 			},
 		});
 		title.anchor.set(0.5);
-		title.x = screenWidth / 2;
-		title.y = 30;
 		this.container.addChild(title);
 
-		// スクロール可能なカード一覧
-		const listStartY = 60;
-		const listX = (screenWidth - CARD_ROW_LIST_WIDTH) / 2;
+		// リストとボタンのサイズ計算
+		const listX = (areaW - CARD_ROW_LIST_WIDTH) / 2;
 		const totalListHeight =
 			deckCards.length === 0
 				? 0
 				: deckCards.length * CARD_ROW_HEIGHT +
 					(deckCards.length - 1) * CARD_ROW_GAP;
+		const visibleHeight = Math.min(REMOVE_LIST_MAX_HEIGHT, totalListHeight);
+
+		// コンテンツ全体の高さ（タイトル + gap + リスト + gap + ボタン）
+		const titleToListGap = 12;
+		const listToButtonGap = 10;
+		const contentHeight =
+			titleFontSize +
+			titleToListGap +
+			visibleHeight +
+			listToButtonGap +
+			BUTTON_HEIGHT;
+		const contentStartY = (areaH - contentHeight) / 2;
+
+		// タイトル位置
+		title.x = areaW / 2;
+		title.y = contentStartY + titleFontSize / 2;
+
+		const listStartY = contentStartY + titleFontSize + titleToListGap;
 
 		// スクロールコンテナ
 		this.scrollContainer = new Container();
@@ -207,7 +250,6 @@ export class RewardScreen {
 
 		// リスト表示領域をマスクで制限
 		// PixiJS v8ではマスクをディスプレイリストに追加せず参照のみ保持する
-		const visibleHeight = Math.min(REMOVE_LIST_MAX_HEIGHT, totalListHeight);
 		const maskGraphics = new Graphics();
 		maskGraphics.rect(listX, listStartY, CARD_ROW_LIST_WIDTH, visibleHeight);
 		maskGraphics.fill(0xffffff);
@@ -250,10 +292,10 @@ export class RewardScreen {
 		}
 
 		// キャンセルボタン
-		const cancelY = listStartY + visibleHeight + 10;
+		const cancelY = listStartY + visibleHeight + listToButtonGap;
 		this.cancelButton = this.createButton(
 			"スキップ",
-			screenWidth / 2 - BUTTON_WIDTH / 2,
+			areaW / 2 - BUTTON_WIDTH / 2,
 			cancelY,
 			UI_COLORS_BUTTON_SECONDARY.bg,
 			UI_COLORS_BUTTON_SECONDARY.border,
