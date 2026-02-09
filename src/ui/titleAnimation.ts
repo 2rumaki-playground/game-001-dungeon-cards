@@ -37,14 +37,16 @@ const BG_PARTICLE_COLORS = [0x4a8cca, 0x3a6a9a, 0x2a4a6a, 0x5a9cda];
  * 背景パーティクル設定を生成
  * @param screenWidth 画面幅
  * @param screenHeight 画面高さ
+ * @param originY パーティクル発生Y座標（省略時は画面中央）
  */
 export function createBgParticleConfig(
 	screenWidth: number,
 	screenHeight: number,
+	originY?: number,
 ): ParticleConfig {
 	return {
 		count: 8,
-		origin: { x: screenWidth / 2, y: screenHeight / 2 },
+		origin: { x: screenWidth / 2, y: originY ?? screenHeight / 2 },
 		color: BG_PARTICLE_COLORS,
 		speed: { min: 0.005, max: 0.02 },
 		life: { min: 3000, max: 6000 },
