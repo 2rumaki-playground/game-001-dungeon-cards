@@ -15,6 +15,12 @@ import {
 	RARITY_COLORS,
 } from "./cardConstants";
 import {
+	CARD_ROW_GAP,
+	CARD_ROW_HEIGHT,
+	CARD_ROW_LIST_WIDTH,
+	createCardListRow,
+} from "./cardRowRenderer";
+import {
 	createOverlay,
 	drawRoundedRect,
 	makeInteractive,
@@ -60,8 +66,6 @@ const REMOVE_PARTICLE_COLORS = [0xff4444, 0xff6644, 0xcc2222];
 const REMOVE_PARTICLE_COUNT = 15;
 
 /** 除去モードのカード一覧設定 */
-const REMOVE_CARD_HEIGHT = 28;
-const REMOVE_CARD_GAP = 4;
 const REMOVE_LIST_MAX_HEIGHT = 300;
 
 /**
@@ -182,21 +186,20 @@ export class RewardScreen {
 
 		// スクロール可能なカード一覧
 		const listStartY = 60;
-		const listWidth = 240;
-		const listX = (screenWidth - listWidth) / 2;
+		const listX = (screenWidth - CARD_ROW_LIST_WIDTH) / 2;
 		const totalListHeight =
 			deckCards.length === 0
 				? 0
-				: deckCards.length * REMOVE_CARD_HEIGHT +
-					(deckCards.length - 1) * REMOVE_CARD_GAP;
+				: deckCards.length * CARD_ROW_HEIGHT +
+					(deckCards.length - 1) * CARD_ROW_GAP;
 
 		// スクロールコンテナ
 		this.scrollContainer = new Container();
 		const scrollContainer = this.scrollContainer;
 		for (let i = 0; i < deckCards.length; i++) {
 			const card = deckCards[i];
-			const y = i * (REMOVE_CARD_HEIGHT + REMOVE_CARD_GAP);
-			const item = this.createRemoveCardItem(card, 0, y, listWidth);
+			const y = i * (CARD_ROW_HEIGHT + CARD_ROW_GAP);
+			const item = this.createRemoveCardItem(card, 0, y, CARD_ROW_LIST_WIDTH);
 			scrollContainer.addChild(item);
 		}
 		scrollContainer.x = listX;
@@ -206,7 +209,7 @@ export class RewardScreen {
 		// PixiJS v8ではマスクをディスプレイリストに追加せず参照のみ保持する
 		const visibleHeight = Math.min(REMOVE_LIST_MAX_HEIGHT, totalListHeight);
 		const maskGraphics = new Graphics();
-		maskGraphics.rect(listX, listStartY, listWidth, visibleHeight);
+		maskGraphics.rect(listX, listStartY, CARD_ROW_LIST_WIDTH, visibleHeight);
 		maskGraphics.fill(0xffffff);
 		scrollContainer.mask = maskGraphics;
 		this.container.addChild(scrollContainer);
@@ -403,42 +406,16 @@ export class RewardScreen {
 		y: number,
 		width: number,
 	): Container {
-		const item = new Container();
+		const item = createCardListRow({ cardType: card.type, width });
 		item.x = x;
 		item.y = y;
-
-		// 背景
-		const bg = new Graphics();
-		drawRoundedRect(
-			bg,
-			width,
-			REMOVE_CARD_HEIGHT,
-			4,
-			CARD_COLORS[card.type].bg,
-			{ color: CARD_COLORS[card.type].border, width: 1 },
-		);
-		item.addChild(bg);
-
-		// カード名
-		const nameLabel = new Text({
-			text: `${CARD_TYPE_SYMBOL[card.type]} ${CARD_TYPE_NAME[card.type]}`,
-			style: {
-				fontSize: 13,
-				fontFamily: "sans-serif",
-				fill: 0xffffff,
-			},
-		});
-		nameLabel.anchor.set(0, 0.5);
-		nameLabel.x = 8;
-		nameLabel.y = REMOVE_CARD_HEIGHT / 2;
-		item.addChild(nameLabel);
 
 		// 除去ボタン
 		const removeBtnWidth = 50;
 		const removeBtnHeight = 22;
 		const removeBtn = new Container();
 		removeBtn.x = width - removeBtnWidth - 6;
-		removeBtn.y = (REMOVE_CARD_HEIGHT - removeBtnHeight) / 2;
+		removeBtn.y = (CARD_ROW_HEIGHT - removeBtnHeight) / 2;
 
 		const removeBg = new Graphics();
 		drawRoundedRect(removeBg, removeBtnWidth, removeBtnHeight, 4, 0x882222, {
@@ -601,7 +578,7 @@ export class RewardScreen {
 		// アイテム中心のグローバル座標をパーティクルシステムのローカル座標に変換
 		const globalPos = itemContainer.toGlobal({
 			x: itemWidth / 2,
-			y: REMOVE_CARD_HEIGHT / 2,
+			y: CARD_ROW_HEIGHT / 2,
 		});
 		const particleOrigin = this.particleSystem
 			? this.particleSystem.getContainer().toLocal(globalPos)
