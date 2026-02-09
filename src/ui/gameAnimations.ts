@@ -32,6 +32,7 @@ import { getMapPixelSize, gridToCenterPixel } from "./coordinates";
 import { applyState, render, updateState } from "./gameRenderer";
 import { HAND_AREA_HEIGHT } from "./layout";
 import { relayoutUI } from "./relayout";
+import { createConfettiConfig, createGlowConfig } from "./victoryParticles";
 
 /**
  * 現在のマップサイズから画面サイズを計算
@@ -568,6 +569,9 @@ export async function updateStateWithMissAnimation(
  * 勝利画面を表示し、ユーザーの選択を待機する
  * @returns "continue" で次フロアへ、"title" でタイトルに戻る
  */
+/** 紙吹雪の繰り返し発射間隔（ミリ秒） */
+const CONFETTI_INTERVAL = 3000;
+
 function showVictoryScreen(
 	ctx: GameContext,
 	state: GameState,
@@ -577,9 +581,27 @@ function showVictoryScreen(
 		applyState(ctx, victoryState);
 		render(ctx);
 
-		ctx.ui.victoryScreen.setOnContinue(() => {
+		const { width: screenWidth, height: screenHeight } = getScreenSize(ctx);
+		const ps = ctx.ui.victoryScreen.getParticleSystem();
+
+		// パーティクル発射: 光の粒子（初回のみ）+ 紙吹雪（繰り返し）
+		if (ps) {
+			ps.emit(createGlowConfig(screenWidth, screenHeight));
+			ps.emit(createConfettiConfig(screenWidth, screenHeight));
+		}
+		const confettiTimer = setInterval(() => {
+			ps?.emit(createConfettiConfig(screenWidth, screenHeight));
+		}, CONFETTI_INTERVAL);
+
+		const cleanup = (): void => {
+			clearInterval(confettiTimer);
+			ps?.clear();
 			ctx.ui.victoryScreen.setOnContinue(() => {});
 			ctx.ui.victoryScreen.setOnReturnToTitle(() => {});
+		};
+
+		ctx.ui.victoryScreen.setOnContinue(() => {
+			cleanup();
 			// ゲーム画面に戻す
 			const continueState: GameState = { ...state, screen: "game" };
 			applyState(ctx, continueState);
@@ -587,8 +609,7 @@ function showVictoryScreen(
 		});
 
 		ctx.ui.victoryScreen.setOnReturnToTitle(async () => {
-			ctx.ui.victoryScreen.setOnContinue(() => {});
-			ctx.ui.victoryScreen.setOnReturnToTitle(() => {});
+			cleanup();
 			deleteSaveData();
 			await ctx.ui.screenTransition.fadeTransition(() => {
 				updateState(ctx, returnToTitle(ctx.state));
