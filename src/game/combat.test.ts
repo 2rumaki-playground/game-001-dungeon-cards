@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
+	CLEAR_FLOOR,
 	ENEMY_ATTACK_DAMAGE,
 	ENEMY_HP,
+	ENEMY_PARAMS,
 	MAX_AP,
 	PLAYER_ATTACK_DAMAGE,
 	PLAYER_INITIAL_HP,
@@ -170,6 +172,38 @@ describe("applyDamageToEnemy", () => {
 
 		const result = applyDamageToEnemy(state, "enemy-1", PLAYER_ATTACK_DAMAGE);
 		expect(result.defeatedEnemyCount).toBe(1);
+	});
+
+	it("20Fでボス撃破時にisClearedがtrueになる", () => {
+		const enemies: Enemy[] = [
+			{
+				id: "enemy-1",
+				type: "boss",
+				position: { x: 4, y: 3 },
+				hp: 1,
+				maxHp: ENEMY_PARAMS.boss.hp,
+			},
+		];
+		const state = createTestState({ enemies, floor: CLEAR_FLOOR });
+		const result = applyDamageToEnemy(state, "enemy-1", PLAYER_ATTACK_DAMAGE);
+
+		expect(result.isCleared).toBe(true);
+	});
+
+	it("20F以外でボス撃破してもisClearedはfalseのまま", () => {
+		const enemies: Enemy[] = [
+			{
+				id: "enemy-1",
+				type: "boss",
+				position: { x: 4, y: 3 },
+				hp: 1,
+				maxHp: ENEMY_PARAMS.boss.hp,
+			},
+		];
+		const state = createTestState({ enemies, floor: 10 });
+		const result = applyDamageToEnemy(state, "enemy-1", PLAYER_ATTACK_DAMAGE);
+
+		expect(result.isCleared).toBe(false);
 	});
 
 	it("ダメージのみ（非撃破）ではdefeatedEnemyCountが変わらない", () => {

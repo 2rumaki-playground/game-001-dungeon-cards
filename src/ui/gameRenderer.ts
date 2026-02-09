@@ -35,6 +35,7 @@ export function updateState(ctx: GameContext, newState: GameState): void {
 function renderTitleScreen(ctx: GameContext): void {
 	ctx.ui.titleScreen.show();
 	ctx.ui.gameOverScreen.hide();
+	ctx.ui.victoryScreen.hide();
 	ctx.ui.statusBar.hide();
 	ctx.ui.turnEndButton.hide();
 	ctx.ui.deckViewer.hideButton();
@@ -54,8 +55,13 @@ export function renderGameScreen(
 ): void {
 	ctx.ui.titleScreen.hide();
 	ctx.ui.gameOverScreen.hide();
+	ctx.ui.victoryScreen.hide();
 	ctx.ui.statusBar.show();
-	ctx.ui.statusBar.render(ctx.state.player, ctx.state.floor);
+	ctx.ui.statusBar.render(
+		ctx.state.player,
+		ctx.state.floor,
+		ctx.state.isCleared,
+	);
 	ctx.ui.mapRenderer.render(
 		ctx.state.map,
 		ctx.state.player,
@@ -78,6 +84,7 @@ export function renderGameScreen(
  */
 function renderGameOverScreen(ctx: GameContext): void {
 	ctx.ui.titleScreen.hide();
+	ctx.ui.victoryScreen.hide();
 	ctx.ui.statusBar.hide();
 	ctx.ui.turnEndButton.hide();
 	ctx.ui.deckViewer.hideButton();
@@ -91,6 +98,27 @@ function renderGameOverScreen(ctx: GameContext): void {
 	const height = size.height + HAND_AREA_HEIGHT + STATUS_BAR_HEIGHT;
 	ctx.ui.gameOverScreen.render(ctx.state.floor, width, height);
 	ctx.ui.gameOverScreen.show();
+}
+
+/**
+ * 勝利画面の描画
+ */
+function renderVictoryScreen(ctx: GameContext): void {
+	ctx.ui.titleScreen.hide();
+	ctx.ui.gameOverScreen.hide();
+	ctx.ui.statusBar.hide();
+	ctx.ui.turnEndButton.hide();
+	ctx.ui.deckViewer.hideButton();
+	ctx.ui.actionLogRenderer.hide();
+	ctx.ui.mapRenderer.clear();
+	ctx.ui.handRenderer.clear();
+	const mapWidth = ctx.state.map[0].length;
+	const mapHeight = ctx.state.map.length;
+	const size = getMapPixelSize(mapWidth, mapHeight);
+	const width = size.width + LOG_AREA_GAP + ctx.ui.actionLogRenderer.getWidth();
+	const height = size.height + HAND_AREA_HEIGHT + STATUS_BAR_HEIGHT;
+	ctx.ui.victoryScreen.render(ctx.state.floor, width, height);
+	ctx.ui.victoryScreen.show();
 }
 
 /**
@@ -117,6 +145,7 @@ export function render(
 ): void {
 	ctx.ui.rewardScreen.hide();
 	ctx.ui.deckViewer.hide();
+	ctx.ui.victoryScreen.hide();
 	switch (ctx.state.screen) {
 		case "title":
 			renderTitleScreen(ctx);
@@ -129,6 +158,9 @@ export function render(
 			break;
 		case "reward":
 			renderRewardScreen(ctx);
+			break;
+		case "victory":
+			renderVictoryScreen(ctx);
 			break;
 	}
 }

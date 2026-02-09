@@ -115,6 +115,7 @@ export function createTitleScreenState(seed?: number): GameState {
 		rng: new RNG(seed),
 		defeatedEnemyCount: 0,
 		rewardState: null,
+		isCleared: false,
 	};
 }
 
@@ -138,6 +139,7 @@ export function createInitialGameState(seed?: number): GameState {
 		rng,
 		defeatedEnemyCount: 0,
 		rewardState: null,
+		isCleared: false,
 	};
 }
 

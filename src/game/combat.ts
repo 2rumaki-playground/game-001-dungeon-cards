@@ -11,6 +11,7 @@ import {
 	updateEnemy,
 	updatePlayer,
 } from "./state";
+import { checkVictory } from "./victory";
 
 /**
  * HP0以下で撃破判定
@@ -49,6 +50,7 @@ export function applyDamageToEnemy(
 			rng: next.rng.clone(),
 			defeatedEnemyCount: next.defeatedEnemyCount + 1,
 		};
+		next = checkVictory(next, target.type);
 		return addActionLog(next, "敵を倒した");
 	}
 

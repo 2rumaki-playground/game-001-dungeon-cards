@@ -22,3 +22,4 @@ export * from "./titleAnimation";
 export * from "./titleScreen";
 export * from "./turnBanner";
 export * from "./turnEndButton";
+export * from "./victoryScreen";

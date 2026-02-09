@@ -182,6 +182,45 @@ describe("storage", () => {
 		expect(loaded?.defeatedEnemyCount).toBe(getEnemyCount(INITIAL_FLOOR));
 	});
 
+	it("should fallback isCleared to false for old save data", () => {
+		const state = createTitleScreenState(42);
+		const saveData = {
+			...state,
+			screen: "game",
+			rng: state.rng.serialize(),
+			// isCleared フィールドなし（旧セーブデータ）
+		};
+		// isCleared プロパティを明示的に削除
+		const { isCleared: _, ...saveDataWithoutIsCleared } = saveData as Record<
+			string,
+			unknown
+		>;
+		localStorageMock.setItem(
+			"dungeon-cards-save",
+			JSON.stringify(saveDataWithoutIsCleared),
+		);
+
+		const loaded = loadGame();
+		expect(loaded).not.toBeNull();
+		expect(loaded?.isCleared).toBe(false);
+	});
+
+	it("should restore victory screen to game screen", () => {
+		const state = createTitleScreenState(42);
+		const saveData = {
+			...state,
+			screen: "victory",
+			isCleared: true,
+			rng: state.rng.serialize(),
+		};
+		localStorageMock.setItem("dungeon-cards-save", JSON.stringify(saveData));
+
+		const loaded = loadGame();
+		expect(loaded).not.toBeNull();
+		expect(loaded?.screen).toBe("game");
+		expect(loaded?.isCleared).toBe(true);
+	});
+
 	it("should return null if screen is invalid", () => {
 		const validState = createTitleScreenState();
 		const invalidState = {

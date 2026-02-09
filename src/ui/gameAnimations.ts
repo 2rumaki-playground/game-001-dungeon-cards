@@ -14,19 +14,22 @@ import {
 	createRewardState,
 	getTotalDeckSize,
 	removeCardFromDeck,
+	returnToTitle,
+	shouldShowVictoryScreen,
 	shouldTriggerCardRemoval,
 	transitionFloor,
 } from "../game";
 import type { GameContext } from "../gameContext";
 import type { CardType, Direction, GameState, Position } from "../types";
 import { DIRECTION_DELTA } from "../types";
+import { deleteSaveData, hasSaveData } from "../utils/storage";
 import {
 	type AttackCardType,
 	createDefeatParticleConfig,
 	getAttackParticleConfig,
 } from "./battleParticles";
 import { getMapPixelSize, gridToCenterPixel } from "./coordinates";
-import { applyState, render } from "./gameRenderer";
+import { applyState, render, updateState } from "./gameRenderer";
 import { HAND_AREA_HEIGHT } from "./layout";
 import { relayoutUI } from "./relayout";
 
@@ -315,10 +318,16 @@ export async function updateStateWithStairsAnimation(
 		// 3. 報酬フロー（撃破数0ならスキップ）
 		const afterReward = await executeRewardFlow(ctx, afterRemoval);
 
-		// 4. 階層遷移
+		// 4. 勝利画面（クリア階層のボス撃破済みの場合）
+		if (shouldShowVictoryScreen(afterReward)) {
+			const victoryResult = await showVictoryScreen(ctx, afterReward);
+			if (victoryResult === "title") return;
+		}
+
+		// 5. 階層遷移
 		const transitioned = transitionFloor(afterReward);
 
-		// 5. フェードトランジション（暗転中に階層バナー表示 + 状態更新）
+		// 6. フェードトランジション（暗転中に階層バナー表示 + 状態更新）
 		await ctx.ui.screenTransition.fadeTransition(async () => {
 			await ctx.ui.floorBanner.show(transitioned.floor);
 			applyState(ctx, transitioned);
@@ -327,7 +336,7 @@ export async function updateStateWithStairsAnimation(
 			await ctx.ui.floorBanner.hide();
 		});
 
-		// 6. フェードイン後にシャッフル演出→手札配布アニメーション
+		// 7. フェードイン後にシャッフル演出→手札配布アニメーション
 		// 階層遷移時は全デッキリシャッフルが行われるため常にシャッフル演出を表示
 		await ctx.ui.handRenderer.animateShuffle();
 		await ctx.ui.handRenderer.renderWithAnimation(
@@ -410,10 +419,16 @@ export async function animateRushWithStairs(
 		// 4. 報酬フロー
 		const afterReward = await executeRewardFlow(ctx, afterRemoval);
 
-		// 5. 階層遷移
+		// 5. 勝利画面（クリア階層（CLEAR_FLOOR）のボス撃破済みの場合）
+		if (shouldShowVictoryScreen(afterReward)) {
+			const victoryResult = await showVictoryScreen(ctx, afterReward);
+			if (victoryResult === "title") return;
+		}
+
+		// 6. 階層遷移
 		const transitioned = transitionFloor(afterReward);
 
-		// 6. フェードトランジション（暗転中に階層バナー表示 + 状態更新）
+		// 7. フェードトランジション（暗転中に階層バナー表示 + 状態更新）
 		await ctx.ui.screenTransition.fadeTransition(async () => {
 			await ctx.ui.floorBanner.show(transitioned.floor);
 			applyState(ctx, transitioned);
@@ -422,7 +437,7 @@ export async function animateRushWithStairs(
 			await ctx.ui.floorBanner.hide();
 		});
 
-		// 7. フェードイン後にシャッフル演出→手札配布アニメーション
+		// 8. フェードイン後にシャッフル演出→手札配布アニメーション
 		// 階層遷移時は全デッキリシャッフルが行われるため常にシャッフル演出を表示
 		await ctx.ui.handRenderer.animateShuffle();
 		await ctx.ui.handRenderer.renderWithAnimation(
@@ -547,4 +562,40 @@ export async function updateStateWithMissAnimation(
 	} finally {
 		ctx.isAnimating = false;
 	}
+}
+
+/**
+ * 勝利画面を表示し、ユーザーの選択を待機する
+ * @returns "continue" で次フロアへ、"title" でタイトルに戻る
+ */
+function showVictoryScreen(
+	ctx: GameContext,
+	state: GameState,
+): Promise<"continue" | "title"> {
+	return new Promise((resolve) => {
+		const victoryState: GameState = { ...state, screen: "victory" };
+		applyState(ctx, victoryState);
+		render(ctx);
+
+		ctx.ui.victoryScreen.setOnContinue(() => {
+			ctx.ui.victoryScreen.setOnContinue(() => {});
+			ctx.ui.victoryScreen.setOnReturnToTitle(() => {});
+			// ゲーム画面に戻す
+			const continueState: GameState = { ...state, screen: "game" };
+			applyState(ctx, continueState);
+			resolve("continue");
+		});
+
+		ctx.ui.victoryScreen.setOnReturnToTitle(async () => {
+			ctx.ui.victoryScreen.setOnContinue(() => {});
+			ctx.ui.victoryScreen.setOnReturnToTitle(() => {});
+			deleteSaveData();
+			await ctx.ui.screenTransition.fadeTransition(() => {
+				updateState(ctx, returnToTitle(ctx.state));
+				const screen = getScreenSize(ctx);
+				ctx.ui.titleScreen.render(screen.width, screen.height, hasSaveData());
+			});
+			resolve("title");
+		});
+	});
 }

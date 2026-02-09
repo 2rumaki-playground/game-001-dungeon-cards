@@ -25,6 +25,7 @@ import {
 	TitleScreen,
 	TurnBanner,
 	TurnEndButton,
+	VictoryScreen,
 } from "./ui";
 import { setupEventHandlers } from "./ui/eventHandlers";
 import { render, updateState } from "./ui/gameRenderer";
@@ -114,6 +115,9 @@ function initializeUIComponents(
 	rewardScreen.setParticleSystem(particleSystem);
 	app.stage.addChild(rewardScreen.getContainer());
 
+	const victoryScreen = new VictoryScreen();
+	app.stage.addChild(victoryScreen.getContainer());
+
 	const totalWidth =
 		mapSize.width + LOG_AREA_GAP + actionLogRenderer.getWidth();
 	const screenTransition = new ScreenTransition(totalWidth, totalHeight);
@@ -137,6 +141,7 @@ function initializeUIComponents(
 		screenTransition,
 		floorBanner,
 		particleSystem,
+		victoryScreen,
 	};
 }
 
