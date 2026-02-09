@@ -149,19 +149,21 @@ function getTileColor(type: TileType): number {
 function drawTrapIcon(g: Graphics, px: number, py: number): void {
 	const cx = px + CELL_SIZE / 2;
 	const cy = py + CELL_SIZE / 2;
-	const color = COLORS.trap;
+	// タイル背景（COLORS.trap）と同色だと alpha を変えても視認できないため、
+	// 波紋は背景とコントラストのある白で描画する
+	const rippleColor = 0xffffff;
 
 	// 外側の波紋
 	g.circle(cx, cy, 20);
-	g.fill({ color, alpha: 0.3 });
+	g.fill({ color: rippleColor, alpha: 0.3 });
 
 	// 中間の波紋
 	g.circle(cx, cy, 13);
-	g.fill({ color, alpha: 0.4 });
+	g.fill({ color: rippleColor, alpha: 0.4 });
 
 	// 内側の波紋
 	g.circle(cx, cy, 6);
-	g.fill({ color, alpha: 0.5 });
+	g.fill({ color: rippleColor, alpha: 0.5 });
 }
 
 /**
