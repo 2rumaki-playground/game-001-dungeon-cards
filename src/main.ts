@@ -116,7 +116,6 @@ function initializeUIComponents(
 	app.stage.addChild(rewardScreen.getContainer());
 
 	const victoryScreen = new VictoryScreen();
-	victoryScreen.setParticleSystem(particleSystem);
 	app.stage.addChild(victoryScreen.getContainer());
 
 	const totalWidth =

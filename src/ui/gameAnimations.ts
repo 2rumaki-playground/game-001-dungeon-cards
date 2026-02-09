@@ -582,7 +582,7 @@ function showVictoryScreen(
 		render(ctx);
 
 		const { width: screenWidth, height: screenHeight } = getScreenSize(ctx);
-		const ps = ctx.ui.victoryScreen.getParticleSystem();
+		const ps = ctx.ui.particleSystem;
 
 		// パーティクル発射: 光の粒子（初回のみ）+ 紙吹雪（繰り返し）
 		if (ps) {

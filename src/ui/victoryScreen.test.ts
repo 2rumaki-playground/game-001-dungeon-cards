@@ -103,12 +103,4 @@ describe("VictoryScreen", () => {
 			expect(callback).not.toHaveBeenCalled();
 		});
 	});
-
-	describe("setParticleSystem", () => {
-		it("ParticleSystemを設定できる", () => {
-			const mockPs = { emit: vi.fn(), getContainer: vi.fn(), clear: vi.fn() };
-			// setParticleSystemが存在し、エラーなく呼び出せることを確認
-			expect(() => screen.setParticleSystem(mockPs as never)).not.toThrow();
-		});
-	});
 });

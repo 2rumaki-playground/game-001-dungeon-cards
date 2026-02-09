@@ -9,7 +9,6 @@ import {
 	drawRoundedRect,
 	makeInteractive,
 } from "./graphicsHelpers";
-import type { ParticleSystem } from "./particleSystem";
 import {
 	UI_COLORS_BUTTON_PRIMARY,
 	UI_COLORS_BUTTON_SECONDARY,
@@ -33,7 +32,6 @@ export class VictoryScreen {
 	private container: Container;
 	private onContinue: (() => void) | null = null;
 	private onReturnToTitle: (() => void) | null = null;
-	private particleSystem: ParticleSystem | null = null;
 
 	constructor() {
 		this.container = new Container();
@@ -44,20 +42,6 @@ export class VictoryScreen {
 	 */
 	getContainer(): Container {
 		return this.container;
-	}
-
-	/**
-	 * ParticleSystemを設定
-	 */
-	setParticleSystem(particleSystem: ParticleSystem): void {
-		this.particleSystem = particleSystem;
-	}
-
-	/**
-	 * ParticleSystemを取得
-	 */
-	getParticleSystem(): ParticleSystem | null {
-		return this.particleSystem;
 	}
 
 	/**
