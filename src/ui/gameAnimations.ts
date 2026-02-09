@@ -340,6 +340,7 @@ async function executeFloorTransitionFlow(
 	baseState: GameState,
 ): Promise<void> {
 	const { width: screenWidth, height: screenHeight } = getScreenSize(ctx);
+	const gameArea = getGameAreaSize(ctx);
 
 	// 1. カード除去イベント（報酬フローの前）
 	const afterRemoval = await executeCardRemovalEvent(
@@ -347,6 +348,7 @@ async function executeFloorTransitionFlow(
 		baseState,
 		screenWidth,
 		screenHeight,
+		gameArea,
 	);
 
 	// 2. 報酬フロー（撃破数0ならスキップ）
