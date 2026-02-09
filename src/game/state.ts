@@ -122,18 +122,25 @@ export function createTitleScreenState(seed?: number): GameState {
 /**
  * ゲーム画面の初期状態を作成
  */
-export function createInitialGameState(seed?: number): GameState {
+export function createInitialGameState(
+	seed?: number,
+	floor: number = INITIAL_FLOOR,
+): GameState {
 	const rng = new RNG(seed);
-	const { map, player, enemies } = generateMapPlacement(rng, INITIAL_FLOOR);
+	const normalizedFloor = Number.isFinite(floor)
+		? Math.floor(floor)
+		: INITIAL_FLOOR;
+	const safeFloor = Math.max(INITIAL_FLOOR, normalizedFloor);
+	const { map, player, enemies } = generateMapPlacement(rng, safeFloor);
 	const initialPlayer = createInitialPlayer();
 
 	return {
 		screen: "game",
 		turn: "player",
-		floor: INITIAL_FLOOR,
+		floor: safeFloor,
 		map,
 		player: { ...initialPlayer, position: player },
-		enemies: createEnemiesForFloor(enemies, INITIAL_FLOOR),
+		enemies: createEnemiesForFloor(enemies, safeFloor),
 		deck: createEmptyDeckState(),
 		actionLog: [],
 		rng,
@@ -148,6 +155,19 @@ export function createInitialGameState(seed?: number): GameState {
  */
 export function startNewGame(state: GameState): GameState {
 	const gameState = createInitialGameState(state.rng.seed);
+	const deck = createInitialDeckState(gameState.rng);
+	const deckWithHand = drawCards(deck, gameState.rng);
+	return { ...gameState, deck: deckWithHand };
+}
+
+/**
+ * 指定階層から新規ゲームを開始（デバッグ用）
+ */
+export function startNewGameAtFloor(
+	state: GameState,
+	floor: number,
+): GameState {
+	const gameState = createInitialGameState(state.rng.seed, floor);
 	const deck = createInitialDeckState(gameState.rng);
 	const deckWithHand = drawCards(deck, gameState.rng);
 	return { ...gameState, deck: deckWithHand };
