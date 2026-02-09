@@ -13,6 +13,7 @@ import type {
 	GameOverScreen,
 	HandRenderer,
 	MapRenderer,
+	NextFloorButton,
 	ParticleSystem,
 	RewardScreen,
 	ScreenTransition,
@@ -34,6 +35,7 @@ export interface UIComponents {
 	handRenderer: HandRenderer;
 	directionSelector: DirectionSelector;
 	turnEndButton: TurnEndButton;
+	nextFloorButton: NextFloorButton;
 	deckViewer: DeckViewer;
 	actionLogRenderer: ActionLogRenderer;
 	turnBanner: TurnBanner;

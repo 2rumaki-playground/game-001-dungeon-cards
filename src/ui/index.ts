@@ -13,6 +13,7 @@ export * from "./gameOverScreen";
 export * from "./graphicsHelpers";
 export * from "./handRenderer";
 export * from "./mapRenderer";
+export * from "./nextFloorButton";
 export * from "./particleLogic";
 export * from "./particleSystem";
 export * from "./rewardScreen";

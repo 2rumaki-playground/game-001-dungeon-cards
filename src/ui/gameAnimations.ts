@@ -58,6 +58,31 @@ export function getScreenSize(ctx: GameContext): {
 }
 
 /**
+ * ゲームエリア（ログエリアを除いた領域）のサイズを計算
+ */
+export function getGameAreaSize(ctx: GameContext): {
+	width: number;
+	height: number;
+} {
+	const mapWidth = ctx.state.map[0]?.length ?? 0;
+	const mapHeight = ctx.state.map.length;
+	if (mapWidth === 0 || mapHeight === 0) {
+		const screenSize = getScreenSize(ctx);
+		const logWidth = ctx.ui.actionLogRenderer.getWidth();
+		const gameWidth = Math.max(0, screenSize.width - LOG_AREA_GAP - logWidth);
+		return {
+			width: gameWidth,
+			height: screenSize.height,
+		};
+	}
+	const mapPixelSize = getMapPixelSize(mapWidth, mapHeight);
+	return {
+		width: mapPixelSize.width,
+		height: mapPixelSize.height + HAND_AREA_HEIGHT + STATUS_BAR_HEIGHT,
+	};
+}
+
+/**
  * ゲーム状態を更新してプレイヤー移動アニメーション付きで再描画
  */
 export async function updateStateWithMoveAnimation(
@@ -119,6 +144,7 @@ async function executeRewardFlow(
 	render(ctx);
 
 	const { width: screenWidth, height: screenHeight } = getScreenSize(ctx);
+	const gameArea = getGameAreaSize(ctx);
 
 	const needsReplacement = getTotalDeckSize(current.deck) >= DECK_MAX_SIZE;
 
@@ -131,6 +157,8 @@ async function executeRewardFlow(
 			current,
 			screenWidth,
 			screenHeight,
+			undefined,
+			gameArea,
 		);
 		if (removeResult !== null) {
 			const beforeRemove = current;
@@ -141,6 +169,7 @@ async function executeRewardFlow(
 				result.rewardState.choices,
 				screenWidth,
 				screenHeight,
+				gameArea,
 			);
 			if (selectedIndex !== null) {
 				current = addRewardCardToDeck(
@@ -159,6 +188,7 @@ async function executeRewardFlow(
 			result.rewardState.choices,
 			screenWidth,
 			screenHeight,
+			gameArea,
 		);
 		if (selectedIndex !== null) {
 			current = addRewardCardToDeck(
@@ -183,9 +213,16 @@ function showRewardCardSelection(
 	choices: CardType[],
 	screenWidth: number,
 	screenHeight: number,
+	gameArea?: { width: number; height: number },
 ): Promise<number | null> {
 	return new Promise((resolve) => {
-		ctx.ui.rewardScreen.render(choices, screenWidth, screenHeight);
+		ctx.ui.rewardScreen.render(
+			choices,
+			screenWidth,
+			screenHeight,
+			gameArea?.width,
+			gameArea?.height,
+		);
 		ctx.ui.rewardScreen.show();
 
 		ctx.ui.rewardScreen.setOnCardSelect(async (index) => {
@@ -216,6 +253,7 @@ function showRemoveCardSelection(
 	screenWidth: number,
 	screenHeight: number,
 	title?: string,
+	gameArea?: { width: number; height: number },
 ): Promise<string | null> {
 	return new Promise((resolve) => {
 		const allCards = [
@@ -229,6 +267,8 @@ function showRemoveCardSelection(
 			screenWidth,
 			screenHeight,
 			title,
+			gameArea?.width,
+			gameArea?.height,
 		);
 		ctx.ui.rewardScreen.show();
 
@@ -254,6 +294,7 @@ async function executeCardRemovalEvent(
 	state: GameState,
 	screenWidth: number,
 	screenHeight: number,
+	gameArea?: { width: number; height: number },
 ): Promise<GameState> {
 	const { triggered, updatedState } = shouldTriggerCardRemoval(state);
 	if (!triggered) return updatedState;
@@ -273,6 +314,7 @@ async function executeCardRemovalEvent(
 		screenWidth,
 		screenHeight,
 		"カード除去イベント",
+		gameArea,
 	);
 
 	let resultState: GameState;
@@ -290,6 +332,55 @@ async function executeCardRemovalEvent(
 }
 
 /**
+ * 階層遷移の共通フロー
+ * カード除去→報酬→勝利判定→階層遷移→フェード→手札配布を実行する
+ */
+async function executeFloorTransitionFlow(
+	ctx: GameContext,
+	baseState: GameState,
+): Promise<void> {
+	const { width: screenWidth, height: screenHeight } = getScreenSize(ctx);
+	const gameArea = getGameAreaSize(ctx);
+
+	// 1. カード除去イベント（報酬フローの前）
+	const afterRemoval = await executeCardRemovalEvent(
+		ctx,
+		baseState,
+		screenWidth,
+		screenHeight,
+		gameArea,
+	);
+
+	// 2. 報酬フロー（撃破数0ならスキップ）
+	const afterReward = await executeRewardFlow(ctx, afterRemoval);
+
+	// 3. 勝利画面（クリア階層のボス撃破済みの場合）
+	if (shouldShowVictoryScreen(afterReward)) {
+		const victoryResult = await showVictoryScreen(ctx, afterReward);
+		if (victoryResult === "title") return;
+	}
+
+	// 4. 階層遷移
+	const transitioned = transitionFloor(afterReward);
+
+	// 5. フェードトランジション（暗転中に階層バナー表示 + 状態更新）
+	await ctx.ui.screenTransition.fadeTransition(async () => {
+		await ctx.ui.floorBanner.show(transitioned.floor);
+		applyState(ctx, transitioned);
+		relayoutUI(ctx);
+		render(ctx, true);
+		await ctx.ui.floorBanner.hide();
+	});
+
+	// 6. フェードイン後に手札配布アニメーション
+	await ctx.ui.handRenderer.renderWithAnimation(
+		ctx.state.deck.hand,
+		ctx.state.player.ap,
+		transitioned.deck.hand.length,
+	);
+}
+
+/**
  * 階段への移動アニメーション後に報酬フロー→階層遷移する
  */
 export async function updateStateWithStairsAnimation(
@@ -301,48 +392,26 @@ export async function updateStateWithStairsAnimation(
 	ctx.isAnimating = true;
 
 	try {
-		// 1. 現在のマップ上で階段マスへ移動アニメーション
 		await ctx.ui.mapRenderer.animatePlayerMove(stairsGridPos);
-
 		applyState(ctx, stairsState);
+		await executeFloorTransitionFlow(ctx, stairsState);
+	} finally {
+		ctx.isAnimating = false;
+	}
+}
 
-		const { width: screenWidth, height: screenHeight } = getScreenSize(ctx);
+/**
+ * 「次の階層へ」ボタン押下時の階層遷移処理
+ * 階段移動アニメーションをスキップし、カード除去→報酬→勝利判定→階層遷移を行う
+ */
+export async function executeNextFloorTransition(
+	ctx: GameContext,
+): Promise<void> {
+	if (ctx.isAnimating) return;
+	ctx.isAnimating = true;
 
-		// 2. カード除去イベント（報酬フローの前）
-		const afterRemoval = await executeCardRemovalEvent(
-			ctx,
-			stairsState,
-			screenWidth,
-			screenHeight,
-		);
-
-		// 3. 報酬フロー（撃破数0ならスキップ）
-		const afterReward = await executeRewardFlow(ctx, afterRemoval);
-
-		// 4. 勝利画面（クリア階層のボス撃破済みの場合）
-		if (shouldShowVictoryScreen(afterReward)) {
-			const victoryResult = await showVictoryScreen(ctx, afterReward);
-			if (victoryResult === "title") return;
-		}
-
-		// 5. 階層遷移
-		const transitioned = transitionFloor(afterReward);
-
-		// 6. フェードトランジション（暗転中に階層バナー表示 + 状態更新）
-		await ctx.ui.screenTransition.fadeTransition(async () => {
-			await ctx.ui.floorBanner.show(transitioned.floor);
-			applyState(ctx, transitioned);
-			relayoutUI(ctx);
-			render(ctx, true);
-			await ctx.ui.floorBanner.hide();
-		});
-
-		// 7. フェードイン後に手札配布アニメーション
-		await ctx.ui.handRenderer.renderWithAnimation(
-			ctx.state.deck.hand,
-			ctx.state.player.ap,
-			transitioned.deck.hand.length,
-		);
+	try {
+		await executeFloorTransitionFlow(ctx, ctx.state);
 	} finally {
 		ctx.isAnimating = false;
 	}
@@ -401,44 +470,7 @@ export async function animateJumpWithStairs(
 		await ctx.ui.mapRenderer.animatePlayerMove(stairsPos);
 
 		applyState(ctx, stairsState);
-
-		const { width: screenWidth, height: screenHeight } = getScreenSize(ctx);
-
-		// 3. カード除去イベント（報酬フローの前）
-		const afterRemoval = await executeCardRemovalEvent(
-			ctx,
-			stairsState,
-			screenWidth,
-			screenHeight,
-		);
-
-		// 4. 報酬フロー
-		const afterReward = await executeRewardFlow(ctx, afterRemoval);
-
-		// 5. 勝利画面（クリア階層（CLEAR_FLOOR）のボス撃破済みの場合）
-		if (shouldShowVictoryScreen(afterReward)) {
-			const victoryResult = await showVictoryScreen(ctx, afterReward);
-			if (victoryResult === "title") return;
-		}
-
-		// 6. 階層遷移
-		const transitioned = transitionFloor(afterReward);
-
-		// 7. フェードトランジション（暗転中に階層バナー表示 + 状態更新）
-		await ctx.ui.screenTransition.fadeTransition(async () => {
-			await ctx.ui.floorBanner.show(transitioned.floor);
-			applyState(ctx, transitioned);
-			relayoutUI(ctx);
-			render(ctx, true);
-			await ctx.ui.floorBanner.hide();
-		});
-
-		// 8. フェードイン後に手札配布アニメーション
-		await ctx.ui.handRenderer.renderWithAnimation(
-			ctx.state.deck.hand,
-			ctx.state.player.ap,
-			transitioned.deck.hand.length,
-		);
+		await executeFloorTransitionFlow(ctx, stairsState);
 	} finally {
 		ctx.isAnimating = false;
 	}

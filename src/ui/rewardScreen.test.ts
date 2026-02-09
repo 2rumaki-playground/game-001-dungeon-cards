@@ -47,6 +47,51 @@ describe("RewardScreen", () => {
 			const container = screen.getContainer();
 			expect(container.children.length).toBe(4);
 		});
+
+		it("gameAreaWidth指定時にタイトルとカードがゲームエリア中央に配置される", () => {
+			const screen = new RewardScreen();
+			// screenWidth=800, screenHeight=600だが、ゲームエリアは400x600
+			screen.render(["move"], 800, 600, 400, 600);
+
+			const container = screen.getContainer();
+			// children[1]がタイトル
+			const title = container.children[1] as import("pixi.js").Text;
+			// タイトルのX座標がゲームエリア幅(400)の中央付近であること
+			expect(title.x).toBe(200);
+
+			// children[2]がカードコンテナ
+			const card = container.children[2] as import("pixi.js").Container;
+			// カード幅120なので、(400 - 120) / 2 = 140
+			expect(card.x).toBe(140);
+		});
+
+		it("gameAreaWidth未指定時にscreenWidth基準で配置される", () => {
+			const screen = new RewardScreen();
+			screen.render(["move"], 600, 400);
+
+			const container = screen.getContainer();
+			const title = container.children[1] as import("pixi.js").Text;
+			// タイトルのX座標がscreenWidth(600)の中央
+			expect(title.x).toBe(300);
+		});
+
+		it("gameAreaHeight変更時にタイトルとカードのY座標が垂直中央配置される", () => {
+			const screen1 = new RewardScreen();
+			screen1.render(["move"], 800, 600, 400, 600);
+			const container1 = screen1.getContainer();
+			const title1 = container1.children[1] as import("pixi.js").Text;
+			const card1 = container1.children[2] as import("pixi.js").Container;
+
+			const screen2 = new RewardScreen();
+			screen2.render(["move"], 800, 600, 400, 400);
+			const container2 = screen2.getContainer();
+			const title2 = container2.children[1] as import("pixi.js").Text;
+			const card2 = container2.children[2] as import("pixi.js").Container;
+
+			// gameAreaHeightの差(200)の半分(100)だけY座標がシフト
+			expect(title1.y - title2.y).toBe(100);
+			expect(card1.y - card2.y).toBe(100);
+		});
 	});
 
 	describe("setOnCardSelect", () => {
@@ -97,6 +142,50 @@ describe("RewardScreen", () => {
 			{ id: "card-2", type: "attack" },
 			{ id: "card-3", type: "jump" },
 		];
+
+		it("gameAreaWidth指定時にタイトルがゲームエリア中央に配置される", () => {
+			const screen = new RewardScreen();
+			// screenWidth=800だが、ゲームエリアは400
+			screen.renderRemoveSelection(testCards, 800, 600, undefined, 400, 600);
+
+			const container = screen.getContainer();
+			const title = container.children[1] as import("pixi.js").Text;
+			// タイトルのX座標がゲームエリア幅(400)の中央
+			expect(title.x).toBe(200);
+		});
+
+		it("gameAreaWidth未指定時にscreenWidth基準で配置される", () => {
+			const screen = new RewardScreen();
+			screen.renderRemoveSelection(testCards, 600, 400);
+
+			const container = screen.getContainer();
+			const title = container.children[1] as import("pixi.js").Text;
+			// タイトルのX座標がscreenWidth(600)の中央
+			expect(title.x).toBe(300);
+		});
+
+		it("gameAreaHeight変更時にタイトルとキャンセルボタンのY座標が垂直中央配置される", () => {
+			const screen1 = new RewardScreen();
+			screen1.renderRemoveSelection(testCards, 800, 600, undefined, 400, 600);
+			const container1 = screen1.getContainer();
+			const title1 = container1.children[1] as import("pixi.js").Text;
+			// 最後の直下childがキャンセルボタン
+			const cancel1 = container1.children[
+				container1.children.length - 1
+			] as import("pixi.js").Container;
+
+			const screen2 = new RewardScreen();
+			screen2.renderRemoveSelection(testCards, 800, 600, undefined, 400, 400);
+			const container2 = screen2.getContainer();
+			const title2 = container2.children[1] as import("pixi.js").Text;
+			const cancel2 = container2.children[
+				container2.children.length - 1
+			] as import("pixi.js").Container;
+
+			// gameAreaHeightの差(200)の半分(100)だけY座標がシフト
+			expect(title1.y - title2.y).toBe(100);
+			expect(cancel1.y - cancel2.y).toBe(100);
+		});
 
 		it("カスタムタイトルを渡した場合にそのテキストが描画される", () => {
 			const screen = new RewardScreen();

@@ -27,6 +27,7 @@ import { gridToCenterPixel } from "./coordinates";
 import { detectEnemyMoves } from "./enemyMoveDetector";
 import {
 	animateJumpWithStairs,
+	executeNextFloorTransition,
 	getScreenSize,
 	updateStateWithAttackAnimation,
 	updateStateWithBumpAnimation,
@@ -525,8 +526,21 @@ export function setupEventHandlers(ctx: GameContext): void {
 		});
 	}
 
-	// ターン終了ボタンのコールバック設定
-	ctx.ui.turnEndButton.setOnEndTurn(async () => {
+	// 次の階層へボタンのコールバック設定
+	ctx.ui.nextFloorButton.setOnNextFloor(() => {
+		if (ctx.isAnimating) return;
+		if (ctx.state.enemies.length > 0) return;
+		// 階層遷移前に方向選択UIと入力状態をリセット
+		ctx.ui.directionSelector.hide();
+		ctx.pendingCard = null;
+		clearCardQueue(ctx);
+		void executeNextFloorTransition(ctx).catch((error) => {
+			console.error("次階層ボタンの処理に失敗しました", error);
+		});
+	});
+
+	// ターン終了処理
+	async function handleEndTurn(): Promise<void> {
 		if (ctx.isAnimating) return; // アニメーション中は無効
 		// ターン終了時にキューをクリア
 		clearCardQueue(ctx);
@@ -593,5 +607,22 @@ export function setupEventHandlers(ctx: GameContext): void {
 		} finally {
 			ctx.isAnimating = false;
 		}
+	}
+
+	// ターン終了ボタンのコールバック設定
+	ctx.ui.turnEndButton.setOnEndTurn(() => {
+		void handleEndTurn().catch((error) => {
+			console.error("ターン終了ボタンの処理に失敗しました", error);
+		});
+	});
+
+	// 右クリックでターン終了
+	ctx.app.canvas.addEventListener("contextmenu", (e) => {
+		if (ctx.state.screen !== "game") return;
+		if (ctx.state.turn !== "player") return;
+		e.preventDefault();
+		void handleEndTurn().catch((error) => {
+			console.error("右クリックによるターン終了処理に失敗しました", error);
+		});
 	});
 }

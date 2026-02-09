@@ -21,3 +21,6 @@ export const BUTTON_RIGHT_MARGIN = 16;
 
 /** ボタン間のギャップ */
 export const BUTTON_GAP = 8;
+
+/** 次の階層へボタンの幅 */
+export const NEXT_FLOOR_BUTTON_WIDTH = 140;

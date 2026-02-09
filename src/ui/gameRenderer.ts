@@ -43,6 +43,7 @@ function renderTitleScreen(ctx: GameContext): void {
 	ctx.ui.victoryScreen.hide();
 	ctx.ui.statusBar.hide();
 	ctx.ui.turnEndButton.hide();
+	ctx.ui.nextFloorButton.hide();
 	ctx.ui.deckViewer.hideButton();
 	ctx.ui.actionLogRenderer.hide();
 	ctx.ui.mapRenderer.clear();
@@ -80,6 +81,7 @@ export function renderGameScreen(
 	}
 	ctx.ui.turnEndButton.show();
 	ctx.ui.turnEndButton.render(ctx.state.turn);
+	ctx.ui.nextFloorButton.render(ctx.state.enemies.length);
 	ctx.ui.deckViewer.showButton();
 	ctx.ui.actionLogRenderer.show();
 	ctx.ui.actionLogRenderer.render(ctx.state.actionLog);
@@ -101,6 +103,7 @@ function renderGameOverScreen(ctx: GameContext): void {
 	ctx.ui.victoryScreen.hide();
 	ctx.ui.statusBar.hide();
 	ctx.ui.turnEndButton.hide();
+	ctx.ui.nextFloorButton.hide();
 	ctx.ui.deckViewer.hideButton();
 	ctx.ui.actionLogRenderer.hide();
 	ctx.ui.mapRenderer.clear();
@@ -123,6 +126,7 @@ function renderVictoryScreen(ctx: GameContext): void {
 	ctx.ui.gameOverScreen.hide();
 	ctx.ui.statusBar.hide();
 	ctx.ui.turnEndButton.hide();
+	ctx.ui.nextFloorButton.hide();
 	ctx.ui.deckViewer.hideButton();
 	ctx.ui.actionLogRenderer.hide();
 	ctx.ui.mapRenderer.clear();
@@ -144,6 +148,7 @@ function renderRewardScreen(ctx: GameContext): void {
 	// ゲーム画面を背景として描画（手札は非表示）
 	renderGameScreen(ctx, true);
 	ctx.ui.turnEndButton.hide();
+	ctx.ui.nextFloorButton.hide();
 	ctx.ui.deckViewer.hideButton();
 	ctx.ui.handRenderer.clear();
 	// 報酬画面をオーバーレイ
