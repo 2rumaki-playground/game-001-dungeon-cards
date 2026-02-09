@@ -149,7 +149,7 @@ function getTileColor(type: TileType): number {
 function drawTrapIcon(g: Graphics, px: number, py: number): void {
 	const cx = px + CELL_SIZE / 2;
 	const cy = py + CELL_SIZE / 2;
-	const color = 0x8b45b6;
+	const color = COLORS.trap;
 
 	// 外側の波紋
 	g.circle(cx, cy, 20);
