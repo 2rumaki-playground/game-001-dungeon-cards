@@ -32,6 +32,7 @@ export class VictoryScreen {
 	private container: Container;
 	private onContinue: (() => void) | null = null;
 	private onReturnToTitle: (() => void) | null = null;
+	private tweenAbort: AbortController | null = null;
 
 	constructor() {
 		this.container = new Container();
@@ -62,6 +63,10 @@ export class VictoryScreen {
 	 * 勝利画面を描画（フェードインアニメーション付き）
 	 */
 	render(floor: number, screenWidth: number, screenHeight: number): void {
+		this.tweenAbort?.abort();
+		this.tweenAbort = new AbortController();
+		const { signal } = this.tweenAbort;
+
 		this.container.removeChildren();
 
 		// 半透明オーバーレイ（背面UIへのポインタ入力を吸収）
@@ -90,7 +95,7 @@ export class VictoryScreen {
 		tween(
 			title,
 			{ alpha: 1, scaleX: 1, scaleY: 1 },
-			{ duration: TITLE_FADE_DURATION, easing: Easing.easeOutBack },
+			{ duration: TITLE_FADE_DURATION, easing: Easing.easeOutBack, signal },
 		);
 
 		// 到達階層テキスト
@@ -140,6 +145,7 @@ export class VictoryScreen {
 				duration: CONTENT_FADE_DURATION,
 				delay: CONTENT_FADE_DELAY,
 				easing: Easing.easeOut,
+				signal,
 			},
 		);
 		tween(
@@ -149,6 +155,7 @@ export class VictoryScreen {
 				duration: CONTENT_FADE_DURATION,
 				delay: CONTENT_FADE_DELAY + 100,
 				easing: Easing.easeOut,
+				signal,
 			},
 		);
 		tween(
@@ -158,6 +165,7 @@ export class VictoryScreen {
 				duration: CONTENT_FADE_DURATION,
 				delay: CONTENT_FADE_DELAY + 200,
 				easing: Easing.easeOut,
+				signal,
 			},
 		);
 	}
