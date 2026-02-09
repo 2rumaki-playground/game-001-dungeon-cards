@@ -10,6 +10,24 @@ import { RNG } from "./rng";
 
 const SAVE_KEY = "dungeon-cards-save";
 
+const COORDINATE_KEY_PATTERN = /^\d+,\d+$/;
+
+/**
+ * remnants をバリデーションし、安全な辞書として再構築
+ */
+function sanitizeRemnants(raw: unknown): Record<string, number> {
+	const result: Record<string, number> = Object.create(null);
+	if (raw == null || typeof raw !== "object") return result;
+	for (const [key, value] of Object.entries(raw as Record<string, unknown>)) {
+		if (!COORDINATE_KEY_PATTERN.test(key)) continue;
+		const num = Number(value);
+		if (Number.isFinite(num) && num >= 0) {
+			result[key] = Math.floor(num);
+		}
+	}
+	return result;
+}
+
 /**
  * ゲーム状態を保存
  */
@@ -92,10 +110,7 @@ export function loadGame(): GameState | null {
 						)
 					: 0,
 			rewardState: null,
-			remnants:
-				data.remnants != null && typeof data.remnants === "object"
-					? data.remnants
-					: {},
+			remnants: sanitizeRemnants(data.remnants),
 		};
 
 		// カードIDカウンターをデッキの最大IDで初期化
