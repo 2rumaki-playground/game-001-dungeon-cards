@@ -2,7 +2,12 @@
  * イベントハンドラ設定
  */
 
-import { CARD_COST, TRAP_DAMAGE, TREASURE_HEAL } from "../constants";
+import {
+	CARD_COST,
+	JUMP_DISTANCE,
+	TRAP_DAMAGE,
+	TREASURE_HEAL,
+} from "../constants";
 import {
 	endPlayerTurn,
 	executeAttack,
@@ -218,8 +223,8 @@ async function handleJumpCardExecution(
 		// 着地先が階段: ジャンプ→階段アニメーション
 		shouldContinueQueue(ctx, true, false);
 		const stairsPos = {
-			x: prevPosition.x + delta.x * 2,
-			y: prevPosition.y + delta.y * 2,
+			x: prevPosition.x + delta.x * JUMP_DISTANCE,
+			y: prevPosition.y + delta.y * JUMP_DISTANCE,
 		};
 		emitJumpParticles(ctx, prevPosition, moveAngle);
 		await animateJumpWithStairs(ctx, result.state, prevPosition, stairsPos);
