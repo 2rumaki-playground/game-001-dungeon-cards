@@ -292,7 +292,7 @@ async function executeCardRemovalEvent(
 /**
  * 階層遷移の共通フロー
  * カード除去→報酬→勝利判定→階層遷移→フェード→手札配布を実行する
- * @returns "title" の場合はタイトルに戻ったため呼び出し元で早期returnすること
+ * @returns "title" または "completed" を返す
  */
 async function executeFloorTransitionFlow(
 	ctx: GameContext,
