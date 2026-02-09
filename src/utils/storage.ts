@@ -92,6 +92,10 @@ export function loadGame(): GameState | null {
 						)
 					: 0,
 			rewardState: null,
+			remnants:
+				data.remnants != null && typeof data.remnants === "object"
+					? data.remnants
+					: {},
 		};
 
 		// カードIDカウンターをデッキの最大IDで初期化

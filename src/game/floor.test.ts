@@ -73,6 +73,7 @@ function createTestState(overrides?: Partial<GameState>): GameState {
 		defeatedEnemyCount: 0,
 		rewardState: null,
 		isCleared: false,
+		remnants: {},
 		...overrides,
 	};
 }

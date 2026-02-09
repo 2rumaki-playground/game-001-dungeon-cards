@@ -64,4 +64,6 @@ export type GameState = {
 	rewardState: RewardState | null;
 	/** ゲームクリア済みフラグ（クリア階層（CLEAR_FLOOR）のボス撃破） */
 	isCleared: boolean;
+	/** 敵撃破の残骸情報（key: "x,y" 形式の座標、value: 撃破数） */
+	remnants: Record<string, number>;
 };
