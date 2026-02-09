@@ -517,7 +517,7 @@ describe("カード種別ビジュアル差別化", () => {
 		"move",
 		"attack",
 		"strong_attack",
-		"rush",
+		"jump",
 		"wait",
 	];
 
@@ -544,7 +544,7 @@ describe("カード種別ビジュアル差別化", () => {
 			["move", "👟"],
 			["attack", "⚔"],
 			["strong_attack", "🔥"],
-			["rush", "💨"],
+			["jump", "🦘"],
 			["wait", "⏳"],
 		] as [
 			CardType,
@@ -562,7 +562,7 @@ describe("カード種別ビジュアル差別化", () => {
 			["move", "1マス移動"],
 			["attack", "1ダメージ"],
 			["strong_attack", "3ダメージ"],
-			["rush", "2マス移動"],
+			["jump", "2マス先に着地"],
 			["wait", "-"],
 		] as [
 			CardType,

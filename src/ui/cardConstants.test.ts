@@ -13,7 +13,7 @@ const ALL_CARD_TYPES: CardType[] = [
 	"move",
 	"attack",
 	"strong_attack",
-	"rush",
+	"jump",
 	"wait",
 ];
 

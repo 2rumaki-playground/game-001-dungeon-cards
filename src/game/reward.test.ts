@@ -22,7 +22,7 @@ describe("getTotalDeckSize", () => {
 				{ id: "c-1", type: "move" as const },
 				{ id: "c-2", type: "attack" as const },
 			],
-			hand: [{ id: "c-3", type: "rush" as const }],
+			hand: [{ id: "c-3", type: "jump" as const }],
 			discardPile: [
 				{ id: "c-4", type: "wait" as const },
 				{ id: "c-5", type: "move" as const },
@@ -91,9 +91,9 @@ describe("addRewardCardToDeck", () => {
 
 	it("追加されたカードが山札に含まれる", () => {
 		const state = createTestState();
-		const result = addRewardCardToDeck(state, "rush");
+		const result = addRewardCardToDeck(state, "jump");
 
-		const added = result.deck.drawPile.find((c) => c.type === "rush");
+		const added = result.deck.drawPile.find((c) => c.type === "jump");
 		expect(added).toBeDefined();
 	});
 

@@ -40,7 +40,7 @@ const CARD_TYPE_ORDER: CardType[] = [
 	"move",
 	"attack",
 	"strong_attack",
-	"rush",
+	"jump",
 	"wait",
 ];
 

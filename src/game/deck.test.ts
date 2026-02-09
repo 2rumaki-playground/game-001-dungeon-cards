@@ -28,18 +28,18 @@ describe("deck", () => {
 			expect(deck).toHaveLength(TOTAL_DECK_SIZE);
 		});
 
-		it("移動カード6枚、攻撃カード6枚、強攻撃カード2枚、突進カード2枚、待機カード2枚を含む", () => {
+		it("移動カード6枚、攻撃カード6枚、強攻撃カード2枚、ジャンプカード2枚、待機カード2枚を含む", () => {
 			const rng = new RNG(SEED);
 			const deck = createInitialDeck(rng);
 			const moveCards = deck.filter((c) => c.type === "move");
 			const attackCards = deck.filter((c) => c.type === "attack");
 			const strongAttackCards = deck.filter((c) => c.type === "strong_attack");
-			const rushCards = deck.filter((c) => c.type === "rush");
+			const jumpCards = deck.filter((c) => c.type === "jump");
 			const waitCards = deck.filter((c) => c.type === "wait");
 			expect(moveCards).toHaveLength(INITIAL_DECK.moveCards);
 			expect(attackCards).toHaveLength(INITIAL_DECK.attackCards);
 			expect(strongAttackCards).toHaveLength(INITIAL_DECK.strongAttackCards);
-			expect(rushCards).toHaveLength(INITIAL_DECK.rushCards);
+			expect(jumpCards).toHaveLength(INITIAL_DECK.jumpCards);
 			expect(waitCards).toHaveLength(INITIAL_DECK.waitCards);
 		});
 
@@ -265,7 +265,7 @@ describe("deck", () => {
 					{ id: "card-1", type: "move" },
 					{ id: "card-2", type: "attack" },
 				],
-				hand: [{ id: "card-3", type: "rush" }],
+				hand: [{ id: "card-3", type: "jump" }],
 				discardPile: [
 					{ id: "card-4", type: "wait" },
 					{ id: "card-5", type: "move" },

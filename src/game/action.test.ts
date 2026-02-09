@@ -16,8 +16,8 @@ import {
 import type { Enemy } from "../types";
 import {
 	executeAttack,
+	executeJump,
 	executeMove,
-	executeRush,
 	executeStrongAttack,
 	executeWait,
 } from "./action";
@@ -589,8 +589,8 @@ describe("executeStrongAttack", () => {
 	});
 });
 
-describe("executeRush", () => {
-	it("2マス移動成功（床→床）: 位置2マス先・AP消費・カード捨て札移動", () => {
+describe("executeJump", () => {
+	it("ジャンプ成功（2マス先が床）: 位置2マス先・AP消費・カード捨て札移動", () => {
 		const state = createTestState({
 			player: {
 				position: { x: 3, y: 3 },
@@ -601,126 +601,26 @@ describe("executeRush", () => {
 			},
 			deck: {
 				drawPile: [],
-				hand: [{ id: "rush-1", type: "rush" }],
+				hand: [{ id: "jump-1", type: "jump" }],
 				discardPile: [],
 			},
 		});
 		const {
 			state: result,
-			movedDistance,
+			jumped,
 			reachedStairs,
-		} = executeRush(state, "rush-1", "right");
+		} = executeJump(state, "jump-1", "right");
 
 		expect(result.player.position).toEqual({ x: 5, y: 3 });
-		expect(result.player.ap).toBe(MAX_AP - CARD_COST.rush);
+		expect(result.player.ap).toBe(MAX_AP - CARD_COST.jump);
 		expect(result.deck.hand).toHaveLength(0);
 		expect(result.deck.discardPile).toHaveLength(1);
-		expect(result.deck.discardPile[0].id).toBe("rush-1");
-		expect(movedDistance).toBe(2);
+		expect(result.deck.discardPile[0].id).toBe("jump-1");
+		expect(jumped).toBe(true);
 		expect(reachedStairs).toBe(false);
 	});
 
-	it("1マス目で壁: 移動なし・AP消費・カード捨て札移動", () => {
-		const state = createTestState({
-			player: {
-				position: { x: 1, y: 1 },
-				hp: PLAYER_INITIAL_HP,
-				maxHp: PLAYER_INITIAL_HP,
-				ap: MAX_AP,
-				maxAp: MAX_AP,
-			},
-			deck: {
-				drawPile: [],
-				hand: [{ id: "rush-1", type: "rush" }],
-				discardPile: [],
-			},
-		});
-		const { state: result, movedDistance } = executeRush(state, "rush-1", "up");
-
-		expect(result.player.position).toEqual({ x: 1, y: 1 });
-		expect(result.player.ap).toBe(MAX_AP - CARD_COST.rush);
-		expect(result.deck.hand).toHaveLength(0);
-		expect(result.deck.discardPile).toHaveLength(1);
-		expect(movedDistance).toBe(0);
-	});
-
-	it("1マス目でマップ外: 移動なし・AP消費", () => {
-		const state = createTestState({
-			player: {
-				position: { x: 0, y: 0 },
-				hp: PLAYER_INITIAL_HP,
-				maxHp: PLAYER_INITIAL_HP,
-				ap: MAX_AP,
-				maxAp: MAX_AP,
-			},
-			deck: {
-				drawPile: [],
-				hand: [{ id: "rush-1", type: "rush" }],
-				discardPile: [],
-			},
-		});
-		const { state: result, movedDistance } = executeRush(state, "rush-1", "up");
-
-		expect(result.player.position).toEqual({ x: 0, y: 0 });
-		expect(result.player.ap).toBe(MAX_AP - CARD_COST.rush);
-		expect(movedDistance).toBe(0);
-	});
-
-	it("1マス目で敵: 移動なし・AP消費", () => {
-		const enemies: Enemy[] = [
-			{
-				id: "enemy-1",
-				type: "normal",
-				position: { x: 4, y: 3 },
-				hp: ENEMY_HP,
-				maxHp: ENEMY_HP,
-			},
-		];
-		const state = createTestState({
-			enemies,
-			deck: {
-				drawPile: [],
-				hand: [{ id: "rush-1", type: "rush" }],
-				discardPile: [],
-			},
-		});
-		const { state: result, movedDistance } = executeRush(
-			state,
-			"rush-1",
-			"right",
-		);
-
-		expect(result.player.position).toEqual({ x: 3, y: 3 });
-		expect(result.player.ap).toBe(MAX_AP - CARD_COST.rush);
-		expect(movedDistance).toBe(0);
-	});
-
-	it("1マス目で階段: reachedStairsがtrueで階層遷移は行わない", () => {
-		const map = createTestMap();
-		map[3][4] = { type: "stairs" };
-
-		const state = createTestState({
-			map,
-			floor: 1,
-			deck: {
-				drawPile: [],
-				hand: [{ id: "rush-1", type: "rush" }],
-				discardPile: [],
-			},
-		});
-		const {
-			state: result,
-			movedDistance,
-			reachedStairs,
-		} = executeRush(state, "rush-1", "right");
-
-		expect(reachedStairs).toBe(true);
-		expect(result.floor).toBe(1);
-		expect(result.player.position).toEqual({ x: 4, y: 3 });
-		expect(movedDistance).toBe(1);
-	});
-
-	it("2マス目で壁: 1マス停止・AP消費", () => {
+	it("着地先が壁: 移動なし・AP消費・カード捨て札移動", () => {
 		const map = createTestMap();
 		map[3][5] = { type: "wall" };
 
@@ -735,22 +635,44 @@ describe("executeRush", () => {
 			},
 			deck: {
 				drawPile: [],
-				hand: [{ id: "rush-1", type: "rush" }],
+				hand: [{ id: "jump-1", type: "jump" }],
 				discardPile: [],
 			},
 		});
-		const { state: result, movedDistance } = executeRush(
-			state,
-			"rush-1",
-			"right",
-		);
+		const { state: result, jumped } = executeJump(state, "jump-1", "right");
 
-		expect(result.player.position).toEqual({ x: 4, y: 3 });
-		expect(result.player.ap).toBe(MAX_AP - CARD_COST.rush);
-		expect(movedDistance).toBe(1);
+		expect(result.player.position).toEqual({ x: 3, y: 3 });
+		expect(result.player.ap).toBe(MAX_AP - CARD_COST.jump);
+		expect(result.deck.hand).toHaveLength(0);
+		expect(result.deck.discardPile).toHaveLength(1);
+		expect(jumped).toBe(false);
 	});
 
-	it("2マス目で敵: 1マス停止・AP消費", () => {
+	it("着地先がマップ外: 移動なし・AP消費", () => {
+		const state = createTestState({
+			player: {
+				position: { x: 0, y: 0 },
+				hp: PLAYER_INITIAL_HP,
+				maxHp: PLAYER_INITIAL_HP,
+				ap: MAX_AP,
+				maxAp: MAX_AP,
+			},
+			deck: {
+				drawPile: [],
+				hand: [{ id: "jump-1", type: "jump" }],
+				discardPile: [],
+			},
+		});
+		const { state: result, jumped } = executeJump(state, "jump-1", "up");
+
+		expect(result.player.position).toEqual({ x: 0, y: 0 });
+		expect(result.player.ap).toBe(MAX_AP - CARD_COST.jump);
+		expect(jumped).toBe(false);
+		expect(result.deck.hand).toHaveLength(0);
+		expect(result.deck.discardPile).toEqual([{ id: "jump-1", type: "jump" }]);
+	});
+
+	it("着地先に敵: 移動なし・AP消費", () => {
 		const enemies: Enemy[] = [
 			{
 				id: "enemy-1",
@@ -771,22 +693,108 @@ describe("executeRush", () => {
 			},
 			deck: {
 				drawPile: [],
-				hand: [{ id: "rush-1", type: "rush" }],
+				hand: [{ id: "jump-1", type: "jump" }],
 				discardPile: [],
 			},
 		});
-		const { state: result, movedDistance } = executeRush(
-			state,
-			"rush-1",
-			"right",
-		);
+		const { state: result, jumped } = executeJump(state, "jump-1", "right");
 
-		expect(result.player.position).toEqual({ x: 4, y: 3 });
-		expect(result.player.ap).toBe(MAX_AP - CARD_COST.rush);
-		expect(movedDistance).toBe(1);
+		expect(result.player.position).toEqual({ x: 3, y: 3 });
+		expect(result.player.ap).toBe(MAX_AP - CARD_COST.jump);
+		expect(jumped).toBe(false);
+		expect(result.deck.hand).toHaveLength(0);
+		expect(result.deck.discardPile).toEqual([{ id: "jump-1", type: "jump" }]);
 	});
 
-	it("2マス目で階段: reachedStairsがtrueで階層遷移は行わない", () => {
+	it("1マス先に敵がいても飛び越えて2マス先に着地", () => {
+		const enemies: Enemy[] = [
+			{
+				id: "enemy-1",
+				type: "normal",
+				position: { x: 4, y: 3 },
+				hp: ENEMY_HP,
+				maxHp: ENEMY_HP,
+			},
+		];
+		const state = createTestState({
+			enemies,
+			player: {
+				position: { x: 3, y: 3 },
+				hp: PLAYER_INITIAL_HP,
+				maxHp: PLAYER_INITIAL_HP,
+				ap: MAX_AP,
+				maxAp: MAX_AP,
+			},
+			deck: {
+				drawPile: [],
+				hand: [{ id: "jump-1", type: "jump" }],
+				discardPile: [],
+			},
+		});
+		const { state: result, jumped } = executeJump(state, "jump-1", "right");
+
+		expect(result.player.position).toEqual({ x: 5, y: 3 });
+		expect(jumped).toBe(true);
+	});
+
+	it("1マス先が壁でも飛び越えて2マス先に着地", () => {
+		const map = createTestMap();
+		map[3][4] = { type: "wall" };
+
+		const state = createTestState({
+			map,
+			player: {
+				position: { x: 3, y: 3 },
+				hp: PLAYER_INITIAL_HP,
+				maxHp: PLAYER_INITIAL_HP,
+				ap: MAX_AP,
+				maxAp: MAX_AP,
+			},
+			deck: {
+				drawPile: [],
+				hand: [{ id: "jump-1", type: "jump" }],
+				discardPile: [],
+			},
+		});
+		const { state: result, jumped } = executeJump(state, "jump-1", "right");
+
+		expect(result.player.position).toEqual({ x: 5, y: 3 });
+		expect(jumped).toBe(true);
+	});
+
+	it("1マス先に階段があっても飛び越えて2マス先に着地", () => {
+		const map = createTestMap();
+		map[3][4] = { type: "stairs" };
+
+		const state = createTestState({
+			map,
+			floor: 1,
+			player: {
+				position: { x: 3, y: 3 },
+				hp: PLAYER_INITIAL_HP,
+				maxHp: PLAYER_INITIAL_HP,
+				ap: MAX_AP,
+				maxAp: MAX_AP,
+			},
+			deck: {
+				drawPile: [],
+				hand: [{ id: "jump-1", type: "jump" }],
+				discardPile: [],
+			},
+		});
+		const {
+			state: result,
+			jumped,
+			reachedStairs,
+		} = executeJump(state, "jump-1", "right");
+
+		expect(result.player.position).toEqual({ x: 5, y: 3 });
+		expect(jumped).toBe(true);
+		expect(reachedStairs).toBe(false);
+		expect(result.floor).toBe(1);
+	});
+
+	it("着地先が階段: reachedStairsがtrueで階層遷移は行わない", () => {
 		const map = createTestMap();
 		map[3][5] = { type: "stairs" };
 
@@ -802,27 +810,51 @@ describe("executeRush", () => {
 			},
 			deck: {
 				drawPile: [],
-				hand: [{ id: "rush-1", type: "rush" }],
+				hand: [{ id: "jump-1", type: "jump" }],
 				discardPile: [],
 			},
 		});
 		const {
 			state: result,
-			movedDistance,
+			jumped,
 			reachedStairs,
-			intermediatePosition,
-		} = executeRush(state, "rush-1", "right");
+		} = executeJump(state, "jump-1", "right");
 
 		expect(reachedStairs).toBe(true);
 		expect(result.floor).toBe(1);
 		expect(result.player.position).toEqual({ x: 5, y: 3 });
-		expect(movedDistance).toBe(2);
-		expect(intermediatePosition).toEqual({ x: 4, y: 3 });
+		expect(jumped).toBe(true);
 	});
 
-	it("1マス目で罠→HP0→ゲームオーバーで2マス目に進まない", () => {
+	it("1マス先の罠を飛び越え: 罠効果は発動しない", () => {
 		const map = createTestMap();
 		map[3][4] = { type: "trap" };
+		const state = createTestState({
+			map,
+			player: {
+				position: { x: 3, y: 3 },
+				hp: PLAYER_INITIAL_HP,
+				maxHp: PLAYER_INITIAL_HP,
+				ap: MAX_AP,
+				maxAp: MAX_AP,
+			},
+			deck: {
+				drawPile: [],
+				hand: [{ id: "jump-1", type: "jump" }],
+				discardPile: [],
+			},
+		});
+		const result = executeJump(state, "jump-1", "right");
+
+		expect(result.jumped).toBe(true);
+		expect(result.state.player.position).toEqual({ x: 5, y: 3 });
+		expect(result.state.player.hp).toBe(PLAYER_INITIAL_HP);
+		expect(result.tileEffects).toEqual([]);
+	});
+
+	it("着地先の罠→HP0→ゲームオーバー", () => {
+		const map = createTestMap();
+		map[3][5] = { type: "trap" };
 		const state = createTestState({
 			map,
 			player: {
@@ -834,50 +866,48 @@ describe("executeRush", () => {
 			},
 			deck: {
 				drawPile: [],
-				hand: [{ id: "rush-1", type: "rush" }],
+				hand: [{ id: "jump-1", type: "jump" }],
 				discardPile: [],
 			},
 		});
-		const result = executeRush(state, "rush-1", "right");
+		const result = executeJump(state, "jump-1", "right");
 
 		expect(result.gameOver).toBe(true);
-		expect(result.movedDistance).toBe(1);
-		expect(result.state.player.position).toEqual({ x: 4, y: 3 });
+		expect(result.jumped).toBe(true);
+		expect(result.state.player.position).toEqual({ x: 5, y: 3 });
 		expect(result.tileEffects).toContainEqual(
 			expect.objectContaining({ tile: "trap" }),
 		);
 	});
 
-	it("1マス目で罠→HP残存→2マス目に進む", () => {
+	it("着地先の宝箱: 着地先の効果のみ発動", () => {
 		const map = createTestMap();
-		map[3][4] = { type: "trap" };
+		map[3][5] = { type: "treasure" };
 		const state = createTestState({
 			map,
 			player: {
 				position: { x: 3, y: 3 },
-				hp: PLAYER_INITIAL_HP,
+				hp: PLAYER_INITIAL_HP - 5,
 				maxHp: PLAYER_INITIAL_HP,
 				ap: MAX_AP,
 				maxAp: MAX_AP,
 			},
 			deck: {
 				drawPile: [],
-				hand: [{ id: "rush-1", type: "rush" }],
+				hand: [{ id: "jump-1", type: "jump" }],
 				discardPile: [],
 			},
 		});
-		const result = executeRush(state, "rush-1", "right");
+		const result = executeJump(state, "jump-1", "right");
 
-		expect(result.gameOver).toBe(false);
-		expect(result.movedDistance).toBe(2);
-		expect(result.state.player.position).toEqual({ x: 5, y: 3 });
-		expect(result.state.player.hp).toBe(PLAYER_INITIAL_HP - TRAP_DAMAGE);
+		expect(result.jumped).toBe(true);
 		expect(result.tileEffects).toEqual([
-			{ tile: "trap", position: { x: 4, y: 3 } },
+			{ tile: "treasure", position: { x: 5, y: 3 } },
 		]);
+		expect(result.state.player.hp).toBe(PLAYER_INITIAL_HP - 5 + TREASURE_HEAL);
 	});
 
-	it("1マス目と2マス目の両方に特殊タイル: 両方発動", () => {
+	it("1マス先に罠、着地先に宝箱: 罠は無視、宝箱のみ発動", () => {
 		const map = createTestMap();
 		map[3][4] = { type: "trap" };
 		map[3][5] = { type: "treasure" };
@@ -885,29 +915,27 @@ describe("executeRush", () => {
 			map,
 			player: {
 				position: { x: 3, y: 3 },
-				hp: PLAYER_INITIAL_HP,
+				hp: PLAYER_INITIAL_HP - 5,
 				maxHp: PLAYER_INITIAL_HP,
 				ap: MAX_AP,
 				maxAp: MAX_AP,
 			},
 			deck: {
 				drawPile: [],
-				hand: [{ id: "rush-1", type: "rush" }],
+				hand: [{ id: "jump-1", type: "jump" }],
 				discardPile: [],
 			},
 		});
-		const result = executeRush(state, "rush-1", "right");
+		const result = executeJump(state, "jump-1", "right");
 
 		expect(result.tileEffects).toEqual([
-			{ tile: "trap", position: { x: 4, y: 3 } },
 			{ tile: "treasure", position: { x: 5, y: 3 } },
 		]);
-		expect(result.movedDistance).toBe(2);
-		// HP: 10 - 1(trap) + 3(treasure) = 12 → maxHpで10
-		expect(result.state.player.hp).toBe(PLAYER_INITIAL_HP);
+		// HP: 5 + 3(treasure) = 8（罠ダメージなし）
+		expect(result.state.player.hp).toBe(PLAYER_INITIAL_HP - 5 + TREASURE_HEAL);
 	});
 
-	it("突進で特殊タイルなし: tileEffectsが空", () => {
+	it("ジャンプで特殊タイルなし: tileEffectsが空", () => {
 		const state = createTestState({
 			player: {
 				position: { x: 3, y: 3 },
@@ -918,11 +946,11 @@ describe("executeRush", () => {
 			},
 			deck: {
 				drawPile: [],
-				hand: [{ id: "rush-1", type: "rush" }],
+				hand: [{ id: "jump-1", type: "jump" }],
 				discardPile: [],
 			},
 		});
-		const result = executeRush(state, "rush-1", "right");
+		const result = executeJump(state, "jump-1", "right");
 
 		expect(result.tileEffects).toEqual([]);
 		expect(result.gameOver).toBe(false);
@@ -932,14 +960,14 @@ describe("executeRush", () => {
 		const state = createTestState({
 			deck: {
 				drawPile: [],
-				hand: [{ id: "rush-1", type: "rush" }],
+				hand: [{ id: "jump-1", type: "jump" }],
 				discardPile: [],
 			},
 		});
 		const originalPosition = { ...state.player.position };
 		const originalAp = state.player.ap;
 
-		executeRush(state, "rush-1", "right");
+		executeJump(state, "jump-1", "right");
 
 		expect(state.player.position).toEqual(originalPosition);
 		expect(state.player.ap).toBe(originalAp);

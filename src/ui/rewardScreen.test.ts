@@ -140,7 +140,7 @@ describe("RewardScreen", () => {
 		const testCards: Card[] = [
 			{ id: "card-1", type: "move" },
 			{ id: "card-2", type: "attack" },
-			{ id: "card-3", type: "rush" },
+			{ id: "card-3", type: "jump" },
 		];
 
 		it("gameAreaWidth指定時にタイトルがゲームエリア中央に配置される", () => {
@@ -464,9 +464,9 @@ describe("RewardScreen", () => {
 				getContainer: mockGetContainer,
 			} as unknown as ParticleSystem;
 			screen.setParticleSystem(mockParticle);
-			screen.render(["rush"], 600, 400);
+			screen.render(["jump"], 600, 400);
 
-			await screen.animateCardAcquire(0, "rush");
+			await screen.animateCardAcquire(0, "jump");
 			expect(mockEmit).toHaveBeenCalledTimes(1);
 			expect(mockEmit).toHaveBeenCalledWith(
 				expect.objectContaining({

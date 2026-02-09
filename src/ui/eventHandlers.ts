@@ -2,13 +2,18 @@
  * イベントハンドラ設定
  */
 
-import { CARD_COST, TRAP_DAMAGE, TREASURE_HEAL } from "../constants";
+import {
+	CARD_COST,
+	JUMP_DISTANCE,
+	TRAP_DAMAGE,
+	TREASURE_HEAL,
+} from "../constants";
 import {
 	endPlayerTurn,
 	executeAttack,
 	executeEnemyTurn,
+	executeJump,
 	executeMove,
-	executeRush,
 	executeStrongAttack,
 	executeWait,
 	returnToTitle,
@@ -22,11 +27,10 @@ import type { GameContext } from "../gameContext";
 import type { Card, Direction, Position } from "../types";
 import { DIRECTION_DELTA } from "../types";
 import { deleteSaveData, hasSaveData, loadGame } from "../utils/storage";
-import { createRushParticleConfig } from "./battleParticles";
+import { createJumpParticleConfig } from "./battleParticles";
 import { gridToCenterPixel } from "./coordinates";
 import { detectEnemyMoves } from "./enemyMoveDetector";
 import {
-	animateRushWithStairs,
 	executeNextFloorTransition,
 	getScreenSize,
 	updateStateWithAttackAnimation,
@@ -183,74 +187,59 @@ async function handleStrongAttackCardExecution(
 }
 
 /**
- * 突進パーティクル（スピードライン）を発射
+ * ジャンプパーティクル（スピードライン）を発射
  */
-function emitRushParticles(
+function emitJumpParticles(
 	ctx: GameContext,
-	targetPos: Position,
+	originPos: Position,
 	moveAngle: number,
 ): void {
-	const center = gridToCenterPixel(targetPos);
-	ctx.ui.particleSystem.emit(createRushParticleConfig(center, moveAngle));
+	const center = gridToCenterPixel(originPos);
+	ctx.ui.particleSystem.emit(createJumpParticleConfig(center, moveAngle));
 }
 
 /**
- * 突進カードの実行と対応するアニメーション
+ * ジャンプカードの実行と対応するアニメーション
  */
-async function handleRushCardExecution(
+async function handleJumpCardExecution(
 	ctx: GameContext,
 	cardId: string,
 	direction: Direction,
 ): Promise<void> {
 	const prevPosition = ctx.state.player.position;
 	const prevHp = ctx.state.player.hp;
-	const result = executeRush(ctx.state, cardId, direction);
+	const result = executeJump(ctx.state, cardId, direction);
 	ctx.ui.directionSelector.hide();
 	ctx.pendingCard = null;
 
 	const delta = DIRECTION_DELTA[direction];
 	const moveAngle = Math.atan2(delta.y, delta.x);
 
-	if (result.movedDistance === 0) {
-		// 移動失敗: バンプアニメーション
+	if (!result.jumped) {
+		// ジャンプ失敗: バンプアニメーション
 		await updateStateWithBumpAnimation(ctx, result.state, direction);
-	} else if (result.reachedStairs && result.movedDistance === 1) {
-		// 1マス目が階段: 階段アニメーション
+	} else if (result.reachedStairs) {
+		// 着地先が階段: ジャンプ→階段アニメーション
 		shouldContinueQueue(ctx, true, false);
 		const stairsPos = {
-			x: prevPosition.x + delta.x,
-			y: prevPosition.y + delta.y,
+			x: prevPosition.x + delta.x * JUMP_DISTANCE,
+			y: prevPosition.y + delta.y * JUMP_DISTANCE,
 		};
-		emitRushParticles(ctx, prevPosition, moveAngle);
+		emitJumpParticles(ctx, prevPosition, moveAngle);
 		await updateStateWithStairsAnimation(ctx, result.state, stairsPos);
-	} else if (result.reachedStairs && result.intermediatePosition) {
-		// 2マス目が階段: 2段階移動→階層遷移アニメーション
-		shouldContinueQueue(ctx, true, false);
-		const stairsPos = {
-			x: result.intermediatePosition.x + delta.x,
-			y: result.intermediatePosition.y + delta.y,
-		};
-		emitRushParticles(ctx, prevPosition, moveAngle);
-		await animateRushWithStairs(
-			ctx,
-			result.state,
-			result.intermediatePosition,
-			stairsPos,
-		);
 	} else {
-		// 通常移動(1or2マス): 最終位置へ直接移動アニメーション
-		emitRushParticles(ctx, prevPosition, moveAngle);
+		// ジャンプ成功: 着地先へ直接移動アニメーション
+		emitJumpParticles(ctx, prevPosition, moveAngle);
 
 		await updateStateWithMoveAnimation(
 			ctx,
 			result.state,
 			result.state.player.position,
 		);
-		// カーソルHPを用いて、タイルごとのHP変化量を順次計算する
-		let cursorHp = prevHp;
+		// 着地先の特殊タイル効果
 		const maxHp = result.state.player.maxHp;
 		for (const { tile, position } of result.tileEffects) {
-			const hpBefore = cursorHp;
+			const hpBefore = prevHp;
 			let hpAfter: number;
 			if (tile === "trap") {
 				hpAfter = Math.max(0, hpBefore - TRAP_DAMAGE);
@@ -260,7 +249,6 @@ async function handleRushCardExecution(
 				hpAfter = Math.min(maxHp, hpBefore + TREASURE_HEAL);
 			}
 			await showTileEffectPopup(ctx, tile, hpBefore, hpAfter, position);
-			cursorHp = hpAfter;
 		}
 		if (result.gameOver) {
 			shouldContinueQueue(ctx, false, true);
@@ -291,8 +279,8 @@ async function executeCard(
 				await handleAttackCardExecution(ctx, card.id, direction);
 			} else if (card.type === "strong_attack") {
 				await handleStrongAttackCardExecution(ctx, card.id, direction);
-			} else if (card.type === "rush") {
-				await handleRushCardExecution(ctx, card.id, direction);
+			} else if (card.type === "jump") {
+				await handleJumpCardExecution(ctx, card.id, direction);
 			}
 		} finally {
 			ctx.isCardActionAnimating = false;

@@ -453,33 +453,6 @@ export async function updateStateWithBumpAnimation(
 }
 
 /**
- * 突進で2マス目が階段の場合のアニメーション
- * 1マス目への移動→2マス目（階段）への移動→報酬フロー→フェードトランジション→階層遷移
- */
-export async function animateRushWithStairs(
-	ctx: GameContext,
-	stairsState: GameState,
-	intermediatePos: Position,
-	stairsPos: Position,
-): Promise<void> {
-	if (ctx.isAnimating) return;
-	ctx.isAnimating = true;
-
-	try {
-		// 1. 中間位置（1マス目）へ移動アニメーション
-		await ctx.ui.mapRenderer.animatePlayerMove(intermediatePos);
-
-		// 2. 階段位置（2マス目）へ移動アニメーション
-		await ctx.ui.mapRenderer.animatePlayerMove(stairsPos);
-
-		applyState(ctx, stairsState);
-		await executeFloorTransitionFlow(ctx, stairsState);
-	} finally {
-		ctx.isAnimating = false;
-	}
-}
-
-/**
  * プレイヤー攻撃ヒット時のアニメーション付きで状態を更新
  * @param cardType 使用したカードタイプ（ダメージ値算出・パーティクル演出に使用）
  */
