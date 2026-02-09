@@ -115,6 +115,9 @@ function initializeUIComponents(
 	rewardScreen.setParticleSystem(particleSystem);
 	app.stage.addChild(rewardScreen.getContainer());
 
+	const victoryScreen = new VictoryScreen();
+	app.stage.addChild(victoryScreen.getContainer());
+
 	const totalWidth =
 		mapSize.width + LOG_AREA_GAP + actionLogRenderer.getWidth();
 	const screenTransition = new ScreenTransition(totalWidth, totalHeight);
@@ -122,9 +125,6 @@ function initializeUIComponents(
 
 	const floorBanner = new FloorBanner(totalWidth, totalHeight);
 	screenTransition.getContainer().addChild(floorBanner.getContainer());
-
-	const victoryScreen = new VictoryScreen();
-	app.stage.addChild(victoryScreen.getContainer());
 
 	return {
 		titleScreen,
