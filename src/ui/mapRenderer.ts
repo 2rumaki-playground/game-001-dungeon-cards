@@ -182,7 +182,7 @@ function drawTreasureIcon(g: Graphics, px: number, py: number): void {
 	g.roundRect(x, bodyY, w, bodyH, 3);
 	g.fill(bodyColor);
 
-	// 蓋（上50%）
+	// 蓋（上45%）
 	const lidH = h * 0.45;
 	g.roundRect(x, y, w, lidH, 3);
 	g.fill(bodyColor);
