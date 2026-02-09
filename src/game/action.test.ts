@@ -668,6 +668,8 @@ describe("executeJump", () => {
 		expect(result.player.position).toEqual({ x: 0, y: 0 });
 		expect(result.player.ap).toBe(MAX_AP - CARD_COST.jump);
 		expect(jumped).toBe(false);
+		expect(result.deck.hand).toHaveLength(0);
+		expect(result.deck.discardPile).toEqual([{ id: "jump-1", type: "jump" }]);
 	});
 
 	it("着地先に敵: 移動なし・AP消費", () => {
@@ -700,6 +702,8 @@ describe("executeJump", () => {
 		expect(result.player.position).toEqual({ x: 3, y: 3 });
 		expect(result.player.ap).toBe(MAX_AP - CARD_COST.jump);
 		expect(jumped).toBe(false);
+		expect(result.deck.hand).toHaveLength(0);
+		expect(result.deck.discardPile).toEqual([{ id: "jump-1", type: "jump" }]);
 	});
 
 	it("1マス先に敵がいても飛び越えて2マス先に着地", () => {
