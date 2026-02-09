@@ -19,6 +19,7 @@ import {
 	getMapPixelSize,
 	HandRenderer,
 	MapRenderer,
+	NextFloorButton,
 	ParticleSystem,
 	RewardScreen,
 	ScreenTransition,
@@ -38,6 +39,7 @@ import {
 	DECK_BUTTON_WIDTH,
 	HAND_AREA_HEIGHT,
 	HAND_AREA_TOP_PADDING,
+	NEXT_FLOOR_BUTTON_WIDTH,
 	TURN_END_BUTTON_WIDTH,
 } from "./ui/layout";
 import { hasSaveData } from "./utils/storage";
@@ -85,9 +87,16 @@ async function initializeUIComponents(
 	turnEndContainer.y = totalHeight - BUTTON_HEIGHT - BUTTON_BOTTOM_MARGIN;
 	app.stage.addChild(turnEndContainer);
 
+	const nextFloorButton = new NextFloorButton();
+	const nextFloorContainer = nextFloorButton.getContainer();
+	nextFloorContainer.x =
+		turnEndContainer.x - NEXT_FLOOR_BUTTON_WIDTH - BUTTON_GAP;
+	nextFloorContainer.y = totalHeight - BUTTON_HEIGHT - BUTTON_BOTTOM_MARGIN;
+	app.stage.addChild(nextFloorContainer);
+
 	const deckViewer = new DeckViewer();
 	const deckButtonContainer = deckViewer.getButtonContainer();
-	deckButtonContainer.x = turnEndContainer.x - DECK_BUTTON_WIDTH - BUTTON_GAP;
+	deckButtonContainer.x = nextFloorContainer.x - DECK_BUTTON_WIDTH - BUTTON_GAP;
 	deckButtonContainer.y = totalHeight - BUTTON_HEIGHT - BUTTON_BOTTOM_MARGIN;
 	app.stage.addChild(deckButtonContainer);
 
@@ -157,6 +166,7 @@ async function initializeUIComponents(
 		handRenderer,
 		directionSelector,
 		turnEndButton,
+		nextFloorButton,
 		deckViewer,
 		actionLogRenderer,
 		turnBanner,

@@ -27,6 +27,7 @@ import { gridToCenterPixel } from "./coordinates";
 import { detectEnemyMoves } from "./enemyMoveDetector";
 import {
 	animateRushWithStairs,
+	executeNextFloorTransition,
 	getScreenSize,
 	updateStateWithAttackAnimation,
 	updateStateWithBumpAnimation,
@@ -540,6 +541,14 @@ export function setupEventHandlers(ctx: GameContext): void {
 			}
 		});
 	}
+
+	// 次の階層へボタンのコールバック設定
+	ctx.ui.nextFloorButton.setOnNextFloor(async () => {
+		if (ctx.isAnimating) return;
+		if (ctx.state.enemies.length > 0) return;
+		clearCardQueue(ctx);
+		await executeNextFloorTransition(ctx);
+	});
 
 	// ターン終了ボタンのコールバック設定
 	ctx.ui.turnEndButton.setOnEndTurn(async () => {
