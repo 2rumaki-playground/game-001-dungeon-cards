@@ -41,6 +41,9 @@ export class TitleScreen {
 	private onContinue: (() => void) | null = null;
 	private onDebugStartFloor: ((floor: number) => void) | null = null;
 
+	/** render()呼び出しごとのバージョントークン（動的import競合防止） */
+	private renderVersion = 0;
+
 	/** 背景パーティクル用 */
 	private bgParticleGraphics: Graphics | null = null;
 	private bgParticles: Particle[] = [];
@@ -84,6 +87,7 @@ export class TitleScreen {
 	 * タイトル画面を描画（イントロアニメーション付き）
 	 */
 	render(screenWidth: number, screenHeight: number, canContinue = false): void {
+		this.renderVersion++;
 		this.stopBgParticles();
 		this.container.removeChildren();
 
@@ -166,11 +170,13 @@ export class TitleScreen {
 
 		// DEV環境限定: 階層指定開始UI
 		if (import.meta.env.DEV && this.onDebugStartFloor) {
+			const currentVersion = this.renderVersion;
 			import("./debugFloorUI").then(({ createDebugFloorUI }) => {
+				if (this.renderVersion !== currentVersion) return;
 				const debugContainer = createDebugFloorUI(
 					screenWidth / 2,
 					centerY + (BUTTON_HEIGHT + BUTTON_GAP) * 2,
-					this.onDebugStartFloor!,
+					(floor: number) => this.onDebugStartFloor?.(floor),
 				);
 				debugContainer.alpha = 0;
 				this.container.addChild(debugContainer);
