@@ -18,8 +18,8 @@
 ### 前提条件
 
 - [mise](https://mise.jdx.dev/)
-- [Node.js](https://nodejs.org/)
-- [pnpm](https://pnpm.io/)
+- [Node.js](https://nodejs.org/) (v24)
+- [pnpm](https://pnpm.io/) (v10、`mise.toml` で管理)
 
 ### インストール
 
