@@ -311,7 +311,7 @@ export const COLORS = {
 	floor: 0x3a3a3a,
 	wall: 0x1a1a1a,
 	stairs: 0x4a6a4a,
-	trap: 0xcc6644,
+	trap: 0x9b59b6,
 	treasure: 0xccaa44,
 	restArea: 0x44aa88,
 	// キャラクター
