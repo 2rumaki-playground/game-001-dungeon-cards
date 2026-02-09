@@ -4,16 +4,14 @@
  */
 
 import { Container, Graphics, Text } from "pixi.js";
-import { CARD_COST, CARD_RARITY } from "../constants";
 import { getAllCards, getTotalDeckSize } from "../game/deck";
 import type { CardType, DeckState } from "../types";
 import {
-	CARD_COLORS,
-	CARD_EFFECT_TEXT,
-	CARD_TYPE_NAME,
-	CARD_TYPE_SYMBOL,
-	RARITY_COLORS,
-} from "./cardConstants";
+	CARD_ROW_GAP,
+	CARD_ROW_HEIGHT,
+	CARD_ROW_LIST_WIDTH,
+	createCardListRow,
+} from "./cardRowRenderer";
 import {
 	createOverlay,
 	drawRoundedRect,
@@ -21,10 +19,6 @@ import {
 } from "./graphicsHelpers";
 import { BUTTON_HEIGHT, DECK_BUTTON_WIDTH } from "./layout";
 import { UI_COLOR_GOLD, UI_COLORS_BUTTON_SECONDARY } from "./uiColors";
-
-/** カード行の高さ・間隔 */
-const CARD_ROW_HEIGHT = 52;
-const CARD_ROW_GAP = 6;
 
 /** 閉じるボタンサイズ */
 const CLOSE_BUTTON_WIDTH = 100;
@@ -154,8 +148,7 @@ export class DeckViewer {
 		this.container.addChild(title);
 
 		// カード種別リスト
-		const listWidth = 260;
-		const listX = (screenWidth - listWidth) / 2;
+		const listX = (screenWidth - CARD_ROW_LIST_WIDTH) / 2;
 		const listStartY = 60;
 
 		const types = CARD_TYPE_ORDER.filter((t) => (cardCounts.get(t) ?? 0) > 0);
@@ -164,7 +157,9 @@ export class DeckViewer {
 			const cardType = types[i];
 			const count = cardCounts.get(cardType) ?? 0;
 			const y = listStartY + i * (CARD_ROW_HEIGHT + CARD_ROW_GAP);
-			const row = this.createCardRow(cardType, count, listX, y, listWidth);
+			const row = createCardListRow({ cardType, count });
+			row.x = listX;
+			row.y = y;
 			this.container.addChild(row);
 		}
 
@@ -185,73 +180,6 @@ export class DeckViewer {
 			counts.set(card.type, (counts.get(card.type) ?? 0) + 1);
 		}
 		return counts;
-	}
-
-	/**
-	 * カード種別の1行を生成
-	 */
-	private createCardRow(
-		cardType: CardType,
-		count: number,
-		x: number,
-		y: number,
-		width: number,
-	): Container {
-		const row = new Container();
-		row.x = x;
-		row.y = y;
-
-		const colors = CARD_COLORS[cardType];
-		const rarity = CARD_RARITY[cardType];
-		const rarityColor = RARITY_COLORS[rarity];
-
-		// 背景
-		const bg = new Graphics();
-		drawRoundedRect(bg, width, CARD_ROW_HEIGHT, 6, colors.bg, {
-			color: colors.border,
-			width: 1,
-		});
-		row.addChild(bg);
-
-		// レアリティバー
-		const rarityBar = new Graphics();
-		rarityBar.roundRect(6, 4, 3, CARD_ROW_HEIGHT - 8, 1);
-		rarityBar.fill(rarityColor);
-		row.addChild(rarityBar);
-
-		// シンボル + 種別名 + 枚数
-		const nameText = new Text({
-			text: `${CARD_TYPE_SYMBOL[cardType]} ${CARD_TYPE_NAME[cardType]} x${count}`,
-			style: {
-				fontSize: 15,
-				fontFamily: "sans-serif",
-				fill: 0xffffff,
-				fontWeight: "bold",
-			},
-		});
-		nameText.x = 16;
-		nameText.y = 8;
-		row.addChild(nameText);
-
-		// AP + 効果テキスト
-		const cost = CARD_COST[cardType];
-		const effectStr =
-			cost > 0
-				? `${CARD_EFFECT_TEXT[cardType]} / AP: ${cost}`
-				: CARD_EFFECT_TEXT[cardType];
-		const effectText = new Text({
-			text: effectStr,
-			style: {
-				fontSize: 11,
-				fontFamily: "sans-serif",
-				fill: 0xaaaaaa,
-			},
-		});
-		effectText.x = 16;
-		effectText.y = 30;
-		row.addChild(effectText);
-
-		return row;
 	}
 
 	/**
