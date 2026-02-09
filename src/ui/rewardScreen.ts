@@ -133,6 +133,8 @@ export class RewardScreen {
 		this.cancelButton = null;
 		this.selectedCardIndex = null;
 		this.confirmButtonContainer = null;
+		this.selectedRemoveCardId = null;
+		this.selectedRemoveItem = null;
 
 		// 半透明オーバーレイ（背面UIへのポインタ入力を吸収）
 		const overlay = new Graphics();
