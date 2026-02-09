@@ -32,6 +32,11 @@ export function updateState(ctx: GameContext, newState: GameState): void {
 /**
  * タイトル画面の描画
  */
+function hideDebugUI(ctx: GameContext): void {
+	ctx.ui.debugCardRenderer?.hide();
+	ctx.ui.debugTargetSelector?.hide();
+}
+
 function renderTitleScreen(ctx: GameContext): void {
 	ctx.ui.titleScreen.show();
 	ctx.ui.gameOverScreen.hide();
@@ -42,6 +47,7 @@ function renderTitleScreen(ctx: GameContext): void {
 	ctx.ui.actionLogRenderer.hide();
 	ctx.ui.mapRenderer.clear();
 	ctx.ui.handRenderer.clear();
+	hideDebugUI(ctx);
 }
 
 /**
@@ -77,6 +83,14 @@ export function renderGameScreen(
 	ctx.ui.deckViewer.showButton();
 	ctx.ui.actionLogRenderer.show();
 	ctx.ui.actionLogRenderer.render(ctx.state.actionLog);
+
+	// デバッグカード表示（DEV環境 + デバッグモードON時のみ）
+	if (ctx.debugMode && ctx.ui.debugCardRenderer) {
+		ctx.ui.debugCardRenderer.render();
+		ctx.ui.debugCardRenderer.show();
+	} else {
+		ctx.ui.debugCardRenderer?.hide();
+	}
 }
 
 /**
@@ -98,6 +112,7 @@ function renderGameOverScreen(ctx: GameContext): void {
 	const height = size.height + HAND_AREA_HEIGHT + STATUS_BAR_HEIGHT;
 	ctx.ui.gameOverScreen.render(ctx.state.floor, width, height);
 	ctx.ui.gameOverScreen.show();
+	hideDebugUI(ctx);
 }
 
 /**
@@ -119,6 +134,7 @@ function renderVictoryScreen(ctx: GameContext): void {
 	const height = size.height + HAND_AREA_HEIGHT + STATUS_BAR_HEIGHT;
 	ctx.ui.victoryScreen.render(ctx.state.floor, width, height);
 	ctx.ui.victoryScreen.show();
+	hideDebugUI(ctx);
 }
 
 /**

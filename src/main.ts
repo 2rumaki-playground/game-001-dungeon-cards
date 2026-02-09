@@ -11,6 +11,7 @@ import type { GameContext, UIComponents } from "./gameContext";
 import type { GameState } from "./types";
 import {
 	ActionLogRenderer,
+	CARD_HEIGHT,
 	DeckViewer,
 	DirectionSelector,
 	FloorBanner,
@@ -47,11 +48,11 @@ let ctx: GameContext;
 /**
  * UIコンポーネントを初期化してステージに追加
  */
-function initializeUIComponents(
+async function initializeUIComponents(
 	app: Application,
 	mapSize: { width: number; height: number },
 	totalHeight: number,
-): UIComponents {
+): Promise<UIComponents> {
 	const titleScreen = new TitleScreen();
 	app.stage.addChild(titleScreen.getContainer());
 
@@ -126,6 +127,28 @@ function initializeUIComponents(
 	const floorBanner = new FloorBanner(totalWidth, totalHeight);
 	screenTransition.getContainer().addChild(floorBanner.getContainer());
 
+	// デバッグUI（DEV環境限定）
+	let debugCardRenderer:
+		| import("./ui/debugCardRenderer").DebugCardRenderer
+		| null = null;
+	let debugTargetSelector:
+		| import("./ui/debugTargetSelector").DebugTargetSelector
+		| null = null;
+
+	if (import.meta.env.DEV) {
+		const { DebugCardRenderer } = await import("./ui/debugCardRenderer");
+		const { DebugTargetSelector } = await import("./ui/debugTargetSelector");
+
+		debugCardRenderer = new DebugCardRenderer();
+		const debugCardContainer = debugCardRenderer.getContainer();
+		debugCardContainer.y = CARD_HEIGHT + 10;
+		handRenderer.getContainer().addChild(debugCardContainer);
+
+		debugTargetSelector = new DebugTargetSelector();
+		const targetSelectorContainer = debugTargetSelector.getContainer();
+		mapRenderer.getContainer().addChild(targetSelectorContainer);
+	}
+
 	return {
 		titleScreen,
 		gameOverScreen,
@@ -142,6 +165,8 @@ function initializeUIComponents(
 		floorBanner,
 		particleSystem,
 		victoryScreen,
+		debugCardRenderer,
+		debugTargetSelector,
 	};
 }
 
@@ -181,7 +206,7 @@ async function main() {
 	document.body.appendChild(app.canvas);
 
 	// UIコンポーネントは最大サイズで初期化
-	const ui = initializeUIComponents(app, maxMapSize, maxTotalHeight);
+	const ui = await initializeUIComponents(app, maxMapSize, maxTotalHeight);
 
 	// コンテキスト初期化
 	ctx = {
@@ -192,6 +217,7 @@ async function main() {
 		cardQueue: [],
 		isCardActionAnimating: false,
 		debugLog: import.meta.env.DEV,
+		debugMode: false,
 		ui,
 	};
 

@@ -144,7 +144,10 @@ describe("HandRenderer ホバー・選択演出", () => {
 	}
 
 	function findCardContainer(renderer: HandRenderer, index: number): Container {
-		return renderer.getContainer().children[index] as Container;
+		const cardsContainer = renderer
+			.getContainer()
+			.children.find((c) => c.label === "cards") as Container;
+		return cardsContainer.children[index] as Container;
 	}
 
 	it("ホバー中のカードの Y 座標が負（浮き上がり）になる", () => {
@@ -522,7 +525,10 @@ describe("カード種別ビジュアル差別化", () => {
 		const renderer = new HandRenderer();
 		const cards: Card[] = [{ id: `card-${type}`, type }];
 		renderer.render(cards, 10);
-		return renderer.getContainer().children[0] as Container;
+		const cardsContainer = renderer
+			.getContainer()
+			.children.find((c) => c.label === "cards") as Container;
+		return cardsContainer.children[0] as Container;
 	}
 
 	function getTextChildren(container: Container): Text[] {

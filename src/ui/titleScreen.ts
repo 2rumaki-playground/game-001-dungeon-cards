@@ -40,6 +40,8 @@ export class TitleScreen {
 	private onNewGame: (() => void) | null = null;
 	private onContinue: (() => void) | null = null;
 	private onDebugStartFloor: ((floor: number) => void) | null = null;
+	private onDebugModeChange: ((enabled: boolean) => void) | null = null;
+	private debugModeEnabled = false;
 
 	/** render()呼び出しごとのバージョントークン（動的import競合防止） */
 	private renderVersion = 0;
@@ -81,6 +83,13 @@ export class TitleScreen {
 	 */
 	setOnDebugStartFloor(callback: (floor: number) => void): void {
 		this.onDebugStartFloor = callback;
+	}
+
+	/**
+	 * デバッグモード変更コールバックを設定
+	 */
+	setOnDebugModeChange(callback: (enabled: boolean) => void): void {
+		this.onDebugModeChange = callback;
 	}
 
 	/**
@@ -195,6 +204,42 @@ export class TitleScreen {
 				})
 				.catch((error) => {
 					console.error("Failed to load debugFloorUI in TitleScreen:", error);
+				});
+		}
+
+		// DEV環境限定: デバッグモードトグル
+		if (import.meta.env.DEV && this.onDebugModeChange) {
+			const currentVersionForToggle = this.renderVersion;
+			import("./debugModeToggle")
+				.then(({ createDebugModeToggle }) => {
+					if (this.renderVersion !== currentVersionForToggle) return;
+					const toggleContainer = createDebugModeToggle(
+						screenWidth / 2,
+						centerY + (BUTTON_HEIGHT + BUTTON_GAP) * 3 + 16,
+						this.debugModeEnabled,
+						(enabled: boolean) => {
+							this.debugModeEnabled = enabled;
+							this.onDebugModeChange?.(enabled);
+						},
+					);
+					toggleContainer.alpha = 0;
+					this.container.addChild(toggleContainer);
+
+					tween(
+						toggleContainer,
+						{ alpha: 1 },
+						{
+							duration: INTRO_TIMING.buttonDuration,
+							delay: getButtonDelay(3),
+							easing: Easing.easeOut,
+						},
+					);
+				})
+				.catch((error) => {
+					console.error(
+						"Failed to load debugModeToggle in TitleScreen:",
+						error,
+					);
 				});
 		}
 
