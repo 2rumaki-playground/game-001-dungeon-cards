@@ -140,18 +140,12 @@ async function initializeUIComponents(
 
 		debugCardRenderer = new DebugCardRenderer();
 		const debugCardContainer = debugCardRenderer.getContainer();
-		debugCardContainer.x = mapSize.width / 2;
-		debugCardContainer.y =
-			STATUS_BAR_HEIGHT +
-			mapSize.height +
-			HAND_AREA_TOP_PADDING +
-			HAND_AREA_HEIGHT;
-		app.stage.addChild(debugCardContainer);
+		debugCardContainer.y = HAND_AREA_HEIGHT;
+		handRenderer.getContainer().addChild(debugCardContainer);
 
 		debugTargetSelector = new DebugTargetSelector();
 		const targetSelectorContainer = debugTargetSelector.getContainer();
-		targetSelectorContainer.y = STATUS_BAR_HEIGHT;
-		app.stage.addChild(targetSelectorContainer);
+		mapRenderer.getContainer().addChild(targetSelectorContainer);
 	}
 
 	return {
