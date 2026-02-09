@@ -2,6 +2,7 @@
  * マップレンダラーのテスト（攻撃エフェクト）
  */
 
+import { Graphics } from "pixi.js";
 import { describe, expect, it, vi } from "vitest";
 import { createTweenMock, mockEasing } from "../test-utils/mockTween";
 import { MapRenderer } from "./mapRenderer";
@@ -824,5 +825,73 @@ describe("MapRenderer HPバー", () => {
 		const container = renderer.getContainer();
 		const enemiesContainer = container.children[1];
 		expect(enemiesContainer.children.length).toBe(0);
+	});
+});
+
+describe("MapRenderer 特殊タイルアイコン描画", () => {
+	it("罠タイルでcircle（波紋）が呼ばれる", () => {
+		const renderer = new MapRenderer();
+		const map = [[{ type: "trap" as const }]];
+		const circleSpy = vi.spyOn(Graphics.prototype, "circle");
+
+		renderer.renderMap(map);
+
+		// 背景rect + 波紋3層 = circle 3回以上
+		expect(circleSpy).toHaveBeenCalled();
+		circleSpy.mockRestore();
+	});
+
+	it("宝箱タイルでroundRect（箱の本体・蓋）が呼ばれる", () => {
+		const renderer = new MapRenderer();
+		const map = [[{ type: "treasure" as const }]];
+		const roundRectSpy = vi.spyOn(Graphics.prototype, "roundRect");
+
+		renderer.renderMap(map);
+
+		expect(roundRectSpy).toHaveBeenCalled();
+		roundRectSpy.mockRestore();
+	});
+
+	it("休憩所タイルでellipse（肉）が呼ばれる", () => {
+		const renderer = new MapRenderer();
+		const map = [[{ type: "rest_area" as const }]];
+		const ellipseSpy = vi.spyOn(Graphics.prototype, "ellipse");
+
+		renderer.renderMap(map);
+
+		expect(ellipseSpy).toHaveBeenCalled();
+		ellipseSpy.mockRestore();
+	});
+
+	it("階段タイルでstroke（階段の線）が呼ばれる", () => {
+		const renderer = new MapRenderer();
+		const map = [[{ type: "stairs" as const }]];
+		const strokeSpy = vi.spyOn(Graphics.prototype, "stroke");
+
+		renderer.renderMap(map);
+
+		expect(strokeSpy).toHaveBeenCalled();
+		strokeSpy.mockRestore();
+	});
+
+	it("床タイルではアイコン描画が呼ばれない", () => {
+		const renderer = new MapRenderer();
+		const map = [[{ type: "floor" as const }]];
+		const circleSpy = vi.spyOn(Graphics.prototype, "circle");
+		const roundRectSpy = vi.spyOn(Graphics.prototype, "roundRect");
+		const ellipseSpy = vi.spyOn(Graphics.prototype, "ellipse");
+		const strokeSpy = vi.spyOn(Graphics.prototype, "stroke");
+
+		renderer.renderMap(map);
+
+		expect(circleSpy).not.toHaveBeenCalled();
+		expect(roundRectSpy).not.toHaveBeenCalled();
+		expect(ellipseSpy).not.toHaveBeenCalled();
+		expect(strokeSpy).not.toHaveBeenCalled();
+
+		circleSpy.mockRestore();
+		roundRectSpy.mockRestore();
+		ellipseSpy.mockRestore();
+		strokeSpy.mockRestore();
 	});
 });
