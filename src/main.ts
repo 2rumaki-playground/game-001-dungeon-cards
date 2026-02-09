@@ -189,6 +189,7 @@ async function main() {
 		state: createTitleScreenState(),
 		isAnimating: false,
 		pendingCard: null,
+		cardQueue: [],
 		debugLog: import.meta.env.DEV,
 		ui,
 	};

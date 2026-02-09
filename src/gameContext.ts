@@ -3,6 +3,7 @@
  */
 
 import type { Application } from "pixi.js";
+import type { QueuedCard } from "./game/cardQueue";
 import type { Card, GameState } from "./types";
 import type {
 	ActionLogRenderer,
@@ -47,6 +48,8 @@ export interface GameContext {
 	state: GameState;
 	isAnimating: boolean;
 	pendingCard: Card | null;
+	/** カード予約キュー（プレイヤーターン中のアニメーション中に積まれる） */
+	cardQueue: QueuedCard[];
 	debugLog: boolean;
 	ui: UIComponents;
 }
