@@ -398,13 +398,13 @@ export function setupEventHandlers(ctx: GameContext): void {
 		}
 
 		// カードアクション以外のアニメーション中（フロア遷移等）は無効
-		if (ctx.isAnimating) return;
+		if (ctx.isAnimating) return false;
 
 		// 方向が必要なカードで方向が未指定の場合は、方向選択UIを表示して処理を保留する
 		if (card.type !== "wait" && !direction) {
 			ctx.pendingCard = card;
 			ctx.ui.directionSelector.show();
-			return;
+			return false;
 		}
 
 		// 通常実行フロー
