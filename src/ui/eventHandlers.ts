@@ -493,7 +493,7 @@ export function setupEventHandlers(ctx: GameContext): void {
 	// デバッグカードのコールバック設定（DEV環境限定）
 	if (import.meta.env.DEV && ctx.ui.debugCardRenderer) {
 		ctx.ui.debugCardRenderer.setOnCardSelect((cardType) => {
-			if (ctx.isAnimating) return;
+			if (ctx.isAnimating || ctx.isCardActionAnimating) return;
 			if (ctx.state.screen !== "game" || ctx.state.turn !== "player") return;
 
 			if (cardType === "debug_oneshot_kill") {
