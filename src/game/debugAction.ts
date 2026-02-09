@@ -5,6 +5,7 @@
 
 import type { GameState, Position } from "../types";
 import { applyDamageToEnemy } from "./combat";
+import { isInBounds } from "./map";
 import { addActionLog, updatePlayer } from "./state";
 import { applyTileEffect } from "./tileEffect";
 
@@ -39,6 +40,10 @@ export function executeDebugTeleport(
 	state: GameState,
 	targetPos: Position,
 ): { state: GameState; reachedStairs: boolean; gameOver: boolean } {
+	if (!isInBounds(state.map, targetPos.x, targetPos.y)) {
+		return { state, reachedStairs: false, gameOver: false };
+	}
+
 	let next = updatePlayer(state, (p) => ({
 		...p,
 		position: { ...targetPos },
