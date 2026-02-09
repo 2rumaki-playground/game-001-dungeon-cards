@@ -614,7 +614,7 @@ export function setupEventHandlers(ctx: GameContext): void {
 	// ターン終了ボタンのコールバック設定
 	ctx.ui.turnEndButton.setOnEndTurn(() => {
 		void handleEndTurn().catch((error) => {
-			console.error(error);
+			console.error("ターン終了ボタンの処理に失敗しました", error);
 		});
 	});
 
@@ -624,7 +624,7 @@ export function setupEventHandlers(ctx: GameContext): void {
 		if (ctx.state.turn !== "player") return;
 		e.preventDefault();
 		void handleEndTurn().catch((error) => {
-			console.error(error);
+			console.error("右クリックによるターン終了処理に失敗しました", error);
 		});
 	});
 }
