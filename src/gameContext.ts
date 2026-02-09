@@ -22,6 +22,8 @@ import type {
 	TurnEndButton,
 	VictoryScreen,
 } from "./ui";
+import type { DebugCardRenderer } from "./ui/debugCardRenderer";
+import type { DebugTargetSelector } from "./ui/debugTargetSelector";
 
 /** UIコンポーネント参照 */
 export interface UIComponents {
@@ -40,6 +42,8 @@ export interface UIComponents {
 	floorBanner: FloorBanner;
 	particleSystem: ParticleSystem;
 	victoryScreen: VictoryScreen;
+	debugCardRenderer: DebugCardRenderer | null;
+	debugTargetSelector: DebugTargetSelector | null;
 }
 
 /** アプリケーションの共有状態 */
@@ -53,5 +57,6 @@ export interface GameContext {
 	/** カードアクション（move/attack/rush等）のアニメーション中フラグ */
 	isCardActionAnimating: boolean;
 	debugLog: boolean;
+	debugMode: boolean;
 	ui: UIComponents;
 }

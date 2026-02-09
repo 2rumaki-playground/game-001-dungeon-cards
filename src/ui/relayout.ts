@@ -65,4 +65,16 @@ export function relayoutUI(ctx: GameContext): void {
 
 	// 階層バナー
 	ctx.ui.floorBanner.resize(totalWidth, totalHeight);
+
+	// デバッグカードレンダラー
+	if (ctx.ui.debugCardRenderer) {
+		ctx.ui.debugCardRenderer.getContainer().x = mapSize.width / 2;
+		ctx.ui.debugCardRenderer.getContainer().y =
+			STATUS_BAR_HEIGHT + mapSize.height + HAND_AREA_TOP_PADDING + 140;
+	}
+
+	// デバッグターゲットセレクタ
+	if (ctx.ui.debugTargetSelector) {
+		ctx.ui.debugTargetSelector.getContainer().y = STATUS_BAR_HEIGHT;
+	}
 }

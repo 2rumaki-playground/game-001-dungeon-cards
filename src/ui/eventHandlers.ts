@@ -485,6 +485,62 @@ export function setupEventHandlers(ctx: GameContext): void {
 		ctx.ui.deckViewer.hide();
 	});
 
+	// デバッグモードトグルのコールバック設定
+	ctx.ui.titleScreen.setOnDebugModeChange((enabled) => {
+		ctx.debugMode = enabled;
+	});
+
+	// デバッグカードのコールバック設定（DEV環境限定）
+	if (import.meta.env.DEV && ctx.ui.debugCardRenderer) {
+		ctx.ui.debugCardRenderer.setOnCardSelect((cardType) => {
+			if (ctx.isAnimating) return;
+			if (ctx.state.screen !== "game" || ctx.state.turn !== "player") return;
+
+			if (cardType === "debug_oneshot_kill") {
+				if (ctx.state.enemies.length === 0) return;
+				ctx.ui.debugTargetSelector?.showEnemySelector(
+					ctx.state.enemies,
+					async (enemyId) => {
+						const { executeDebugOneshotKill } = await import(
+							"../game/debugAction"
+						);
+						const next = executeDebugOneshotKill(ctx.state, enemyId);
+						updateState(ctx, next);
+					},
+					() => {},
+				);
+			} else if (cardType === "debug_teleport") {
+				ctx.ui.debugTargetSelector?.showTileSelector(
+					ctx.state.map,
+					ctx.state.enemies,
+					ctx.state.player.position,
+					async (pos) => {
+						const { executeDebugTeleport } = await import(
+							"../game/debugAction"
+						);
+						const result = executeDebugTeleport(ctx.state, pos);
+						if (result.reachedStairs) {
+							const stairsPos = pos;
+							await updateStateWithStairsAnimation(
+								ctx,
+								result.state,
+								stairsPos,
+							);
+						} else if (result.gameOver) {
+							deleteSaveData();
+							await ctx.ui.screenTransition.fadeTransition(() => {
+								updateState(ctx, result.state);
+							});
+						} else {
+							updateState(ctx, result.state);
+						}
+					},
+					() => {},
+				);
+			}
+		});
+	}
+
 	// ターン終了ボタンのコールバック設定
 	ctx.ui.turnEndButton.setOnEndTurn(async () => {
 		if (ctx.isAnimating) return; // アニメーション中は無効
