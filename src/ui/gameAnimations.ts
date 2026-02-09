@@ -577,10 +577,6 @@ function showVictoryScreen(
 		applyState(ctx, victoryState);
 		render(ctx);
 
-		const { width: screenWidth, height: screenHeight } = getScreenSize(ctx);
-		ctx.ui.victoryScreen.render(state.floor, screenWidth, screenHeight);
-		ctx.ui.victoryScreen.show();
-
 		ctx.ui.victoryScreen.setOnContinue(() => {
 			ctx.ui.victoryScreen.setOnContinue(() => {});
 			ctx.ui.victoryScreen.setOnReturnToTitle(() => {});
