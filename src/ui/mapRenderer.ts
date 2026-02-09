@@ -144,6 +144,127 @@ function getTileColor(type: TileType): number {
 }
 
 /**
+ * 罠タイルのアイコン（毒沼の波紋）を描画
+ */
+function drawTrapIcon(g: Graphics, px: number, py: number): void {
+	const cx = px + CELL_SIZE / 2;
+	const cy = py + CELL_SIZE / 2;
+	// タイル背景（COLORS.trap）と同色だと alpha を変えても視認できないため、
+	// 波紋は背景とコントラストのある白で描画する
+	const rippleColor = 0xffffff;
+
+	// 外側の波紋
+	g.circle(cx, cy, 20);
+	g.fill({ color: rippleColor, alpha: 0.3 });
+
+	// 中間の波紋
+	g.circle(cx, cy, 13);
+	g.fill({ color: rippleColor, alpha: 0.4 });
+
+	// 内側の波紋
+	g.circle(cx, cy, 6);
+	g.fill({ color: rippleColor, alpha: 0.5 });
+}
+
+/**
+ * 宝箱タイルのアイコンを描画
+ */
+function drawTreasureIcon(g: Graphics, px: number, py: number): void {
+	const pad = 14;
+	const w = CELL_SIZE - pad * 2;
+	const h = CELL_SIZE - pad * 2;
+	const x = px + pad;
+	const y = py + pad;
+	const bodyColor = 0xb8860b;
+	const lockColor = 0x8b7500;
+
+	// 本体（下60%）
+	const bodyY = y + h * 0.4;
+	const bodyH = h * 0.6;
+	g.roundRect(x, bodyY, w, bodyH, 3);
+	g.fill(bodyColor);
+
+	// 蓋（上45%）
+	const lidH = h * 0.45;
+	g.roundRect(x, y, w, lidH, 3);
+	g.fill(bodyColor);
+
+	// 留め具（中央の横線）
+	const claspH = 3;
+	const claspY = y + lidH - claspH / 2;
+	g.rect(x, claspY, w, claspH);
+	g.fill(lockColor);
+
+	// 鍵穴
+	g.circle(x + w / 2, claspY + claspH / 2 + 5, 3);
+	g.fill(0x000000);
+}
+
+/**
+ * 休憩所タイルのアイコン（骨付き肉）を描画
+ */
+function drawRestAreaIcon(g: Graphics, px: number, py: number): void {
+	const cx = px + CELL_SIZE / 2;
+	const cy = py + CELL_SIZE / 2;
+	const meatColor = 0xd4704e;
+	const boneColor = 0xf5f5dc;
+
+	// 肉（中央の楕円）
+	g.ellipse(cx, cy, 12, 9);
+	g.fill(meatColor);
+
+	// 左骨: 関節球 + 棒 + 関節球
+	g.circle(cx - 18, cy - 4, 4);
+	g.fill(boneColor);
+	g.rect(cx - 16, cy - 2, 8, 4);
+	g.fill(boneColor);
+	g.circle(cx - 18, cy + 4, 4);
+	g.fill(boneColor);
+
+	// 右骨: 関節球 + 棒 + 関節球
+	g.circle(cx + 18, cy - 4, 4);
+	g.fill(boneColor);
+	g.rect(cx + 8, cy - 2, 8, 4);
+	g.fill(boneColor);
+	g.circle(cx + 18, cy + 4, 4);
+	g.fill(boneColor);
+}
+
+/**
+ * 階段タイルのアイコンを描画
+ */
+function drawStairsIcon(g: Graphics, px: number, py: number): void {
+	const pad = 16;
+	const x = px + pad;
+	const y = py + pad;
+	const w = CELL_SIZE - pad * 2;
+	const h = CELL_SIZE - pad * 2;
+	const color = 0x6a8a6a;
+	const lineWidth = 3;
+
+	const stepW = w / 3;
+	const stepH = h / 3;
+
+	g.setStrokeStyle({ width: lineWidth, color });
+
+	// 3段の階段（左下→右上）
+	// 1段目（左下）
+	g.moveTo(x, y + h);
+	g.lineTo(x, y + h - stepH);
+	g.lineTo(x + stepW, y + h - stepH);
+
+	// 2段目（中央）
+	g.lineTo(x + stepW, y + h - stepH * 2);
+	g.lineTo(x + stepW * 2, y + h - stepH * 2);
+
+	// 3段目（右上）
+	g.lineTo(x + stepW * 2, y);
+	g.lineTo(x + w, y);
+
+	g.stroke();
+}
+
+/**
  * マップレンダラー
  * マップ・プレイヤー・敵の描画を管理
  */
@@ -193,6 +314,22 @@ export class MapRenderer {
 
 				this.tilesGraphics.rect(pixelPos.x, pixelPos.y, CELL_SIZE, CELL_SIZE);
 				this.tilesGraphics.fill(color);
+
+				// 特殊タイルのアイコンを重ねて描画
+				switch (tile.type) {
+					case "trap":
+						drawTrapIcon(this.tilesGraphics, pixelPos.x, pixelPos.y);
+						break;
+					case "treasure":
+						drawTreasureIcon(this.tilesGraphics, pixelPos.x, pixelPos.y);
+						break;
+					case "rest_area":
+						drawRestAreaIcon(this.tilesGraphics, pixelPos.x, pixelPos.y);
+						break;
+					case "stairs":
+						drawStairsIcon(this.tilesGraphics, pixelPos.x, pixelPos.y);
+						break;
+				}
 			}
 		}
 	}
