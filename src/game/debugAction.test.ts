@@ -196,4 +196,56 @@ describe("executeDebugTeleport", () => {
 
 		expect(state.player.position).toEqual(positionBefore);
 	});
+
+	it("範囲外座標へのテレポートは拒否される", () => {
+		const state = createTestState();
+
+		const {
+			state: result,
+			reachedStairs,
+			gameOver,
+		} = executeDebugTeleport(state, { x: -1, y: 3 });
+
+		expect(result.player.position).toEqual(state.player.position);
+		expect(reachedStairs).toBe(false);
+		expect(gameOver).toBe(false);
+	});
+
+	it("壁タイルへのテレポートは拒否される", () => {
+		const state = createTestState();
+
+		const {
+			state: result,
+			reachedStairs,
+			gameOver,
+		} = executeDebugTeleport(state, { x: 0, y: 0 });
+
+		expect(result.player.position).toEqual(state.player.position);
+		expect(reachedStairs).toBe(false);
+		expect(gameOver).toBe(false);
+	});
+
+	it("敵がいる位置へのテレポートは拒否される", () => {
+		const state = createTestState({
+			enemies: [
+				{
+					id: "enemy-1",
+					type: "normal",
+					position: { x: 4, y: 3 },
+					hp: 3,
+					maxHp: 3,
+				},
+			],
+		});
+
+		const {
+			state: result,
+			reachedStairs,
+			gameOver,
+		} = executeDebugTeleport(state, { x: 4, y: 3 });
+
+		expect(result.player.position).toEqual(state.player.position);
+		expect(reachedStairs).toBe(false);
+		expect(gameOver).toBe(false);
+	});
 });
