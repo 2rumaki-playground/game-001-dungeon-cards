@@ -17,6 +17,7 @@
 
 ### 前提条件
 
+- [mise](https://mise.jdx.dev/)
 - [Node.js](https://nodejs.org/)
 - [pnpm](https://pnpm.io/)
 
