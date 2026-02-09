@@ -26,7 +26,11 @@ import {
 	makeInteractive,
 } from "./graphicsHelpers";
 import type { ParticleSystem } from "./particleSystem";
-import { UI_COLOR_GOLD, UI_COLORS_BUTTON_SECONDARY } from "./uiColors";
+import {
+	UI_COLOR_GOLD,
+	UI_COLORS_BUTTON_SECONDARY,
+	UI_COLORS_DISABLED,
+} from "./uiColors";
 
 /** カードサイズ */
 const REWARD_CARD_WIDTH = 120;
@@ -74,12 +78,17 @@ const REMOVE_LIST_MAX_HEIGHT = 300;
 export class RewardScreen {
 	private container: Container;
 	private onCardSelect: ((index: number) => void) | null = null;
-	private onSkip: ((index: number) => void) | null = null;
+	private onSkip: (() => void) | null = null;
 	private onRemoveCard: ((cardId: string) => void) | null = null;
 	private particleSystem: ParticleSystem | null = null;
 	private cardContainers: Container[] = [];
 	private scrollContainer: Container | null = null;
-	private cancelButton: Container | null = null;
+	private selectedCardIndex: number | null = null;
+	private confirmButtonContainer: Container | null = null;
+	private selectedRemoveCardId: string | null = null;
+	private selectedRemoveItem: { container: Container; width: number } | null =
+		null;
+	private isRemoving = false;
 
 	constructor() {
 		this.container = new Container();
@@ -98,7 +107,7 @@ export class RewardScreen {
 		this.onCardSelect = callback;
 	}
 
-	setOnSkip(callback: (index: number) => void): void {
+	setOnSkip(callback: () => void): void {
 		this.onSkip = callback;
 	}
 
@@ -121,7 +130,10 @@ export class RewardScreen {
 		this.container.removeChildren();
 		this.cardContainers = [];
 		this.scrollContainer = null;
-		this.cancelButton = null;
+		this.selectedCardIndex = null;
+		this.confirmButtonContainer = null;
+		this.selectedRemoveCardId = null;
+		this.selectedRemoveItem = null;
 
 		// 半透明オーバーレイ（背面UIへのポインタ入力を吸収）
 		const overlay = new Graphics();
@@ -140,7 +152,13 @@ export class RewardScreen {
 		// タイトル
 		const titleFontSize = 28;
 		const titleToCardGap = 16;
-		const contentHeight = titleFontSize + titleToCardGap + REWARD_CARD_HEIGHT;
+		const cardToButtonGap = 16;
+		const contentHeight =
+			titleFontSize +
+			titleToCardGap +
+			REWARD_CARD_HEIGHT +
+			cardToButtonGap +
+			BUTTON_HEIGHT;
 
 		const contentStartY = (areaH - contentHeight) / 2;
 
@@ -167,6 +185,49 @@ export class RewardScreen {
 			this.container.addChild(cardContainer);
 			this.cardContainers.push(cardContainer);
 		}
+
+		// 統一ボタンエリア
+		const buttonY = cardY + REWARD_CARD_HEIGHT + cardToButtonGap;
+		const buttonGap = 12;
+		const totalButtonWidth = BUTTON_WIDTH * 2 + buttonGap;
+		const buttonStartX = (areaW - totalButtonWidth) / 2;
+
+		this.confirmButtonContainer = new Container();
+
+		// 「獲得」ボタン（未選択時は無効）
+		const acquireBtn = this.createButton(
+			"獲得",
+			buttonStartX,
+			buttonY,
+			UI_COLORS_DISABLED.bg,
+			UI_COLORS_DISABLED.border,
+			() => {
+				if (this.selectedCardIndex !== null) {
+					this.onCardSelect?.(this.selectedCardIndex);
+				}
+			},
+		);
+		acquireBtn.label = "acquireBtn";
+		acquireBtn.eventMode = "none";
+		acquireBtn.cursor = "default";
+		(acquireBtn.children[1] as Text).style.fill = UI_COLORS_DISABLED.text;
+		this.confirmButtonContainer.addChild(acquireBtn);
+
+		// 「スキップ」ボタン（常に有効）
+		const skipBtn = this.createButton(
+			"スキップ",
+			buttonStartX + BUTTON_WIDTH + buttonGap,
+			buttonY,
+			UI_COLORS_BUTTON_SECONDARY.bg,
+			UI_COLORS_BUTTON_SECONDARY.border,
+			() => {
+				this.onSkip?.();
+			},
+		);
+		skipBtn.label = "skipBtn";
+		this.confirmButtonContainer.addChild(skipBtn);
+
+		this.container.addChild(this.confirmButtonContainer);
 	}
 
 	/**
@@ -185,7 +246,10 @@ export class RewardScreen {
 		this.container.removeChildren();
 		this.cardContainers = [];
 		this.scrollContainer = null;
-		this.cancelButton = null;
+		this.selectedRemoveCardId = null;
+		this.selectedRemoveItem = null;
+		this.confirmButtonContainer = null;
+		this.isRemoving = false;
 
 		// 半透明オーバーレイ（背面UIへのポインタ入力を吸収）
 		const overlay = new Graphics();
@@ -222,6 +286,8 @@ export class RewardScreen {
 		// コンテンツ全体の高さ（タイトル + gap + リスト + gap + ボタン）
 		const titleToListGap = 12;
 		const listToButtonGap = 10;
+		const buttonGap = 12;
+		const totalButtonWidth = BUTTON_WIDTH * 2 + buttonGap;
 		const contentHeight =
 			titleFontSize +
 			titleToListGap +
@@ -291,20 +357,76 @@ export class RewardScreen {
 			});
 		}
 
-		// キャンセルボタン
+		// 統一ボタンエリア
 		const cancelY = listStartY + visibleHeight + listToButtonGap;
-		this.cancelButton = this.createButton(
+		const buttonStartX = (areaW - totalButtonWidth) / 2;
+
+		this.confirmButtonContainer = new Container();
+
+		// 「除去」ボタン（未選択時は無効）
+		const removeConfirmBtn = this.createButton(
+			"除去",
+			buttonStartX,
+			cancelY,
+			UI_COLORS_DISABLED.bg,
+			UI_COLORS_DISABLED.border,
+			async () => {
+				if (this.isRemoving) return;
+				if (
+					this.selectedRemoveCardId === null ||
+					this.selectedRemoveItem === null
+				)
+					return;
+				this.isRemoving = true;
+				const cardId = this.selectedRemoveCardId;
+				const item = this.selectedRemoveItem;
+				// アニメーション中は入力を一括無効化
+				const prevEventMode = this.scrollContainer?.eventMode;
+				if (this.scrollContainer) {
+					this.scrollContainer.eventMode = "none";
+					this.scrollContainer.interactiveChildren = false;
+				}
+				if (this.confirmButtonContainer) {
+					this.confirmButtonContainer.interactiveChildren = false;
+				}
+				try {
+					await this.animateCardRemove(item.container, item.width);
+					this.onRemoveCard?.(cardId);
+				} catch (error) {
+					console.error("カード除去処理中にエラーが発生しました", error);
+				} finally {
+					this.isRemoving = false;
+					if (this.scrollContainer) {
+						this.scrollContainer.eventMode = prevEventMode ?? "passive";
+						this.scrollContainer.interactiveChildren = true;
+					}
+					if (this.confirmButtonContainer) {
+						this.confirmButtonContainer.interactiveChildren = true;
+					}
+				}
+			},
+		);
+		removeConfirmBtn.label = "removeBtn";
+		removeConfirmBtn.eventMode = "none";
+		removeConfirmBtn.cursor = "default";
+		(removeConfirmBtn.children[1] as Text).style.fill = UI_COLORS_DISABLED.text;
+		this.confirmButtonContainer.addChild(removeConfirmBtn);
+
+		// 「スキップ」ボタン（常に有効）
+		const skipBtn = this.createButton(
 			"スキップ",
-			areaW / 2 - BUTTON_WIDTH / 2,
+			buttonStartX + BUTTON_WIDTH + buttonGap,
 			cancelY,
 			UI_COLORS_BUTTON_SECONDARY.bg,
 			UI_COLORS_BUTTON_SECONDARY.border,
 			() => {
-				// キャンセル = スキップ扱い
-				this.onSkip?.(0);
+				this.onSkip?.();
 			},
 		);
-		this.container.addChild(this.cancelButton);
+		skipBtn.label = "skipBtn";
+		this.confirmButtonContainer.addChild(skipBtn);
+
+		this.container.addChild(this.confirmButtonContainer);
 	}
 
 	/**
@@ -414,29 +536,104 @@ export class RewardScreen {
 		effect.y = 94;
 		cardContainer.addChild(effect);
 
-		// 選択ボタン
-		const selectBtn = this.createButton(
-			"選択",
-			(REWARD_CARD_WIDTH - BUTTON_WIDTH) / 2,
-			118,
-			0x2a7a2a,
-			0x4aaa4a,
-			() => this.onCardSelect?.(index),
-		);
-		cardContainer.addChild(selectBtn);
-
-		// スキップボタン
-		const skipBtn = this.createButton(
-			"スキップ",
-			(REWARD_CARD_WIDTH - BUTTON_WIDTH) / 2,
-			118 + BUTTON_HEIGHT + 4,
-			UI_COLORS_BUTTON_SECONDARY.bg,
-			UI_COLORS_BUTTON_SECONDARY.border,
-			() => this.onSkip?.(index),
-		);
-		cardContainer.addChild(skipBtn);
+		// カード全体をクリック可能にする
+		makeInteractive(cardContainer, () => {
+			this.selectRewardCard(index);
+		});
 
 		return cardContainer;
+	}
+
+	/**
+	 * 報酬カードの選択状態を更新
+	 */
+	private selectRewardCard(index: number): void {
+		// 前回選択のハイライトを解除
+		if (this.selectedCardIndex !== null) {
+			this.unhighlightCard(this.cardContainers[this.selectedCardIndex]);
+		}
+		this.selectedCardIndex = index;
+		this.highlightCard(
+			this.cardContainers[index],
+			REWARD_CARD_WIDTH,
+			REWARD_CARD_HEIGHT,
+			REWARD_CARD_RADIUS,
+		);
+		this.updateRewardConfirmButton();
+	}
+
+	/**
+	 * カードにゴールドボーダーのハイライトを追加
+	 */
+	private highlightCard(
+		container: Container,
+		w: number,
+		h: number,
+		radius: number,
+	): void {
+		const highlight = new Graphics();
+		highlight.roundRect(0, 0, w, h, radius);
+		highlight.stroke({ color: UI_COLOR_GOLD, width: 3 });
+		highlight.label = "highlight";
+		container.addChild(highlight);
+	}
+
+	/**
+	 * カードのハイライトを解除
+	 */
+	private unhighlightCard(container: Container): void {
+		const highlight = container.children.find((c) => c.label === "highlight");
+		if (highlight) {
+			container.removeChild(highlight);
+			highlight.destroy();
+		}
+	}
+
+	/**
+	 * 報酬画面の「獲得」ボタンの有効/無効を更新
+	 */
+	private updateRewardConfirmButton(): void {
+		if (!this.confirmButtonContainer) return;
+		const acquireBtn = this.confirmButtonContainer.children.find(
+			(c) => c.label === "acquireBtn",
+		);
+		if (!acquireBtn) return;
+
+		const bg = acquireBtn.children[0] as Graphics;
+		const text = acquireBtn.children[1] as Text;
+
+		if (this.selectedCardIndex !== null) {
+			// 有効化: 緑色に変更
+			acquireBtn.eventMode = "static";
+			acquireBtn.cursor = "pointer";
+			bg.clear();
+			drawRoundedRect(
+				bg,
+				BUTTON_WIDTH,
+				BUTTON_HEIGHT,
+				BUTTON_RADIUS,
+				0x2a7a2a,
+				{
+					color: 0x4aaa4a,
+					width: 1,
+				},
+			);
+			text.style.fill = 0xffffff;
+		} else {
+			// 無効化: disabled色に戻す
+			acquireBtn.eventMode = "none";
+			acquireBtn.cursor = "default";
+			bg.clear();
+			drawRoundedRect(
+				bg,
+				BUTTON_WIDTH,
+				BUTTON_HEIGHT,
+				BUTTON_RADIUS,
+				UI_COLORS_DISABLED.bg,
+				{ color: UI_COLORS_DISABLED.border, width: 1 },
+			);
+			text.style.fill = UI_COLORS_DISABLED.text;
+		}
 	}
 
 	/**
@@ -452,60 +649,79 @@ export class RewardScreen {
 		item.x = x;
 		item.y = y;
 
-		// 除去ボタン
-		const removeBtnWidth = 50;
-		const removeBtnHeight = 22;
-		const removeBtn = new Container();
-		removeBtn.x = width - removeBtnWidth - 6;
-		removeBtn.y = (CARD_ROW_HEIGHT - removeBtnHeight) / 2;
-
-		const removeBg = new Graphics();
-		drawRoundedRect(removeBg, removeBtnWidth, removeBtnHeight, 4, 0x882222, {
-			color: 0xaa4444,
-			width: 1,
+		// カード行全体をタップ可能にする（ドラッグ開始の pointerdown と干渉しないよう pointertap を使用）
+		item.eventMode = "static";
+		item.cursor = "pointer";
+		item.on("pointertap", () => {
+			this.selectRemoveCard(card.id, item, width);
 		});
-		removeBtn.addChild(removeBg);
-
-		const removeBtnText = new Text({
-			text: "除去",
-			style: {
-				fontSize: 11,
-				fontFamily: "sans-serif",
-				fill: 0xffffff,
-				fontWeight: "bold",
-			},
-		});
-		removeBtnText.anchor.set(0.5);
-		removeBtnText.x = removeBtnWidth / 2;
-		removeBtnText.y = removeBtnHeight / 2;
-		removeBtn.addChild(removeBtnText);
-
-		makeInteractive(removeBtn, async (e) => {
-			e.stopPropagation?.();
-			// アニメーション中は全除去ボタン・スキップボタンへの入力を一括無効化
-			if (this.scrollContainer) {
-				this.scrollContainer.interactiveChildren = false;
-			}
-			if (this.cancelButton) {
-				this.cancelButton.eventMode = "none";
-			}
-			try {
-				await this.animateCardRemove(item, width);
-				this.onRemoveCard?.(card.id);
-			} catch (error) {
-				console.error("カード除去処理中にエラーが発生しました", error);
-			} finally {
-				if (this.scrollContainer) {
-					this.scrollContainer.interactiveChildren = true;
-				}
-				if (this.cancelButton) {
-					this.cancelButton.eventMode = "static";
-				}
-			}
-		});
-		item.addChild(removeBtn);
 
 		return item;
+	}
+
+	/**
+	 * 除去カードの選択状態を更新
+	 */
+	private selectRemoveCard(
+		cardId: string,
+		item: Container,
+		width: number,
+	): void {
+		// 前回選択のハイライトを解除
+		if (this.selectedRemoveItem) {
+			this.unhighlightCard(this.selectedRemoveItem.container);
+		}
+		this.selectedRemoveCardId = cardId;
+		this.selectedRemoveItem = { container: item, width };
+		this.highlightCard(item, width, CARD_ROW_HEIGHT, 6);
+		this.updateRemoveConfirmButton();
+	}
+
+	/**
+	 * 除去画面の「除去」ボタンの有効/無効を更新
+	 */
+	private updateRemoveConfirmButton(): void {
+		if (!this.confirmButtonContainer) return;
+		const removeBtn = this.confirmButtonContainer.children.find(
+			(c) => c.label === "removeBtn",
+		);
+		if (!removeBtn) return;
+
+		const bg = removeBtn.children[0] as Graphics;
+		const text = removeBtn.children[1] as Text;
+
+		if (this.selectedRemoveCardId !== null) {
+			// 有効化: 赤色に変更
+			removeBtn.eventMode = "static";
+			removeBtn.cursor = "pointer";
+			bg.clear();
+			drawRoundedRect(
+				bg,
+				BUTTON_WIDTH,
+				BUTTON_HEIGHT,
+				BUTTON_RADIUS,
+				0x882222,
+				{
+					color: 0xaa4444,
+					width: 1,
+				},
+			);
+			text.style.fill = 0xffffff;
+		} else {
+			// 無効化: disabled色に戻す
+			removeBtn.eventMode = "none";
+			removeBtn.cursor = "default";
+			bg.clear();
+			drawRoundedRect(
+				bg,
+				BUTTON_WIDTH,
+				BUTTON_HEIGHT,
+				BUTTON_RADIUS,
+				UI_COLORS_DISABLED.bg,
+				{ color: UI_COLORS_DISABLED.border, width: 1 },
+			);
+			text.style.fill = UI_COLORS_DISABLED.text;
+		}
 	}
 
 	/**
