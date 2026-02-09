@@ -280,7 +280,7 @@ describe("RewardScreen", () => {
 			) as Container;
 			expect(scrollContainer).toBeDefined();
 			const firstItem = scrollContainer.children[0] as Container;
-			firstItem.emit("pointerdown", {} as FederatedPointerEvent);
+			firstItem.emit("pointertap", {} as FederatedPointerEvent);
 
 			// 除去ボタンをクリック
 			const removeBtn = findByLabel(container, "removeBtn");
@@ -317,7 +317,7 @@ describe("RewardScreen", () => {
 				(c) => "mask" in c && c.mask != null,
 			) as Container;
 			const firstItem = scrollContainer.children[0] as Container;
-			firstItem.emit("pointerdown", {} as FederatedPointerEvent);
+			firstItem.emit("pointertap", {} as FederatedPointerEvent);
 
 			expect(removeBtn?.eventMode).toBe("static");
 		});
@@ -331,7 +331,7 @@ describe("RewardScreen", () => {
 				(c) => "mask" in c && c.mask != null,
 			) as Container;
 			const firstItem = scrollContainer.children[0] as Container;
-			firstItem.emit("pointerdown", {} as FederatedPointerEvent);
+			firstItem.emit("pointertap", {} as FederatedPointerEvent);
 
 			const highlight = firstItem.children.find((c) => c.label === "highlight");
 			expect(highlight).toBeDefined();
@@ -348,10 +348,10 @@ describe("RewardScreen", () => {
 			const item0 = scrollContainer.children[0] as Container;
 			const item1 = scrollContainer.children[1] as Container;
 
-			item0.emit("pointerdown", {} as FederatedPointerEvent);
+			item0.emit("pointertap", {} as FederatedPointerEvent);
 			expect(item0.children.find((c) => c.label === "highlight")).toBeDefined();
 
-			item1.emit("pointerdown", {} as FederatedPointerEvent);
+			item1.emit("pointertap", {} as FederatedPointerEvent);
 			expect(
 				item0.children.find((c) => c.label === "highlight"),
 			).toBeUndefined();
@@ -419,7 +419,7 @@ describe("RewardScreen", () => {
 				(c) => "mask" in c && c.mask != null,
 			) as Container;
 			scrollContainer.children[0].emit(
-				"pointerdown",
+				"pointertap",
 				{} as FederatedPointerEvent,
 			);
 
@@ -449,7 +449,7 @@ describe("RewardScreen", () => {
 				(c) => "mask" in c && c.mask != null,
 			) as Container;
 			scrollContainer.children[0].emit(
-				"pointerdown",
+				"pointertap",
 				{} as FederatedPointerEvent,
 			);
 
@@ -480,7 +480,7 @@ describe("RewardScreen", () => {
 				(c) => "mask" in c && c.mask != null,
 			) as Container;
 			scrollContainer.children[0].emit(
-				"pointerdown",
+				"pointertap",
 				{} as FederatedPointerEvent,
 			);
 

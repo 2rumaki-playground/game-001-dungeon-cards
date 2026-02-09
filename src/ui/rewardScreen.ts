@@ -649,8 +649,10 @@ export class RewardScreen {
 		item.x = x;
 		item.y = y;
 
-		// カード行全体をクリック可能にする
-		makeInteractive(item, () => {
+		// カード行全体をタップ可能にする（ドラッグ開始の pointerdown と干渉しないよう pointertap を使用）
+		item.eventMode = "static";
+		item.cursor = "pointer";
+		item.on("pointertap", () => {
 			this.selectRemoveCard(card.id, item, width);
 		});
 
