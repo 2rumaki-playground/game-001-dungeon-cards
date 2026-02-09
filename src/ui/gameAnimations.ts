@@ -318,7 +318,7 @@ export async function updateStateWithStairsAnimation(
 		// 3. 報酬フロー（撃破数0ならスキップ）
 		const afterReward = await executeRewardFlow(ctx, afterRemoval);
 
-		// 4. 勝利画面（20Fボス撃破済みの場合）
+		// 4. 勝利画面（クリア階層のボス撃破済みの場合）
 		if (shouldShowVictoryScreen(afterReward)) {
 			const victoryResult = await showVictoryScreen(ctx, afterReward);
 			if (victoryResult === "title") return;
