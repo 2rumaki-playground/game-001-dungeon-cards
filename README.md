@@ -39,6 +39,13 @@ pnpm install
 | `pnpm test:run` | ユニットテスト（1回のみ） |
 | `pnpm test:e2e` | E2Eテスト |
 
+## CI/CD
+
+| ワークフロー | トリガー | 内容 |
+|-------------|---------|------|
+| CI | PRのopen / ready_for_review | lint・ユニットテスト・E2Eテスト・ビルドを並列実行 |
+| Release | mainへのpush | Conventional Commitsに基づくバージョンタグの自動付与とGitHub Releaseの作成 |
+
 ## ディレクトリ構造
 
 ```
