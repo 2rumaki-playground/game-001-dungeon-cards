@@ -201,7 +201,7 @@ describe("RewardScreen", () => {
 			expect(skipBtn).toBeDefined();
 			skipBtn?.emit("pointerdown", {} as FederatedPointerEvent);
 
-			expect(callback).toHaveBeenCalledWith(0);
+			expect(callback).toHaveBeenCalled();
 		});
 	});
 

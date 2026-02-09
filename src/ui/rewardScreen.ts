@@ -78,7 +78,7 @@ const REMOVE_LIST_MAX_HEIGHT = 300;
 export class RewardScreen {
 	private container: Container;
 	private onCardSelect: ((index: number) => void) | null = null;
-	private onSkip: ((index: number) => void) | null = null;
+	private onSkip: (() => void) | null = null;
 	private onRemoveCard: ((cardId: string) => void) | null = null;
 	private particleSystem: ParticleSystem | null = null;
 	private cardContainers: Container[] = [];
@@ -106,7 +106,7 @@ export class RewardScreen {
 		this.onCardSelect = callback;
 	}
 
-	setOnSkip(callback: (index: number) => void): void {
+	setOnSkip(callback: () => void): void {
 		this.onSkip = callback;
 	}
 
@@ -220,7 +220,7 @@ export class RewardScreen {
 			UI_COLORS_BUTTON_SECONDARY.bg,
 			UI_COLORS_BUTTON_SECONDARY.border,
 			() => {
-				this.onSkip?.(0);
+				this.onSkip?.();
 			},
 		);
 		skipBtn.label = "skipBtn";
@@ -415,7 +415,7 @@ export class RewardScreen {
 			UI_COLORS_BUTTON_SECONDARY.bg,
 			UI_COLORS_BUTTON_SECONDARY.border,
 			() => {
-				this.onSkip?.(0);
+				this.onSkip?.();
 			},
 		);
 		skipBtn.label = "skipBtn";
