@@ -51,7 +51,7 @@ export class DebugTargetSelector {
 			);
 			makeInteractive(highlight, () => {
 				this.hide();
-				onSelect(enemy.id);
+				Promise.resolve(onSelect(enemy.id)).catch(console.error);
 			});
 			this.container.addChild(highlight);
 		}
@@ -89,7 +89,7 @@ export class DebugTargetSelector {
 				const highlight = this.createHighlight({ x, y }, TILE_HIGHLIGHT_COLOR);
 				makeInteractive(highlight, () => {
 					this.hide();
-					onSelect({ x, y });
+					Promise.resolve(onSelect({ x, y })).catch(console.error);
 				});
 				this.container.addChild(highlight);
 			}
@@ -115,8 +115,8 @@ export class DebugTargetSelector {
 
 	private addCancelButton(onCancel: () => void): void {
 		const btn = new Container();
-		btn.x = -CANCEL_BUTTON_WIDTH / 2;
-		btn.y = -CANCEL_BUTTON_HEIGHT - 8;
+		btn.x = 8;
+		btn.y = 8;
 
 		const bg = new Graphics();
 		bg.roundRect(0, 0, CANCEL_BUTTON_WIDTH, CANCEL_BUTTON_HEIGHT, 4);
