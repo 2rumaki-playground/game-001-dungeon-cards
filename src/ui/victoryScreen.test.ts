@@ -15,9 +15,22 @@ vi.mock("../utils/tween", () => ({
 	},
 }));
 
-import type { FederatedPointerEvent } from "pixi.js";
+import type { Container, FederatedPointerEvent } from "pixi.js";
 import { getTexts } from "../test-utils/pixiTestHelper";
 import { VictoryScreen } from "./victoryScreen";
+
+/** ラベルテキストでinteractiveなボタンを探索 */
+function findButtonByLabel(
+	parent: Container,
+	label: string,
+): Container | undefined {
+	return parent.children.find((child) => {
+		if (child.eventMode !== "static" || child.cursor !== "pointer")
+			return false;
+		const texts = getTexts(child as Container);
+		return texts.some((t) => t.text === label);
+	}) as Container | undefined;
+}
 
 describe("VictoryScreen", () => {
 	let screen: VictoryScreen;
@@ -92,9 +105,9 @@ describe("VictoryScreen", () => {
 			const callback = vi.fn();
 			screen.setOnContinue(callback);
 			screen.render(20, 400, 600);
-			// 子要素: overlay(0), title(1), floorText(2), continueButton(3), returnButton(4)
-			const continueButton = screen.getContainer().children[3];
-			continueButton.emit("pointerdown", {} as FederatedPointerEvent);
+			const continueButton = findButtonByLabel(screen.getContainer(), "続ける");
+			expect(continueButton).toBeDefined();
+			continueButton?.emit("pointerdown", {} as FederatedPointerEvent);
 			expect(callback).toHaveBeenCalledTimes(1);
 		});
 
@@ -102,8 +115,12 @@ describe("VictoryScreen", () => {
 			const callback = vi.fn();
 			screen.setOnReturnToTitle(callback);
 			screen.render(20, 400, 600);
-			const returnButton = screen.getContainer().children[4];
-			returnButton.emit("pointerdown", {} as FederatedPointerEvent);
+			const returnButton = findButtonByLabel(
+				screen.getContainer(),
+				"タイトルに戻る",
+			);
+			expect(returnButton).toBeDefined();
+			returnButton?.emit("pointerdown", {} as FederatedPointerEvent);
 			expect(callback).toHaveBeenCalledTimes(1);
 		});
 	});
