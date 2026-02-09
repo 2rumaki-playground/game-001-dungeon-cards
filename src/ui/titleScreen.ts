@@ -119,6 +119,11 @@ export class TitleScreen {
 			},
 		);
 
+		// 背景パーティクル用Graphics（タイトルとボタンの間に配置）
+		this.bgParticleGraphics = new Graphics();
+		this.bgParticleGraphics.eventMode = "none";
+		this.container.addChild(this.bgParticleGraphics);
+
 		// 新規ゲーム開始ボタン
 		const centerY = screenHeight / 2 + 20;
 		const newGameButton = this.createButton(
@@ -192,11 +197,6 @@ export class TitleScreen {
 					console.error("Failed to load debugFloorUI in TitleScreen:", error);
 				});
 		}
-
-		// 背景パーティクル用Graphics（ボタンの前面に配置）
-		this.bgParticleGraphics = new Graphics();
-		this.bgParticleGraphics.eventMode = "none";
-		this.container.addChild(this.bgParticleGraphics);
 
 		// 背景パーティクル開始
 		this.startBgParticles(screenWidth, screenHeight);
