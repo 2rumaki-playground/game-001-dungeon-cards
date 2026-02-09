@@ -41,6 +41,13 @@ export class DebugCardRenderer {
 		return this.container;
 	}
 
+	getTotalWidth(): number {
+		return (
+			DEBUG_CARDS.length * DEBUG_CARD_WIDTH +
+			(DEBUG_CARDS.length - 1) * DEBUG_CARD_GAP
+		);
+	}
+
 	setOnCardSelect(callback: (cardType: DebugCardType) => void): void {
 		this.onCardSelect = callback;
 	}

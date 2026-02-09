@@ -6,7 +6,6 @@
 import { LOG_AREA_GAP, STATUS_BAR_HEIGHT } from "../constants";
 import type { GameContext } from "../gameContext";
 import { getMapPixelSize } from "./coordinates";
-import { CARD_HEIGHT } from "./handRenderer";
 import {
 	BUTTON_BOTTOM_MARGIN,
 	BUTTON_GAP,
@@ -76,8 +75,13 @@ export function relayoutUI(ctx: GameContext): void {
 	// 階層バナー
 	ctx.ui.floorBanner.resize(totalWidth, totalHeight);
 
-	// デバッグカードレンダラー（handRendererの子要素）
+	// デバッグカードレンダラー（デッキボタンの左に配置）
 	if (ctx.ui.debugCardRenderer) {
-		ctx.ui.debugCardRenderer.getContainer().y = CARD_HEIGHT + 10;
+		const debugContainer = ctx.ui.debugCardRenderer.getContainer();
+		debugContainer.x =
+			ctx.ui.deckViewer.getButtonContainer().x -
+			BUTTON_GAP -
+			ctx.ui.debugCardRenderer.getTotalWidth() / 2;
+		debugContainer.y = totalHeight - BUTTON_HEIGHT - BUTTON_BOTTOM_MARGIN;
 	}
 }

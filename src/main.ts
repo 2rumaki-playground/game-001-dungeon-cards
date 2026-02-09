@@ -11,7 +11,6 @@ import type { GameContext, UIComponents } from "./gameContext";
 import type { GameState } from "./types";
 import {
 	ActionLogRenderer,
-	CARD_HEIGHT,
 	DeckViewer,
 	DirectionSelector,
 	FloorBanner,
@@ -150,8 +149,12 @@ async function initializeUIComponents(
 
 		debugCardRenderer = new DebugCardRenderer();
 		const debugCardContainer = debugCardRenderer.getContainer();
-		debugCardContainer.y = CARD_HEIGHT + 10;
-		handRenderer.getContainer().addChild(debugCardContainer);
+		debugCardContainer.x =
+			deckButtonContainer.x -
+			BUTTON_GAP -
+			debugCardRenderer.getTotalWidth() / 2;
+		debugCardContainer.y = totalHeight - BUTTON_HEIGHT - BUTTON_BOTTOM_MARGIN;
+		app.stage.addChild(debugCardContainer);
 
 		debugTargetSelector = new DebugTargetSelector();
 		const targetSelectorContainer = debugTargetSelector.getContainer();
