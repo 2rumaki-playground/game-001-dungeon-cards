@@ -7,35 +7,35 @@ import { createConfettiConfig, createGlowConfig } from "./victoryParticles";
 
 describe("createConfettiConfig", () => {
 	it("originが画面上部中央に設定される", () => {
-		const config = createConfettiConfig(400, 600);
+		const config = createConfettiConfig(400);
 		expect(config.origin.x).toBe(200);
 		expect(config.origin.y).toBe(0);
 	});
 
 	it("randomパターンが使用される", () => {
-		const config = createConfettiConfig(400, 600);
+		const config = createConfettiConfig(400);
 		expect(config.pattern.type).toBe("random");
 	});
 
 	it("パーティクル数が30個", () => {
-		const config = createConfettiConfig(400, 600);
+		const config = createConfettiConfig(400);
 		expect(config.count).toBe(30);
 	});
 
 	it("重力が設定される（ゆっくり落下）", () => {
-		const config = createConfettiConfig(400, 600);
+		const config = createConfettiConfig(400);
 		expect(config.gravity).toBeDefined();
 		expect(config.gravity).toBeGreaterThan(0);
 	});
 
 	it("複数色が使用される（金,赤,青,緑,白）", () => {
-		const config = createConfettiConfig(400, 600);
+		const config = createConfettiConfig(400);
 		const colors = Array.isArray(config.color) ? config.color : [config.color];
 		expect(colors.length).toBeGreaterThanOrEqual(5);
 	});
 
 	it("寿命が長め（2000ms以上）", () => {
-		const config = createConfettiConfig(400, 600);
+		const config = createConfettiConfig(400);
 		expect(config.life.min).toBeGreaterThanOrEqual(2000);
 		expect(config.life.max).toBeGreaterThanOrEqual(3000);
 	});

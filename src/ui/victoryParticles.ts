@@ -9,10 +9,7 @@ import type { ParticleConfig } from "./particleLogic";
  * 紙吹雪パーティクル設定を生成
  * 画面上部中央から降り注ぐカラフルな紙吹雪
  */
-export function createConfettiConfig(
-	screenWidth: number,
-	_screenHeight: number,
-): ParticleConfig {
+export function createConfettiConfig(screenWidth: number): ParticleConfig {
 	return {
 		count: 30,
 		origin: { x: screenWidth / 2, y: 0 },

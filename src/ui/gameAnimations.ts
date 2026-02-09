@@ -587,10 +587,10 @@ function showVictoryScreen(
 		// パーティクル発射: 光の粒子（初回のみ）+ 紙吹雪（繰り返し）
 		if (ps) {
 			ps.emit(createGlowConfig(screenWidth, screenHeight));
-			ps.emit(createConfettiConfig(screenWidth, screenHeight));
+			ps.emit(createConfettiConfig(screenWidth));
 		}
 		const confettiTimer = setInterval(() => {
-			ps?.emit(createConfettiConfig(screenWidth, screenHeight));
+			ps?.emit(createConfettiConfig(screenWidth));
 		}, CONFETTI_INTERVAL);
 
 		const cleanup = (): void => {
