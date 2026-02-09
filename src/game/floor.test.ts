@@ -231,6 +231,15 @@ describe("transitionFloor", () => {
 		expect(result.enemies).toHaveLength(getEnemyCount(3));
 	});
 
+	it("階層遷移時にremnantsがリセットされる", () => {
+		const state = createTestState({
+			remnants: { "2,2": 1, "4,3": 2 },
+		});
+		const result = transitionFloor(state);
+
+		expect(result.remnants).toEqual({});
+	});
+
 	it("saveGame が呼び出され、更新後の状態が保存される", () => {
 		const state = createTestState({ floor: 5 });
 		const result = transitionFloor(state);
