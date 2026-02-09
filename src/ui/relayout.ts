@@ -82,6 +82,9 @@ export function relayoutUI(ctx: GameContext): void {
 			ctx.ui.deckViewer.getButtonContainer().x -
 			BUTTON_GAP -
 			ctx.ui.debugCardRenderer.getTotalWidth() / 2;
-		debugContainer.y = totalHeight - BUTTON_HEIGHT - BUTTON_BOTTOM_MARGIN;
+		debugContainer.y =
+			totalHeight -
+			ctx.ui.debugCardRenderer.getTotalHeight() -
+			BUTTON_BOTTOM_MARGIN;
 	}
 }

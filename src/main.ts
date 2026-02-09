@@ -153,7 +153,8 @@ async function initializeUIComponents(
 			deckButtonContainer.x -
 			BUTTON_GAP -
 			debugCardRenderer.getTotalWidth() / 2;
-		debugCardContainer.y = totalHeight - BUTTON_HEIGHT - BUTTON_BOTTOM_MARGIN;
+		debugCardContainer.y =
+			totalHeight - debugCardRenderer.getTotalHeight() - BUTTON_BOTTOM_MARGIN;
 		app.stage.addChild(debugCardContainer);
 
 		debugTargetSelector = new DebugTargetSelector();
