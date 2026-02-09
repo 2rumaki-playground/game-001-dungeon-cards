@@ -15,6 +15,7 @@ import {
 	DECK_BUTTON_WIDTH,
 	HAND_AREA_HEIGHT,
 	HAND_AREA_TOP_PADDING,
+	NEXT_FLOOR_BUTTON_WIDTH,
 	TURN_END_BUTTON_WIDTH,
 } from "./layout";
 
@@ -48,9 +49,17 @@ export function relayoutUI(ctx: GameContext): void {
 	ctx.ui.turnEndButton.getContainer().y =
 		totalHeight - BUTTON_HEIGHT - BUTTON_BOTTOM_MARGIN;
 
+	// 次の階層へボタン
+	ctx.ui.nextFloorButton.getContainer().x =
+		ctx.ui.turnEndButton.getContainer().x -
+		NEXT_FLOOR_BUTTON_WIDTH -
+		BUTTON_GAP;
+	ctx.ui.nextFloorButton.getContainer().y =
+		totalHeight - BUTTON_HEIGHT - BUTTON_BOTTOM_MARGIN;
+
 	// デッキ閲覧ボタン
 	ctx.ui.deckViewer.getButtonContainer().x =
-		ctx.ui.turnEndButton.getContainer().x - DECK_BUTTON_WIDTH - BUTTON_GAP;
+		ctx.ui.nextFloorButton.getContainer().x - DECK_BUTTON_WIDTH - BUTTON_GAP;
 	ctx.ui.deckViewer.getButtonContainer().y =
 		totalHeight - BUTTON_HEIGHT - BUTTON_BOTTOM_MARGIN;
 
