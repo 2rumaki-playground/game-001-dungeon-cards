@@ -336,30 +336,10 @@ export function setupEventHandlers(ctx: GameContext): void {
 	ctx.ui.directionSelector.setOnDirectionSelect(async (direction) => {
 		if (ctx.isAnimating) return; // アニメーション中は無効
 		if (ctx.pendingCard) {
-			if (ctx.pendingCard.type === "move") {
-				await handleMoveCardExecution(ctx, ctx.pendingCard.id, direction);
-				await processCardQueue(ctx);
-				return;
-			}
-			if (ctx.pendingCard.type === "attack") {
-				await handleAttackCardExecution(ctx, ctx.pendingCard.id, direction);
-				await processCardQueue(ctx);
-				return;
-			}
-			if (ctx.pendingCard.type === "strong_attack") {
-				await handleStrongAttackCardExecution(
-					ctx,
-					ctx.pendingCard.id,
-					direction,
-				);
-				await processCardQueue(ctx);
-				return;
-			}
-			if (ctx.pendingCard.type === "rush") {
-				await handleRushCardExecution(ctx, ctx.pendingCard.id, direction);
-				await processCardQueue(ctx);
-				return;
-			}
+			const card = ctx.pendingCard;
+			await executeCard(ctx, card, direction);
+			await processCardQueue(ctx);
+			return;
 		}
 		ctx.ui.directionSelector.hide();
 		ctx.pendingCard = null;
