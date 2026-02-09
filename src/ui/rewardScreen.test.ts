@@ -1,4 +1,4 @@
-import type { FederatedPointerEvent } from "pixi.js";
+import type { Container, FederatedPointerEvent } from "pixi.js";
 import { describe, expect, it, vi } from "vitest";
 import { createTweenMock, mockEasing } from "../test-utils/mockTween";
 import type { Card } from "../types";
@@ -9,6 +9,21 @@ vi.mock("../utils/tween", () => ({
 	Easing: mockEasing,
 	tween: createTweenMock(),
 }));
+
+/** 再帰的にlabel一致する子要素を探す */
+function findByLabel(parent: Container, label: string): Container | null {
+	for (const child of parent.children) {
+		if (child.label === label) return child as Container;
+		if ("children" in child) {
+			const c = child as Container;
+			if (c.children?.length > 0) {
+				const found = findByLabel(c, label);
+				if (found) return found;
+			}
+		}
+	}
+	return null;
+}
 
 describe("RewardScreen", () => {
 	describe("コンストラクタ", () => {
@@ -39,13 +54,13 @@ describe("RewardScreen", () => {
 	});
 
 	describe("render", () => {
-		it("選択肢分のカードが描画される", () => {
+		it("選択肢分のカードと統一ボタンが描画される", () => {
 			const screen = new RewardScreen();
 			screen.render(["move", "attack"], 600, 400);
 
-			// オーバーレイ + タイトル + カード2枚 = 4つの子要素
+			// オーバーレイ + タイトル + カード2枚 + confirmButtonContainer = 5つ
 			const container = screen.getContainer();
-			expect(container.children.length).toBe(4);
+			expect(container.children.length).toBe(5);
 		});
 
 		it("gameAreaWidth指定時にタイトルとカードがゲームエリア中央に配置される", () => {
@@ -60,7 +75,7 @@ describe("RewardScreen", () => {
 			expect(title.x).toBe(200);
 
 			// children[2]がカードコンテナ
-			const card = container.children[2] as import("pixi.js").Container;
+			const card = container.children[2] as Container;
 			// カード幅120なので、(400 - 120) / 2 = 140
 			expect(card.x).toBe(140);
 		});
@@ -80,13 +95,13 @@ describe("RewardScreen", () => {
 			screen1.render(["move"], 800, 600, 400, 600);
 			const container1 = screen1.getContainer();
 			const title1 = container1.children[1] as import("pixi.js").Text;
-			const card1 = container1.children[2] as import("pixi.js").Container;
+			const card1 = container1.children[2] as Container;
 
 			const screen2 = new RewardScreen();
 			screen2.render(["move"], 800, 600, 400, 400);
 			const container2 = screen2.getContainer();
 			const title2 = container2.children[1] as import("pixi.js").Text;
-			const card2 = container2.children[2] as import("pixi.js").Container;
+			const card2 = container2.children[2] as Container;
 
 			// gameAreaHeightの差(200)の半分(100)だけY座標がシフト
 			expect(title1.y - title2.y).toBe(100);
@@ -95,24 +110,82 @@ describe("RewardScreen", () => {
 	});
 
 	describe("setOnCardSelect", () => {
-		it("選択ボタンクリックでコールバックが呼ばれる", () => {
+		it("カード選択→獲得ボタンクリックでコールバックが呼ばれる", () => {
 			const screen = new RewardScreen();
 			const callback = vi.fn();
 			screen.setOnCardSelect(callback);
 			screen.render(["move"], 600, 400);
 
-			// カードコンテナ内の選択ボタンを探してクリック
 			const container = screen.getContainer();
-			// children: overlay, title, card0
+			// children[2]がカードコンテナ（クリック可能）
 			const cardContainer = container.children[2];
-			// カード内の選択ボタンを見つける（eventModeが"static"でcursorが"pointer"のもの）
-			const selectBtn = cardContainer.children.find(
-				(child) => child.eventMode === "static" && child.cursor === "pointer",
-			);
-			expect(selectBtn).toBeDefined();
-			selectBtn?.emit("pointerdown", {} as FederatedPointerEvent);
+			cardContainer.emit("pointerdown", {} as FederatedPointerEvent);
+
+			// 獲得ボタンを探す
+			const acquireBtn = findByLabel(container, "acquireBtn");
+			expect(acquireBtn).toBeDefined();
+			expect(acquireBtn?.eventMode).toBe("static");
+			acquireBtn?.emit("pointerdown", {} as FederatedPointerEvent);
 
 			expect(callback).toHaveBeenCalledWith(0);
+		});
+
+		it("未選択時に獲得ボタンが無効状態", () => {
+			const screen = new RewardScreen();
+			screen.render(["move"], 600, 400);
+
+			const container = screen.getContainer();
+			const acquireBtn = findByLabel(container, "acquireBtn");
+			expect(acquireBtn).toBeDefined();
+			expect(acquireBtn?.eventMode).toBe("none");
+		});
+
+		it("カード選択後に獲得ボタンが有効状態になる", () => {
+			const screen = new RewardScreen();
+			screen.render(["move", "attack"], 600, 400);
+
+			const container = screen.getContainer();
+			const acquireBtn = findByLabel(container, "acquireBtn");
+			expect(acquireBtn?.eventMode).toBe("none");
+
+			// カードをクリック
+			container.children[2].emit("pointerdown", {} as FederatedPointerEvent);
+			expect(acquireBtn?.eventMode).toBe("static");
+		});
+	});
+
+	describe("ハイライト", () => {
+		it("カードクリックでハイライトが付与される", () => {
+			const screen = new RewardScreen();
+			screen.render(["move", "attack"], 600, 400);
+
+			const container = screen.getContainer();
+			const card0 = container.children[2] as Container;
+
+			card0.emit("pointerdown", {} as FederatedPointerEvent);
+
+			const highlight = card0.children.find((c) => c.label === "highlight");
+			expect(highlight).toBeDefined();
+		});
+
+		it("別カードクリックで前回ハイライトが解除される", () => {
+			const screen = new RewardScreen();
+			screen.render(["move", "attack"], 600, 400);
+
+			const container = screen.getContainer();
+			const card0 = container.children[2] as Container;
+			const card1 = container.children[3] as Container;
+
+			// 1枚目を選択
+			card0.emit("pointerdown", {} as FederatedPointerEvent);
+			expect(card0.children.find((c) => c.label === "highlight")).toBeDefined();
+
+			// 2枚目を選択
+			card1.emit("pointerdown", {} as FederatedPointerEvent);
+			expect(
+				card0.children.find((c) => c.label === "highlight"),
+			).toBeUndefined();
+			expect(card1.children.find((c) => c.label === "highlight")).toBeDefined();
 		});
 	});
 
@@ -124,13 +197,9 @@ describe("RewardScreen", () => {
 			screen.render(["move"], 600, 400);
 
 			const container = screen.getContainer();
-			const cardContainer = container.children[2];
-			// 2つ目のinteractiveなボタンがスキップ
-			const buttons = cardContainer.children.filter(
-				(child) => child.eventMode === "static" && child.cursor === "pointer",
-			);
-			expect(buttons.length).toBeGreaterThanOrEqual(2);
-			buttons[1].emit("pointerdown", {} as FederatedPointerEvent);
+			const skipBtn = findByLabel(container, "skipBtn");
+			expect(skipBtn).toBeDefined();
+			skipBtn?.emit("pointerdown", {} as FederatedPointerEvent);
 
 			expect(callback).toHaveBeenCalledWith(0);
 		});
@@ -164,27 +233,19 @@ describe("RewardScreen", () => {
 			expect(title.x).toBe(300);
 		});
 
-		it("gameAreaHeight変更時にタイトルとキャンセルボタンのY座標が垂直中央配置される", () => {
+		it("gameAreaHeight変更時にタイトルのY座標が垂直中央配置される", () => {
 			const screen1 = new RewardScreen();
 			screen1.renderRemoveSelection(testCards, 800, 600, undefined, 400, 600);
 			const container1 = screen1.getContainer();
 			const title1 = container1.children[1] as import("pixi.js").Text;
-			// 最後の直下childがキャンセルボタン
-			const cancel1 = container1.children[
-				container1.children.length - 1
-			] as import("pixi.js").Container;
 
 			const screen2 = new RewardScreen();
 			screen2.renderRemoveSelection(testCards, 800, 600, undefined, 400, 400);
 			const container2 = screen2.getContainer();
 			const title2 = container2.children[1] as import("pixi.js").Text;
-			const cancel2 = container2.children[
-				container2.children.length - 1
-			] as import("pixi.js").Container;
 
 			// gameAreaHeightの差(200)の半分(100)だけY座標がシフト
 			expect(title1.y - title2.y).toBe(100);
-			expect(cancel1.y - cancel2.y).toBe(100);
 		});
 
 		it("カスタムタイトルを渡した場合にそのテキストが描画される", () => {
@@ -206,40 +267,95 @@ describe("RewardScreen", () => {
 			expect(container.children.length).toBeGreaterThan(0);
 		});
 
-		it("除去ボタンクリックでコールバックが呼ばれる", async () => {
+		it("カード行選択→除去ボタンクリックでコールバックが呼ばれる", async () => {
 			const screen = new RewardScreen();
 			const callback = vi.fn();
 			screen.setOnRemoveCard(callback);
 			screen.renderRemoveSelection(testCards, 600, 400);
 
 			const container = screen.getContainer();
-			// コンテナの子要素を再帰的に探索して除去ボタンを見つける
-			function findRemoveButton(
-				parent: import("pixi.js").Container,
-			): import("pixi.js").Container | null {
-				for (const child of parent.children) {
-					if (child.eventMode === "static" && child.cursor === "pointer") {
-						// 除去ボタンは子がテキストを含むContainer
-						return child as import("pixi.js").Container;
-					}
-					if ("children" in child) {
-						const c = child as import("pixi.js").Container;
-						if (c.children?.length > 0) {
-							const found = findRemoveButton(c);
-							if (found) return found;
-						}
-					}
-				}
-				return null;
-			}
-			const removeBtn = findRemoveButton(container);
+			// scrollContainer内の最初のカード行をクリック
+			const scrollContainer = container.children.find(
+				(c) => "mask" in c && c.mask != null,
+			) as Container;
+			expect(scrollContainer).toBeDefined();
+			const firstItem = scrollContainer.children[0] as Container;
+			firstItem.emit("pointerdown", {} as FederatedPointerEvent);
+
+			// 除去ボタンをクリック
+			const removeBtn = findByLabel(container, "removeBtn");
 			expect(removeBtn).toBeDefined();
+			expect(removeBtn?.eventMode).toBe("static");
 			removeBtn?.emit("pointerdown", {} as FederatedPointerEvent);
 
 			// animateCardRemoveが非同期のためmicrotask flush
 			await vi.waitFor(() => {
 				expect(callback).toHaveBeenCalledWith("card-1");
 			});
+		});
+
+		it("未選択時に除去ボタンが無効状態", () => {
+			const screen = new RewardScreen();
+			screen.renderRemoveSelection(testCards, 600, 400);
+
+			const container = screen.getContainer();
+			const removeBtn = findByLabel(container, "removeBtn");
+			expect(removeBtn).toBeDefined();
+			expect(removeBtn?.eventMode).toBe("none");
+		});
+
+		it("カード行選択後に除去ボタンが有効状態になる", () => {
+			const screen = new RewardScreen();
+			screen.renderRemoveSelection(testCards, 600, 400);
+
+			const container = screen.getContainer();
+			const removeBtn = findByLabel(container, "removeBtn");
+			expect(removeBtn?.eventMode).toBe("none");
+
+			// カード行をクリック
+			const scrollContainer = container.children.find(
+				(c) => "mask" in c && c.mask != null,
+			) as Container;
+			const firstItem = scrollContainer.children[0] as Container;
+			firstItem.emit("pointerdown", {} as FederatedPointerEvent);
+
+			expect(removeBtn?.eventMode).toBe("static");
+		});
+
+		it("カード行クリックでハイライトが付与される", () => {
+			const screen = new RewardScreen();
+			screen.renderRemoveSelection(testCards, 600, 400);
+
+			const container = screen.getContainer();
+			const scrollContainer = container.children.find(
+				(c) => "mask" in c && c.mask != null,
+			) as Container;
+			const firstItem = scrollContainer.children[0] as Container;
+			firstItem.emit("pointerdown", {} as FederatedPointerEvent);
+
+			const highlight = firstItem.children.find((c) => c.label === "highlight");
+			expect(highlight).toBeDefined();
+		});
+
+		it("別カード行クリックで前回ハイライトが解除される", () => {
+			const screen = new RewardScreen();
+			screen.renderRemoveSelection(testCards, 600, 400);
+
+			const container = screen.getContainer();
+			const scrollContainer = container.children.find(
+				(c) => "mask" in c && c.mask != null,
+			) as Container;
+			const item0 = scrollContainer.children[0] as Container;
+			const item1 = scrollContainer.children[1] as Container;
+
+			item0.emit("pointerdown", {} as FederatedPointerEvent);
+			expect(item0.children.find((c) => c.label === "highlight")).toBeDefined();
+
+			item1.emit("pointerdown", {} as FederatedPointerEvent);
+			expect(
+				item0.children.find((c) => c.label === "highlight"),
+			).toBeUndefined();
+			expect(item1.children.find((c) => c.label === "highlight")).toBeDefined();
 		});
 
 		it("スキップボタンクリックでコールバックが呼ばれる", () => {
@@ -249,23 +365,9 @@ describe("RewardScreen", () => {
 			screen.renderRemoveSelection(testCards, 600, 400);
 
 			const container = screen.getContainer();
-			// スキップボタンはcontainer直下のinteractive要素
-			function findButtons(
-				parent: import("pixi.js").Container,
-			): import("pixi.js").Container[] {
-				const result: import("pixi.js").Container[] = [];
-				for (const child of parent.children) {
-					if (child.eventMode === "static" && child.cursor === "pointer") {
-						result.push(child as import("pixi.js").Container);
-					}
-				}
-				return result;
-			}
-			const buttons = findButtons(container);
-			// 最後のinteractive直下要素がスキップボタン
-			const cancelBtn = buttons[buttons.length - 1];
-			expect(cancelBtn).toBeDefined();
-			cancelBtn?.emit("pointerdown", {} as FederatedPointerEvent);
+			const skipBtn = findByLabel(container, "skipBtn");
+			expect(skipBtn).toBeDefined();
+			skipBtn?.emit("pointerdown", {} as FederatedPointerEvent);
 
 			expect(callback).toHaveBeenCalled();
 		});
@@ -288,42 +390,41 @@ describe("RewardScreen", () => {
 			{ id: "rm-2", type: "attack" },
 		];
 
-		function findRemoveButton(
-			parent: import("pixi.js").Container,
-		): import("pixi.js").Container | null {
-			for (const child of parent.children) {
-				if (child.eventMode === "static" && child.cursor === "pointer") {
-					return child as import("pixi.js").Container;
-				}
-				if ("children" in child) {
-					const c = child as import("pixi.js").Container;
-					if (c.children?.length > 0) {
-						const found = findRemoveButton(c);
-						if (found) return found;
-					}
-				}
-			}
-			return null;
-		}
-
-		it("除去ボタンクリックでemitが呼ばれonRemoveCardが発火する", async () => {
-			const screen = new RewardScreen();
+		function createMockParticle() {
 			const mockEmit = vi.fn().mockResolvedValue(undefined);
 			const mockGetContainer = vi.fn().mockReturnValue({
 				toLocal: (pos: { x: number; y: number }) => pos,
 			});
-			const mockParticle = {
-				emit: mockEmit,
-				getContainer: mockGetContainer,
-			} as unknown as ParticleSystem;
-			screen.setParticleSystem(mockParticle);
+			return {
+				particle: {
+					emit: mockEmit,
+					getContainer: mockGetContainer,
+				} as unknown as ParticleSystem,
+				mockEmit,
+			};
+		}
+
+		it("除去ボタンクリックでemitが呼ばれonRemoveCardが発火する", async () => {
+			const screen = new RewardScreen();
+			const { particle, mockEmit } = createMockParticle();
+			screen.setParticleSystem(particle);
 
 			const onRemove = vi.fn();
 			screen.setOnRemoveCard(onRemove);
 			screen.renderRemoveSelection(testCards, 600, 400);
 
-			const removeBtn = findRemoveButton(screen.getContainer());
-			expect(removeBtn).toBeDefined();
+			const container = screen.getContainer();
+			// カード行を選択
+			const scrollContainer = container.children.find(
+				(c) => "mask" in c && c.mask != null,
+			) as Container;
+			scrollContainer.children[0].emit(
+				"pointerdown",
+				{} as FederatedPointerEvent,
+			);
+
+			// 除去ボタンをクリック
+			const removeBtn = findByLabel(container, "removeBtn");
 			removeBtn?.emit("pointerdown", {} as FederatedPointerEvent);
 
 			// tween/emitは非同期なのでmicrotask flush
@@ -333,90 +434,62 @@ describe("RewardScreen", () => {
 			});
 		});
 
-		it("除去アニメーション中はキャンセルボタンのeventModeがnoneになる", () => {
+		it("除去アニメーション中はconfirmButtonContainerが無効化される", () => {
 			const screen = new RewardScreen();
-			const mockEmit = vi.fn().mockResolvedValue(undefined);
-			const mockGetContainer = vi.fn().mockReturnValue({
-				toLocal: (pos: { x: number; y: number }) => pos,
-			});
-			const mockParticle = {
-				emit: mockEmit,
-				getContainer: mockGetContainer,
-			} as unknown as ParticleSystem;
-			screen.setParticleSystem(mockParticle);
+			const { particle } = createMockParticle();
+			screen.setParticleSystem(particle);
 
 			screen.setOnRemoveCard(vi.fn());
 			screen.setOnSkip(vi.fn());
 			screen.renderRemoveSelection(testCards, 600, 400);
 
-			// キャンセルボタンを取得
 			const container = screen.getContainer();
-			function findDirectButtons(
-				parent: import("pixi.js").Container,
-			): import("pixi.js").Container[] {
-				const result: import("pixi.js").Container[] = [];
-				for (const child of parent.children) {
-					if (child.eventMode === "static" && child.cursor === "pointer") {
-						result.push(child as import("pixi.js").Container);
-					}
-				}
-				return result;
-			}
-			const directButtons = findDirectButtons(container);
-			const cancelBtn = directButtons[directButtons.length - 1];
-			expect(cancelBtn?.eventMode).toBe("static");
+			// カード行を選択
+			const scrollContainer = container.children.find(
+				(c) => "mask" in c && c.mask != null,
+			) as Container;
+			scrollContainer.children[0].emit(
+				"pointerdown",
+				{} as FederatedPointerEvent,
+			);
 
-			const removeBtn = findRemoveButton(container);
+			// 除去ボタンをクリック
+			const removeBtn = findByLabel(container, "removeBtn");
 			removeBtn?.emit("pointerdown", {} as FederatedPointerEvent);
 
-			// 除去クリック後にキャンセルボタンが無効化される
-			expect(cancelBtn?.eventMode).toBe("none");
+			// confirmButtonContainerのinteractiveChildrenがfalseになる
+			const confirmContainer = container.children.find(
+				(c) =>
+					"children" in c &&
+					(c as Container).children?.some((ch) => ch.label === "removeBtn"),
+			) as Container | undefined;
+			expect(confirmContainer?.interactiveChildren).toBe(false);
 		});
 
-		it("除去ボタンクリック後にスクロールコンテナとキャンセルボタンが無効化される", () => {
+		it("除去ボタンクリック後にスクロールコンテナが無効化される", () => {
 			const screen = new RewardScreen();
-			const mockEmit = vi.fn().mockResolvedValue(undefined);
-			const mockGetContainer = vi.fn().mockReturnValue({
-				toLocal: (pos: { x: number; y: number }) => pos,
-			});
-			const mockParticle = {
-				emit: mockEmit,
-				getContainer: mockGetContainer,
-			} as unknown as ParticleSystem;
-			screen.setParticleSystem(mockParticle);
+			const { particle } = createMockParticle();
+			screen.setParticleSystem(particle);
 
 			screen.setOnRemoveCard(vi.fn());
 			screen.renderRemoveSelection(testCards, 600, 400);
 
 			const container = screen.getContainer();
-			const removeBtn = findRemoveButton(container);
-			expect(removeBtn).toBeDefined();
+			// カード行を選択
+			const scrollContainer = container.children.find(
+				(c) => "mask" in c && c.mask != null,
+			) as Container;
+			scrollContainer.children[0].emit(
+				"pointerdown",
+				{} as FederatedPointerEvent,
+			);
+
+			// 除去ボタンをクリック
+			const removeBtn = findByLabel(container, "removeBtn");
 			removeBtn?.emit("pointerdown", {} as FederatedPointerEvent);
 
 			// スクロールコンテナのinteractiveChildrenがfalseになる
-			const scrollContainer = container.children.find(
-				(c) => "interactiveChildren" in c && c.mask != null,
-			) as import("pixi.js").Container | undefined;
 			expect(scrollContainer?.interactiveChildren).toBe(false);
-
-			// キャンセルボタンのeventModeがnoneになる
-			function findDirectButtons(
-				parent: import("pixi.js").Container,
-			): import("pixi.js").Container[] {
-				const result: import("pixi.js").Container[] = [];
-				for (const child of parent.children) {
-					if (
-						child.cursor === "pointer" &&
-						!("mask" in child && child.mask != null)
-					) {
-						result.push(child as import("pixi.js").Container);
-					}
-				}
-				return result;
-			}
-			const directButtons = findDirectButtons(container);
-			const cancelBtn = directButtons[directButtons.length - 1];
-			expect(cancelBtn?.eventMode).toBe("none");
 		});
 	});
 
