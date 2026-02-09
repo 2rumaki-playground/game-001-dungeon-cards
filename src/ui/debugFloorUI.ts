@@ -119,6 +119,21 @@ export function createDebugFloorUI(
 
 	// スピナー行: [▼] [数値] [▲] [開始ボタン]
 	const spinnerY = label.height + 8;
+	const textWidth = 40; // 階層テキスト用の固定幅領域
+	const gap = 4;
+	// 全体幅: ▼ボタン + gap + テキスト領域 + gap + ▲ボタン + gap*3 + 開始ボタン(80)
+	const totalWidth =
+		SPINNER_WIDTH + gap + textWidth + gap + SPINNER_WIDTH + gap * 3 + 80;
+	const startX = -totalWidth / 2;
+
+	// ▼ ボタン
+	const decBtn = createSpinnerButton("▼", startX, spinnerY, () => {
+		if (debugFloor > INITIAL_FLOOR) {
+			debugFloor--;
+			floorText.text = `${debugFloor}F`;
+		}
+	});
+	wrapper.addChild(decBtn);
 
 	// 階層テキスト
 	const floorText = new Text({
@@ -131,30 +146,29 @@ export function createDebugFloorUI(
 		},
 	});
 	floorText.anchor.set(0.5, 0);
+	floorText.x = startX + SPINNER_WIDTH + gap + textWidth / 2;
 	floorText.y = spinnerY + (SPINNER_HEIGHT - 18) / 2;
 	wrapper.addChild(floorText);
 
-	// ▼ ボタン
-	const decBtn = createSpinnerButton("▼", -SPINNER_WIDTH - 4, spinnerY, () => {
-		if (debugFloor > INITIAL_FLOOR) {
-			debugFloor--;
-			floorText.text = `${debugFloor}F`;
-		}
-	});
-	wrapper.addChild(decBtn);
-
 	// ▲ ボタン
-	const incBtn = createSpinnerButton("▲", 4, spinnerY, () => {
-		if (debugFloor < DEBUG_MAX_FLOOR) {
-			debugFloor++;
-			floorText.text = `${debugFloor}F`;
-		}
-	});
+	const incBtn = createSpinnerButton(
+		"▲",
+		startX + SPINNER_WIDTH + gap + textWidth + gap,
+		spinnerY,
+		() => {
+			if (debugFloor < DEBUG_MAX_FLOOR) {
+				debugFloor++;
+				floorText.text = `${debugFloor}F`;
+			}
+		},
+	);
 	wrapper.addChild(incBtn);
 
 	// 開始ボタン
-	const startBtn = createStartButton(SPINNER_WIDTH + 12, spinnerY, () =>
-		onStart(debugFloor),
+	const startBtn = createStartButton(
+		startX + SPINNER_WIDTH + gap + textWidth + gap + SPINNER_WIDTH + gap * 3,
+		spinnerY,
+		() => onStart(debugFloor),
 	);
 	wrapper.addChild(startBtn);
 
