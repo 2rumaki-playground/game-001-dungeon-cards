@@ -31,7 +31,6 @@ import { createJumpParticleConfig } from "./battleParticles";
 import { gridToCenterPixel } from "./coordinates";
 import { detectEnemyMoves } from "./enemyMoveDetector";
 import {
-	animateJumpWithStairs,
 	executeNextFloorTransition,
 	getScreenSize,
 	updateStateWithAttackAnimation,
@@ -227,7 +226,7 @@ async function handleJumpCardExecution(
 			y: prevPosition.y + delta.y * JUMP_DISTANCE,
 		};
 		emitJumpParticles(ctx, prevPosition, moveAngle);
-		await animateJumpWithStairs(ctx, result.state, prevPosition, stairsPos);
+		await updateStateWithStairsAnimation(ctx, result.state, stairsPos);
 	} else {
 		// ジャンプ成功: 着地先へ直接移動アニメーション
 		emitJumpParticles(ctx, prevPosition, moveAngle);
