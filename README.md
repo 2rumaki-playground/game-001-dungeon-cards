@@ -27,7 +27,7 @@
 ```bash
 mise install
 pnpm install
-npx playwright install --with-deps chromium  # E2Eテスト用
+pnpm exec playwright install --with-deps chromium  # E2Eテスト用
 ```
 
 ## 開発コマンド
