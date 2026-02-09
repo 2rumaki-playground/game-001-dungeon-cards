@@ -12,7 +12,7 @@
 | パッケージマネージャー | [pnpm](https://pnpm.io/) |
 | リンター / フォーマッター | [Biome](https://biomejs.dev/) |
 | テスト | [Vitest](https://vitest.dev/) / [Playwright](https://playwright.dev/) |
-| ランタイム管理 | [mise](https://mise.jdx.dev/) |
+| 開発ツール管理 | [mise](https://mise.jdx.dev/) |
 
 ## セットアップ
 
