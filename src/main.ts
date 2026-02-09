@@ -190,6 +190,7 @@ async function main() {
 		isAnimating: false,
 		pendingCard: null,
 		cardQueue: [],
+		isCardActionAnimating: false,
 		debugLog: import.meta.env.DEV,
 		ui,
 	};

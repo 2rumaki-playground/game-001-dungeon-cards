@@ -283,14 +283,19 @@ async function executeCard(
 	if (card.type === "wait") {
 		updateState(ctx, executeWait(ctx.state, card.id));
 	} else if (direction) {
-		if (card.type === "move") {
-			await handleMoveCardExecution(ctx, card.id, direction);
-		} else if (card.type === "attack") {
-			await handleAttackCardExecution(ctx, card.id, direction);
-		} else if (card.type === "strong_attack") {
-			await handleStrongAttackCardExecution(ctx, card.id, direction);
-		} else if (card.type === "rush") {
-			await handleRushCardExecution(ctx, card.id, direction);
+		ctx.isCardActionAnimating = true;
+		try {
+			if (card.type === "move") {
+				await handleMoveCardExecution(ctx, card.id, direction);
+			} else if (card.type === "attack") {
+				await handleAttackCardExecution(ctx, card.id, direction);
+			} else if (card.type === "strong_attack") {
+				await handleStrongAttackCardExecution(ctx, card.id, direction);
+			} else if (card.type === "rush") {
+				await handleRushCardExecution(ctx, card.id, direction);
+			}
+		} finally {
+			ctx.isCardActionAnimating = false;
 		}
 	}
 }
@@ -369,8 +374,8 @@ export function setupEventHandlers(ctx: GameContext): void {
 	// 手札選択のコールバック設定
 	// 方向パラメータを持つカードはクリック位置で方向が決まる
 	ctx.ui.handRenderer.setOnCardSelect(async (card, direction) => {
-		// アニメーション中の予約処理
-		if (ctx.isAnimating) {
+		// カードアクションアニメーション中の予約処理
+		if (ctx.isCardActionAnimating) {
 			// プレイヤーターン中のみ予約可能
 			if (ctx.state.turn !== "player" || ctx.state.screen !== "game") {
 				return false;
@@ -391,6 +396,9 @@ export function setupEventHandlers(ctx: GameContext): void {
 			ctx.cardQueue.push({ card, direction });
 			return false; // 消費アニメーションはスキップ（予約のみ）
 		}
+
+		// カードアクション以外のアニメーション中（フロア遷移等）は無効
+		if (ctx.isAnimating) return;
 
 		// 通常実行フロー
 		await executeCard(ctx, card, direction);
