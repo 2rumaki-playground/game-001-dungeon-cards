@@ -582,19 +582,23 @@ function showVictoryScreen(
 		render(ctx);
 
 		const { width: screenWidth, height: screenHeight } = getScreenSize(ctx);
+		const particleHeight = screenHeight - STATUS_BAR_HEIGHT;
 		const ps = ctx.ui.particleSystem;
 
 		// パーティクル発射: 光の粒子（初回のみ）+ 紙吹雪（繰り返し）
+		let confettiTimer: number | undefined;
 		if (ps) {
-			ps.emit(createGlowConfig(screenWidth, screenHeight));
+			ps.emit(createGlowConfig(screenWidth, particleHeight));
 			ps.emit(createConfettiConfig(screenWidth));
+			confettiTimer = setInterval(() => {
+				ps.emit(createConfettiConfig(screenWidth));
+			}, CONFETTI_INTERVAL);
 		}
-		const confettiTimer = setInterval(() => {
-			ps?.emit(createConfettiConfig(screenWidth));
-		}, CONFETTI_INTERVAL);
 
 		const cleanup = (): void => {
-			clearInterval(confettiTimer);
+			if (confettiTimer !== undefined) {
+				clearInterval(confettiTimer);
+			}
 			ps?.clear();
 			ctx.ui.victoryScreen.setOnContinue(() => {});
 			ctx.ui.victoryScreen.setOnReturnToTitle(() => {});
