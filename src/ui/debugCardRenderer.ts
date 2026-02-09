@@ -48,6 +48,10 @@ export class DebugCardRenderer {
 		);
 	}
 
+	getTotalHeight(): number {
+		return DEBUG_CARD_HEIGHT;
+	}
+
 	setOnCardSelect(callback: (cardType: DebugCardType) => void): void {
 		this.onCardSelect = callback;
 	}
@@ -55,10 +59,7 @@ export class DebugCardRenderer {
 	render(): void {
 		this.container.removeChildren();
 
-		const totalWidth =
-			DEBUG_CARDS.length * DEBUG_CARD_WIDTH +
-			(DEBUG_CARDS.length - 1) * DEBUG_CARD_GAP;
-		const startX = -totalWidth / 2;
+		const startX = -this.getTotalWidth() / 2;
 
 		for (let i = 0; i < DEBUG_CARDS.length; i++) {
 			const card = DEBUG_CARDS[i];
