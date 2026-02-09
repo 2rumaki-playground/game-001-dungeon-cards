@@ -11,6 +11,9 @@ import { makeInteractive } from "./graphicsHelpers";
 const SPINNER_WIDTH = 48;
 const SPINNER_HEIGHT = 28;
 
+/** デバッグ用階層上限（クリア階層＋余裕分） */
+const DEBUG_MAX_FLOOR = CLEAR_FLOOR + 10;
+
 /**
  * スピナーボタン（▲ / ▼）を生成
  */
@@ -142,7 +145,7 @@ export function createDebugFloorUI(
 
 	// ▲ ボタン
 	const incBtn = createSpinnerButton("▲", 4, spinnerY, () => {
-		if (debugFloor < CLEAR_FLOOR + 10) {
+		if (debugFloor < DEBUG_MAX_FLOOR) {
 			debugFloor++;
 			floorText.text = `${debugFloor}F`;
 		}
