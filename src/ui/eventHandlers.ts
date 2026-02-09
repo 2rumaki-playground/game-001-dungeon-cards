@@ -82,6 +82,7 @@ function shouldContinueQueue(
 ): void {
 	if (reachedStairs || gameOver) {
 		clearCardQueue(ctx);
+		ctx.isCardActionAnimating = false;
 	}
 }
 
