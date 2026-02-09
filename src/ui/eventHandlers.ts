@@ -543,14 +543,16 @@ export function setupEventHandlers(ctx: GameContext): void {
 	}
 
 	// 次の階層へボタンのコールバック設定
-	ctx.ui.nextFloorButton.setOnNextFloor(async () => {
+	ctx.ui.nextFloorButton.setOnNextFloor(() => {
 		if (ctx.isAnimating) return;
 		if (ctx.state.enemies.length > 0) return;
 		// 階層遷移前に方向選択UIと入力状態をリセット
 		ctx.ui.directionSelector.hide();
 		ctx.pendingCard = null;
 		clearCardQueue(ctx);
-		await executeNextFloorTransition(ctx);
+		void executeNextFloorTransition(ctx).catch((error) => {
+			console.error("次階層ボタンの処理に失敗しました", error);
+		});
 	});
 
 	// ターン終了処理
