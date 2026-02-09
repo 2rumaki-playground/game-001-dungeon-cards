@@ -541,8 +541,8 @@ export function setupEventHandlers(ctx: GameContext): void {
 		});
 	}
 
-	// ターン終了ボタンのコールバック設定
-	ctx.ui.turnEndButton.setOnEndTurn(async () => {
+	// ターン終了処理
+	async function handleEndTurn(): Promise<void> {
 		if (ctx.isAnimating) return; // アニメーション中は無効
 		// ターン終了時にキューをクリア
 		clearCardQueue(ctx);
@@ -609,5 +609,16 @@ export function setupEventHandlers(ctx: GameContext): void {
 		} finally {
 			ctx.isAnimating = false;
 		}
+	}
+
+	// ターン終了ボタンのコールバック設定
+	ctx.ui.turnEndButton.setOnEndTurn(handleEndTurn);
+
+	// 右クリックでターン終了
+	ctx.app.canvas.addEventListener("contextmenu", (e) => {
+		e.preventDefault();
+		if (ctx.state.screen !== "game") return;
+		if (ctx.state.turn !== "player") return;
+		handleEndTurn();
 	});
 }
