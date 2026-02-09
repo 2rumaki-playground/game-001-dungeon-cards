@@ -83,7 +83,6 @@ export class RewardScreen {
 	private particleSystem: ParticleSystem | null = null;
 	private cardContainers: Container[] = [];
 	private scrollContainer: Container | null = null;
-	private cancelButton: Container | null = null;
 	private selectedCardIndex: number | null = null;
 	private confirmButtonContainer: Container | null = null;
 	private selectedRemoveCardId: string | null = null;
@@ -130,7 +129,6 @@ export class RewardScreen {
 		this.container.removeChildren();
 		this.cardContainers = [];
 		this.scrollContainer = null;
-		this.cancelButton = null;
 		this.selectedCardIndex = null;
 		this.confirmButtonContainer = null;
 		this.selectedRemoveCardId = null;
@@ -247,7 +245,6 @@ export class RewardScreen {
 		this.container.removeChildren();
 		this.cardContainers = [];
 		this.scrollContainer = null;
-		this.cancelButton = null;
 		this.selectedRemoveCardId = null;
 		this.selectedRemoveItem = null;
 		this.confirmButtonContainer = null;
@@ -411,7 +408,7 @@ export class RewardScreen {
 		this.confirmButtonContainer.addChild(removeConfirmBtn);
 
 		// 「スキップ」ボタン（常に有効）
-		this.cancelButton = this.createButton(
+		const skipBtn = this.createButton(
 			"スキップ",
 			buttonStartX + BUTTON_WIDTH + buttonGap,
 			cancelY,
@@ -421,8 +418,8 @@ export class RewardScreen {
 				this.onSkip?.(0);
 			},
 		);
-		this.cancelButton.label = "skipBtn";
-		this.confirmButtonContainer.addChild(this.cancelButton);
+		skipBtn.label = "skipBtn";
+		this.confirmButtonContainer.addChild(skipBtn);
 
 		this.container.addChild(this.confirmButtonContainer);
 	}
