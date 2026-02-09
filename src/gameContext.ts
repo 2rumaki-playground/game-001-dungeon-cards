@@ -54,7 +54,7 @@ export interface GameContext {
 	pendingCard: Card | null;
 	/** カード予約キュー（プレイヤーターン中のアニメーション中に積まれる） */
 	cardQueue: QueuedCard[];
-	/** カードアクション（move/attack/rush等）のアニメーション中フラグ */
+	/** カードアクション（move/attack/jump等）のアニメーション中フラグ */
 	isCardActionAnimating: boolean;
 	debugLog: boolean;
 	debugMode: boolean;

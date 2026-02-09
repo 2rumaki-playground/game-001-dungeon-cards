@@ -23,9 +23,9 @@ describe("cardPool", () => {
 			expect(uncommons).toContain("strong_attack");
 		});
 
-		it("レアにはrushが含まれる", () => {
+		it("レアにはjumpが含まれる", () => {
 			const rares = getCardTypesByRarity("rare");
-			expect(rares).toContain("rush");
+			expect(rares).toContain("jump");
 		});
 
 		it("全カード種別がいずれかのレアリティに属する", () => {

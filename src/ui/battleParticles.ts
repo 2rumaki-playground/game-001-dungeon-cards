@@ -42,12 +42,12 @@ export function createStrongAttackParticleConfig(origin: Vec2): ParticleConfig {
 }
 
 /**
- * 突進カード用パーティクル設定を生成
+ * ジャンプカード用パーティクル設定を生成
  * 紫系のスピードラインエフェクト（移動方向の逆向きに発射）
  * @param origin パーティクル発生位置
  * @param moveAngle 移動方向の角度（ラジアン）
  */
-export function createRushParticleConfig(
+export function createJumpParticleConfig(
 	origin: Vec2,
 	moveAngle: number,
 ): ParticleConfig {

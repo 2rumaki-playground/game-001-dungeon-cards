@@ -11,10 +11,10 @@ import {
 	getEnemyCount,
 	getMapSize,
 	INITIAL_DECK,
+	JUMP_DISTANCE,
 	MAP_HEIGHT,
 	MAP_WIDTH,
 	PLAYER_STRONG_ATTACK_DAMAGE,
-	RUSH_MAX_DISTANCE,
 	STAIRS_COUNT,
 	TOTAL_DECK_SIZE,
 } from "./constants";
@@ -28,16 +28,16 @@ describe("constants", () => {
 		expect(INITIAL_DECK.moveCards).toBe(6);
 		expect(INITIAL_DECK.attackCards).toBe(6);
 		expect(INITIAL_DECK.strongAttackCards).toBe(2);
-		expect(INITIAL_DECK.rushCards).toBe(2);
+		expect(INITIAL_DECK.jumpCards).toBe(2);
 		expect(INITIAL_DECK.waitCards).toBe(2);
 	});
 
-	it("突進カードのAPコストが2", () => {
-		expect(CARD_COST.rush).toBe(2);
+	it("ジャンプカードのAPコストが2", () => {
+		expect(CARD_COST.jump).toBe(2);
 	});
 
-	it("突進カードの最大移動距離が2", () => {
-		expect(RUSH_MAX_DISTANCE).toBe(2);
+	it("ジャンプカードの着地距離が2", () => {
+		expect(JUMP_DISTANCE).toBe(2);
 	});
 
 	it("強攻撃カードのAPコストが2", () => {

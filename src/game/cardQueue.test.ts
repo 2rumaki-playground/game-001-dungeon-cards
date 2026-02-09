@@ -75,8 +75,8 @@ describe("cardQueue", () => {
 		});
 
 		it("AP=コストちょうどで予約可能", () => {
-			const card: Card = { id: "c1", type: "rush" };
-			// AP=2, rush costs 2 → OK
+			const card: Card = { id: "c1", type: "jump" };
+			// AP=2, jump costs 2 → OK
 			expect(canEnqueueCard(2, [], card)).toBe(true);
 		});
 	});

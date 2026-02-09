@@ -15,7 +15,7 @@ export const INITIAL_DECK = {
 	moveCards: 6,
 	attackCards: 6,
 	strongAttackCards: 2,
-	rushCards: 2,
+	jumpCards: 2,
 	waitCards: 2,
 } as const;
 
@@ -23,7 +23,7 @@ export const TOTAL_DECK_SIZE =
 	INITIAL_DECK.moveCards +
 	INITIAL_DECK.attackCards +
 	INITIAL_DECK.strongAttackCards +
-	INITIAL_DECK.rushCards +
+	INITIAL_DECK.jumpCards +
 	INITIAL_DECK.waitCards;
 
 // カードAPコスト
@@ -31,12 +31,12 @@ export const CARD_COST = {
 	move: 1,
 	attack: 1,
 	strong_attack: 2,
-	rush: 2,
+	jump: 2,
 	wait: 0,
 } as const;
 
-// 突進
-export const RUSH_MAX_DISTANCE = 2;
+// ジャンプ
+export const JUMP_DISTANCE = 2;
 
 // 戦闘
 export const PLAYER_INITIAL_HP = 10;
@@ -177,7 +177,7 @@ export const CARD_RARITY: Record<CardType, Rarity> = {
 	attack: "common",
 	wait: "common",
 	strong_attack: "uncommon",
-	rush: "rare",
+	jump: "rare",
 };
 
 // レアリティ出現率（正典: docs/spec/constants.md）

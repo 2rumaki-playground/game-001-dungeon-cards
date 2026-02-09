@@ -6,7 +6,7 @@ import { describe, expect, it } from "vitest";
 import {
 	createAttackParticleConfig,
 	createDefeatParticleConfig,
-	createRushParticleConfig,
+	createJumpParticleConfig,
 	createStrongAttackParticleConfig,
 	getAttackParticleConfig,
 } from "./battleParticles";
@@ -67,14 +67,14 @@ describe("createStrongAttackParticleConfig", () => {
 	});
 });
 
-describe("createRushParticleConfig", () => {
+describe("createJumpParticleConfig", () => {
 	it("originが設定される", () => {
-		const config = createRushParticleConfig({ x: 100, y: 200 }, 0);
+		const config = createJumpParticleConfig({ x: 100, y: 200 }, 0);
 		expect(config.origin).toEqual({ x: 100, y: 200 });
 	});
 
 	it("紫系の色が使用される", () => {
-		const config = createRushParticleConfig({ x: 0, y: 0 }, 0);
+		const config = createJumpParticleConfig({ x: 0, y: 0 }, 0);
 		const colors = Array.isArray(config.color) ? config.color : [config.color];
 		for (const c of colors) {
 			// 紫系: 青成分が一定以上
@@ -84,13 +84,13 @@ describe("createRushParticleConfig", () => {
 	});
 
 	it("directionalパターンが使用される", () => {
-		const config = createRushParticleConfig({ x: 0, y: 0 }, Math.PI / 2);
+		const config = createJumpParticleConfig({ x: 0, y: 0 }, Math.PI / 2);
 		expect(config.pattern.type).toBe("directional");
 	});
 
 	it("移動方向の逆向きにパーティクルが発射される", () => {
 		const moveAngle = 0; // 右方向への移動
-		const config = createRushParticleConfig({ x: 0, y: 0 }, moveAngle);
+		const config = createJumpParticleConfig({ x: 0, y: 0 }, moveAngle);
 		if (config.pattern.type === "directional") {
 			// 逆方向（π）に発射
 			expect(config.pattern.angle).toBeCloseTo(Math.PI);

@@ -5,9 +5,9 @@
 
 import {
 	CARD_COST,
+	JUMP_DISTANCE,
 	PLAYER_ATTACK_DAMAGE,
 	PLAYER_STRONG_ATTACK_DAMAGE,
-	RUSH_MAX_DISTANCE,
 } from "../constants";
 import type { Direction, GameState, Position } from "../types";
 import { DIRECTION_DELTA } from "../types";
@@ -240,15 +240,13 @@ export function executeStrongAttack(
 	);
 }
 
-/** 突進実行結果 */
-export type RushResult = {
+/** ジャンプ実行結果 */
+export type JumpResult = {
 	state: GameState;
-	/** 移動したマス数（0, 1, 2） */
-	movedDistance: number;
+	/** ジャンプが成功したか */
+	jumped: boolean;
 	/** 階段に到達したか */
 	reachedStairs: boolean;
-	/** 階段到達前に移動した位置（アニメーション用） */
-	intermediatePosition?: { x: number; y: number };
 	/** 発動した特殊タイル効果の一覧（発動位置付き） */
 	tileEffects: { tile: SpecialTileType; position: Position }[];
 	/** 特殊タイル効果によるゲームオーバー */
@@ -256,100 +254,110 @@ export type RushResult = {
 };
 
 /**
- * 突進カード使用時のプレイヤー移動処理
+ * ジャンプカード使用時のプレイヤー移動処理
  *
  * 成功/失敗に関わらずAP消費・カード使用を行う。
- * 最大2マスまで指定方向に移動を試みる。
- * - 1マス目で壁/マップ外/敵がある場合: 移動なし
- * - 1マス目で階段: 階段到達フラグを返す（階層遷移はUI層で実行）
- * - 2マス目で壁/敵がある場合: 1マス停止
- * - 2マス目で階段: 1マス移動後に階段到達フラグを返す
+ * 1マス先を飛び越えて2マス先に直接着地する。
+ * - 着地先（2マス先）が壁/マップ外: 移動なし（AP消費して失敗）
+ * - 着地先に敵がいる: 移動なし（AP消費して失敗）
+ * - 着地先が階段: 着地して階段到達フラグを返す
+ * - 着地先が特殊タイル: 着地先の効果のみ発動（飛び越えたマスは無視）
  */
-export function executeRush(
+export function executeJump(
 	state: GameState,
 	cardId: string,
 	direction: Direction,
-): RushResult {
+): JumpResult {
 	const delta = DIRECTION_DELTA[direction];
 
 	// AP消費
 	let next = updatePlayer(state, (p) => ({
 		...p,
-		ap: p.ap - CARD_COST.rush,
+		ap: p.ap - CARD_COST.jump,
 	}));
 
 	// カードを捨て札へ
 	next = setDeck(next, playCard(next.deck, cardId));
 
-	let movedDistance = 0;
-	let intermediatePosition: { x: number; y: number } | undefined;
-	const tileEffects: { tile: SpecialTileType; position: Position }[] = [];
+	// 着地先（2マス先）の座標を計算
+	const landX = next.player.position.x + delta.x * JUMP_DISTANCE;
+	const landY = next.player.position.y + delta.y * JUMP_DISTANCE;
 
-	for (let step = 0; step < RUSH_MAX_DISTANCE; step++) {
-		if (!canMove(next, direction)) {
-			break;
-		}
-
-		// 2マス目以降の移動前に中間位置を記録（アニメーション用）
-		if (movedDistance > 0) {
-			intermediatePosition = { ...next.player.position };
-		}
-
-		// 位置更新
-		const nx = next.player.position.x + delta.x;
-		const ny = next.player.position.y + delta.y;
-		next = updatePlayer(next, (p) => ({
-			...p,
-			position: { x: nx, y: ny },
-		}));
-		movedDistance++;
-
-		// 階段判定（遷移はUI層で行う）
-		if (next.map[ny][nx].type === "stairs") {
-			return {
-				state: next,
-				movedDistance,
-				reachedStairs: true,
-				intermediatePosition,
-				tileEffects,
-				gameOver: false,
-			};
-		}
-
-		// 特殊タイル効果
-		const effect = applyTileEffect(next);
-		next = effect.state;
-		if (effect.triggeredTile) {
-			tileEffects.push({
-				tile: effect.triggeredTile,
-				position: { ...next.player.position },
-			});
-		}
-		if (effect.gameOver) {
-			return {
-				state: next,
-				movedDistance,
-				reachedStairs: false,
-				intermediatePosition,
-				tileEffects,
-				gameOver: true,
-			};
-		}
-	}
-
-	if (movedDistance === 0) {
+	// 着地先がマップ外
+	if (!isInBounds(next.map, landX, landY)) {
 		return {
-			state: addActionLog(next, "突進できなかった"),
-			movedDistance: 0,
+			state: addActionLog(next, "ジャンプできなかった"),
+			jumped: false,
 			reachedStairs: false,
-			tileEffects,
+			tileEffects: [],
 			gameOver: false,
 		};
 	}
 
+	// 着地先が壁
+	if (next.map[landY][landX].type === "wall") {
+		return {
+			state: addActionLog(next, "ジャンプできなかった"),
+			jumped: false,
+			reachedStairs: false,
+			tileEffects: [],
+			gameOver: false,
+		};
+	}
+
+	// 着地先に敵がいる
+	if (
+		next.enemies.some((e) => e.position.x === landX && e.position.y === landY)
+	) {
+		return {
+			state: addActionLog(next, "ジャンプできなかった"),
+			jumped: false,
+			reachedStairs: false,
+			tileEffects: [],
+			gameOver: false,
+		};
+	}
+
+	// 着地成功: プレイヤーを2マス先に移動
+	next = updatePlayer(next, (p) => ({
+		...p,
+		position: { x: landX, y: landY },
+	}));
+
+	// 階段判定（遷移はUI層で行う）
+	if (next.map[landY][landX].type === "stairs") {
+		return {
+			state: next,
+			jumped: true,
+			reachedStairs: true,
+			tileEffects: [],
+			gameOver: false,
+		};
+	}
+
+	// 着地先の特殊タイル効果
+	const tileEffects: { tile: SpecialTileType; position: Position }[] = [];
+	const effect = applyTileEffect(next);
+	next = effect.state;
+	if (effect.triggeredTile) {
+		tileEffects.push({
+			tile: effect.triggeredTile,
+			position: { x: landX, y: landY },
+		});
+	}
+	if (effect.gameOver) {
+		return {
+			state: next,
+			jumped: true,
+			reachedStairs: false,
+			tileEffects,
+			gameOver: true,
+		};
+	}
+
 	return {
-		state: addActionLog(next, "突進した"),
-		movedDistance,
+		state: addActionLog(next, "ジャンプした"),
+		jumped: true,
 		reachedStairs: false,
 		tileEffects,
 		gameOver: false,

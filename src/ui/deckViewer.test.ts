@@ -11,7 +11,7 @@ function createTestDeck(): DeckState {
 		{ id: "a1", type: "attack" },
 		{ id: "a2", type: "attack" },
 		{ id: "sa1", type: "strong_attack" },
-		{ id: "r1", type: "rush" },
+		{ id: "r1", type: "jump" },
 		{ id: "w1", type: "wait" },
 	];
 	return {
@@ -99,7 +99,7 @@ describe("DeckViewer", () => {
 			const container = viewer.getContainer();
 			// overlay + title + 5種別の行 + 閉じるボタン
 			// ただしデッキに含まれる種別のみ表示
-			// テストデッキ: move x3, attack x2, strong_attack x1, rush x1, wait x1 = 5種別
+			// テストデッキ: move x3, attack x2, strong_attack x1, jump x1, wait x1 = 5種別
 			// overlay(1) + title(1) + 5行 + 閉じるボタン(1) = 8
 			expect(container.children.length).toBe(8);
 		});

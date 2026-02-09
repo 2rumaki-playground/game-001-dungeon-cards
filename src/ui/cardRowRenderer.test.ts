@@ -84,7 +84,7 @@ describe("cardRowRenderer", () => {
 		});
 
 		it("レアリティバーが描画される", () => {
-			const row = createCardListRow({ cardType: "rush" });
+			const row = createCardListRow({ cardType: "jump" });
 			// 背景 + レアリティバー + 名前テキスト + 効果テキスト = 最低4つの子要素
 			expect(row.children.length).toBeGreaterThanOrEqual(4);
 		});
