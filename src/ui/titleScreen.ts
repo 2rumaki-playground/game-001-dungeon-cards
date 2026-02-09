@@ -168,7 +168,7 @@ export class TitleScreen {
 		if (import.meta.env.DEV && this.onDebugStartFloor) {
 			import("./debugFloorUI").then(({ createDebugFloorUI }) => {
 				const debugContainer = createDebugFloorUI(
-					screenWidth,
+					screenWidth / 2,
 					centerY + (BUTTON_HEIGHT + BUTTON_GAP) * 2,
 					this.onDebugStartFloor!,
 				);
