@@ -6,12 +6,12 @@
 
 | カテゴリ | ツール |
 |----------|--------|
-| 言語 | TypeScript |
-| ビルド | Vite |
-| 描画 | PixiJS |
-| パッケージマネージャー | pnpm |
-| リンター / フォーマッター | Biome |
-| テスト | Vitest / Playwright |
+| 言語 | [TypeScript](https://www.typescriptlang.org/) |
+| ビルド | [Vite](https://vite.dev/) |
+| 描画 | [PixiJS](https://pixijs.com/) |
+| パッケージマネージャー | [pnpm](https://pnpm.io/) |
+| リンター / フォーマッター | [Biome](https://biomejs.dev/) |
+| テスト | [Vitest](https://vitest.dev/) / [Playwright](https://playwright.dev/) |
 
 ## セットアップ
 
