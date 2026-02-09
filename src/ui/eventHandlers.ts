@@ -73,18 +73,16 @@ function clearCardQueue(ctx: GameContext): void {
 
 /**
  * カード実行後にキューの継続可否を判定
- * 階段到達・ゲームオーバーの場合はキューをクリアしてfalseを返す
+ * 階段到達・ゲームオーバーの場合はキューをクリアする
  */
 function shouldContinueQueue(
 	ctx: GameContext,
 	reachedStairs: boolean,
 	gameOver: boolean,
-): boolean {
+): void {
 	if (reachedStairs || gameOver) {
 		clearCardQueue(ctx);
-		return false;
 	}
-	return true;
 }
 
 /**
