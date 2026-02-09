@@ -546,6 +546,9 @@ export function setupEventHandlers(ctx: GameContext): void {
 	ctx.ui.nextFloorButton.setOnNextFloor(async () => {
 		if (ctx.isAnimating) return;
 		if (ctx.state.enemies.length > 0) return;
+		// 階層遷移前に方向選択UIと入力状態をリセット
+		ctx.ui.directionSelector.hide();
+		ctx.pendingCard = null;
 		clearCardQueue(ctx);
 		await executeNextFloorTransition(ctx);
 	});
