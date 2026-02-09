@@ -15,6 +15,7 @@ vi.mock("../utils/tween", () => ({
 	},
 }));
 
+import type { FederatedPointerEvent } from "pixi.js";
 import { getTexts } from "../test-utils/pixiTestHelper";
 import { VictoryScreen } from "./victoryScreen";
 
@@ -87,20 +88,23 @@ describe("VictoryScreen", () => {
 	});
 
 	describe("コールバック", () => {
-		it("setOnContinueで設定したコールバックが呼ばれる", () => {
+		it("続けるボタンのpointerdownでsetOnContinueコールバックが呼ばれる", () => {
 			const callback = vi.fn();
 			screen.setOnContinue(callback);
 			screen.render(20, 400, 600);
-			// ボタンはContainer内の子要素で、pointerdownイベントで発火
-			// コールバックが設定されていることを確認
-			expect(callback).not.toHaveBeenCalled();
+			// 子要素: overlay(0), title(1), floorText(2), continueButton(3), returnButton(4)
+			const continueButton = screen.getContainer().children[3];
+			continueButton.emit("pointerdown", {} as FederatedPointerEvent);
+			expect(callback).toHaveBeenCalledTimes(1);
 		});
 
-		it("setOnReturnToTitleで設定したコールバックが呼ばれる", () => {
+		it("タイトルに戻るボタンのpointerdownでsetOnReturnToTitleコールバックが呼ばれる", () => {
 			const callback = vi.fn();
 			screen.setOnReturnToTitle(callback);
 			screen.render(20, 400, 600);
-			expect(callback).not.toHaveBeenCalled();
+			const returnButton = screen.getContainer().children[4];
+			returnButton.emit("pointerdown", {} as FederatedPointerEvent);
+			expect(callback).toHaveBeenCalledTimes(1);
 		});
 	});
 });
