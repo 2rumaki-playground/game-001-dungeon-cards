@@ -39,6 +39,7 @@ export class TitleScreen {
 	private container: Container;
 	private onNewGame: (() => void) | null = null;
 	private onContinue: (() => void) | null = null;
+	private onDebugStartFloor: ((floor: number) => void) | null = null;
 
 	/** 背景パーティクル用 */
 	private bgParticleGraphics: Graphics | null = null;
@@ -70,6 +71,13 @@ export class TitleScreen {
 	 */
 	setOnContinue(callback: () => void): void {
 		this.onContinue = callback;
+	}
+
+	/**
+	 * デバッグ用階層指定開始コールバックを設定
+	 */
+	setOnDebugStartFloor(callback: (floor: number) => void): void {
+		this.onDebugStartFloor = callback;
 	}
 
 	/**
@@ -155,6 +163,29 @@ export class TitleScreen {
 				easing: Easing.easeOut,
 			},
 		);
+
+		// DEV環境限定: 階層指定開始UI
+		if (import.meta.env.DEV && this.onDebugStartFloor) {
+			import("./debugFloorUI").then(({ createDebugFloorUI }) => {
+				const debugContainer = createDebugFloorUI(
+					screenWidth,
+					centerY + (BUTTON_HEIGHT + BUTTON_GAP) * 2,
+					this.onDebugStartFloor!,
+				);
+				debugContainer.alpha = 0;
+				this.container.addChild(debugContainer);
+
+				tween(
+					debugContainer,
+					{ alpha: 1 },
+					{
+						duration: INTRO_TIMING.buttonDuration,
+						delay: getButtonDelay(2),
+						easing: Easing.easeOut,
+					},
+				);
+			});
+		}
 
 		// 背景パーティクル開始
 		this.startBgParticles(screenWidth, screenHeight);

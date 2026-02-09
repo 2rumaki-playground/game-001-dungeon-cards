@@ -13,6 +13,7 @@ import {
 	executeWait,
 	returnToTitle,
 	startNewGame,
+	startNewGameAtFloor,
 	startPlayerTurn,
 	willReshuffle,
 } from "../game";
@@ -316,6 +317,26 @@ export function setupEventHandlers(ctx: GameContext): void {
 				render(ctx, true);
 			});
 			// フェードイン後に手札配布アニメーション
+			await ctx.ui.handRenderer.renderWithAnimation(
+				ctx.state.deck.hand,
+				ctx.state.player.ap,
+				newState.deck.hand.length,
+			);
+		} finally {
+			ctx.isAnimating = false;
+		}
+	});
+
+	ctx.ui.titleScreen.setOnDebugStartFloor(async (floor) => {
+		if (ctx.isAnimating) return;
+		ctx.isAnimating = true;
+		try {
+			const newState = startNewGameAtFloor(ctx.state, floor);
+			await ctx.ui.screenTransition.fadeTransition(() => {
+				applyState(ctx, newState);
+				relayoutUI(ctx);
+				render(ctx, true);
+			});
 			await ctx.ui.handRenderer.renderWithAnimation(
 				ctx.state.deck.hand,
 				ctx.state.player.ap,

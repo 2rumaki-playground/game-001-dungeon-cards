@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+	CLEAR_FLOOR,
 	ENEMY_HP,
 	ENEMY_PARAMS,
 	getEnemyCount,
@@ -24,6 +25,7 @@ import {
 	setFloor,
 	setTile,
 	startNewGame,
+	startNewGameAtFloor,
 	updateEnemy,
 	updatePlayer,
 } from "./state";
@@ -248,6 +250,48 @@ describe("state", () => {
 			const gameState = startNewGame(titleState);
 			expect(gameState.player.hp).toBe(PLAYER_INITIAL_HP);
 			expect(gameState.player.ap).toBe(MAX_AP);
+		});
+	});
+
+	describe("startNewGameAtFloor", () => {
+		it("指定階層でゲームを開始する", () => {
+			const titleState = createTitleScreenState(12345);
+			const gameState = startNewGameAtFloor(titleState, 10);
+			expect(gameState.screen).toBe("game");
+			expect(gameState.turn).toBe("player");
+			expect(gameState.floor).toBe(10);
+		});
+
+		it("指定階層に応じたマップサイズで生成される", () => {
+			const titleState = createTitleScreenState(12345);
+			const gameState = startNewGameAtFloor(titleState, 10);
+			const expectedSize = getMapSize(10);
+			expect(gameState.map.length).toBe(expectedSize.height);
+			for (const row of gameState.map) {
+				expect(row.length).toBe(expectedSize.width);
+			}
+		});
+
+		it("指定階層に応じた敵構成で生成される", () => {
+			const titleState = createTitleScreenState(12345);
+			const gameState = startNewGameAtFloor(titleState, 10);
+			expect(gameState.enemies.length).toBe(getEnemyCount(10));
+			// 10Fにはボスがいる
+			const boss = gameState.enemies.find((e) => e.type === "boss");
+			expect(boss).toBeDefined();
+		});
+
+		it("デッキが生成され手札がドローされる", () => {
+			const titleState = createTitleScreenState(12345);
+			const gameState = startNewGameAtFloor(titleState, 5);
+			expect(gameState.deck.hand.length).toBe(HAND_LIMIT);
+			expect(gameState.deck.drawPile.length).toBeGreaterThan(0);
+		});
+
+		it("CLEAR_FLOOR以上の階層も指定できる", () => {
+			const titleState = createTitleScreenState(12345);
+			const gameState = startNewGameAtFloor(titleState, CLEAR_FLOOR + 5);
+			expect(gameState.floor).toBe(CLEAR_FLOOR + 5);
 		});
 	});
 

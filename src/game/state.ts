@@ -154,6 +154,35 @@ export function startNewGame(state: GameState): GameState {
 }
 
 /**
+ * 指定階層から新規ゲームを開始（デバッグ用）
+ */
+export function startNewGameAtFloor(
+	state: GameState,
+	floor: number,
+): GameState {
+	const rng = new RNG(state.rng.seed);
+	const { map, player, enemies } = generateMapPlacement(rng, floor);
+	const initialPlayer = createInitialPlayer();
+	const gameState: GameState = {
+		screen: "game",
+		turn: "player",
+		floor,
+		map,
+		player: { ...initialPlayer, position: player },
+		enemies: createEnemiesForFloor(enemies, floor),
+		deck: createEmptyDeckState(),
+		actionLog: [],
+		rng,
+		defeatedEnemyCount: 0,
+		rewardState: null,
+		isCleared: false,
+	};
+	const deck = createInitialDeckState(gameState.rng);
+	const deckWithHand = drawCards(deck, gameState.rng);
+	return { ...gameState, deck: deckWithHand };
+}
+
+/**
  * ゲームオーバー画面からタイトル画面に戻る
  */
 export function returnToTitle(_state: GameState): GameState {
