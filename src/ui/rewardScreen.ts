@@ -210,6 +210,8 @@ export class RewardScreen {
 		);
 		acquireBtn.label = "acquireBtn";
 		acquireBtn.eventMode = "none";
+		acquireBtn.cursor = "default";
+		(acquireBtn.children[1] as Text).style.fill = UI_COLORS_DISABLED.text;
 		this.confirmButtonContainer.addChild(acquireBtn);
 
 		// 「スキップ」ボタン（常に有効）
@@ -404,6 +406,8 @@ export class RewardScreen {
 		);
 		removeConfirmBtn.label = "removeBtn";
 		removeConfirmBtn.eventMode = "none";
+		removeConfirmBtn.cursor = "default";
+		(removeConfirmBtn.children[1] as Text).style.fill = UI_COLORS_DISABLED.text;
 		this.confirmButtonContainer.addChild(removeConfirmBtn);
 
 		// 「スキップ」ボタン（常に有効）
@@ -593,11 +597,13 @@ export class RewardScreen {
 		);
 		if (!acquireBtn) return;
 
+		const bg = acquireBtn.children[0] as Graphics;
+		const text = acquireBtn.children[1] as Text;
+
 		if (this.selectedCardIndex !== null) {
 			// 有効化: 緑色に変更
 			acquireBtn.eventMode = "static";
 			acquireBtn.cursor = "pointer";
-			const bg = acquireBtn.children[0] as Graphics;
 			bg.clear();
 			drawRoundedRect(
 				bg,
@@ -610,8 +616,21 @@ export class RewardScreen {
 					width: 1,
 				},
 			);
-			const text = acquireBtn.children[1] as Text;
 			text.style.fill = 0xffffff;
+		} else {
+			// 無効化: disabled色に戻す
+			acquireBtn.eventMode = "none";
+			acquireBtn.cursor = "default";
+			bg.clear();
+			drawRoundedRect(
+				bg,
+				BUTTON_WIDTH,
+				BUTTON_HEIGHT,
+				BUTTON_RADIUS,
+				UI_COLORS_DISABLED.bg,
+				{ color: UI_COLORS_DISABLED.border, width: 1 },
+			);
+			text.style.fill = UI_COLORS_DISABLED.text;
 		}
 	}
 
@@ -664,11 +683,13 @@ export class RewardScreen {
 		);
 		if (!removeBtn) return;
 
+		const bg = removeBtn.children[0] as Graphics;
+		const text = removeBtn.children[1] as Text;
+
 		if (this.selectedRemoveCardId !== null) {
 			// 有効化: 赤色に変更
 			removeBtn.eventMode = "static";
 			removeBtn.cursor = "pointer";
-			const bg = removeBtn.children[0] as Graphics;
 			bg.clear();
 			drawRoundedRect(
 				bg,
@@ -681,8 +702,21 @@ export class RewardScreen {
 					width: 1,
 				},
 			);
-			const text = removeBtn.children[1] as Text;
 			text.style.fill = 0xffffff;
+		} else {
+			// 無効化: disabled色に戻す
+			removeBtn.eventMode = "none";
+			removeBtn.cursor = "default";
+			bg.clear();
+			drawRoundedRect(
+				bg,
+				BUTTON_WIDTH,
+				BUTTON_HEIGHT,
+				BUTTON_RADIUS,
+				UI_COLORS_DISABLED.bg,
+				{ color: UI_COLORS_DISABLED.border, width: 1 },
+			);
+			text.style.fill = UI_COLORS_DISABLED.text;
 		}
 	}
 
