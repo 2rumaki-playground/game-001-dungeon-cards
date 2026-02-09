@@ -579,6 +579,7 @@ export class RewardScreen {
 		const highlight = container.children.find((c) => c.label === "highlight");
 		if (highlight) {
 			container.removeChild(highlight);
+			highlight.destroy();
 		}
 	}
 
