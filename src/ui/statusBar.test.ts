@@ -40,6 +40,22 @@ describe("StatusBar", () => {
 		expect(findTextByPrefix(container, "階層:").text).toBe("階層: 5");
 	});
 
+	it("renderでisCleared=trueの場合に階層に★が付与される", () => {
+		const statusBar = new StatusBar();
+		const player = {
+			position: { x: 0, y: 0 },
+			hp: 7,
+			maxHp: 10,
+			ap: 2,
+			maxAp: 3,
+		};
+		statusBar.render(player, 20, true);
+
+		const container = statusBar.getContainer();
+
+		expect(findTextByPrefix(container, "階層:").text).toBe("階層: 20 ★");
+	});
+
 	it("renderでHPバーが正しい比率で描画される", () => {
 		const statusBar = new StatusBar();
 		const player = {
