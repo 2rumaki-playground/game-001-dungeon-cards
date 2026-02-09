@@ -44,6 +44,17 @@ export function executeDebugTeleport(
 		return { state, reachedStairs: false, gameOver: false };
 	}
 
+	if (state.map[targetPos.y][targetPos.x].type === "wall") {
+		return { state, reachedStairs: false, gameOver: false };
+	}
+
+	const hasEnemy = state.enemies.some(
+		(e) => e.position.x === targetPos.x && e.position.y === targetPos.y,
+	);
+	if (hasEnemy) {
+		return { state, reachedStairs: false, gameOver: false };
+	}
+
 	let next = updatePlayer(state, (p) => ({
 		...p,
 		position: { ...targetPos },
