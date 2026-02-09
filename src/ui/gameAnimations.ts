@@ -67,9 +67,12 @@ export function getGameAreaSize(ctx: GameContext): {
 	const mapWidth = ctx.state.map[0]?.length ?? 0;
 	const mapHeight = ctx.state.map.length;
 	if (mapWidth === 0 || mapHeight === 0) {
+		const screenSize = getScreenSize(ctx);
+		const logWidth = ctx.ui.actionLogRenderer.getWidth();
+		const gameWidth = Math.max(0, screenSize.width - LOG_AREA_GAP - logWidth);
 		return {
-			width: ctx.app.renderer.width,
-			height: ctx.app.renderer.height,
+			width: gameWidth,
+			height: screenSize.height,
 		};
 	}
 	const mapPixelSize = getMapPixelSize(mapWidth, mapHeight);
