@@ -58,6 +58,28 @@ export function getScreenSize(ctx: GameContext): {
 }
 
 /**
+ * ゲームエリア（ログエリアを除いた領域）のサイズを計算
+ */
+export function getGameAreaSize(ctx: GameContext): {
+	width: number;
+	height: number;
+} {
+	const mapWidth = ctx.state.map[0]?.length ?? 0;
+	const mapHeight = ctx.state.map.length;
+	if (mapWidth === 0 || mapHeight === 0) {
+		return {
+			width: ctx.app.renderer.width,
+			height: ctx.app.renderer.height,
+		};
+	}
+	const mapPixelSize = getMapPixelSize(mapWidth, mapHeight);
+	return {
+		width: mapPixelSize.width,
+		height: mapPixelSize.height + HAND_AREA_HEIGHT + STATUS_BAR_HEIGHT,
+	};
+}
+
+/**
  * ゲーム状態を更新してプレイヤー移動アニメーション付きで再描画
  */
 export async function updateStateWithMoveAnimation(
@@ -119,6 +141,7 @@ async function executeRewardFlow(
 	render(ctx);
 
 	const { width: screenWidth, height: screenHeight } = getScreenSize(ctx);
+	const gameArea = getGameAreaSize(ctx);
 
 	const needsReplacement = getTotalDeckSize(current.deck) >= DECK_MAX_SIZE;
 
@@ -131,6 +154,8 @@ async function executeRewardFlow(
 			current,
 			screenWidth,
 			screenHeight,
+			undefined,
+			gameArea,
 		);
 		if (removeResult !== null) {
 			const beforeRemove = current;
@@ -141,6 +166,7 @@ async function executeRewardFlow(
 				result.rewardState.choices,
 				screenWidth,
 				screenHeight,
+				gameArea,
 			);
 			if (selectedIndex !== null) {
 				current = addRewardCardToDeck(
@@ -159,6 +185,7 @@ async function executeRewardFlow(
 			result.rewardState.choices,
 			screenWidth,
 			screenHeight,
+			gameArea,
 		);
 		if (selectedIndex !== null) {
 			current = addRewardCardToDeck(
@@ -183,9 +210,16 @@ function showRewardCardSelection(
 	choices: CardType[],
 	screenWidth: number,
 	screenHeight: number,
+	gameArea?: { width: number; height: number },
 ): Promise<number | null> {
 	return new Promise((resolve) => {
-		ctx.ui.rewardScreen.render(choices, screenWidth, screenHeight);
+		ctx.ui.rewardScreen.render(
+			choices,
+			screenWidth,
+			screenHeight,
+			gameArea?.width,
+			gameArea?.height,
+		);
 		ctx.ui.rewardScreen.show();
 
 		ctx.ui.rewardScreen.setOnCardSelect(async (index) => {
@@ -216,6 +250,7 @@ function showRemoveCardSelection(
 	screenWidth: number,
 	screenHeight: number,
 	title?: string,
+	gameArea?: { width: number; height: number },
 ): Promise<string | null> {
 	return new Promise((resolve) => {
 		const allCards = [
@@ -229,6 +264,8 @@ function showRemoveCardSelection(
 			screenWidth,
 			screenHeight,
 			title,
+			gameArea?.width,
+			gameArea?.height,
 		);
 		ctx.ui.rewardScreen.show();
 
@@ -254,6 +291,7 @@ async function executeCardRemovalEvent(
 	state: GameState,
 	screenWidth: number,
 	screenHeight: number,
+	gameArea?: { width: number; height: number },
 ): Promise<GameState> {
 	const { triggered, updatedState } = shouldTriggerCardRemoval(state);
 	if (!triggered) return updatedState;
@@ -273,6 +311,7 @@ async function executeCardRemovalEvent(
 		screenWidth,
 		screenHeight,
 		"カード除去イベント",
+		gameArea,
 	);
 
 	let resultState: GameState;
@@ -307,6 +346,7 @@ export async function updateStateWithStairsAnimation(
 		applyState(ctx, stairsState);
 
 		const { width: screenWidth, height: screenHeight } = getScreenSize(ctx);
+		const gameArea = getGameAreaSize(ctx);
 
 		// 2. カード除去イベント（報酬フローの前）
 		const afterRemoval = await executeCardRemovalEvent(
@@ -314,6 +354,7 @@ export async function updateStateWithStairsAnimation(
 			stairsState,
 			screenWidth,
 			screenHeight,
+			gameArea,
 		);
 
 		// 3. 報酬フロー（撃破数0ならスキップ）
@@ -406,6 +447,7 @@ export async function animateRushWithStairs(
 		applyState(ctx, stairsState);
 
 		const { width: screenWidth, height: screenHeight } = getScreenSize(ctx);
+		const gameArea = getGameAreaSize(ctx);
 
 		// 3. カード除去イベント（報酬フローの前）
 		const afterRemoval = await executeCardRemovalEvent(
@@ -413,6 +455,7 @@ export async function animateRushWithStairs(
 			stairsState,
 			screenWidth,
 			screenHeight,
+			gameArea,
 		);
 
 		// 4. 報酬フロー
