@@ -70,7 +70,10 @@ export function relayoutUI(ctx: GameContext): void {
 	if (ctx.ui.debugCardRenderer) {
 		ctx.ui.debugCardRenderer.getContainer().x = mapSize.width / 2;
 		ctx.ui.debugCardRenderer.getContainer().y =
-			STATUS_BAR_HEIGHT + mapSize.height + HAND_AREA_TOP_PADDING + 140;
+			STATUS_BAR_HEIGHT +
+			mapSize.height +
+			HAND_AREA_TOP_PADDING +
+			HAND_AREA_HEIGHT;
 	}
 
 	// デバッグターゲットセレクタ
