@@ -41,10 +41,20 @@ export function positionToKey(pos: Position): string {
  */
 export function addRemnant(state: GameState, position: Position): GameState {
 	const key = positionToKey(position);
-	const current = state.remnants[key] ?? 0;
+	const rawCurrent = state.remnants?.[key];
+	const numericCurrent = Number(rawCurrent);
+	const current =
+		Number.isFinite(numericCurrent) && numericCurrent >= 0
+			? Math.floor(numericCurrent)
+			: 0;
+	const newRemnants: typeof state.remnants = Object.assign(
+		Object.create(null),
+		state.remnants,
+	);
+	newRemnants[key] = current + 1;
 	return {
 		...state,
-		remnants: { ...state.remnants, [key]: current + 1 },
+		remnants: newRemnants,
 		rng: cloneRng(state.rng),
 	};
 }
