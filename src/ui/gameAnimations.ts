@@ -419,7 +419,7 @@ export async function animateRushWithStairs(
 		// 4. 報酬フロー
 		const afterReward = await executeRewardFlow(ctx, afterRemoval);
 
-		// 5. 勝利画面（20Fボス撃破済みの場合）
+		// 5. 勝利画面（クリア階層（CLEAR_FLOOR）のボス撃破済みの場合）
 		if (shouldShowVictoryScreen(afterReward)) {
 			const victoryResult = await showVictoryScreen(ctx, afterReward);
 			if (victoryResult === "title") return;
