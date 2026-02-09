@@ -25,6 +25,7 @@
 ### インストール
 
 ```bash
+mise install
 pnpm install
 npx playwright install --with-deps chromium  # E2Eテスト用
 ```
