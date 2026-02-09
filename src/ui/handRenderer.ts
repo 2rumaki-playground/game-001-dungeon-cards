@@ -102,6 +102,7 @@ const CARD_COLORS = {
  */
 export class HandRenderer {
 	private container: Container;
+	private cardsContainer: Container;
 	private particleSystem: ParticleSystem | null;
 	private selectedCardId: string | null = null;
 	private hoveredCardId: string | null = null;
@@ -117,6 +118,8 @@ export class HandRenderer {
 
 	constructor(particleSystem?: ParticleSystem) {
 		this.container = new Container();
+		this.cardsContainer = new Container();
+		this.container.addChild(this.cardsContainer);
 		this.particleSystem = particleSystem ?? null;
 	}
 
@@ -153,7 +156,7 @@ export class HandRenderer {
 	render(hand: Card[], currentAp: number): void {
 		this.currentHand = hand;
 		this.currentAp = currentAp;
-		this.container.removeChildren();
+		this.cardsContainer.removeChildren();
 
 		const totalWidth = hand.length * CARD_WIDTH + (hand.length - 1) * CARD_GAP;
 		const startX = -totalWidth / 2;
@@ -175,7 +178,7 @@ export class HandRenderer {
 				selected,
 				hovered,
 			);
-			this.container.addChild(cardContainer);
+			this.cardsContainer.addChild(cardContainer);
 		}
 	}
 
@@ -194,7 +197,7 @@ export class HandRenderer {
 	): Promise<void> {
 		this.currentHand = hand;
 		this.currentAp = currentAp;
-		this.container.removeChildren();
+		this.cardsContainer.removeChildren();
 
 		const totalWidth = hand.length * CARD_WIDTH + (hand.length - 1) * CARD_GAP;
 		const startX = -totalWidth / 2;
@@ -255,7 +258,7 @@ export class HandRenderer {
 				animationPromises.push(animPromise);
 			}
 
-			this.container.addChild(cardContainer);
+			this.cardsContainer.addChild(cardContainer);
 		}
 
 		// すべてのアニメーションが完了するまで待機
@@ -509,7 +512,7 @@ export class HandRenderer {
 	 * クリア
 	 */
 	clear(): void {
-		this.container.removeChildren();
+		this.cardsContainer.removeChildren();
 		this.selectedCardId = null;
 		this.hoveredCardId = null;
 	}
