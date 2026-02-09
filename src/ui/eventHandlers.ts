@@ -616,9 +616,11 @@ export function setupEventHandlers(ctx: GameContext): void {
 
 	// 右クリックでターン終了
 	ctx.app.canvas.addEventListener("contextmenu", (e) => {
-		e.preventDefault();
 		if (ctx.state.screen !== "game") return;
 		if (ctx.state.turn !== "player") return;
-		handleEndTurn();
+		e.preventDefault();
+		void handleEndTurn().catch((error) => {
+			console.error(error);
+		});
 	});
 }
