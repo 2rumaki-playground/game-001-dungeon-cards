@@ -400,14 +400,15 @@ export function setupEventHandlers(ctx: GameContext): void {
 		// カードアクション以外のアニメーション中（フロア遷移等）は無効
 		if (ctx.isAnimating) return;
 
-		// 通常実行フロー
-		await executeCard(ctx, card, direction);
-
-		// 方向未指定で方向が必要なカードの場合は方向選択UIが表示される
-		// その場合はキュー処理を待たない（方向選択完了後に処理される）
+		// 方向が必要なカードで方向が未指定の場合は、方向選択UIを表示して処理を保留する
 		if (card.type !== "wait" && !direction) {
+			ctx.pendingCard = card;
+			ctx.ui.directionSelector.show();
 			return;
 		}
+
+		// 通常実行フロー
+		await executeCard(ctx, card, direction);
 
 		// カード実行後にキューを消化
 		await processCardQueue(ctx);
