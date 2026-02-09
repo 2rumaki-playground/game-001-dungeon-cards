@@ -119,6 +119,7 @@ export class HandRenderer {
 	constructor(particleSystem?: ParticleSystem) {
 		this.container = new Container();
 		this.cardsContainer = new Container();
+		this.cardsContainer.label = "cards";
 		this.container.addChild(this.cardsContainer);
 		this.particleSystem = particleSystem ?? null;
 	}

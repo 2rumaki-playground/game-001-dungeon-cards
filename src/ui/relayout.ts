@@ -68,6 +68,7 @@ export function relayoutUI(ctx: GameContext): void {
 
 	// デバッグカードレンダラー（handRendererの子要素）
 	if (ctx.ui.debugCardRenderer) {
-		ctx.ui.debugCardRenderer.getContainer().y = HAND_AREA_HEIGHT;
+		ctx.ui.debugCardRenderer.getContainer().y =
+			HAND_AREA_HEIGHT - HAND_AREA_TOP_PADDING;
 	}
 }

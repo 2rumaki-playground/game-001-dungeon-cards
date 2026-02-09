@@ -140,7 +140,7 @@ async function initializeUIComponents(
 
 		debugCardRenderer = new DebugCardRenderer();
 		const debugCardContainer = debugCardRenderer.getContainer();
-		debugCardContainer.y = HAND_AREA_HEIGHT;
+		debugCardContainer.y = HAND_AREA_HEIGHT - HAND_AREA_TOP_PADDING;
 		handRenderer.getContainer().addChild(debugCardContainer);
 
 		debugTargetSelector = new DebugTargetSelector();
