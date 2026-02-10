@@ -177,7 +177,8 @@ describe("DeckViewer", () => {
 			// コンテンツ全体の高さを計算
 			const titleFontSize = 24;
 			const titleToListGap = 12;
-			const typesCount = 5; // テストデッキは5種別
+			const allCards = [...deck.drawPile, ...deck.hand, ...deck.discardPile];
+			const typesCount = new Set(allCards.map((card) => card.type)).size;
 			const listHeight = typesCount * (CARD_ROW_HEIGHT + CARD_ROW_GAP);
 			const listToCloseGap = 10;
 			const contentHeight =
