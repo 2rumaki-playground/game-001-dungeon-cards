@@ -4,7 +4,7 @@
  */
 
 import { BOSS_SKILL, ENEMY_PARAMS } from "../constants";
-import type { Direction, Enemy, GameState, Position } from "../types";
+import type { Direction, Enemy, GameState } from "../types";
 import { DIRECTION_DELTA } from "../types";
 import {
 	checkEnrage,
@@ -14,21 +14,10 @@ import {
 } from "./bossSkill";
 import { applyDamageToPlayer, checkGameOver, isDefeated } from "./combat";
 import { isInBounds } from "./map";
+import { isAdjacent, manhattanDistance } from "./positionUtils";
 import { addActionLog, setEnemies, updateEnemy } from "./state";
 
-/**
- * 2点が4近傍で隣接しているか判定
- */
-export function isAdjacent(a: Position, b: Position): boolean {
-	return Math.abs(a.x - b.x) + Math.abs(a.y - b.y) === 1;
-}
-
-/**
- * マンハッタン距離を計算
- */
-export function manhattanDistance(a: Position, b: Position): number {
-	return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
-}
+export { isAdjacent, manhattanDistance };
 
 /** 優先順序: 上→下→左→右 */
 const DIRECTION_PRIORITY: Direction[] = ["up", "down", "left", "right"];

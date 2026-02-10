@@ -5,18 +5,11 @@
  */
 
 import { BOSS_SKILL, ENEMY_PARAMS } from "../constants";
-import type { Enemy, GameState, Position } from "../types";
+import type { Enemy, GameState } from "../types";
 import type { RNG } from "../utils/rng";
 import { applyDamageToPlayer } from "./combat";
+import { isAdjacent, manhattanDistance } from "./positionUtils";
 import { addActionLog, updateEnemy } from "./state";
-
-function manhattanDistance(a: Position, b: Position): number {
-	return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
-}
-
-function isAdjacent(a: Position, b: Position): boolean {
-	return manhattanDistance(a, b) === 1;
-}
 
 /**
  * ボスの激昂チェック
