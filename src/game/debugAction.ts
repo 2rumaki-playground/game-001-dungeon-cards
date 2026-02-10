@@ -26,7 +26,7 @@ export function executeDebugOneshotKill(
 	}
 
 	const next = applyDamageToEnemy(state, enemyId, enemy.hp);
-	return addActionLog(next, "[DEBUG] 一撃で敵を倒した");
+	return addActionLog(next, "[DEBUG] 一撃で敵を倒した", "system");
 }
 
 /**
@@ -60,7 +60,7 @@ export function executeDebugTeleport(
 		position: { ...targetPos },
 	}));
 
-	next = addActionLog(next, "[DEBUG] テレポートした");
+	next = addActionLog(next, "[DEBUG] テレポートした", "system");
 
 	// 階段判定
 	if (next.map[targetPos.y][targetPos.x].type === "stairs") {

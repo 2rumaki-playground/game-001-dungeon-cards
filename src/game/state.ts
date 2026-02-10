@@ -17,6 +17,7 @@ import type {
 	EnemyType,
 	GameMap,
 	GameState,
+	LogActor,
 	Player,
 	Position,
 	Screen,
@@ -305,10 +306,12 @@ export function setDeck(state: GameState, deck: DeckState): GameState {
 export function addActionLog(
 	state: GameState,
 	message: string,
+	actor: LogActor = "system",
 	maxEntries = 50,
 ): GameState {
 	const entry: ActionLogEntry = {
 		id: crypto.randomUUID(),
+		actor,
 		message,
 		timestamp: Date.now(),
 	};

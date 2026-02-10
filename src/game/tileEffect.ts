@@ -44,7 +44,7 @@ export function applyTileEffect(state: GameState): TileEffectResult {
 	switch (tileType) {
 		case "trap": {
 			next = applyDamageToPlayer(next, TRAP_DAMAGE);
-			next = addActionLog(next, "罠を踏んだ！");
+			next = addActionLog(next, "罠を踏んだ！", "player");
 			const gameOver = isDefeated(next.player.hp);
 			if (gameOver) {
 				next = checkGameOver(next);
@@ -57,12 +57,12 @@ export function applyTileEffect(state: GameState): TileEffectResult {
 				next.player.maxHp,
 			);
 			next = updatePlayer(next, (p) => ({ ...p, hp: healed }));
-			next = addActionLog(next, "宝箱を開けた！");
+			next = addActionLog(next, "宝箱を開けた！", "player");
 			return { state: next, triggeredTile: "treasure", gameOver: false };
 		}
 		case "rest_area": {
 			next = updatePlayer(next, (p) => ({ ...p, hp: p.maxHp }));
-			next = addActionLog(next, "休憩所で回復した！");
+			next = addActionLog(next, "休憩所で回復した！", "player");
 			return { state: next, triggeredTile: "rest_area", gameOver: false };
 		}
 	}

@@ -128,7 +128,7 @@ function executePowerStrike(state: GameState, enemy: Enemy): SkillResult {
 	const params = ENEMY_PARAMS[enemy.type];
 	const damage = params.attackDamage * BOSS_SKILL.powerStrikeMultiplier;
 	next = applyDamageToPlayer(next, damage);
-	next = addActionLog(next, "ミニボスが強化攻撃を放った");
+	next = addActionLog(next, "ミニボスが強化攻撃を放った", "enemy");
 
 	return { state: next, damage, executed: true };
 }
@@ -152,7 +152,7 @@ function executeAreaAttack(state: GameState, enemy: Enemy): SkillResult {
 
 	const damage = BOSS_SKILL.areaAttackDamage;
 	next = applyDamageToPlayer(next, damage);
-	next = addActionLog(next, "ボスが範囲攻撃を放った");
+	next = addActionLog(next, "ボスが範囲攻撃を放った", "enemy");
 
 	return { state: next, damage, executed: true };
 }

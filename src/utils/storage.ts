@@ -95,9 +95,36 @@ export function loadGame(): GameState | null {
 				}))
 			: data.enemies;
 
+		// 旧セーブデータの後方互換:
+		// - actor 未設定または不正値のログに "system" を補完
+		// - actionLog が配列でない場合は空配列にフォールバック
+		const actionLog = Array.isArray(data.actionLog)
+			? data.actionLog
+					.filter(
+						(entry: unknown): entry is Record<string, unknown> =>
+							entry != null &&
+							typeof entry === "object" &&
+							!Array.isArray(entry),
+					)
+					.map((entry: Record<string, unknown>) => {
+						const actorValue = (entry as { actor?: unknown }).actor;
+						const validActor =
+							actorValue === "player" ||
+							actorValue === "enemy" ||
+							actorValue === "system"
+								? actorValue
+								: "system";
+						return {
+							...entry,
+							actor: validActor,
+						};
+					})
+			: [];
+
 		const state: GameState = {
 			...data,
 			enemies,
+			actionLog,
 			rng: RNG.deserialize(data.rng),
 			isCleared: data.isCleared === true,
 			defeatedEnemyCount:

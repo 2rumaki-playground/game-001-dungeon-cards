@@ -221,6 +221,73 @@ describe("storage", () => {
 		expect(loaded?.isCleared).toBe(true);
 	});
 
+	it("should add default actor to actionLog entries without actor field", () => {
+		const state = createTitleScreenState(42);
+		const saveData = {
+			...state,
+			screen: "game",
+			actionLog: [{ id: "1", message: "旧ログ", timestamp: 1000 }],
+			rng: state.rng.serialize(),
+		};
+		localStorageMock.setItem("dungeon-cards-save", JSON.stringify(saveData));
+
+		const loaded = loadGame();
+		expect(loaded).not.toBeNull();
+		expect(loaded?.actionLog[0].actor).toBe("system");
+	});
+
+	it("should fallback invalid actor to system", () => {
+		const state = createTitleScreenState(42);
+		const saveData = {
+			...state,
+			screen: "game",
+			actionLog: [
+				{ id: "1", actor: "foo", message: "不正actor", timestamp: 1000 },
+			],
+			rng: state.rng.serialize(),
+		};
+		localStorageMock.setItem("dungeon-cards-save", JSON.stringify(saveData));
+
+		const loaded = loadGame();
+		expect(loaded).not.toBeNull();
+		expect(loaded?.actionLog[0].actor).toBe("system");
+	});
+
+	it("should fallback non-array actionLog to empty array", () => {
+		const state = createTitleScreenState(42);
+		const saveData = {
+			...state,
+			screen: "game",
+			actionLog: "not-an-array",
+			rng: state.rng.serialize(),
+		};
+		localStorageMock.setItem("dungeon-cards-save", JSON.stringify(saveData));
+
+		const loaded = loadGame();
+		expect(loaded).not.toBeNull();
+		expect(loaded?.actionLog).toEqual([]);
+	});
+
+	it("should skip null/undefined entries in actionLog", () => {
+		const state = createTitleScreenState(42);
+		const saveData = {
+			...state,
+			screen: "game",
+			actionLog: [
+				null,
+				{ id: "1", actor: "player", message: "有効", timestamp: 1000 },
+				undefined,
+			],
+			rng: state.rng.serialize(),
+		};
+		localStorageMock.setItem("dungeon-cards-save", JSON.stringify(saveData));
+
+		const loaded = loadGame();
+		expect(loaded).not.toBeNull();
+		expect(loaded?.actionLog).toHaveLength(1);
+		expect(loaded?.actionLog[0].actor).toBe("player");
+	});
+
 	it("should return null if screen is invalid", () => {
 		const validState = createTitleScreenState();
 		const invalidState = {

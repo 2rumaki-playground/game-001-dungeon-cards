@@ -78,7 +78,7 @@ export function executeMove(
 	// 移動判定
 	if (!canMove(state, direction)) {
 		return {
-			state: addActionLog(next, "移動できなかった"),
+			state: addActionLog(next, "移動できなかった", "player"),
 			reachedStairs: false,
 			tileEffect: null,
 			gameOver: false,
@@ -95,7 +95,7 @@ export function executeMove(
 		position: { x: nx, y: ny },
 	}));
 
-	next = addActionLog(next, "移動した");
+	next = addActionLog(next, "移動した", "player");
 
 	// 階段判定（遷移はUI層で行う）
 	if (state.map[ny][nx].type === "stairs") {
@@ -187,7 +187,7 @@ function executeAttackBase(
 	// 攻撃判定（AP消費・カード使用後の状態で判定）
 	const result = canAttack(next, direction);
 	if (!result.hit) {
-		return { state: addActionLog(next, missLog), hit: false };
+		return { state: addActionLog(next, missLog, "player"), hit: false };
 	}
 
 	// 敵にダメージ（HP0以下で自動除去）
@@ -286,7 +286,7 @@ export function executeJump(
 	// 着地先がマップ外
 	if (!isInBounds(next.map, landX, landY)) {
 		return {
-			state: addActionLog(next, "ジャンプできなかった"),
+			state: addActionLog(next, "ジャンプできなかった", "player"),
 			jumped: false,
 			reachedStairs: false,
 			tileEffects: [],
@@ -297,7 +297,7 @@ export function executeJump(
 	// 着地先が壁
 	if (next.map[landY][landX].type === "wall") {
 		return {
-			state: addActionLog(next, "ジャンプできなかった"),
+			state: addActionLog(next, "ジャンプできなかった", "player"),
 			jumped: false,
 			reachedStairs: false,
 			tileEffects: [],
@@ -310,7 +310,7 @@ export function executeJump(
 		next.enemies.some((e) => e.position.x === landX && e.position.y === landY)
 	) {
 		return {
-			state: addActionLog(next, "ジャンプできなかった"),
+			state: addActionLog(next, "ジャンプできなかった", "player"),
 			jumped: false,
 			reachedStairs: false,
 			tileEffects: [],
@@ -356,7 +356,7 @@ export function executeJump(
 	}
 
 	return {
-		state: addActionLog(next, "ジャンプした"),
+		state: addActionLog(next, "ジャンプした", "player"),
 		jumped: true,
 		reachedStairs: false,
 		tileEffects,
@@ -379,5 +379,5 @@ export function executeWait(state: GameState, cardId: string): GameState {
 	// カードを捨て札へ
 	next = setDeck(next, playCard(next.deck, cardId));
 
-	return addActionLog(next, "待機した");
+	return addActionLog(next, "待機した", "player");
 }

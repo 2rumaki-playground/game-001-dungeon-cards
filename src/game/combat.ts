@@ -53,10 +53,10 @@ export function applyDamageToEnemy(
 			defeatedEnemyCount: next.defeatedEnemyCount + 1,
 		};
 		next = checkVictory(next, target.type);
-		return addActionLog(next, "敵を倒した");
+		return addActionLog(next, "敵を倒した", "system");
 	}
 
-	return addActionLog(next, "敵にダメージを与えた");
+	return addActionLog(next, "敵にダメージを与えた", "system");
 }
 
 /**
@@ -75,7 +75,7 @@ export function applyDamageToPlayer(
 		hp: p.hp - damage,
 	}));
 
-	next = addActionLog(next, "プレイヤーがダメージを受けた");
+	next = addActionLog(next, "プレイヤーがダメージを受けた", "system");
 
 	return next;
 }
@@ -92,7 +92,7 @@ export function checkGameOver(state: GameState): GameState {
 	}
 
 	let next = changeScreen(state, "gameOver");
-	next = addActionLog(next, "ゲームオーバー");
+	next = addActionLog(next, "ゲームオーバー", "system");
 
 	return next;
 }

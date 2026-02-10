@@ -118,7 +118,7 @@ function moveEnemyByType(
 	moveDistance: number,
 ): GameState {
 	if (moveDistance === 0) {
-		return addActionLog(state, "敵は動けなかった");
+		return addActionLog(state, "敵は動けなかった", "enemy");
 	}
 
 	let next = state;
@@ -147,11 +147,11 @@ function moveEnemyByType(
 			);
 			next = setEnemies(next, newEnemies);
 			if (step === 0) {
-				next = addActionLog(next, "敵が移動した");
+				next = addActionLog(next, "敵が移動した", "enemy");
 			}
 		} else {
 			if (step === 0) {
-				next = addActionLog(next, "敵は動けなかった");
+				next = addActionLog(next, "敵は動けなかった", "enemy");
 			}
 			break;
 		}
@@ -194,7 +194,7 @@ export function executeEnemyTurn(state: GameState): EnemyTurnResult {
 			const enragedEnemy = checkEnrage(enemy);
 			if (enragedEnemy.enraged && !enemy.enraged) {
 				next = updateEnemy(next, enemy.id, () => enragedEnemy);
-				next = addActionLog(next, "ボスが激昂した");
+				next = addActionLog(next, "ボスが激昂した", "enemy");
 			}
 		}
 
@@ -223,7 +223,7 @@ export function executeEnemyTurn(state: GameState): EnemyTurnResult {
 				: 0;
 			const damage = params.attackDamage + enrageBonus;
 			next = applyDamageToPlayer(next, damage);
-			next = addActionLog(next, "敵が攻撃した");
+			next = addActionLog(next, "敵が攻撃した", "enemy");
 			totalDamage += damage;
 		} else {
 			// 移動
@@ -236,13 +236,13 @@ export function executeEnemyTurn(state: GameState): EnemyTurnResult {
 				const updated = decideMinibossSkill(movedEnemy, rng);
 				if (updated.pendingSkill) {
 					next = updateEnemy(next, movedEnemy.id, () => updated);
-					next = addActionLog(next, "ミニボスが力を溜めている…");
+					next = addActionLog(next, "ミニボスが力を溜めている…", "enemy");
 				}
 			} else if (movedEnemy.type === "boss") {
 				const updated = decideBossSkill(movedEnemy, rng);
 				if (updated.pendingSkill) {
 					next = updateEnemy(next, movedEnemy.id, () => updated);
-					next = addActionLog(next, "ボスが大技を構えている…");
+					next = addActionLog(next, "ボスが大技を構えている…", "enemy");
 				}
 			}
 		}

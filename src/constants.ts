@@ -327,4 +327,6 @@ export const COLORS = {
 	enemyBoss: 0xdd3333,
 	// 後方互換（通常敵カラー）
 	enemy: 0xca4a4a,
+	// システム（行動ログ等）
+	system: 0x888888,
 } as const;

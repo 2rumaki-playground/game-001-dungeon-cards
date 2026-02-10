@@ -5,8 +5,8 @@
  */
 
 import { Container, Graphics, Text } from "pixi.js";
-import { LOG_AREA_WIDTH } from "../constants";
-import type { ActionLogEntry } from "../types";
+import { COLORS, LOG_AREA_WIDTH } from "../constants";
+import type { ActionLogEntry, LogActor } from "../types";
 
 /** ログ表示エリアの設定 */
 const LOG_AREA_PADDING = 8;
@@ -16,8 +16,35 @@ const LOG_BACKGROUND_COLOR = 0x2a2a2a;
 const LOG_BACKGROUND_ALPHA = 0.9;
 const LOG_BORDER_COLOR = 0x4a4a4a;
 
+/** 主体カラム幅 */
+const ACTOR_COLUMN_WIDTH = 24;
+
 /** ログUIに表示する最大件数（画面に収まる範囲） */
 const MAX_DISPLAY_ENTRIES = 15;
+
+/** 主体ラベルを取得 */
+export function getActorLabel(actor: LogActor): string {
+	switch (actor) {
+		case "player":
+			return "自";
+		case "enemy":
+			return "敵";
+		default:
+			return "他";
+	}
+}
+
+/** 主体カラーを取得 */
+function getActorColor(actor: LogActor): number {
+	switch (actor) {
+		case "player":
+			return COLORS.player;
+		case "enemy":
+			return COLORS.enemy;
+		default:
+			return COLORS.system;
+	}
+}
 
 /**
  * 行動ログレンダラー
@@ -26,12 +53,14 @@ export class ActionLogRenderer {
 	private container: Container;
 	private background: Graphics;
 	private titleText: Text;
+	private actorLabels: Text[];
 	private logTexts: Text[];
 	private height: number;
 
 	constructor(height: number) {
 		this.height = height;
 		this.container = new Container();
+		this.actorLabels = [];
 		this.logTexts = [];
 
 		// 背景
@@ -52,8 +81,21 @@ export class ActionLogRenderer {
 		this.titleText.y = LOG_AREA_PADDING;
 		this.container.addChild(this.titleText);
 
-		// ログテキスト用のコンテナを事前に作成
+		// ログテキスト用のコンテナを事前に作成（主体ラベル+メッセージ）
 		for (let i = 0; i < MAX_DISPLAY_ENTRIES; i++) {
+			const actorLabel = new Text({
+				text: "",
+				style: {
+					fontSize: LOG_FONT_SIZE,
+					fontFamily: "sans-serif",
+					fill: COLORS.system,
+				},
+			});
+			actorLabel.x = LOG_AREA_PADDING;
+			actorLabel.y = LOG_AREA_PADDING + 24 + i * LOG_LINE_HEIGHT;
+			this.container.addChild(actorLabel);
+			this.actorLabels.push(actorLabel);
+
 			const text = new Text({
 				text: "",
 				style: {
@@ -61,10 +103,11 @@ export class ActionLogRenderer {
 					fontFamily: "sans-serif",
 					fill: 0xaaaaaa,
 					wordWrap: true,
-					wordWrapWidth: LOG_AREA_WIDTH - LOG_AREA_PADDING * 2,
+					wordWrapWidth:
+						LOG_AREA_WIDTH - LOG_AREA_PADDING * 2 - ACTOR_COLUMN_WIDTH,
 				},
 			});
-			text.x = LOG_AREA_PADDING;
+			text.x = LOG_AREA_PADDING + ACTOR_COLUMN_WIDTH;
 			text.y = LOG_AREA_PADDING + 24 + i * LOG_LINE_HEIGHT;
 			this.container.addChild(text);
 			this.logTexts.push(text);
@@ -106,11 +149,19 @@ export class ActionLogRenderer {
 		const displayEntries = actionLog.slice(0, MAX_DISPLAY_ENTRIES);
 
 		for (let i = 0; i < MAX_DISPLAY_ENTRIES; i++) {
+			const actorLabel = this.actorLabels[i];
 			const text = this.logTexts[i];
 			if (i < displayEntries.length) {
-				text.text = displayEntries[i].message;
+				const entry = displayEntries[i];
+				const actor = entry.actor ?? "system";
+				actorLabel.text = getActorLabel(actor);
+				actorLabel.style.fill = getActorColor(actor);
+				actorLabel.visible = true;
+				text.text = entry.message;
 				text.visible = true;
 			} else {
+				actorLabel.text = "";
+				actorLabel.visible = false;
 				text.text = "";
 				text.visible = false;
 			}
@@ -121,6 +172,10 @@ export class ActionLogRenderer {
 	 * クリア
 	 */
 	clear(): void {
+		for (const label of this.actorLabels) {
+			label.text = "";
+			label.visible = false;
+		}
 		for (const text of this.logTexts) {
 			text.text = "";
 			text.visible = false;
