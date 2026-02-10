@@ -181,7 +181,6 @@ export class MapRenderer {
 	private enemiesContainer: Container;
 	private isPlayerInitialized = false;
 	private enemyContainerMap: Map<string, Container> = new Map();
-	private enemySpriteMap: Map<string, Sprite> = new Map();
 	private enemyHpBarMap: Map<string, Graphics> = new Map();
 	private enemyTypeMap: Map<string, EnemyType> = new Map();
 	private playerGridPos: Position = { x: 0, y: 0 };
@@ -357,10 +356,7 @@ export class MapRenderer {
 	 * 敵1体分のコンテナを作成（Sprite + HPバーを子要素として含む）
 	 * コンテナ単位で座標移動するため、アニメーション時にHPバーも追従する
 	 */
-	private createEnemyContainer(type: EnemyType): {
-		container: Container;
-		sprite: Sprite;
-	} {
+	private createEnemyContainer(type: EnemyType): Container {
 		const enemyContainer = new Container();
 		const sprite = new Sprite(getEnemyTexture(type));
 		const padding = ENEMY_PADDING[type];
@@ -373,7 +369,7 @@ export class MapRenderer {
 		sprite.height = size;
 		enemyContainer.addChild(sprite);
 
-		return { container: enemyContainer, sprite };
+		return enemyContainer;
 	}
 
 	/**
@@ -418,7 +414,6 @@ export class MapRenderer {
 			enemyContainer.destroy({ children: true });
 		}
 		this.enemyContainerMap.delete(id);
-		this.enemySpriteMap.delete(id);
 		this.enemyHpBarMap.delete(id);
 		this.enemyTypeMap.delete(id);
 		this.enemyGridPosMap.delete(id);
@@ -448,10 +443,8 @@ export class MapRenderer {
 
 			let enemyContainer = this.enemyContainerMap.get(enemy.id);
 			if (!enemyContainer) {
-				const { container, sprite } = this.createEnemyContainer(enemy.type);
-				enemyContainer = container;
+				enemyContainer = this.createEnemyContainer(enemy.type);
 				this.enemyContainerMap.set(enemy.id, enemyContainer);
-				this.enemySpriteMap.set(enemy.id, sprite);
 				this.enemyTypeMap.set(enemy.id, enemy.type);
 				this.enemiesContainer.addChild(enemyContainer);
 			}
@@ -745,7 +738,6 @@ export class MapRenderer {
 			container.destroy({ children: true });
 		}
 		this.enemyContainerMap.clear();
-		this.enemySpriteMap.clear();
 		this.enemyHpBarMap.clear();
 		this.enemyTypeMap.clear();
 		this.enemyGridPosMap.clear();
