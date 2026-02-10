@@ -989,6 +989,25 @@ describe("MapRenderer タイルスプライト描画", () => {
 		expect(tilesContainer.children.length).toBe(1);
 	});
 
+	it("同一map参照で再呼び出しするとSprite再生成がスキップされる", () => {
+		const renderer = new MapRenderer();
+		const map = createTestMap();
+		renderer.renderMap(map);
+
+		const container = renderer.getContainer();
+		const tilesContainer = container.children[0];
+		const childrenBefore = [...tilesContainer.children];
+
+		// 同一参照で再呼び出し
+		renderer.renderMap(map);
+
+		// children の参照が維持されていること（Spriteが差し替わっていない）
+		expect(tilesContainer.children.length).toBe(childrenBefore.length);
+		for (let i = 0; i < childrenBefore.length; i++) {
+			expect(tilesContainer.children[i]).toBe(childrenBefore[i]);
+		}
+	});
+
 	it("renderMapを再呼び出しすると前のスプライトがクリアされる", () => {
 		const renderer = new MapRenderer();
 		const map1 = [[{ type: "floor" as const }]]; // 1x1
