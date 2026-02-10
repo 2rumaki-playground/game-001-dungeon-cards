@@ -23,6 +23,7 @@ import type { GameContext } from "../gameContext";
 import type { CardType, Direction, GameState, Position } from "../types";
 import { DIRECTION_DELTA } from "../types";
 import { deleteSaveData, hasSaveData } from "../utils/storage";
+import { Easing, type TweenTarget, tween } from "../utils/tween";
 import {
 	type AttackCardType,
 	createDefeatParticleConfig,
@@ -63,6 +64,9 @@ export function getGameAreaSize(_ctx: GameContext): {
 	};
 }
 
+/** カメラ追従アニメーションの時間（ミリ秒） */
+const CAMERA_FOLLOW_DURATION = 250;
+
 /**
  * ゲーム状態を更新してプレイヤー移動アニメーション付きで再描画
  */
@@ -75,11 +79,23 @@ export async function updateStateWithMoveAnimation(
 	ctx.isAnimating = true;
 
 	const prevAp = ctx.state.player.ap;
+
+	// render前にカメラ位置を保存
+	const mapContainer = ctx.ui.mapRenderer.getContainer();
+	const savedCameraX = mapContainer.x;
+	const savedCameraY = mapContainer.y;
+
 	applyState(ctx, newState);
 
 	try {
-		// プレイヤー以外を描画
+		// プレイヤー以外を描画（renderでカメラが新位置にジャンプする）
 		render(ctx, false, true);
+
+		// render後の新しいカメラ位置を取得し、移動中は旧位置に復元
+		const newCameraX = mapContainer.x;
+		const newCameraY = mapContainer.y;
+		mapContainer.x = savedCameraX;
+		mapContainer.y = savedCameraY;
 
 		// プレイヤー移動アニメーション（AP変化があればバーアニメーションも並列実行）
 		const animations: Promise<void>[] = [
@@ -95,6 +111,15 @@ export async function updateStateWithMoveAnimation(
 			);
 		}
 		await Promise.all(animations);
+
+		// カメラ追従アニメーション（位置が変わっている場合のみ）
+		if (savedCameraX !== newCameraX || savedCameraY !== newCameraY) {
+			await tween(
+				mapContainer as unknown as TweenTarget,
+				{ x: newCameraX, y: newCameraY },
+				{ duration: CAMERA_FOLLOW_DURATION, easing: Easing.easeOutCubic },
+			);
+		}
 	} finally {
 		ctx.isAnimating = false;
 	}
