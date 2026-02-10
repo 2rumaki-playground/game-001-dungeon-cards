@@ -22,7 +22,7 @@ import { UI_COLOR_GOLD, UI_COLORS_BUTTON_SECONDARY } from "./uiColors";
 
 /** 閉じるボタンサイズ */
 const CLOSE_BUTTON_WIDTH = 100;
-const CLOSE_BUTTON_HEIGHT = 32;
+export const CLOSE_BUTTON_HEIGHT = 32;
 const CLOSE_BUTTON_RADIUS = 6;
 
 /** デッキ閲覧ボタンサイズ */

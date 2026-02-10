@@ -6,7 +6,7 @@ import {
 	CARD_ROW_HEIGHT,
 	CARD_ROW_LIST_WIDTH,
 } from "./cardRowRenderer";
-import { DeckViewer } from "./deckViewer";
+import { CLOSE_BUTTON_HEIGHT, DeckViewer } from "./deckViewer";
 
 /** テスト用デッキ */
 function createTestDeck(): DeckState {
@@ -174,7 +174,6 @@ describe("DeckViewer", () => {
 			// コンテンツ全体の高さを計算
 			const titleFontSize = 24;
 			const titleToListGap = 12;
-			const closeButtonHeight = 32;
 			const typesCount = 5; // テストデッキは5種別
 			const listHeight = typesCount * (CARD_ROW_HEIGHT + CARD_ROW_GAP);
 			const listToCloseGap = 10;
@@ -183,7 +182,7 @@ describe("DeckViewer", () => {
 				titleToListGap +
 				listHeight +
 				listToCloseGap +
-				closeButtonHeight;
+				CLOSE_BUTTON_HEIGHT;
 			const expectedStartY = (gameAreaHeight - contentHeight) / 2;
 
 			expect(title.y).toBe(expectedStartY + titleFontSize / 2);
