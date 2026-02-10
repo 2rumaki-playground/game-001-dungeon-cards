@@ -23,7 +23,7 @@ import type { GameContext } from "../gameContext";
 import type { CardType, Direction, GameState, Position } from "../types";
 import { DIRECTION_DELTA } from "../types";
 import { deleteSaveData, hasSaveData } from "../utils/storage";
-import { Easing, type TweenTarget, tween } from "../utils/tween";
+import { Easing, tweenValue } from "../utils/tween";
 import {
 	type AttackCardType,
 	createDefeatParticleConfig,
@@ -114,11 +114,16 @@ export async function updateStateWithMoveAnimation(
 
 		// カメラ追従アニメーション（位置が変わっている場合のみ）
 		if (savedCameraX !== newCameraX || savedCameraY !== newCameraY) {
-			await tween(
-				mapContainer as unknown as TweenTarget,
-				{ x: newCameraX, y: newCameraY },
-				{ duration: CAMERA_FOLLOW_DURATION, easing: Easing.easeOutCubic },
-			);
+			await tweenValue({
+				duration: CAMERA_FOLLOW_DURATION,
+				easing: Easing.easeOutCubic,
+				onUpdate: (progress) => {
+					mapContainer.x =
+						savedCameraX + (newCameraX - savedCameraX) * progress;
+					mapContainer.y =
+						savedCameraY + (newCameraY - savedCameraY) * progress;
+				},
+			});
 		}
 	} finally {
 		ctx.isAnimating = false;
