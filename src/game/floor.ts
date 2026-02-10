@@ -43,7 +43,7 @@ export function transitionFloor(state: GameState): GameState {
 	);
 
 	next = setMap(next, map);
-	next = { ...next, rooms, rng: next.rng.clone() };
+	next = { ...next, rooms };
 
 	// 3. プレイヤー位置を新マップの配置位置に更新（HPはそのまま維持）
 	next = updatePlayer(next, (p) => ({
