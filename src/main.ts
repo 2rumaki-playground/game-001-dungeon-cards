@@ -62,7 +62,7 @@ async function initializeUIComponents(
 	const statusBar = new StatusBar();
 	app.stage.addChild(statusBar.getContainer());
 
-	// ビューポートラッパー: マップを9×9タイル領域にクリッピング
+	// ビューポートラッパー: マップをタイル領域にクリッピング
 	const mapViewport = new Container();
 	mapViewport.y = STATUS_BAR_HEIGHT;
 	const viewportMask = new Graphics();
@@ -216,7 +216,7 @@ function setupDebugGlobals(): void {
 
 async function main() {
 	const app = new Application();
-	// ビューポートサイズ（9×9タイル）で固定キャンバス
+	// ビューポートタイル数に基づいた固定キャンバス
 	const viewportSize = getViewportPixelSize();
 	const totalHeight =
 		viewportSize.height + HAND_AREA_HEIGHT + STATUS_BAR_HEIGHT;

@@ -1,7 +1,7 @@
 /**
  * UIリレイアウト
  * 階層遷移時にUIコンポーネントの座標を再配置する
- * キャンバスサイズは固定（9×9タイルのビューポート）のためリサイズは行わない
+ * キャンバスサイズは固定（VIEWPORT_TILES × VIEWPORT_TILES タイルのビューポート）のためリサイズは行わない
  */
 
 import { LOG_AREA_GAP, STATUS_BAR_HEIGHT } from "../constants";
