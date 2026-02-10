@@ -63,6 +63,7 @@ function canEnemyMoveTo(
 
 /**
  * 敵の移動方向を決定
+ * @see docs/spec/rules.md - 敵の移動（近づく）
  *
  * 1. BFSで最短経路の最初の一歩を取得（壁・階段を迂回）
  * 2. 同距離の場合は固定順序（上→下→左→右）で優先

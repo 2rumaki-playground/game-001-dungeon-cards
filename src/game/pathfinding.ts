@@ -1,6 +1,6 @@
 /**
  * BFS経路探索
- * @see docs/spec/rules.md - 敵の移動
+ * @see docs/spec/rules.md - 移動方向の決定（BFS経路探索）
  */
 
 import type { Direction, GameMap, Position } from "../types";
