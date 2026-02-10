@@ -119,13 +119,13 @@ describe("getMapPixelSize", () => {
 });
 
 describe("getViewportPixelSize", () => {
-	it("9×9タイル分のビューポートサイズを返す", () => {
+	it(`${VIEWPORT_TILES}×${VIEWPORT_TILES}タイル分のビューポートサイズを返す`, () => {
 		const result = getViewportPixelSize();
 		const expected = getMapPixelSize(VIEWPORT_TILES, VIEWPORT_TILES);
 		expect(result).toEqual(expected);
 	});
 
-	it("getMapPixelSize(9, 9)と同じ値を返す", () => {
+	it(`getMapPixelSize(${VIEWPORT_TILES}, ${VIEWPORT_TILES})と同じ値を返す`, () => {
 		const result = getViewportPixelSize();
 		expect(result).toEqual({
 			width: VIEWPORT_TILES * (CELL_SIZE + CELL_GAP) + CELL_GAP,
