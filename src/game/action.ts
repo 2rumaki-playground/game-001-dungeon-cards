@@ -9,13 +9,13 @@ import {
 	PLAYER_ATTACK_DAMAGE,
 	PLAYER_STRONG_ATTACK_DAMAGE,
 } from "../constants";
-import type { Direction, GameState, Position } from "../types";
+import type { Direction, GameState, Position, SpecialTileType } from "../types";
 import { DIRECTION_DELTA } from "../types";
 import { applyDamageToEnemy } from "./combat";
 import { playCard } from "./deck";
 import { isInBounds } from "./map";
 import { addActionLog, setDeck, updatePlayer } from "./state";
-import { applyTileEffect, type SpecialTileType } from "./tileEffect";
+import { applyTileEffect } from "./tileEffect";
 
 /**
  * 移動可否を判定

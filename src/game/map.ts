@@ -15,7 +15,13 @@ import {
 	MAP_WIDTH,
 	STAIRS_COUNT,
 } from "../constants";
-import type { GameMap, Position, Tile, TileType } from "../types";
+import type {
+	GameMap,
+	Position,
+	SpecialTileType,
+	Tile,
+	TileType,
+} from "../types";
 import type { RNG } from "../utils/rng";
 import { generateBSPMap, type Room } from "./bsp";
 
@@ -98,8 +104,6 @@ const getRoomFloorPositions = (
 /**
  * 特殊タイル種別リストを階層に応じて生成
  */
-type SpecialTileType = Extract<TileType, "trap" | "treasure" | "rest_area">;
-
 function getSpecialTileTypes(floor: number): SpecialTileType[] {
 	const comp = getSpecialTileComposition(floor);
 	const types: SpecialTileType[] = [];
