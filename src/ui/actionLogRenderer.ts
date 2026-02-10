@@ -42,7 +42,7 @@ function getActorColor(actor: LogActor): number {
 		case "enemy":
 			return COLORS.enemy;
 		default:
-			return 0x888888;
+			return COLORS.system;
 	}
 }
 

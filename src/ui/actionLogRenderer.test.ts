@@ -163,7 +163,7 @@ describe("ActionLogRenderer", () => {
 
 		expect(label1.style.fill).toBe(COLORS.player);
 		expect(label2.style.fill).toBe(COLORS.enemy);
-		expect(label3.style.fill).toBe(0x888888);
+		expect(label3.style.fill).toBe(COLORS.system);
 	});
 });
 
