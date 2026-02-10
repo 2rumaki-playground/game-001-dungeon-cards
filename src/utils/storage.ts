@@ -99,22 +99,24 @@ export function loadGame(): GameState | null {
 		// - actor 未設定または不正値のログに "system" を補完
 		// - actionLog が配列でない場合は空配列にフォールバック
 		const actionLog = Array.isArray(data.actionLog)
-			? data.actionLog.map((entry: Record<string, unknown>) => {
-					const actorValue =
-						entry && typeof entry === "object"
-							? (entry as { actor?: unknown }).actor
-							: undefined;
-					const validActor =
-						actorValue === "player" ||
-						actorValue === "enemy" ||
-						actorValue === "system"
-							? actorValue
-							: "system";
-					return {
-						...entry,
-						actor: validActor,
-					};
-				})
+			? data.actionLog
+					.filter(
+						(entry: unknown): entry is Record<string, unknown> =>
+							entry != null && typeof entry === "object",
+					)
+					.map((entry: Record<string, unknown>) => {
+						const actorValue = (entry as { actor?: unknown }).actor;
+						const validActor =
+							actorValue === "player" ||
+							actorValue === "enemy" ||
+							actorValue === "system"
+								? actorValue
+								: "system";
+						return {
+							...entry,
+							actor: validActor,
+						};
+					})
 			: [];
 
 		const state: GameState = {
