@@ -115,13 +115,6 @@ const HP_BAR_HEIGHT = 4;
 const HP_BAR_BG_COLOR = 0x333333;
 
 /**
- * ボスタイプ判定（miniboss/boss）
- */
-function isBossType(type: EnemyType): boolean {
-	return type === "miniboss" || type === "boss";
-}
-
-/**
  * タイル種別に対応する色を取得
  */
 function getTileColor(type: TileType): number {
@@ -537,7 +530,7 @@ export class MapRenderer {
 	}
 
 	/**
-	 * ボスタイプ敵のHPバーを描画・更新
+	 * 敵のHPバーを描画・更新
 	 * HPバーは敵コンテナの子要素として配置（移動アニメーションに追従）
 	 */
 	private renderHpBar(enemy: Enemy): void {
@@ -621,20 +614,8 @@ export class MapRenderer {
 			enemyContainer.x = pixelPos.x;
 			enemyContainer.y = pixelPos.y;
 
-			// ボスタイプのHPバー描画
-			if (isBossType(enemy.type)) {
-				this.renderHpBar(enemy);
-			} else {
-				// 非ボスタイプの場合、既存HPバーを削除
-				const hpBar = this.enemyHpBarMap.get(enemy.id);
-				if (hpBar) {
-					if (hpBar.parent) {
-						hpBar.parent.removeChild(hpBar);
-					}
-					hpBar.destroy();
-					this.enemyHpBarMap.delete(enemy.id);
-				}
-			}
+			// HPバー描画（全敵タイプ）
+			this.renderHpBar(enemy);
 		}
 	}
 
