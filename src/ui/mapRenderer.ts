@@ -185,6 +185,7 @@ export class MapRenderer {
 	private enemyTypeMap: Map<string, EnemyType> = new Map();
 	private playerGridPos: Position = { x: 0, y: 0 };
 	private enemyGridPosMap: Map<string, Position> = new Map();
+	private lastRenderedMap: GameMap | null = null;
 
 	constructor() {
 		this.container = new Container();
@@ -208,8 +209,12 @@ export class MapRenderer {
 
 	/**
 	 * マップを描画
+	 * 同一マップ参照の場合はスキップし、不要なSprite再生成を回避する
 	 */
 	renderMap(map: GameMap): void {
+		if (this.lastRenderedMap === map) return;
+		this.lastRenderedMap = map;
+
 		const removedTiles = this.tilesContainer.removeChildren();
 		for (const child of removedTiles) {
 			child.destroy();
@@ -733,6 +738,7 @@ export class MapRenderer {
 		for (const child of removedTiles) {
 			child.destroy();
 		}
+		this.lastRenderedMap = null;
 		this.remnantsGraphics.clear();
 		this.playerSprite.texture = Texture.EMPTY;
 		this.isPlayerInitialized = false;
