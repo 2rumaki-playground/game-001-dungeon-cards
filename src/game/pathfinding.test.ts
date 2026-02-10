@@ -82,6 +82,12 @@ describe("bfsFirstStep", () => {
 		expect(bfsFirstStep(map, { x: 2, y: 3 }, { x: 2, y: 1 })).toBe("left");
 	});
 
+	it("目的地がwallタイルの場合nullを返す", () => {
+		const map = mapFromStrings(["WWWWW", "WFFFW", "WFFFW", "WFFFW", "WWWWW"]);
+		// 目的地(0,0)はwall → 到達不可
+		expect(bfsFirstStep(map, { x: 2, y: 2 }, { x: 0, y: 0 })).toBeNull();
+	});
+
 	it("マップ端の位置から正しく経路を見つける", () => {
 		const map = mapFromStrings(["WWWWW", "FFFFW", "WFFFW", "WWWWW"]);
 		// 敵(0,1)→プレイヤー(3,1): 右に直進

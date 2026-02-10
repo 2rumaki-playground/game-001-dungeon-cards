@@ -26,6 +26,10 @@ export function bfsFirstStep(
 ): Direction | null {
 	if (from.x === to.x && from.y === to.y) return null;
 
+	// 目的地がwall（通行不可タイル）の場合は到達不可
+	const destTile = map[to.y]?.[to.x];
+	if (!destTile || destTile.type === "wall") return null;
+
 	const visited = new Set<string>();
 	visited.add(positionToKey(from));
 
