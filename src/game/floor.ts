@@ -66,7 +66,7 @@ export function transitionFloor(state: GameState): GameState {
 	};
 
 	// 8. 行動ログに記録
-	next = addActionLog(next, `${next.floor}階に到達した`);
+	next = addActionLog(next, `${next.floor}階に到達した`, "system");
 
 	// 9. セーブ処理 (#104)
 	saveGame(next);

@@ -28,10 +28,16 @@ export type RewardState = {
 export type Turn = "player" | "enemy";
 
 /**
+ * 行動ログの主体
+ */
+export type LogActor = "player" | "enemy" | "system";
+
+/**
  * 行動ログエントリ
  */
 export type ActionLogEntry = {
 	id: string;
+	actor: LogActor;
 	message: string;
 	timestamp: number;
 };

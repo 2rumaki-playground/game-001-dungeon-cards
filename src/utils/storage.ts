@@ -95,9 +95,18 @@ export function loadGame(): GameState | null {
 				}))
 			: data.enemies;
 
+		// 旧セーブデータの後方互換: actor未設定のログに"system"を補完
+		const actionLog = Array.isArray(data.actionLog)
+			? data.actionLog.map((entry: Record<string, unknown>) => ({
+					...entry,
+					actor: entry.actor ?? "system",
+				}))
+			: data.actionLog;
+
 		const state: GameState = {
 			...data,
 			enemies,
+			actionLog,
 			rng: RNG.deserialize(data.rng),
 			isCleared: data.isCleared === true,
 			defeatedEnemyCount:

@@ -391,6 +391,15 @@ describe("state", () => {
 			const newState = addActionLog(state, "テストメッセージ");
 			expect(newState.actionLog.length).toBe(1);
 			expect(newState.actionLog[0].message).toBe("テストメッセージ");
+			expect(newState.actionLog[0].actor).toBe("system");
+		});
+
+		it("actor引数でログの主体を指定できる", () => {
+			const state = createTitleScreenState(12345);
+			const s1 = addActionLog(state, "プレイヤー行動", "player");
+			expect(s1.actionLog[0].actor).toBe("player");
+			const s2 = addActionLog(state, "敵行動", "enemy");
+			expect(s2.actionLog[0].actor).toBe("enemy");
 		});
 
 		it("最新のログが先頭に追加される", () => {
@@ -404,7 +413,7 @@ describe("state", () => {
 		it("上限を超えると古いログが削除される", () => {
 			let state = createTitleScreenState(12345);
 			for (let i = 0; i < 55; i++) {
-				state = addActionLog(state, `メッセージ${i}`, 50);
+				state = addActionLog(state, `メッセージ${i}`, "system", 50);
 			}
 			expect(state.actionLog.length).toBe(50);
 			expect(state.actionLog[0].message).toBe("メッセージ54");
