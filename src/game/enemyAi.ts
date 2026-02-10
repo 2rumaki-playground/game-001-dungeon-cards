@@ -172,7 +172,8 @@ export type EnemyTurnResult = {
  * 1. 行動順序をRNGでシャッフル
  * 2. 各敵について:
  *    - プレイヤーに隣接 → 攻撃
- *    - それ以外 → プレイヤーに近づく移動
+ *    - 索敵範囲内 → プレイヤーに近づく移動
+ *    - 索敵範囲外 → 待機（何もしない）
  */
 export function executeEnemyTurn(state: GameState): EnemyTurnResult {
 	// RNGをcloneして入力stateを変更しない
@@ -225,8 +226,11 @@ export function executeEnemyTurn(state: GameState): EnemyTurnResult {
 			next = applyDamageToPlayer(next, damage);
 			next = addActionLog(next, "敵が攻撃した", "enemy");
 			totalDamage += damage;
-		} else {
-			// 移動
+		} else if (
+			manhattanDistance(currentEnemy.position, next.player.position) <=
+			params.senseRange
+		) {
+			// 索敵範囲内 → 追従
 			next = moveEnemyByType(next, currentEnemy, params.moveDistance);
 			rng = next.rng;
 

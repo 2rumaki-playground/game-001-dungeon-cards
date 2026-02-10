@@ -45,11 +45,11 @@ export const PLAYER_STRONG_ATTACK_DAMAGE = 3;
 
 // 敵タイプ別パラメータ
 export const ENEMY_PARAMS = {
-	normal: { hp: 3, attackDamage: 1, moveDistance: 1 },
-	heavy: { hp: 5, attackDamage: 2, moveDistance: 0 },
-	scout: { hp: 2, attackDamage: 1, moveDistance: 2 },
-	miniboss: { hp: 8, attackDamage: 2, moveDistance: 1 },
-	boss: { hp: 15, attackDamage: 3, moveDistance: 1 },
+	normal: { hp: 3, attackDamage: 1, moveDistance: 1, senseRange: 5 },
+	heavy: { hp: 5, attackDamage: 2, moveDistance: 0, senseRange: 3 },
+	scout: { hp: 2, attackDamage: 1, moveDistance: 2, senseRange: 8 },
+	miniboss: { hp: 8, attackDamage: 2, moveDistance: 1, senseRange: 7 },
+	boss: { hp: 15, attackDamage: 3, moveDistance: 1, senseRange: 10 },
 } as const;
 
 // 後方互換（通常敵のパラメータ）

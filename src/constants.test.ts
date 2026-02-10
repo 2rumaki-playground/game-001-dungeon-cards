@@ -63,30 +63,35 @@ describe("constants", () => {
 			expect(ENEMY_PARAMS.normal.hp).toBe(3);
 			expect(ENEMY_PARAMS.normal.attackDamage).toBe(1);
 			expect(ENEMY_PARAMS.normal.moveDistance).toBe(1);
+			expect(ENEMY_PARAMS.normal.senseRange).toBe(5);
 		});
 
 		it("重装敵のパラメータが正しい", () => {
 			expect(ENEMY_PARAMS.heavy.hp).toBe(5);
 			expect(ENEMY_PARAMS.heavy.attackDamage).toBe(2);
 			expect(ENEMY_PARAMS.heavy.moveDistance).toBe(0);
+			expect(ENEMY_PARAMS.heavy.senseRange).toBe(3);
 		});
 
 		it("俊敏敵のパラメータが正しい", () => {
 			expect(ENEMY_PARAMS.scout.hp).toBe(2);
 			expect(ENEMY_PARAMS.scout.attackDamage).toBe(1);
 			expect(ENEMY_PARAMS.scout.moveDistance).toBe(2);
+			expect(ENEMY_PARAMS.scout.senseRange).toBe(8);
 		});
 
 		it("ミニボスのパラメータが正しい", () => {
 			expect(ENEMY_PARAMS.miniboss.hp).toBe(8);
 			expect(ENEMY_PARAMS.miniboss.attackDamage).toBe(2);
 			expect(ENEMY_PARAMS.miniboss.moveDistance).toBe(1);
+			expect(ENEMY_PARAMS.miniboss.senseRange).toBe(7);
 		});
 
 		it("ボスのパラメータが正しい", () => {
 			expect(ENEMY_PARAMS.boss.hp).toBe(15);
 			expect(ENEMY_PARAMS.boss.attackDamage).toBe(3);
 			expect(ENEMY_PARAMS.boss.moveDistance).toBe(1);
+			expect(ENEMY_PARAMS.boss.senseRange).toBe(10);
 		});
 
 		it("旧定数がENEMY_PARAMS.normalと一致する", () => {
