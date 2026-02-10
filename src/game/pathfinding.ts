@@ -14,7 +14,7 @@ export const DIRECTION_PRIORITY: Direction[] = ["up", "down", "left", "right"];
 /**
  * BFSでゴールへの最短経路の最初の一歩（方向）を返す
  *
- * - 静的障害物のみ考慮（壁・階段）
+ * - 静的障害物のみ考慮（壁・階段）※階段は経路上は通行不可だが、目的地(to)が階段の場合はそのマスへの到達は許可する
  * - 他の敵・プレイヤーは動的なのでBFSでは無視
  * - 同距離の場合はDIRECTION_PRIORITYの順序で安定
  * - 到達不可能ならnullを返す
