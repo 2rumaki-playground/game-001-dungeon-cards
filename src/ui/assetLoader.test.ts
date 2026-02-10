@@ -5,10 +5,13 @@
 import { Assets } from "pixi.js";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
+	ENEMY_ASSET_PATHS,
 	getEnemyTexture,
 	getPlayerTexture,
 	getTileTexture,
 	loadGameAssets,
+	PLAYER_ASSET_PATH,
+	TILE_ASSET_PATHS,
 } from "./assetLoader";
 
 vi.mock("pixi.js", async () => {
@@ -21,20 +24,11 @@ vi.mock("pixi.js", async () => {
 	};
 });
 
-/** 全アセットパス（assetLoader内部の定義と同期） */
+/** 全アセットパス（assetLoaderのexport定数から構築） */
 const ALL_PATHS = [
-	"assets/tiles/floor.png",
-	"assets/tiles/wall.png",
-	"assets/tiles/stairs.png",
-	"assets/tiles/trap.png",
-	"assets/tiles/treasure.png",
-	"assets/tiles/rest_area.png",
-	"assets/enemies/normal.png",
-	"assets/enemies/heavy.png",
-	"assets/enemies/scout.png",
-	"assets/enemies/miniboss.png",
-	"assets/enemies/boss.png",
-	"assets/player.png",
+	...Object.values(TILE_ASSET_PATHS),
+	...Object.values(ENEMY_ASSET_PATHS),
+	PLAYER_ASSET_PATH,
 ];
 
 /** モックテクスチャを作成 */

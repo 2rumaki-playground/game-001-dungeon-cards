@@ -8,7 +8,7 @@ import type { EnemyType } from "../types/character";
 import type { TileType } from "../types/map";
 
 /** タイル種別ごとのアセットパス */
-const TILE_ASSET_PATHS: Record<TileType, string> = {
+export const TILE_ASSET_PATHS: Record<TileType, string> = {
 	floor: "assets/tiles/floor.png",
 	wall: "assets/tiles/wall.png",
 	stairs: "assets/tiles/stairs.png",
@@ -18,7 +18,7 @@ const TILE_ASSET_PATHS: Record<TileType, string> = {
 };
 
 /** 敵タイプごとのアセットパス */
-const ENEMY_ASSET_PATHS: Record<EnemyType, string> = {
+export const ENEMY_ASSET_PATHS: Record<EnemyType, string> = {
 	normal: "assets/enemies/normal.png",
 	heavy: "assets/enemies/heavy.png",
 	scout: "assets/enemies/scout.png",
@@ -27,7 +27,7 @@ const ENEMY_ASSET_PATHS: Record<EnemyType, string> = {
 };
 
 /** プレイヤーのアセットパス */
-const PLAYER_ASSET_PATH = "assets/player.png";
+export const PLAYER_ASSET_PATH = "assets/player.png";
 
 /** 読み込み済みテクスチャのキャッシュ */
 const textureCache = new Map<string, Texture>();
