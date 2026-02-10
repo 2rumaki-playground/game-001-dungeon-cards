@@ -98,12 +98,25 @@ function createMockContainer() {
 	return {
 		eventMode: "passive" as string,
 		cursor: "default" as string,
+		alpha: 1 as number,
 		on: vi.fn(),
 	} as unknown as Container & {
 		eventMode: string;
 		cursor: string;
+		alpha: number;
 		on: ReturnType<typeof vi.fn>;
 	};
+}
+
+/** on()に登録されたコールバックをイベント名で取得する */
+function getRegisteredCallback(
+	container: ReturnType<typeof createMockContainer>,
+	eventName: string,
+): ((...args: unknown[]) => void) | undefined {
+	const call = container.on.mock.calls.find(
+		(c: unknown[]) => c[0] === eventName,
+	);
+	return call?.[1] as ((...args: unknown[]) => void) | undefined;
 }
 
 describe("makeInteractive", () => {
@@ -147,9 +160,10 @@ describe("makeInteractive", () => {
 			button: 0,
 			stopPropagation: vi.fn(),
 		} as unknown as FederatedPointerEvent;
-		const registeredCallback = container.on.mock.calls[0][1] as (
-			e: FederatedPointerEvent,
-		) => void;
+		const registeredCallback = getRegisteredCallback(
+			container,
+			"pointerdown",
+		) as (e: FederatedPointerEvent) => void;
 		registeredCallback(mockEvent);
 
 		expect(onClick).toHaveBeenCalledWith(mockEvent);
@@ -165,9 +179,10 @@ describe("makeInteractive", () => {
 			button: 2,
 			stopPropagation: vi.fn(),
 		} as unknown as FederatedPointerEvent;
-		const registeredCallback = container.on.mock.calls[0][1] as (
-			e: FederatedPointerEvent,
-		) => void;
+		const registeredCallback = getRegisteredCallback(
+			container,
+			"pointerdown",
+		) as (e: FederatedPointerEvent) => void;
 		registeredCallback(mockEvent);
 
 		expect(onClick).not.toHaveBeenCalled();
@@ -183,11 +198,121 @@ describe("makeInteractive", () => {
 			button: 1,
 			stopPropagation: vi.fn(),
 		} as unknown as FederatedPointerEvent;
-		const registeredCallback = container.on.mock.calls[0][1] as (
-			e: FederatedPointerEvent,
-		) => void;
+		const registeredCallback = getRegisteredCallback(
+			container,
+			"pointerdown",
+		) as (e: FederatedPointerEvent) => void;
 		registeredCallback(mockEvent);
 
 		expect(onClick).not.toHaveBeenCalled();
+	});
+
+	it("pointeroverイベントリスナーを登録する", () => {
+		const container = createMockContainer();
+
+		makeInteractive(container, vi.fn());
+
+		expect(container.on).toHaveBeenCalledWith(
+			"pointerover",
+			expect.any(Function),
+		);
+	});
+
+	it("pointeroutイベントリスナーを登録する", () => {
+		const container = createMockContainer();
+
+		makeInteractive(container, vi.fn());
+
+		expect(container.on).toHaveBeenCalledWith(
+			"pointerout",
+			expect.any(Function),
+		);
+	});
+
+	it("ホバー時にalphaが0.8になる", () => {
+		const container = createMockContainer();
+
+		makeInteractive(container, vi.fn());
+
+		const pointerover = getRegisteredCallback(container, "pointerover");
+		expect(pointerover).toBeDefined();
+		pointerover?.();
+
+		expect(container.alpha).toBe(0.8);
+	});
+
+	it("ホバー解除時にホバー前のalphaに戻る", () => {
+		const container = createMockContainer();
+
+		makeInteractive(container, vi.fn());
+
+		const pointerover = getRegisteredCallback(container, "pointerover");
+		const pointerout = getRegisteredCallback(container, "pointerout");
+		expect(pointerover).toBeDefined();
+		expect(pointerout).toBeDefined();
+		pointerover?.();
+		pointerout?.();
+
+		expect(container.alpha).toBe(1);
+	});
+
+	it("ホバー中にalphaが外部変更された場合、pointeroutで復元しない", () => {
+		const container = createMockContainer();
+
+		makeInteractive(container, vi.fn());
+
+		const pointerover = getRegisteredCallback(container, "pointerover");
+		const pointerout = getRegisteredCallback(container, "pointerout");
+		expect(pointerover).toBeDefined();
+		expect(pointerout).toBeDefined();
+		pointerover?.();
+		expect(container.alpha).toBe(0.8);
+
+		// 外部要因（tween等）でalphaが変化
+		container.alpha = 1.0;
+		pointerout?.();
+
+		// 外部変更後の値が維持される（ホバー前の値に巻き戻さない）
+		expect(container.alpha).toBe(1.0);
+	});
+
+	it("pointeroverが複数回発火してもpointeroutで元のalphaに戻る", () => {
+		const container = createMockContainer();
+
+		makeInteractive(container, vi.fn());
+
+		const pointerover = getRegisteredCallback(container, "pointerover");
+		const pointerout = getRegisteredCallback(container, "pointerout");
+		expect(pointerover).toBeDefined();
+		expect(pointerout).toBeDefined();
+
+		// pointeroverが2回発火（バブリングによる再入）
+		pointerover?.();
+		expect(container.alpha).toBe(0.8);
+		pointerover?.();
+		// 2回目のpointeroverでalphaBeforeHoverが上書きされない
+		expect(container.alpha).toBe(0.8);
+
+		pointerout?.();
+		// 元のalpha(1)に正しく復元される
+		expect(container.alpha).toBe(1);
+	});
+
+	it("初期alphaが1以外の場合もホバー解除時に元の値に戻る", () => {
+		const container = createMockContainer();
+		container.alpha = 0.5;
+
+		makeInteractive(container, vi.fn());
+
+		const pointerover = getRegisteredCallback(container, "pointerover");
+		const pointerout = getRegisteredCallback(container, "pointerout");
+		expect(pointerover).toBeDefined();
+		expect(pointerout).toBeDefined();
+		pointerover?.();
+		// alphaBeforeHover(0.5) < HOVER_ALPHA(0.8) なのでalphaは増加しない
+		expect(container.alpha).toBe(0.5);
+		pointerout?.();
+
+		expect(container.alpha).toBe(0.5);
 	});
 });

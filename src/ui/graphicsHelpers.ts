@@ -41,8 +41,11 @@ export function createOverlay(
 	graphics.eventMode = "static";
 }
 
+/** ホバー時の透明度 */
+const HOVER_ALPHA = 0.8;
+
 /**
- * ボタンのインタラクション設定（eventMode / cursor / pointerdownリスナー）を一括で行う
+ * ボタンのインタラクション設定（eventMode / cursor / pointerdownリスナー / ホバーエフェクト）を一括で行う
  */
 export function makeInteractive(
 	target: Container,
@@ -53,5 +56,25 @@ export function makeInteractive(
 	target.on("pointerdown", (event: FederatedPointerEvent) => {
 		if (event.button !== 0) return;
 		onClick(event);
+	});
+	let alphaBeforeHover = target.alpha;
+	let hoverAlpha: number | null = null;
+	let isHovering = false;
+	target.on("pointerover", () => {
+		if (isHovering) return;
+		isHovering = true;
+		alphaBeforeHover = target.alpha;
+		const nextAlpha = Math.min(HOVER_ALPHA, alphaBeforeHover);
+		target.alpha = nextAlpha;
+		hoverAlpha = nextAlpha;
+	});
+	target.on("pointerout", () => {
+		if (!isHovering) return;
+		// ホバーで設定した alpha がまだ維持されている場合のみ復元する
+		if (hoverAlpha !== null && target.alpha === hoverAlpha) {
+			target.alpha = alphaBeforeHover;
+		}
+		isHovering = false;
+		hoverAlpha = null;
 	});
 }
