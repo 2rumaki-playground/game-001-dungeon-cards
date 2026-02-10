@@ -158,3 +158,7 @@ pnpm-debug.log*
 
 # Playwright CLI
 .playwright-cli/
+
+# claude-mem auto-generated files
+.claude/commands/CLAUDE.md
+src/ui/CLAUDE.md
