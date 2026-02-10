@@ -3,7 +3,7 @@
  * PixiJSを使用してマップ・キャラクターを描画
  */
 
-import { Container, Graphics, Text, Ticker } from "pixi.js";
+import { Container, Graphics, Sprite, Text, Texture, Ticker } from "pixi.js";
 import { CELL_SIZE, COLORS } from "../constants";
 import type {
 	Direction,
@@ -12,11 +12,15 @@ import type {
 	Player,
 	Position,
 	SpecialTileType,
-	TileType,
 } from "../types";
 import { DIRECTION_DELTA } from "../types";
 import type { EnemyType } from "../types/character";
 import { Easing, tween } from "../utils/tween";
+import {
+	getEnemyTexture,
+	getPlayerTexture,
+	getTileTexture,
+} from "./assetLoader";
 import { gridToPixel } from "./coordinates";
 import type { EnemyMove } from "./enemyMoveDetector";
 
@@ -114,149 +118,6 @@ const HP_BAR_HEIGHT = 4;
 /** HPバー背景色 */
 const HP_BAR_BG_COLOR = 0x333333;
 
-/**
- * タイル種別に対応する色を取得
- */
-function getTileColor(type: TileType): number {
-	switch (type) {
-		case "floor":
-			return COLORS.floor;
-		case "wall":
-			return COLORS.wall;
-		case "stairs":
-			return COLORS.stairs;
-		case "trap":
-			return COLORS.trap;
-		case "treasure":
-			return COLORS.treasure;
-		case "rest_area":
-			return COLORS.restArea;
-		default:
-			return COLORS.floor;
-	}
-}
-
-/**
- * 罠タイルのアイコン（毒沼の波紋）を描画
- */
-function drawTrapIcon(g: Graphics, px: number, py: number): void {
-	const cx = px + CELL_SIZE / 2;
-	const cy = py + CELL_SIZE / 2;
-	// タイル背景（COLORS.trap）と同色だと alpha を変えても視認できないため、
-	// 波紋は背景とコントラストのある白で描画する
-	const rippleColor = 0xffffff;
-
-	// 外側の波紋
-	g.circle(cx, cy, 20);
-	g.fill({ color: rippleColor, alpha: 0.3 });
-
-	// 中間の波紋
-	g.circle(cx, cy, 13);
-	g.fill({ color: rippleColor, alpha: 0.4 });
-
-	// 内側の波紋
-	g.circle(cx, cy, 6);
-	g.fill({ color: rippleColor, alpha: 0.5 });
-}
-
-/**
- * 宝箱タイルのアイコンを描画
- */
-function drawTreasureIcon(g: Graphics, px: number, py: number): void {
-	const pad = 14;
-	const w = CELL_SIZE - pad * 2;
-	const h = CELL_SIZE - pad * 2;
-	const x = px + pad;
-	const y = py + pad;
-	const bodyColor = 0xb8860b;
-	const lockColor = 0x8b7500;
-
-	// 本体（下60%）
-	const bodyY = y + h * 0.4;
-	const bodyH = h * 0.6;
-	g.roundRect(x, bodyY, w, bodyH, 3);
-	g.fill(bodyColor);
-
-	// 蓋（上45%）
-	const lidH = h * 0.45;
-	g.roundRect(x, y, w, lidH, 3);
-	g.fill(bodyColor);
-
-	// 留め具（中央の横線）
-	const claspH = 3;
-	const claspY = y + lidH - claspH / 2;
-	g.rect(x, claspY, w, claspH);
-	g.fill(lockColor);
-
-	// 鍵穴
-	g.circle(x + w / 2, claspY + claspH / 2 + 5, 3);
-	g.fill(0x000000);
-}
-
-/**
- * 休憩所タイルのアイコン（骨付き肉）を描画
- */
-function drawRestAreaIcon(g: Graphics, px: number, py: number): void {
-	const cx = px + CELL_SIZE / 2;
-	const cy = py + CELL_SIZE / 2;
-	const meatColor = 0xd4704e;
-	const boneColor = 0xf5f5dc;
-
-	// 肉（中央の楕円）
-	g.ellipse(cx, cy, 12, 9);
-	g.fill(meatColor);
-
-	// 左骨: 関節球 + 棒 + 関節球
-	g.circle(cx - 18, cy - 4, 4);
-	g.fill(boneColor);
-	g.rect(cx - 16, cy - 2, 8, 4);
-	g.fill(boneColor);
-	g.circle(cx - 18, cy + 4, 4);
-	g.fill(boneColor);
-
-	// 右骨: 関節球 + 棒 + 関節球
-	g.circle(cx + 18, cy - 4, 4);
-	g.fill(boneColor);
-	g.rect(cx + 8, cy - 2, 8, 4);
-	g.fill(boneColor);
-	g.circle(cx + 18, cy + 4, 4);
-	g.fill(boneColor);
-}
-
-/**
- * 階段タイルのアイコンを描画
- */
-function drawStairsIcon(g: Graphics, px: number, py: number): void {
-	const pad = 16;
-	const x = px + pad;
-	const y = py + pad;
-	const w = CELL_SIZE - pad * 2;
-	const h = CELL_SIZE - pad * 2;
-	const color = 0x6a8a6a;
-	const lineWidth = 3;
-
-	const stepW = w / 3;
-	const stepH = h / 3;
-
-	g.setStrokeStyle({ width: lineWidth, color });
-
-	// 3段の階段（左下→右上）
-	// 1段目（左下）
-	g.moveTo(x, y + h);
-	g.lineTo(x, y + h - stepH);
-	g.lineTo(x + stepW, y + h - stepH);
-
-	// 2段目（中央）
-	g.lineTo(x + stepW, y + h - stepH * 2);
-	g.lineTo(x + stepW * 2, y + h - stepH * 2);
-
-	// 3段目（右上）
-	g.lineTo(x + stepW * 2, y);
-	g.lineTo(x + w, y);
-
-	g.stroke();
-}
-
 /** 残骸パーティクルの色 */
 const REMNANT_COLOR = 0x999999;
 
@@ -314,13 +175,13 @@ function drawRemnantOverlay(
  */
 export class MapRenderer {
 	private container: Container;
-	private tilesGraphics: Graphics;
+	private tilesContainer: Container;
 	private remnantsGraphics: Graphics;
-	private playerGraphics: Graphics;
+	private playerSprite: Sprite;
 	private enemiesContainer: Container;
 	private isPlayerInitialized = false;
 	private enemyContainerMap: Map<string, Container> = new Map();
-	private enemyGraphicsMap: Map<string, Graphics> = new Map();
+	private enemySpriteMap: Map<string, Sprite> = new Map();
 	private enemyHpBarMap: Map<string, Graphics> = new Map();
 	private enemyTypeMap: Map<string, EnemyType> = new Map();
 	private playerGridPos: Position = { x: 0, y: 0 };
@@ -328,15 +189,15 @@ export class MapRenderer {
 
 	constructor() {
 		this.container = new Container();
-		this.tilesGraphics = new Graphics();
+		this.tilesContainer = new Container();
 		this.remnantsGraphics = new Graphics();
-		this.playerGraphics = new Graphics();
+		this.playerSprite = new Sprite();
 		this.enemiesContainer = new Container();
 
-		this.container.addChild(this.tilesGraphics);
+		this.container.addChild(this.tilesContainer);
 		this.container.addChild(this.remnantsGraphics);
 		this.container.addChild(this.enemiesContainer);
-		this.container.addChild(this.playerGraphics);
+		this.container.addChild(this.playerSprite);
 	}
 
 	/**
@@ -350,50 +211,32 @@ export class MapRenderer {
 	 * マップを描画
 	 */
 	renderMap(map: GameMap): void {
-		this.tilesGraphics.clear();
+		this.tilesContainer.removeChildren();
 
 		for (let y = 0; y < map.length; y++) {
 			const row = map[y];
 			for (let x = 0; x < row.length; x++) {
 				const tile = row[x];
 				const pixelPos = gridToPixel({ x, y });
-				const color = getTileColor(tile.type);
-
-				this.tilesGraphics.rect(pixelPos.x, pixelPos.y, CELL_SIZE, CELL_SIZE);
-				this.tilesGraphics.fill(color);
-
-				// 特殊タイルのアイコンを重ねて描画
-				switch (tile.type) {
-					case "trap":
-						drawTrapIcon(this.tilesGraphics, pixelPos.x, pixelPos.y);
-						break;
-					case "treasure":
-						drawTreasureIcon(this.tilesGraphics, pixelPos.x, pixelPos.y);
-						break;
-					case "rest_area":
-						drawRestAreaIcon(this.tilesGraphics, pixelPos.x, pixelPos.y);
-						break;
-					case "stairs":
-						drawStairsIcon(this.tilesGraphics, pixelPos.x, pixelPos.y);
-						break;
-				}
+				const sprite = new Sprite(getTileTexture(tile.type));
+				sprite.x = pixelPos.x;
+				sprite.y = pixelPos.y;
+				sprite.width = CELL_SIZE;
+				sprite.height = CELL_SIZE;
+				this.tilesContainer.addChild(sprite);
 			}
 		}
 	}
 
 	/**
-	 * プレイヤーのグラフィックスを初期化（1回だけ）
+	 * プレイヤースプライトを初期化（1回だけ）
 	 */
-	private initPlayerGraphics(): void {
+	private initPlayerSprite(): void {
 		if (this.isPlayerInitialized) return;
 
-		this.playerGraphics.clear();
-		const padding = 8;
-		const size = CELL_SIZE - padding * 2;
-
-		// ローカル座標でセル中心に円を描画
-		this.playerGraphics.circle(CELL_SIZE / 2, CELL_SIZE / 2, size / 2);
-		this.playerGraphics.fill(COLORS.player);
+		this.playerSprite.texture = getPlayerTexture();
+		this.playerSprite.width = CELL_SIZE;
+		this.playerSprite.height = CELL_SIZE;
 		this.isPlayerInitialized = true;
 	}
 
@@ -401,12 +244,12 @@ export class MapRenderer {
 	 * プレイヤーを描画
 	 */
 	renderPlayer(player: Player): void {
-		this.initPlayerGraphics();
+		this.initPlayerSprite();
 
 		this.playerGridPos = player.position;
 		const pixelPos = gridToPixel(player.position);
-		this.playerGraphics.x = pixelPos.x;
-		this.playerGraphics.y = pixelPos.y;
+		this.playerSprite.x = pixelPos.x;
+		this.playerSprite.y = pixelPos.y;
 	}
 
 	/**
@@ -414,11 +257,11 @@ export class MapRenderer {
 	 * @param targetGridPos 移動先のグリッド座標
 	 */
 	async animatePlayerMove(targetGridPos: Position): Promise<void> {
-		this.initPlayerGraphics();
+		this.initPlayerSprite();
 
 		const targetPixel = gridToPixel(targetGridPos);
 		await tween(
-			this.playerGraphics,
+			this.playerSprite,
 			{ x: targetPixel.x, y: targetPixel.y },
 			{ duration: PLAYER_MOVE_DURATION, easing: Easing.easeOutCubic },
 		);
@@ -429,15 +272,15 @@ export class MapRenderer {
 	 * @param direction ぶつかった方向
 	 */
 	async animatePlayerBump(direction: Direction): Promise<void> {
-		this.initPlayerGraphics();
+		this.initPlayerSprite();
 
 		const delta = DIRECTION_DELTA[direction];
-		const originX = this.playerGraphics.x;
-		const originY = this.playerGraphics.y;
+		const originX = this.playerSprite.x;
+		const originY = this.playerSprite.y;
 
 		// 壁方向に少しだけ移動
 		await tween(
-			this.playerGraphics,
+			this.playerSprite,
 			{
 				x: originX + delta.x * BUMP_DISTANCE,
 				y: originY + delta.y * BUMP_DISTANCE,
@@ -446,7 +289,7 @@ export class MapRenderer {
 		);
 		// 元の位置に跳ね返る
 		await tween(
-			this.playerGraphics,
+			this.playerSprite,
 			{ x: originX, y: originY },
 			{ duration: BUMP_BACK_DURATION, easing: Easing.easeOutCubic },
 		);
@@ -488,7 +331,7 @@ export class MapRenderer {
 	}
 
 	/**
-	 * 敵タイプに応じた色を取得
+	 * 敵タイプに応じた色を取得（HPバー描画用）
 	 */
 	private getEnemyColor(type: EnemyType): number {
 		switch (type) {
@@ -508,25 +351,26 @@ export class MapRenderer {
 	}
 
 	/**
-	 * 敵1体分のコンテナを作成（Graphics + HPバーを子要素として含む）
+	 * 敵1体分のコンテナを作成（Sprite + HPバーを子要素として含む）
 	 * コンテナ単位で座標移動するため、アニメーション時にHPバーも追従する
 	 */
 	private createEnemyContainer(type: EnemyType): {
 		container: Container;
-		graphics: Graphics;
+		sprite: Sprite;
 	} {
 		const enemyContainer = new Container();
-		const graphics = new Graphics();
+		const sprite = new Sprite(getEnemyTexture(type));
 		const padding = ENEMY_PADDING[type];
 		const size = CELL_SIZE - padding * 2;
-		const color = this.getEnemyColor(type);
 
-		// ローカル座標でセル内に四角を描画
-		graphics.rect(padding, padding, size, size);
-		graphics.fill(color);
-		enemyContainer.addChild(graphics);
+		// ローカル座標でセル内にスプライトを配置
+		sprite.x = padding;
+		sprite.y = padding;
+		sprite.width = size;
+		sprite.height = size;
+		enemyContainer.addChild(sprite);
 
-		return { container: enemyContainer, graphics };
+		return { container: enemyContainer, sprite };
 	}
 
 	/**
@@ -571,7 +415,7 @@ export class MapRenderer {
 			enemyContainer.destroy({ children: true });
 		}
 		this.enemyContainerMap.delete(id);
-		this.enemyGraphicsMap.delete(id);
+		this.enemySpriteMap.delete(id);
 		this.enemyHpBarMap.delete(id);
 		this.enemyTypeMap.delete(id);
 		this.enemyGridPosMap.delete(id);
@@ -601,10 +445,10 @@ export class MapRenderer {
 
 			let enemyContainer = this.enemyContainerMap.get(enemy.id);
 			if (!enemyContainer) {
-				const { container, graphics } = this.createEnemyContainer(enemy.type);
+				const { container, sprite } = this.createEnemyContainer(enemy.type);
 				enemyContainer = container;
 				this.enemyContainerMap.set(enemy.id, enemyContainer);
-				this.enemyGraphicsMap.set(enemy.id, graphics);
+				this.enemySpriteMap.set(enemy.id, sprite);
 				this.enemyTypeMap.set(enemy.id, enemy.type);
 				this.enemiesContainer.addChild(enemyContainer);
 			}
@@ -623,15 +467,15 @@ export class MapRenderer {
 	 * 対象に白フラッシュエフェクトを適用
 	 * 白い矩形オーバーレイをフェードアウトさせる
 	 */
-	private async animateFlash(targetGraphics: Graphics): Promise<void> {
-		const parent = targetGraphics.parent;
+	private async animateFlash(target: Container): Promise<void> {
+		const parent = target.parent;
 		if (!parent) return;
 
 		const overlay = new Graphics();
 		overlay.rect(0, 0, CELL_SIZE, CELL_SIZE);
 		overlay.fill(FLASH_COLOR);
-		overlay.x = targetGraphics.x;
-		overlay.y = targetGraphics.y;
+		overlay.x = target.x;
+		overlay.y = target.y;
 		parent.addChild(overlay);
 
 		await tween(overlay, { alpha: 0 }, { duration: FLASH_DURATION });
@@ -674,22 +518,22 @@ export class MapRenderer {
 
 	/**
 	 * プレイヤー被ダメージ時の点滅エフェクト
-	 * playerGraphicsのalphaを複数回点滅させる
+	 * playerSpriteのalphaを複数回点滅させる
 	 */
 	private async animatePlayerBlink(): Promise<void> {
 		for (let i = 0; i < PLAYER_BLINK_COUNT; i++) {
 			await tween(
-				this.playerGraphics,
+				this.playerSprite,
 				{ alpha: 0.2 },
 				{ duration: PLAYER_BLINK_INTERVAL / 2 },
 			);
 			await tween(
-				this.playerGraphics,
+				this.playerSprite,
 				{ alpha: 1 },
 				{ duration: PLAYER_BLINK_INTERVAL / 2 },
 			);
 		}
-		this.playerGraphics.alpha = 1;
+		this.playerSprite.alpha = 1;
 	}
 
 	/**
@@ -745,13 +589,13 @@ export class MapRenderer {
 	 * @param damage ダメージ量
 	 */
 	async animateAttackHit(enemyId: string, damage: number): Promise<void> {
-		const enemyGraphics = this.enemyGraphicsMap.get(enemyId);
-		if (!enemyGraphics) return;
+		const enemyContainer = this.enemyContainerMap.get(enemyId);
+		if (!enemyContainer) return;
 
 		const enemyGridPos = this.enemyGridPosMap.get(enemyId);
 
 		await Promise.all([
-			this.animateFlash(enemyGraphics),
+			this.animateFlash(enemyContainer),
 			this.animateScreenShake(),
 			...(enemyGridPos ? [this.animateDamagePopup(enemyGridPos, damage)] : []),
 		]);
@@ -777,7 +621,7 @@ export class MapRenderer {
 			{ duration: DEFEAT_DURATION, easing: Easing.easeInOut },
 		);
 
-		// コンテナごと削除（Graphics + HPバーも含む）
+		// コンテナごと削除（Sprite + HPバーも含む）
 		this.destroyEnemyEntry(enemyId);
 	}
 
@@ -788,7 +632,7 @@ export class MapRenderer {
 	 */
 	async animateEnemyAttackHit(damage: number): Promise<void> {
 		await Promise.all([
-			this.animateFlash(this.playerGraphics),
+			this.animateFlash(this.playerSprite),
 			this.animateScreenShake(),
 			this.animateDamagePopup(this.playerGridPos, damage),
 		]);
@@ -889,16 +733,16 @@ export class MapRenderer {
 	 * クリア
 	 */
 	clear(): void {
-		this.tilesGraphics.clear();
+		this.tilesContainer.removeChildren();
 		this.remnantsGraphics.clear();
-		this.playerGraphics.clear();
+		this.playerSprite.texture = Texture.EMPTY;
 		this.isPlayerInitialized = false;
 		this.enemiesContainer.removeChildren();
 		for (const container of this.enemyContainerMap.values()) {
 			container.destroy({ children: true });
 		}
 		this.enemyContainerMap.clear();
-		this.enemyGraphicsMap.clear();
+		this.enemySpriteMap.clear();
 		this.enemyHpBarMap.clear();
 		this.enemyTypeMap.clear();
 		this.enemyGridPosMap.clear();
