@@ -26,15 +26,9 @@ import type {
 import { RNG } from "../utils/rng";
 import { createInitialDeckState, drawCards } from "./deck";
 import { generateMapPlacement } from "./map";
+import { positionToKey } from "./positionUtils";
 
 const cloneRng = (rng: RNG): RNG => rng.clone();
-
-/**
- * 座標を残骸マップのキー文字列に変換
- */
-export function positionToKey(pos: Position): string {
-	return `${pos.x},${pos.y}`;
-}
 
 /**
  * 指定座標に撃破残骸を追加

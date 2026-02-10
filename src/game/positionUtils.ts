@@ -17,3 +17,10 @@ export function isAdjacent(a: Position, b: Position): boolean {
 export function manhattanDistance(a: Position, b: Position): number {
 	return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
 }
+
+/**
+ * 座標をキー文字列に変換
+ */
+export function positionToKey(pos: Position): string {
+	return `${pos.x},${pos.y}`;
+}

@@ -5,6 +5,7 @@
 
 import { Container, Graphics, Text } from "pixi.js";
 import { CELL_SIZE } from "../constants";
+import { positionToKey } from "../game/positionUtils";
 import type { Enemy, GameMap, Position } from "../types";
 import { gridToPixel } from "./coordinates";
 import { makeInteractive } from "./graphicsHelpers";
@@ -74,15 +75,15 @@ export class DebugTargetSelector {
 		this.container.visible = true;
 
 		const enemyPositions = new Set(
-			enemies.map((e) => `${e.position.x},${e.position.y}`),
+			enemies.map((e) => positionToKey(e.position)),
 		);
-		const playerKey = `${playerPos.x},${playerPos.y}`;
+		const playerKey = positionToKey(playerPos);
 
 		for (let y = 0; y < map.length; y++) {
 			for (let x = 0; x < map[y].length; x++) {
 				const tile = map[y][x];
 				if (tile.type === "wall") continue;
-				const key = `${x},${y}`;
+				const key = positionToKey({ x, y });
 				if (key === playerKey) continue;
 				if (enemyPositions.has(key)) continue;
 
