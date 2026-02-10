@@ -15,6 +15,7 @@ import {
 import { applyDamageToPlayer, checkGameOver, isDefeated } from "./combat";
 import { isInBounds } from "./map";
 import { isAdjacent, manhattanDistance } from "./positionUtils";
+import { findRoomAt, isInSameRoom } from "./roomUtils";
 import { addActionLog, setEnemies, updateEnemy } from "./state";
 
 export { isAdjacent, manhattanDistance };
@@ -218,7 +219,7 @@ export function executeEnemyTurn(state: GameState): EnemyTurnResult {
 		}
 
 		if (isAdjacent(currentEnemy.position, next.player.position)) {
-			// 攻撃（激昂時はボーナスダメージ）
+			// 攻撃（激昂時はボーナスダメージ）— 部屋境界に関係なく発動
 			const enrageBonus = currentEnemy.enraged
 				? BOSS_SKILL.enrageBonusDamage
 				: 0;
@@ -226,6 +227,11 @@ export function executeEnemyTurn(state: GameState): EnemyTurnResult {
 			next = applyDamageToPlayer(next, damage);
 			next = addActionLog(next, "敵が攻撃した", "enemy");
 			totalDamage += damage;
+		} else if (
+			findRoomAt(currentEnemy.position, next.rooms) !== null &&
+			!isInSameRoom(currentEnemy.position, next.player.position, next.rooms)
+		) {
+			// 部屋内の敵 && プレイヤーが同じ部屋にいない → 待機
 		} else if (
 			manhattanDistance(currentEnemy.position, next.player.position) <=
 			params.senseRange

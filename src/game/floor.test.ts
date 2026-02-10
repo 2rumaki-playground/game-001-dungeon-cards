@@ -74,6 +74,7 @@ function createTestState(overrides?: Partial<GameState>): GameState {
 		rewardState: null,
 		isCleared: false,
 		remnants: {},
+		rooms: [],
 		...overrides,
 	};
 }

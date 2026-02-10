@@ -125,6 +125,7 @@ export function loadGame(): GameState | null {
 			...data,
 			enemies,
 			actionLog,
+			rooms: Array.isArray(data.rooms) ? data.rooms : [],
 			rng: RNG.deserialize(data.rng),
 			isCleared: data.isCleared === true,
 			defeatedEnemyCount:

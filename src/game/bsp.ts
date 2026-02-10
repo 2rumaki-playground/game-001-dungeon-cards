@@ -9,19 +9,11 @@ import {
 	BSP_MIN_PARTITION_SIZE,
 	BSP_MIN_ROOM_SIZE,
 } from "../constants";
-import type { GameMap, Tile } from "../types";
+import type { GameMap, Room, Tile } from "../types";
 import type { RNG } from "../utils/rng";
 
 /** パーティション矩形（内側領域基準） */
 export type Rectangle = {
-	x: number;
-	y: number;
-	width: number;
-	height: number;
-};
-
-/** 部屋（マップ座標基準、内部床サイズ） */
-export type Room = {
 	x: number;
 	y: number;
 	width: number;
