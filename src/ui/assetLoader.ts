@@ -43,26 +43,38 @@ export async function loadGameAssets(): Promise<void> {
 		PLAYER_ASSET_PATH,
 	];
 
-	const textures = await Assets.load<Texture>(allPaths);
+	// 成功時のみ反映するためのテンポラリキャッシュ
+	const tempCache = new Map<string, Texture>();
 
-	// 前回のキャッシュをクリアして再読み込みに備える
-	textureCache.clear();
+	try {
+		const textures = await Assets.load<Texture>(allPaths);
 
-	// テクスチャをキャッシュし、NEAREST スケールモードを設定
-	const missingPaths: string[] = [];
-	for (const path of allPaths) {
-		const texture = textures[path];
-		if (!texture) {
-			missingPaths.push(path);
-			continue;
+		// テクスチャをテンポラリキャッシュし、NEAREST スケールモードを設定
+		const missingPaths: string[] = [];
+		for (const path of allPaths) {
+			const texture = textures[path];
+			if (!texture) {
+				missingPaths.push(path);
+				continue;
+			}
+			texture.source.scaleMode = "nearest";
+			tempCache.set(path, texture);
 		}
-		texture.source.scaleMode = "nearest";
-		textureCache.set(path, texture);
-	}
-	if (missingPaths.length > 0) {
-		throw new Error(
-			`テクスチャの読み込みに失敗しました: ${missingPaths.join(", ")}`,
-		);
+		if (missingPaths.length > 0) {
+			throw new Error(
+				`テクスチャの読み込みに失敗しました: ${missingPaths.join(", ")}`,
+			);
+		}
+
+		// 全アセットが揃ったら一括でグローバルキャッシュを更新
+		textureCache.clear();
+		for (const [path, texture] of tempCache.entries()) {
+			textureCache.set(path, texture);
+		}
+	} catch (error) {
+		// 失敗時は中途半端なキャッシュを残さない
+		textureCache.clear();
+		throw error;
 	}
 }
 
