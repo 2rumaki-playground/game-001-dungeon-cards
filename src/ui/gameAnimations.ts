@@ -87,13 +87,17 @@ export async function updateStateWithMoveAnimation(
 
 	applyState(ctx, newState);
 
+	// render後の新しいカメラ位置（失敗時もfinallyでスナップするためtryの外で保持）
+	let newCameraX = savedCameraX;
+	let newCameraY = savedCameraY;
+
 	try {
 		// プレイヤー以外を描画（renderでカメラが新位置にジャンプする）
 		render(ctx, false, true);
 
 		// render後の新しいカメラ位置を取得し、移動中は旧位置に復元
-		const newCameraX = mapContainer.x;
-		const newCameraY = mapContainer.y;
+		newCameraX = mapContainer.x;
+		newCameraY = mapContainer.y;
 		mapContainer.x = savedCameraX;
 		mapContainer.y = savedCameraY;
 
@@ -126,6 +130,9 @@ export async function updateStateWithMoveAnimation(
 			});
 		}
 	} finally {
+		// アニメーション失敗時もカメラを正しい位置にスナップ
+		mapContainer.x = newCameraX;
+		mapContainer.y = newCameraY;
 		ctx.isAnimating = false;
 	}
 }
