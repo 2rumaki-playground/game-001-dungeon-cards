@@ -31,6 +31,7 @@ import { gridToCenterPixel } from "./coordinates";
 import { detectEnemyMoves } from "./enemyMoveDetector";
 import {
 	executeNextFloorTransition,
+	getGameAreaSize,
 	getScreenSize,
 	updateStateWithAttackAnimation,
 	updateStateWithBumpAnimation,
@@ -465,7 +466,13 @@ export function setupEventHandlers(ctx: GameContext): void {
 	ctx.ui.deckViewer.setOnOpen(() => {
 		if (ctx.isAnimating) return;
 		const screen = getScreenSize(ctx);
-		ctx.ui.deckViewer.render(ctx.state.deck, screen.width, screen.height);
+		const gameArea = getGameAreaSize(ctx);
+		ctx.ui.deckViewer.render(
+			ctx.state.deck,
+			screen.width,
+			screen.height,
+			gameArea,
+		);
 		ctx.ui.deckViewer.show();
 	});
 
