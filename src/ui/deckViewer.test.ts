@@ -1,6 +1,11 @@
+import type { Graphics } from "pixi.js";
 import { describe, expect, it, vi } from "vitest";
 import type { Card, DeckState } from "../types";
-import { CARD_ROW_LIST_WIDTH } from "./cardRowRenderer";
+import {
+	CARD_ROW_GAP,
+	CARD_ROW_HEIGHT,
+	CARD_ROW_LIST_WIDTH,
+} from "./cardRowRenderer";
 import { DeckViewer } from "./deckViewer";
 
 /** テスト用デッキ */
@@ -105,28 +110,89 @@ describe("DeckViewer", () => {
 			expect(container.children.length).toBe(8);
 		});
 
-		it("タイトルが渡された幅の中央に配置される", () => {
+		it("オーバーレイはscreenWidthで全画面を覆う", () => {
 			const viewer = new DeckViewer();
 			const deck = createTestDeck();
+			const screenWidth = 800;
+			const screenHeight = 600;
 			const gameAreaWidth = 480;
-			viewer.render(deck, gameAreaWidth, 400);
+			const gameAreaHeight = 500;
+			viewer.render(
+				deck,
+				screenWidth,
+				screenHeight,
+				gameAreaWidth,
+				gameAreaHeight,
+			);
+
+			const container = viewer.getContainer();
+			const overlay = container.children[0] as Graphics;
+			// overlayのboundsがscreenWidthで描画されていること
+			expect(overlay.width).toBeGreaterThanOrEqual(screenWidth);
+		});
+
+		it("タイトルがgameAreaWidthの中央に配置される", () => {
+			const viewer = new DeckViewer();
+			const deck = createTestDeck();
+			const screenWidth = 800;
+			const gameAreaWidth = 480;
+			viewer.render(deck, screenWidth, 600, gameAreaWidth, 500);
 
 			const container = viewer.getContainer();
 			const title = container.children[1] as import("pixi.js").Text;
 			expect(title.x).toBe(gameAreaWidth / 2);
 		});
 
-		it("カードリストが渡された幅の中央に配置される", () => {
+		it("カードリストがgameAreaWidthの中央に配置される", () => {
 			const viewer = new DeckViewer();
 			const deck = createTestDeck();
+			const screenWidth = 800;
 			const gameAreaWidth = 480;
-			viewer.render(deck, gameAreaWidth, 400);
+			viewer.render(deck, screenWidth, 600, gameAreaWidth, 500);
 
 			const container = viewer.getContainer();
 			// children[2]が最初のカード行
 			const firstRow = container.children[2];
 			const expectedListX = (gameAreaWidth - CARD_ROW_LIST_WIDTH) / 2;
 			expect(firstRow.x).toBe(expectedListX);
+		});
+
+		it("コンテンツがgameAreaHeightの中央に配置される", () => {
+			const viewer = new DeckViewer();
+			const deck = createTestDeck();
+			const screenWidth = 800;
+			const gameAreaHeight = 500;
+			viewer.render(deck, screenWidth, 600, 480, gameAreaHeight);
+
+			const container = viewer.getContainer();
+			const title = container.children[1] as import("pixi.js").Text;
+
+			// コンテンツ全体の高さを計算
+			const titleFontSize = 24;
+			const titleToListGap = 12;
+			const closeButtonHeight = 32;
+			const typesCount = 5; // テストデッキは5種別
+			const listHeight = typesCount * (CARD_ROW_HEIGHT + CARD_ROW_GAP);
+			const listToCloseGap = 10;
+			const contentHeight =
+				titleFontSize +
+				titleToListGap +
+				listHeight +
+				listToCloseGap +
+				closeButtonHeight;
+			const expectedStartY = (gameAreaHeight - contentHeight) / 2;
+
+			expect(title.y).toBe(expectedStartY + titleFontSize / 2);
+		});
+
+		it("gameAreaを指定しない場合はscreenWidthでセンタリング", () => {
+			const viewer = new DeckViewer();
+			const deck = createTestDeck();
+			viewer.render(deck, 600, 400);
+
+			const container = viewer.getContainer();
+			const title = container.children[1] as import("pixi.js").Text;
+			expect(title.x).toBe(600 / 2);
 		});
 
 		it("空デッキでも描画できる", () => {

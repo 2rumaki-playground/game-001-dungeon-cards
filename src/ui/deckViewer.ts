@@ -120,8 +120,16 @@ export class DeckViewer {
 
 	/**
 	 * デッキ情報をオーバーレイに描画
+	 * @param gameAreaWidth ゲームエリアの幅（ログエリアを除いた領域）
+	 * @param gameAreaHeight ゲームエリアの高さ
 	 */
-	render(deck: DeckState, screenWidth: number, screenHeight: number): void {
+	render(
+		deck: DeckState,
+		screenWidth: number,
+		screenHeight: number,
+		gameAreaWidth?: number,
+		gameAreaHeight?: number,
+	): void {
 		this.container.removeChildren();
 
 		const cardCounts = this.countCardsByType(deck);
@@ -132,26 +140,43 @@ export class DeckViewer {
 		createOverlay(overlay, screenWidth, screenHeight);
 		this.container.addChild(overlay);
 
+		// コンテンツ配置用のエリアサイズ（指定がなければ画面全体を使う）
+		const areaW = gameAreaWidth ?? screenWidth;
+		const areaH = gameAreaHeight ?? screenHeight;
+
+		const types = CARD_TYPE_ORDER.filter((t) => (cardCounts.get(t) ?? 0) > 0);
+
+		// コンテンツ全体の高さを計算して上下センタリング
+		const titleFontSize = 24;
+		const titleToListGap = 12;
+		const listHeight = types.length * (CARD_ROW_HEIGHT + CARD_ROW_GAP);
+		const listToCloseGap = 10;
+		const contentHeight =
+			titleFontSize +
+			titleToListGap +
+			listHeight +
+			listToCloseGap +
+			CLOSE_BUTTON_HEIGHT;
+		const contentStartY = (areaH - contentHeight) / 2;
+
 		// タイトル
 		const title = new Text({
 			text: `デッキ一覧 (${totalCards}枚)`,
 			style: {
-				fontSize: 24,
+				fontSize: titleFontSize,
 				fontFamily: "sans-serif",
 				fill: UI_COLOR_GOLD,
 				fontWeight: "bold",
 			},
 		});
 		title.anchor.set(0.5);
-		title.x = screenWidth / 2;
-		title.y = 30;
+		title.x = areaW / 2;
+		title.y = contentStartY + titleFontSize / 2;
 		this.container.addChild(title);
 
 		// カード種別リスト
-		const listX = (screenWidth - CARD_ROW_LIST_WIDTH) / 2;
-		const listStartY = 60;
-
-		const types = CARD_TYPE_ORDER.filter((t) => (cardCounts.get(t) ?? 0) > 0);
+		const listX = (areaW - CARD_ROW_LIST_WIDTH) / 2;
+		const listStartY = contentStartY + titleFontSize + titleToListGap;
 
 		for (let i = 0; i < types.length; i++) {
 			const cardType = types[i];
@@ -164,9 +189,8 @@ export class DeckViewer {
 		}
 
 		// 閉じるボタン
-		const closeY =
-			listStartY + types.length * (CARD_ROW_HEIGHT + CARD_ROW_GAP) + 10;
-		const closeButton = this.createCloseButton(screenWidth / 2, closeY);
+		const closeY = listStartY + listHeight + listToCloseGap;
+		const closeButton = this.createCloseButton(areaW / 2, closeY);
 		this.container.addChild(closeButton);
 	}
 

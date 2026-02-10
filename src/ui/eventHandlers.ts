@@ -465,8 +465,15 @@ export function setupEventHandlers(ctx: GameContext): void {
 	// デッキ閲覧UIのコールバック設定
 	ctx.ui.deckViewer.setOnOpen(() => {
 		if (ctx.isAnimating) return;
+		const screen = getScreenSize(ctx);
 		const gameArea = getGameAreaSize(ctx);
-		ctx.ui.deckViewer.render(ctx.state.deck, gameArea.width, gameArea.height);
+		ctx.ui.deckViewer.render(
+			ctx.state.deck,
+			screen.width,
+			screen.height,
+			gameArea.width,
+			gameArea.height,
+		);
 		ctx.ui.deckViewer.show();
 	});
 
