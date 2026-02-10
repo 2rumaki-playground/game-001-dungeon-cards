@@ -152,10 +152,13 @@ describe("DeckViewer", () => {
 			});
 
 			const container = viewer.getContainer();
-			// children[2]が最初のカード行
-			const firstRow = container.children[2];
+			// カード行をlabelで特定
+			const firstRow = container.children.find(
+				(child) => child.label === "card-row",
+			);
+			expect(firstRow).toBeDefined();
 			const expectedListX = (gameAreaWidth - CARD_ROW_LIST_WIDTH) / 2;
-			expect(firstRow.x).toBe(expectedListX);
+			expect(firstRow!.x).toBe(expectedListX);
 		});
 
 		it("コンテンツがgameAreaHeightの中央に配置される", () => {

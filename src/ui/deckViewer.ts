@@ -181,6 +181,7 @@ export class DeckViewer {
 			const count = cardCounts.get(cardType) ?? 0;
 			const y = listStartY + i * (CARD_ROW_HEIGHT + CARD_ROW_GAP);
 			const row = createCardListRow({ cardType, count });
+			row.label = "card-row";
 			row.x = listX;
 			row.y = y;
 			this.container.addChild(row);
