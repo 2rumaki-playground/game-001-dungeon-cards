@@ -57,10 +57,12 @@ export function makeInteractive(
 		if (event.button !== 0) return;
 		onClick(event);
 	});
+	let alphaBeforeHover = target.alpha;
 	target.on("pointerover", () => {
+		alphaBeforeHover = target.alpha;
 		target.alpha = HOVER_ALPHA;
 	});
 	target.on("pointerout", () => {
-		target.alpha = 1;
+		target.alpha = alphaBeforeHover;
 	});
 }

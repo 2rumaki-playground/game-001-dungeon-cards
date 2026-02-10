@@ -239,7 +239,7 @@ describe("makeInteractive", () => {
 		expect(container.alpha).toBe(0.8);
 	});
 
-	it("ホバー解除時にalphaが1に戻る", () => {
+	it("ホバー解除時にホバー前のalphaに戻る", () => {
 		const container = createMockContainer();
 
 		makeInteractive(container, vi.fn());
@@ -252,5 +252,22 @@ describe("makeInteractive", () => {
 		pointerout?.();
 
 		expect(container.alpha).toBe(1);
+	});
+
+	it("初期alphaが1以外の場合もホバー解除時に元の値に戻る", () => {
+		const container = createMockContainer();
+		container.alpha = 0.5;
+
+		makeInteractive(container, vi.fn());
+
+		const pointerover = getRegisteredCallback(container, "pointerover");
+		const pointerout = getRegisteredCallback(container, "pointerout");
+		expect(pointerover).toBeDefined();
+		expect(pointerout).toBeDefined();
+		pointerover?.();
+		expect(container.alpha).toBe(0.8);
+		pointerout?.();
+
+		expect(container.alpha).toBe(0.5);
 	});
 });
