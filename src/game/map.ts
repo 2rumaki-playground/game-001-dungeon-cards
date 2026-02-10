@@ -18,6 +18,7 @@ import {
 import type { GameMap, Position, Tile, TileType } from "../types";
 import type { RNG } from "../utils/rng";
 import { generateBSPMap, type Room } from "./bsp";
+import { positionToKey } from "./state";
 
 /**
  * 座標がマップ範囲内かを判定
@@ -85,7 +86,7 @@ const getRoomFloorPositions = (
 	for (const room of rooms) {
 		for (let y = room.y; y < room.y + room.height; y++) {
 			for (let x = room.x; x < room.x + room.width; x++) {
-				const key = `${x},${y}`;
+				const key = positionToKey({ x, y });
 				if (map[y][x]?.type === "floor" && !excludePositions.has(key)) {
 					positions.push({ x, y });
 				}
@@ -141,7 +142,7 @@ export function generateBSPMapPlacement(
 		map[stairs.y][stairs.x] = createStairsTile();
 
 		// 特殊タイルは部屋内の床タイルからサンプリング（既配置位置を除外）
-		const excludeSet = new Set(baseSampled.map((p) => `${p.x},${p.y}`));
+		const excludeSet = new Set(baseSampled.map((p) => positionToKey(p)));
 		const roomFloorPositions = getRoomFloorPositions(map, rooms, excludeSet);
 
 		if (roomFloorPositions.length < specialTileCount) continue;
