@@ -68,7 +68,6 @@ async function initializeUIComponents(
 	const viewportMask = new Graphics();
 	viewportMask.rect(0, 0, viewportSize.width, viewportSize.height);
 	viewportMask.fill(0xffffff);
-	mapViewport.addChild(viewportMask);
 	mapViewport.mask = viewportMask;
 
 	const mapRenderer = new MapRenderer();
