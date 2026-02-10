@@ -5,7 +5,7 @@
 import { LOG_AREA_GAP, STATUS_BAR_HEIGHT } from "../constants";
 import type { GameContext } from "../gameContext";
 import type { GameState } from "../types";
-import { getViewportPixelSize, gridToCenterPixel } from "./coordinates";
+import { calculateCameraOffset, getViewportPixelSize } from "./coordinates";
 import { HAND_AREA_HEIGHT } from "./layout";
 
 /**
@@ -77,12 +77,16 @@ export function renderGameScreen(
 		skipEnemies,
 		ctx.state.remnants,
 	);
-	// 暫定: プレイヤーがビューポート中央に来るようmapContainerをオフセット（#306で正式対応予定）
-	const playerPixel = gridToCenterPixel(ctx.state.player.position);
-	const viewportSize = getViewportPixelSize();
 	const mapContainer = ctx.ui.mapRenderer.getContainer();
-	mapContainer.x = viewportSize.width / 2 - playerPixel.x;
-	mapContainer.y = viewportSize.height / 2 - playerPixel.y;
+	const mapWidth = ctx.state.map[0]?.length ?? 0;
+	const mapHeight = ctx.state.map.length;
+	const offset = calculateCameraOffset(
+		ctx.state.player.position,
+		mapWidth,
+		mapHeight,
+	);
+	mapContainer.x = offset.x;
+	mapContainer.y = offset.y;
 	if (!skipHand) {
 		ctx.ui.handRenderer.render(ctx.state.deck.hand, ctx.state.player.ap);
 	}

@@ -92,3 +92,40 @@ export function getMapPixelSize(
 export function getViewportPixelSize(): { width: number; height: number } {
 	return getMapPixelSize(VIEWPORT_TILES, VIEWPORT_TILES);
 }
+
+/**
+ * プレイヤー位置に基づくカメラオフセットを計算
+ * - マップ ≤ ビューポート: マップを中央配置
+ * - マップ > ビューポート: プレイヤーを中央に配置しつつ端でクランプ
+ * @param playerPos プレイヤーのグリッド座標
+ * @param mapWidth マップの幅（グリッド数）
+ * @param mapHeight マップの高さ（グリッド数）
+ * @returns mapContainerに設定するピクセルオフセット
+ */
+export function calculateCameraOffset(
+	playerPos: Position,
+	mapWidth: number,
+	mapHeight: number,
+): Position {
+	const viewport = getViewportPixelSize();
+	const map = getMapPixelSize(mapWidth, mapHeight);
+	const playerCenter = gridToCenterPixel(playerPos);
+
+	return {
+		x: calcAxis(viewport.width, map.width, playerCenter.x),
+		y: calcAxis(viewport.height, map.height, playerCenter.y),
+	};
+}
+
+function calcAxis(
+	viewportPx: number,
+	mapPx: number,
+	playerCenterPx: number,
+): number {
+	if (mapPx <= viewportPx) {
+		return (viewportPx - mapPx) / 2;
+	}
+	const raw = viewportPx / 2 - playerCenterPx;
+	const min = viewportPx - mapPx;
+	return Math.max(min, Math.min(0, raw));
+}
