@@ -41,8 +41,11 @@ export function createOverlay(
 	graphics.eventMode = "static";
 }
 
+/** ホバー時の透明度 */
+const HOVER_ALPHA = 0.8;
+
 /**
- * ボタンのインタラクション設定（eventMode / cursor / pointerdownリスナー）を一括で行う
+ * ボタンのインタラクション設定（eventMode / cursor / pointerdownリスナー / ホバーエフェクト）を一括で行う
  */
 export function makeInteractive(
 	target: Container,
@@ -53,5 +56,11 @@ export function makeInteractive(
 	target.on("pointerdown", (event: FederatedPointerEvent) => {
 		if (event.button !== 0) return;
 		onClick(event);
+	});
+	target.on("pointerover", () => {
+		target.alpha = HOVER_ALPHA;
+	});
+	target.on("pointerout", () => {
+		target.alpha = 1;
 	});
 }
