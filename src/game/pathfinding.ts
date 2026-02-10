@@ -9,7 +9,7 @@ import { isInBounds } from "./map";
 import { positionToKey } from "./positionUtils";
 
 /** 優先順序: 上→下→左→右 */
-export const DIRECTION_PRIORITY: Direction[] = ["up", "down", "left", "right"];
+const DIRECTION_PRIORITY: Direction[] = ["up", "down", "left", "right"];
 
 /**
  * BFSでゴールへの最短経路の最初の一歩（方向）を返す
