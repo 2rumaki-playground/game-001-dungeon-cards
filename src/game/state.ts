@@ -133,6 +133,7 @@ export function createTitleScreenState(seed?: number): GameState {
 		turn: "player",
 		floor: INITIAL_FLOOR,
 		map: createEmptyMap(),
+		rooms: [],
 		player: createInitialPlayer(),
 		enemies: [],
 		deck: createEmptyDeckState(),
@@ -157,7 +158,7 @@ export function createInitialGameState(
 		? Math.floor(floor)
 		: INITIAL_FLOOR;
 	const safeFloor = Math.max(INITIAL_FLOOR, normalizedFloor);
-	const { map, player, enemies } = generateMapPlacement(rng, safeFloor);
+	const { map, rooms, player, enemies } = generateMapPlacement(rng, safeFloor);
 	const initialPlayer = createInitialPlayer();
 
 	return {
@@ -165,6 +166,7 @@ export function createInitialGameState(
 		turn: "player",
 		floor: safeFloor,
 		map,
+		rooms,
 		player: { ...initialPlayer, position: player },
 		enemies: createEnemiesForFloor(enemies, safeFloor),
 		deck: createEmptyDeckState(),

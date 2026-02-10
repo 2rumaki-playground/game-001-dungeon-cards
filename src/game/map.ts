@@ -18,12 +18,13 @@ import {
 import type {
 	GameMap,
 	Position,
+	Room,
 	SpecialTileType,
 	Tile,
 	TileType,
 } from "../types";
 import type { RNG } from "../utils/rng";
-import { generateBSPMap, type Room } from "./bsp";
+import { generateBSPMap } from "./bsp";
 import { positionToKey } from "./positionUtils";
 
 /**
@@ -35,6 +36,7 @@ export function isInBounds(map: GameMap, x: number, y: number): boolean {
 
 export type MapPlacement = {
 	map: GameMap;
+	rooms: Room[];
 	player: Position;
 	stairs: Position;
 	enemies: Position[];
@@ -162,7 +164,7 @@ export function generateBSPMapPlacement(
 			specialTiles.push({ position: pos, type });
 		}
 
-		return { map, player, stairs, enemies, specialTiles };
+		return { map, rooms, player, stairs, enemies, specialTiles };
 	}
 
 	// リトライ上限到達時は固定レイアウトにフォールバック
@@ -213,7 +215,7 @@ function generateFixedMapPlacement(
 		specialTiles.push({ position: pos, type });
 	}
 
-	return { map, player, stairs, enemies, specialTiles };
+	return { map, rooms: [], player, stairs, enemies, specialTiles };
 }
 
 /**

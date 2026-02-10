@@ -288,6 +288,73 @@ describe("storage", () => {
 		expect(loaded?.actionLog[0].actor).toBe("player");
 	});
 
+	it("should fallback undefined rooms to empty array", () => {
+		const state = createTitleScreenState(42);
+		const saveData = {
+			...state,
+			screen: "game",
+			rng: state.rng.serialize(),
+		};
+		const saveDataWithoutRooms = {
+			...(saveData as Record<string, unknown>),
+		};
+		delete (saveDataWithoutRooms as Record<string, unknown>).rooms;
+		localStorageMock.setItem(
+			"dungeon-cards-save",
+			JSON.stringify(saveDataWithoutRooms),
+		);
+
+		const loaded = loadGame();
+		expect(loaded).not.toBeNull();
+		expect(loaded?.rooms).toEqual([]);
+	});
+
+	it("should filter out invalid room entries", () => {
+		const state = createTitleScreenState(42);
+		const saveData = {
+			...state,
+			screen: "game",
+			rooms: [
+				{ x: 1, y: 2, width: 3, height: 4 },
+				null,
+				{ x: "bad", y: 2, width: 3, height: 4 },
+				{ x: 1, y: -1, width: 3, height: 4 },
+				{ x: 1, y: 2, width: 0, height: 4 },
+				{ x: 1, y: 2, width: 3, height: -1 },
+				{ x: 1, y: 2, width: 3 },
+				{ x: 5, y: 6, width: 7, height: 8 },
+			],
+			rng: state.rng.serialize(),
+		};
+		localStorageMock.setItem("dungeon-cards-save", JSON.stringify(saveData));
+
+		const loaded = loadGame();
+		expect(loaded).not.toBeNull();
+		expect(loaded?.rooms).toEqual([
+			{ x: 1, y: 2, width: 3, height: 4 },
+			{ x: 5, y: 6, width: 7, height: 8 },
+		]);
+	});
+
+	it("should preserve valid rooms", () => {
+		const state = createTitleScreenState(42);
+		const validRooms = [
+			{ x: 0, y: 0, width: 5, height: 3 },
+			{ x: 10, y: 10, width: 4, height: 4 },
+		];
+		const saveData = {
+			...state,
+			screen: "game",
+			rooms: validRooms,
+			rng: state.rng.serialize(),
+		};
+		localStorageMock.setItem("dungeon-cards-save", JSON.stringify(saveData));
+
+		const loaded = loadGame();
+		expect(loaded).not.toBeNull();
+		expect(loaded?.rooms).toEqual(validRooms);
+	});
+
 	it("should return null if screen is invalid", () => {
 		const validState = createTitleScreenState();
 		const invalidState = {

@@ -20,6 +20,7 @@ export function createTestState(overrides?: Partial<GameState>): GameState {
 		turn: "player",
 		floor: 1,
 		map,
+		rooms: [],
 		player: {
 			position: { x: 3, y: 3 },
 			hp: PLAYER_INITIAL_HP,

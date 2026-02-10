@@ -34,3 +34,13 @@ export type SpecialTileType = Extract<
 	TileType,
 	"trap" | "treasure" | "rest_area"
 >;
+
+/**
+ * 部屋（マップ座標基準、内部床サイズ）
+ */
+export type Room = {
+	x: number;
+	y: number;
+	width: number;
+	height: number;
+};

@@ -6,7 +6,7 @@
 import type { RNG } from "../utils/rng";
 import type { CardType, DeckState } from "./card";
 import type { Enemy, Player } from "./character";
-import type { GameMap } from "./map";
+import type { GameMap, Room } from "./map";
 
 /**
  * 画面種別
@@ -54,6 +54,8 @@ export type GameState = {
 	floor: number;
 	/** マップ */
 	map: GameMap;
+	/** 部屋情報（BSPマップ生成時に保持、非BSPマップでは空配列） */
+	rooms: Room[];
 	/** プレイヤー */
 	player: Player;
 	/** 敵リスト */
