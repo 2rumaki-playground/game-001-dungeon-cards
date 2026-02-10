@@ -28,57 +28,38 @@ import {
 	createDefeatParticleConfig,
 	getAttackParticleConfig,
 } from "./battleParticles";
-import { getMapPixelSize, gridToCenterPixel } from "./coordinates";
+import { getViewportPixelSize, gridToCenterPixel } from "./coordinates";
 import { applyState, render, updateState } from "./gameRenderer";
 import { HAND_AREA_HEIGHT } from "./layout";
 import { relayoutUI } from "./relayout";
 import { createConfettiConfig, createGlowConfig } from "./victoryParticles";
 
 /**
- * 現在のマップサイズから画面サイズを計算
+ * 固定ビューポートサイズから画面サイズを計算
  */
 export function getScreenSize(ctx: GameContext): {
 	width: number;
 	height: number;
 } {
-	const mapWidth = ctx.state.map[0]?.length ?? 0;
-	const mapHeight = ctx.state.map.length;
-	if (mapWidth === 0 || mapHeight === 0) {
-		return {
-			width: ctx.app.renderer.width,
-			height: ctx.app.renderer.height,
-		};
-	}
-	const mapPixelSize = getMapPixelSize(mapWidth, mapHeight);
+	const viewportSize = getViewportPixelSize();
 	return {
 		width:
-			mapPixelSize.width + LOG_AREA_GAP + ctx.ui.actionLogRenderer.getWidth(),
-		height: mapPixelSize.height + HAND_AREA_HEIGHT + STATUS_BAR_HEIGHT,
+			viewportSize.width + LOG_AREA_GAP + ctx.ui.actionLogRenderer.getWidth(),
+		height: viewportSize.height + HAND_AREA_HEIGHT + STATUS_BAR_HEIGHT,
 	};
 }
 
 /**
  * ゲームエリア（ログエリアを除いた領域）のサイズを計算
  */
-export function getGameAreaSize(ctx: GameContext): {
+export function getGameAreaSize(_ctx: GameContext): {
 	width: number;
 	height: number;
 } {
-	const mapWidth = ctx.state.map[0]?.length ?? 0;
-	const mapHeight = ctx.state.map.length;
-	if (mapWidth === 0 || mapHeight === 0) {
-		const screenSize = getScreenSize(ctx);
-		const logWidth = ctx.ui.actionLogRenderer.getWidth();
-		const gameWidth = Math.max(0, screenSize.width - LOG_AREA_GAP - logWidth);
-		return {
-			width: gameWidth,
-			height: screenSize.height,
-		};
-	}
-	const mapPixelSize = getMapPixelSize(mapWidth, mapHeight);
+	const viewportSize = getViewportPixelSize();
 	return {
-		width: mapPixelSize.width,
-		height: mapPixelSize.height + HAND_AREA_HEIGHT + STATUS_BAR_HEIGHT,
+		width: viewportSize.width,
+		height: viewportSize.height + HAND_AREA_HEIGHT + STATUS_BAR_HEIGHT,
 	};
 }
 
