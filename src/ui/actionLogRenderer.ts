@@ -29,7 +29,7 @@ export function getActorLabel(actor: LogActor): string {
 			return "自";
 		case "enemy":
 			return "敵";
-		case "system":
+		default:
 			return "他";
 	}
 }
@@ -41,7 +41,7 @@ function getActorColor(actor: LogActor): number {
 			return COLORS.player;
 		case "enemy":
 			return COLORS.enemy;
-		case "system":
+		default:
 			return 0x888888;
 	}
 }
