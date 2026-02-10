@@ -95,13 +95,27 @@ export function loadGame(): GameState | null {
 				}))
 			: data.enemies;
 
-		// 旧セーブデータの後方互換: actor未設定のログに"system"を補完
+		// 旧セーブデータの後方互換:
+		// - actor 未設定または不正値のログに "system" を補完
+		// - actionLog が配列でない場合は空配列にフォールバック
 		const actionLog = Array.isArray(data.actionLog)
-			? data.actionLog.map((entry: Record<string, unknown>) => ({
-					...entry,
-					actor: entry.actor ?? "system",
-				}))
-			: data.actionLog;
+			? data.actionLog.map((entry: Record<string, unknown>) => {
+					const actorValue =
+						entry && typeof entry === "object"
+							? (entry as { actor?: unknown }).actor
+							: undefined;
+					const validActor =
+						actorValue === "player" ||
+						actorValue === "enemy" ||
+						actorValue === "system"
+							? actorValue
+							: "system";
+					return {
+						...entry,
+						actor: validActor,
+					};
+				})
+			: [];
 
 		const state: GameState = {
 			...data,
