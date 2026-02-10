@@ -60,7 +60,6 @@ async function initializeUIComponents(
 	app.stage.addChild(gameOverScreen.getContainer());
 
 	const statusBar = new StatusBar();
-	app.stage.addChild(statusBar.getContainer());
 
 	// ビューポートラッパー: マップをタイル領域にクリッピング
 	const mapViewport = new Container();
@@ -74,6 +73,9 @@ async function initializeUIComponents(
 	const mapContainer = mapRenderer.getContainer();
 	mapViewport.addChild(mapContainer);
 	app.stage.addChild(mapViewport);
+
+	// statusBarはmapViewportの後に追加（前面に描画するため）
+	app.stage.addChild(statusBar.getContainer());
 
 	// パーティクルはマスクなし（勝利画面の紙吹雪は全画面表示）
 	const particleSystem = new ParticleSystem();
