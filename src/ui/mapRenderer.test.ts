@@ -861,7 +861,38 @@ describe("MapRenderer HPバー", () => {
 	it("HP減少が通常敵のHPバーに反映される", () => {
 		const renderer = new MapRenderer();
 		const map = createTestMap();
-		const enemies = [
+		const player = {
+			position: { x: 0, y: 0 },
+			hp: 10,
+			maxHp: 10,
+			ap: 3,
+			maxAp: 3,
+		};
+
+		// HP満タンで描画
+		const fullHpEnemies = [
+			{
+				id: "e-normal",
+				position: { x: 1, y: 1 },
+				hp: 3,
+				maxHp: 3,
+				type: "normal" as const,
+			},
+		];
+		const rectSpy = vi.spyOn(Graphics.prototype, "rect");
+		renderer.render(map, player, fullHpEnemies);
+
+		// HPバー描画: 背景rect + HP部分rect
+		const fullHpCalls = rectSpy.mock.calls.filter(
+			(args) => args[2] !== undefined && args[3] === 4,
+		);
+		// 背景(幅40) + HP部分(幅40)
+		expect(fullHpCalls).toHaveLength(2);
+		const fullBarWidth = fullHpCalls[1][2] as number;
+
+		// HP減少して再描画
+		rectSpy.mockClear();
+		const damagedEnemies = [
 			{
 				id: "e-normal",
 				position: { x: 1, y: 1 },
@@ -870,20 +901,19 @@ describe("MapRenderer HPバー", () => {
 				type: "normal" as const,
 			},
 		];
-		const player = {
-			position: { x: 0, y: 0 },
-			hp: 10,
-			maxHp: 10,
-			ap: 3,
-			maxAp: 3,
-		};
-		renderer.render(map, player, enemies);
+		renderer.render(map, player, damagedEnemies);
 
-		const container = renderer.getContainer();
-		const enemiesContainer = container.children[2];
-		const enemyContainer = enemiesContainer.children[0];
-		// HPバーが存在する（Graphics + HPバー = 2）
-		expect(enemyContainer.children.length).toBe(2);
+		const damagedHpCalls = rectSpy.mock.calls.filter(
+			(args) => args[2] !== undefined && args[3] === 4,
+		);
+		expect(damagedHpCalls).toHaveLength(2);
+		const damagedBarWidth = damagedHpCalls[1][2] as number;
+
+		// HP比率に応じてバー幅が縮小していること
+		expect(damagedBarWidth).toBeLessThan(fullBarWidth);
+		expect(damagedBarWidth).toBeCloseTo(fullBarWidth * (1 / 3), 5);
+
+		rectSpy.mockRestore();
 	});
 
 	it("clear後にコンテナがクリアされる", () => {
