@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import type { Card, DeckState } from "../types";
+import { CARD_ROW_LIST_WIDTH } from "./cardRowRenderer";
 import { DeckViewer } from "./deckViewer";
 
 /** テスト用デッキ */
@@ -102,6 +103,30 @@ describe("DeckViewer", () => {
 			// テストデッキ: move x3, attack x2, strong_attack x1, jump x1, wait x1 = 5種別
 			// overlay(1) + title(1) + 5行 + 閉じるボタン(1) = 8
 			expect(container.children.length).toBe(8);
+		});
+
+		it("タイトルが渡された幅の中央に配置される", () => {
+			const viewer = new DeckViewer();
+			const deck = createTestDeck();
+			const gameAreaWidth = 480;
+			viewer.render(deck, gameAreaWidth, 400);
+
+			const container = viewer.getContainer();
+			const title = container.children[1] as import("pixi.js").Text;
+			expect(title.x).toBe(gameAreaWidth / 2);
+		});
+
+		it("カードリストが渡された幅の中央に配置される", () => {
+			const viewer = new DeckViewer();
+			const deck = createTestDeck();
+			const gameAreaWidth = 480;
+			viewer.render(deck, gameAreaWidth, 400);
+
+			const container = viewer.getContainer();
+			// children[2]が最初のカード行
+			const firstRow = container.children[2];
+			const expectedListX = (gameAreaWidth - CARD_ROW_LIST_WIDTH) / 2;
+			expect(firstRow.x).toBe(expectedListX);
 		});
 
 		it("空デッキでも描画できる", () => {
