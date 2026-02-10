@@ -147,7 +147,10 @@ export class DeckViewer {
 		// コンテンツ全体の高さを計算して上下センタリング
 		const titleFontSize = 24;
 		const titleToListGap = 12;
-		const listHeight = types.length * (CARD_ROW_HEIGHT + CARD_ROW_GAP);
+		const listHeight =
+			types.length === 0
+				? 0
+				: types.length * CARD_ROW_HEIGHT + (types.length - 1) * CARD_ROW_GAP;
 		const listToCloseGap = 10;
 		const contentHeight =
 			titleFontSize +

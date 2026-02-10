@@ -179,7 +179,10 @@ describe("DeckViewer", () => {
 			const titleToListGap = 12;
 			const allCards = [...deck.drawPile, ...deck.hand, ...deck.discardPile];
 			const typesCount = new Set(allCards.map((card) => card.type)).size;
-			const listHeight = typesCount * (CARD_ROW_HEIGHT + CARD_ROW_GAP);
+			const listHeight =
+				typesCount === 0
+					? 0
+					: typesCount * CARD_ROW_HEIGHT + (typesCount - 1) * CARD_ROW_GAP;
 			const listToCloseGap = 10;
 			const contentHeight =
 				titleFontSize +
