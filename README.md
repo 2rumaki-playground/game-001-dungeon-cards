@@ -118,4 +118,4 @@ public/assets/
 node scripts/generate-placeholders.mjs
 ```
 
-`public/assets/` 配下の全アセットが上書き生成されます。本番用の画像を配置済みの場合は実行に注意してください。
+`scripts/generate-placeholders.mjs` の `assets` 配列に列挙されたファイルが上書き生成されます。本番用の画像を配置済みの場合は実行に注意してください。
