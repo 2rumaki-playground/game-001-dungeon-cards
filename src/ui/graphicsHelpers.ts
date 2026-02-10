@@ -63,6 +63,8 @@ export function makeInteractive(
 		target.alpha = HOVER_ALPHA;
 	});
 	target.on("pointerout", () => {
-		target.alpha = alphaBeforeHover;
+		if (target.alpha === HOVER_ALPHA) {
+			target.alpha = alphaBeforeHover;
+		}
 	});
 }

@@ -254,6 +254,26 @@ describe("makeInteractive", () => {
 		expect(container.alpha).toBe(1);
 	});
 
+	it("ホバー中にalphaが外部変更された場合、pointeroutで復元しない", () => {
+		const container = createMockContainer();
+
+		makeInteractive(container, vi.fn());
+
+		const pointerover = getRegisteredCallback(container, "pointerover");
+		const pointerout = getRegisteredCallback(container, "pointerout");
+		expect(pointerover).toBeDefined();
+		expect(pointerout).toBeDefined();
+		pointerover?.();
+		expect(container.alpha).toBe(0.8);
+
+		// 外部要因（tween等）でalphaが変化
+		container.alpha = 1.0;
+		pointerout?.();
+
+		// 外部変更後の値が維持される（ホバー前の値に巻き戻さない）
+		expect(container.alpha).toBe(1.0);
+	});
+
 	it("初期alphaが1以外の場合もホバー解除時に元の値に戻る", () => {
 		const container = createMockContainer();
 		container.alpha = 0.5;
