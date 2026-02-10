@@ -229,6 +229,9 @@ export function getSpecialTileCount(floor: number): number {
 	return comp.trap + comp.treasure + comp.rest_area;
 }
 
+// ビューポート（表示領域）
+export const VIEWPORT_TILES = 9;
+
 // 階層別マップサイズ（v1.3）
 export const MAP_SIZE_TABLE: {
 	maxFloor: number;

@@ -1,7 +1,6 @@
-import { Application } from "pixi.js";
+import { Application, Container, Graphics } from "pixi.js";
 import {
 	COLORS,
-	getMapSize,
 	LOG_AREA_GAP,
 	LOG_AREA_WIDTH,
 	STATUS_BAR_HEIGHT,
@@ -15,7 +14,7 @@ import {
 	DirectionSelector,
 	FloorBanner,
 	GameOverScreen,
-	getMapPixelSize,
+	getViewportPixelSize,
 	HandRenderer,
 	MapRenderer,
 	NextFloorButton,
@@ -51,7 +50,7 @@ let ctx: GameContext;
  */
 async function initializeUIComponents(
 	app: Application,
-	mapSize: { width: number; height: number },
+	viewportSize: { width: number; height: number },
 	totalHeight: number,
 ): Promise<UIComponents> {
 	const titleScreen = new TitleScreen();
@@ -63,11 +62,21 @@ async function initializeUIComponents(
 	const statusBar = new StatusBar();
 	app.stage.addChild(statusBar.getContainer());
 
+	// ビューポートラッパー: マップを9×9タイル領域にクリッピング
+	const mapViewport = new Container();
+	mapViewport.y = STATUS_BAR_HEIGHT;
+	const viewportMask = new Graphics();
+	viewportMask.rect(0, 0, viewportSize.width, viewportSize.height);
+	viewportMask.fill(0xffffff);
+	mapViewport.addChild(viewportMask);
+	mapViewport.mask = viewportMask;
+
 	const mapRenderer = new MapRenderer();
 	const mapContainer = mapRenderer.getContainer();
-	mapContainer.y = STATUS_BAR_HEIGHT;
-	app.stage.addChild(mapContainer);
+	mapViewport.addChild(mapContainer);
+	app.stage.addChild(mapViewport);
 
+	// パーティクルはマスクなし（勝利画面の紙吹雪は全画面表示）
 	const particleSystem = new ParticleSystem();
 	const particleContainer = particleSystem.getContainer();
 	particleContainer.y = STATUS_BAR_HEIGHT;
@@ -75,14 +84,15 @@ async function initializeUIComponents(
 
 	const handRenderer = new HandRenderer(particleSystem);
 	const handContainer = handRenderer.getContainer();
-	handContainer.x = mapSize.width / 2;
-	handContainer.y = STATUS_BAR_HEIGHT + mapSize.height + HAND_AREA_TOP_PADDING;
+	handContainer.x = viewportSize.width / 2;
+	handContainer.y =
+		STATUS_BAR_HEIGHT + viewportSize.height + HAND_AREA_TOP_PADDING;
 	app.stage.addChild(handContainer);
 
 	const turnEndButton = new TurnEndButton();
 	const turnEndContainer = turnEndButton.getContainer();
 	turnEndContainer.x =
-		mapSize.width - TURN_END_BUTTON_WIDTH - BUTTON_RIGHT_MARGIN;
+		viewportSize.width - TURN_END_BUTTON_WIDTH - BUTTON_RIGHT_MARGIN;
 	turnEndContainer.y = totalHeight - BUTTON_HEIGHT - BUTTON_BOTTOM_MARGIN;
 	app.stage.addChild(turnEndContainer);
 
@@ -101,21 +111,21 @@ async function initializeUIComponents(
 
 	const actionLogRenderer = new ActionLogRenderer(totalHeight);
 	const logContainer = actionLogRenderer.getContainer();
-	logContainer.x = mapSize.width + LOG_AREA_GAP;
+	logContainer.x = viewportSize.width + LOG_AREA_GAP;
 	logContainer.y = 0;
 	app.stage.addChild(logContainer);
 
 	const turnBanner = new TurnBanner(
-		mapSize.width + LOG_AREA_GAP + actionLogRenderer.getWidth(),
+		viewportSize.width + LOG_AREA_GAP + actionLogRenderer.getWidth(),
 		totalHeight,
 	);
 	app.stage.addChild(turnBanner.getContainer());
 
 	const directionSelector = new DirectionSelector();
 	const directionContainer = directionSelector.getContainer();
-	directionContainer.x = mapSize.width / 2;
+	directionContainer.x = viewportSize.width / 2;
 	directionContainer.y =
-		STATUS_BAR_HEIGHT + mapSize.height + HAND_AREA_TOP_PADDING;
+		STATUS_BAR_HEIGHT + viewportSize.height + HAND_AREA_TOP_PADDING;
 	app.stage.addChild(directionContainer);
 
 	app.stage.addChild(deckViewer.getContainer());
@@ -128,7 +138,7 @@ async function initializeUIComponents(
 	app.stage.addChild(victoryScreen.getContainer());
 
 	const totalWidth =
-		mapSize.width + LOG_AREA_GAP + actionLogRenderer.getWidth();
+		viewportSize.width + LOG_AREA_GAP + actionLogRenderer.getWidth();
 	const screenTransition = new ScreenTransition(totalWidth, totalHeight);
 	app.stage.addChild(screenTransition.getContainer());
 
@@ -206,22 +216,21 @@ function setupDebugGlobals(): void {
 
 async function main() {
 	const app = new Application();
-	// 最大マップサイズ（15x15）でキャンバスを確保
-	const maxSize = getMapSize(Infinity);
-	const maxMapSize = getMapPixelSize(maxSize.width, maxSize.height);
-	const maxTotalHeight =
-		maxMapSize.height + HAND_AREA_HEIGHT + STATUS_BAR_HEIGHT;
+	// ビューポートサイズ（9×9タイル）で固定キャンバス
+	const viewportSize = getViewportPixelSize();
+	const totalHeight =
+		viewportSize.height + HAND_AREA_HEIGHT + STATUS_BAR_HEIGHT;
 
 	await app.init({
-		width: maxMapSize.width + LOG_AREA_GAP + LOG_AREA_WIDTH,
-		height: maxTotalHeight,
+		width: viewportSize.width + LOG_AREA_GAP + LOG_AREA_WIDTH,
+		height: totalHeight,
 		backgroundColor: COLORS.background,
 	});
 
 	document.body.appendChild(app.canvas);
 
-	// UIコンポーネントは最大サイズで初期化
-	const ui = await initializeUIComponents(app, maxMapSize, maxTotalHeight);
+	// UIコンポーネントをビューポートサイズで初期化
+	const ui = await initializeUIComponents(app, viewportSize, totalHeight);
 
 	// コンテキスト初期化
 	ctx = {
@@ -241,8 +250,8 @@ async function main() {
 
 	// タイトル画面を描画
 	const totalWidth =
-		maxMapSize.width + LOG_AREA_GAP + ctx.ui.actionLogRenderer.getWidth();
-	ctx.ui.titleScreen.render(totalWidth, maxTotalHeight, hasSaveData());
+		viewportSize.width + LOG_AREA_GAP + ctx.ui.actionLogRenderer.getWidth();
+	ctx.ui.titleScreen.render(totalWidth, totalHeight, hasSaveData());
 	render(ctx);
 
 	// デバッグ用グローバル変数の設定

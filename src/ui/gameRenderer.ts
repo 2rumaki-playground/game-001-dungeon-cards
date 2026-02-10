@@ -5,7 +5,7 @@
 import { LOG_AREA_GAP, STATUS_BAR_HEIGHT } from "../constants";
 import type { GameContext } from "../gameContext";
 import type { GameState } from "../types";
-import { getMapPixelSize } from "./coordinates";
+import { getViewportPixelSize } from "./coordinates";
 import { HAND_AREA_HEIGHT } from "./layout";
 
 /**
@@ -109,11 +109,10 @@ function renderGameOverScreen(ctx: GameContext): void {
 	ctx.ui.actionLogRenderer.hide();
 	ctx.ui.mapRenderer.clear();
 	ctx.ui.handRenderer.clear();
-	const mapWidth = ctx.state.map[0].length;
-	const mapHeight = ctx.state.map.length;
-	const size = getMapPixelSize(mapWidth, mapHeight);
-	const width = size.width + LOG_AREA_GAP + ctx.ui.actionLogRenderer.getWidth();
-	const height = size.height + HAND_AREA_HEIGHT + STATUS_BAR_HEIGHT;
+	const viewportSize = getViewportPixelSize();
+	const width =
+		viewportSize.width + LOG_AREA_GAP + ctx.ui.actionLogRenderer.getWidth();
+	const height = viewportSize.height + HAND_AREA_HEIGHT + STATUS_BAR_HEIGHT;
 	ctx.ui.gameOverScreen.render(ctx.state.floor, width, height);
 	ctx.ui.gameOverScreen.show();
 	hideDebugUI(ctx);
@@ -132,11 +131,10 @@ function renderVictoryScreen(ctx: GameContext): void {
 	ctx.ui.actionLogRenderer.hide();
 	ctx.ui.mapRenderer.clear();
 	ctx.ui.handRenderer.clear();
-	const mapWidth = ctx.state.map[0].length;
-	const mapHeight = ctx.state.map.length;
-	const size = getMapPixelSize(mapWidth, mapHeight);
-	const width = size.width + LOG_AREA_GAP + ctx.ui.actionLogRenderer.getWidth();
-	const height = size.height + HAND_AREA_HEIGHT + STATUS_BAR_HEIGHT;
+	const viewportSize = getViewportPixelSize();
+	const width =
+		viewportSize.width + LOG_AREA_GAP + ctx.ui.actionLogRenderer.getWidth();
+	const height = viewportSize.height + HAND_AREA_HEIGHT + STATUS_BAR_HEIGHT;
 	ctx.ui.victoryScreen.render(ctx.state.floor, width, height);
 	ctx.ui.victoryScreen.show();
 	hideDebugUI(ctx);

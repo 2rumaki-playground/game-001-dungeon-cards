@@ -3,7 +3,7 @@
  * グリッド座標とピクセル座標の相互変換
  */
 
-import { CELL_GAP, CELL_SIZE } from "../constants";
+import { CELL_GAP, CELL_SIZE, VIEWPORT_TILES } from "../constants";
 import type { Position } from "../types";
 
 const CELL_WITH_GAP = CELL_SIZE + CELL_GAP;
@@ -83,4 +83,12 @@ export function getMapPixelSize(
 		width: mapWidth * CELL_WITH_GAP + CELL_GAP,
 		height: mapHeight * CELL_WITH_GAP + CELL_GAP,
 	};
+}
+
+/**
+ * ビューポート（9×9タイル）のピクセルサイズを計算
+ * @returns ビューポートの幅と高さ（ピクセル）
+ */
+export function getViewportPixelSize(): { width: number; height: number } {
+	return getMapPixelSize(VIEWPORT_TILES, VIEWPORT_TILES);
 }

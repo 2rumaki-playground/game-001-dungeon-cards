@@ -1,11 +1,12 @@
 /**
  * UIリレイアウト
- * マップサイズ変更時にUIコンポーネントの座標とキャンバスサイズを再配置
+ * 階層遷移時にUIコンポーネントの座標を再配置する
+ * キャンバスサイズは固定（9×9タイルのビューポート）のためリサイズは行わない
  */
 
 import { LOG_AREA_GAP, STATUS_BAR_HEIGHT } from "../constants";
 import type { GameContext } from "../gameContext";
-import { getMapPixelSize } from "./coordinates";
+import { getViewportPixelSize } from "./coordinates";
 import {
 	BUTTON_BOTTOM_MARGIN,
 	BUTTON_GAP,
@@ -19,32 +20,28 @@ import {
 } from "./layout";
 
 /**
- * 現在のマップサイズに基づいてUIコンポーネントを再配置する
+ * 固定ビューポートサイズに基づいてUIコンポーネントを再配置する
  */
 export function relayoutUI(ctx: GameContext): void {
-	const mapWidth = ctx.state.map[0]?.length ?? 0;
-	const mapHeight = ctx.state.map.length;
-	const mapSize = getMapPixelSize(mapWidth, mapHeight);
-	const totalHeight = mapSize.height + HAND_AREA_HEIGHT + STATUS_BAR_HEIGHT;
+	const viewportSize = getViewportPixelSize();
+	const totalHeight =
+		viewportSize.height + HAND_AREA_HEIGHT + STATUS_BAR_HEIGHT;
 	const totalWidth =
-		mapSize.width + LOG_AREA_GAP + ctx.ui.actionLogRenderer.getWidth();
-
-	// キャンバスサイズ変更
-	ctx.app.renderer.resize(totalWidth, totalHeight);
+		viewportSize.width + LOG_AREA_GAP + ctx.ui.actionLogRenderer.getWidth();
 
 	// 手札エリア
-	ctx.ui.handRenderer.getContainer().x = mapSize.width / 2;
+	ctx.ui.handRenderer.getContainer().x = viewportSize.width / 2;
 	ctx.ui.handRenderer.getContainer().y =
-		STATUS_BAR_HEIGHT + mapSize.height + HAND_AREA_TOP_PADDING;
+		STATUS_BAR_HEIGHT + viewportSize.height + HAND_AREA_TOP_PADDING;
 
 	// 方向選択UI
-	ctx.ui.directionSelector.getContainer().x = mapSize.width / 2;
+	ctx.ui.directionSelector.getContainer().x = viewportSize.width / 2;
 	ctx.ui.directionSelector.getContainer().y =
-		STATUS_BAR_HEIGHT + mapSize.height + HAND_AREA_TOP_PADDING;
+		STATUS_BAR_HEIGHT + viewportSize.height + HAND_AREA_TOP_PADDING;
 
 	// ターン終了ボタン
 	ctx.ui.turnEndButton.getContainer().x =
-		mapSize.width - TURN_END_BUTTON_WIDTH - BUTTON_RIGHT_MARGIN;
+		viewportSize.width - TURN_END_BUTTON_WIDTH - BUTTON_RIGHT_MARGIN;
 	ctx.ui.turnEndButton.getContainer().y =
 		totalHeight - BUTTON_HEIGHT - BUTTON_BOTTOM_MARGIN;
 
@@ -63,7 +60,7 @@ export function relayoutUI(ctx: GameContext): void {
 		totalHeight - BUTTON_HEIGHT - BUTTON_BOTTOM_MARGIN;
 
 	// 行動ログ
-	ctx.ui.actionLogRenderer.getContainer().x = mapSize.width + LOG_AREA_GAP;
+	ctx.ui.actionLogRenderer.getContainer().x = viewportSize.width + LOG_AREA_GAP;
 	ctx.ui.actionLogRenderer.resize(totalHeight);
 
 	// ターンバナー
