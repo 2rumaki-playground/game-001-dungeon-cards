@@ -7,6 +7,7 @@ import {
 	VIEWPORT_TILES,
 } from "../constants";
 import {
+	calculateCameraOffset,
 	getMapPixelSize,
 	getViewportPixelSize,
 	gridToCenterPixel,
@@ -131,5 +132,70 @@ describe("getViewportPixelSize", () => {
 			width: VIEWPORT_TILES * (CELL_SIZE + CELL_GAP) + CELL_GAP,
 			height: VIEWPORT_TILES * (CELL_SIZE + CELL_GAP) + CELL_GAP,
 		});
+	});
+});
+
+describe("calculateCameraOffset", () => {
+	const CELL_WITH_GAP = CELL_SIZE + CELL_GAP;
+	const viewportPx = VIEWPORT_TILES * CELL_WITH_GAP + CELL_GAP;
+
+	it(`${VIEWPORT_TILES}×${VIEWPORT_TILES}マップ（同サイズ）→ オフセット0`, () => {
+		const result = calculateCameraOffset(
+			{ x: 4, y: 4 },
+			VIEWPORT_TILES,
+			VIEWPORT_TILES,
+		);
+		expect(result).toEqual({ x: 0, y: 0 });
+	});
+
+	it(`${VIEWPORT_TILES}×${VIEWPORT_TILES}マップ、プレイヤーが端でもオフセット0`, () => {
+		const result = calculateCameraOffset(
+			{ x: 0, y: 0 },
+			VIEWPORT_TILES,
+			VIEWPORT_TILES,
+		);
+		expect(result).toEqual({ x: 0, y: 0 });
+	});
+
+	it("11×11マップ、プレイヤー中央(5,5) → クランプ範囲内のオフセット", () => {
+		const result = calculateCameraOffset({ x: 5, y: 5 }, 11, 11);
+		const mapPx = 11 * CELL_WITH_GAP + CELL_GAP;
+		const playerCenter = 5 * CELL_WITH_GAP + CELL_GAP + CELL_SIZE / 2;
+		const expected = viewportPx / 2 - playerCenter;
+		const min = viewportPx - mapPx;
+		expect(result).toEqual({
+			x: Math.max(min, Math.min(0, expected)),
+			y: Math.max(min, Math.min(0, expected)),
+		});
+	});
+
+	it("11×11マップ、プレイヤー左上端(0,0) → 上限0にクランプ", () => {
+		const result = calculateCameraOffset({ x: 0, y: 0 }, 11, 11);
+		expect(result).toEqual({ x: 0, y: 0 });
+	});
+
+	it("11×11マップ、プレイヤー右下端(10,10) → 下限にクランプ", () => {
+		const result = calculateCameraOffset({ x: 10, y: 10 }, 11, 11);
+		const mapPx = 11 * CELL_WITH_GAP + CELL_GAP;
+		const min = viewportPx - mapPx;
+		expect(result).toEqual({ x: min, y: min });
+	});
+
+	it("19×19マップ、プレイヤー中央(9,9) → クランプ範囲内", () => {
+		const result = calculateCameraOffset({ x: 9, y: 9 }, 19, 19);
+		const mapPx = 19 * CELL_WITH_GAP + CELL_GAP;
+		const playerCenter = 9 * CELL_WITH_GAP + CELL_GAP + CELL_SIZE / 2;
+		const expected = viewportPx / 2 - playerCenter;
+		const min = viewportPx - mapPx;
+		expect(expected).toBeGreaterThanOrEqual(min);
+		expect(expected).toBeLessThanOrEqual(0);
+		expect(result).toEqual({ x: expected, y: expected });
+	});
+
+	it("7×7マップ（ビューポートより小さい）→ 中央配置", () => {
+		const result = calculateCameraOffset({ x: 3, y: 3 }, 7, 7);
+		const mapPx = 7 * CELL_WITH_GAP + CELL_GAP;
+		const offset = (viewportPx - mapPx) / 2;
+		expect(result).toEqual({ x: offset, y: offset });
 	});
 });
