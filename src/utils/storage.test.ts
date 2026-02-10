@@ -295,10 +295,10 @@ describe("storage", () => {
 			screen: "game",
 			rng: state.rng.serialize(),
 		};
-		const { rooms: _, ...saveDataWithoutRooms } = saveData as Record<
-			string,
-			unknown
-		>;
+		const saveDataWithoutRooms = {
+			...(saveData as Record<string, unknown>),
+		};
+		delete (saveDataWithoutRooms as Record<string, unknown>).rooms;
 		localStorageMock.setItem(
 			"dungeon-cards-save",
 			JSON.stringify(saveDataWithoutRooms),
