@@ -4,7 +4,7 @@ import type { GameMap, GameState } from "../types";
 import { RNG } from "../utils/rng";
 
 /**
- * テスト用の7x7マップを生成（外周壁・内側床）
+ * テスト用の MAP_WIDTH x MAP_HEIGHT マップを生成（外周壁・内側床）
  */
 export function createTestMap(): GameMap {
 	return createFixedLayoutMap();
