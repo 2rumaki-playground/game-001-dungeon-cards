@@ -225,8 +225,11 @@ export function executeEnemyTurn(state: GameState): EnemyTurnResult {
 			next = applyDamageToPlayer(next, damage);
 			next = addActionLog(next, "敵が攻撃した");
 			totalDamage += damage;
-		} else {
-			// 移動
+		} else if (
+			manhattanDistance(currentEnemy.position, next.player.position) <=
+			params.senseRange
+		) {
+			// 索敵範囲内 → 追従
 			next = moveEnemyByType(next, currentEnemy, params.moveDistance);
 			rng = next.rng;
 
