@@ -729,7 +729,10 @@ export class MapRenderer {
 	 * クリア
 	 */
 	clear(): void {
-		this.tilesContainer.removeChildren();
+		const removedTiles = this.tilesContainer.removeChildren();
+		for (const child of removedTiles) {
+			child.destroy();
+		}
 		this.remnantsGraphics.clear();
 		this.playerSprite.texture = Texture.EMPTY;
 		this.isPlayerInitialized = false;
