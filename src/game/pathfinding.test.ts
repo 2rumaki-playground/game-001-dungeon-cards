@@ -47,6 +47,13 @@ describe("bfsFirstStep", () => {
 		expect(bfsFirstStep(map, { x: 2, y: 3 }, { x: 2, y: 1 })).toBe("left");
 	});
 
+	it("プレイヤーが階段上にいる場合でも経路を返す", () => {
+		const map = mapFromStrings(["WWWWW", "WFSFW", "WFFFW", "WWWWW"]);
+		// プレイヤー(2,1)は階段タイル上、敵(2,2)
+		// 階段自体は通過不可だが目的地なので到達判定される
+		expect(bfsFirstStep(map, { x: 2, y: 2 }, { x: 2, y: 1 })).toBe("up");
+	});
+
 	it("trap/treasure/rest_areaタイルを通過可能として扱う", () => {
 		const map = mapFromStrings(["WWWWW", "WFFFW", "WTXRW", "WFFFW", "WWWWW"]);
 		// 敵(2,3)→プレイヤー(2,1)、(2,2)はtreasure → 通過可能
