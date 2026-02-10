@@ -38,13 +38,13 @@ export function bfsFirstStep(
 
 		if (!isInBounds(map, nx, ny)) continue;
 
+		if (nx === to.x && ny === to.y) return dir;
+
 		const tile = map[ny][nx];
 		if (tile.type === "wall" || tile.type === "stairs") continue;
 
 		const key = positionToKey({ x: nx, y: ny });
 		if (visited.has(key)) continue;
-
-		if (nx === to.x && ny === to.y) return dir;
 
 		visited.add(key);
 		queue.push({ pos: { x: nx, y: ny }, firstStep: dir });
@@ -61,13 +61,13 @@ export function bfsFirstStep(
 
 			if (!isInBounds(map, nx, ny)) continue;
 
+			if (nx === to.x && ny === to.y) return firstStep;
+
 			const tile = map[ny][nx];
 			if (tile.type === "wall" || tile.type === "stairs") continue;
 
 			const key = positionToKey({ x: nx, y: ny });
 			if (visited.has(key)) continue;
-
-			if (nx === to.x && ny === to.y) return firstStep;
 
 			visited.add(key);
 			queue.push({ pos: { x: nx, y: ny }, firstStep });
