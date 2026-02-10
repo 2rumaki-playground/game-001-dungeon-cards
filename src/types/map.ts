@@ -26,3 +26,11 @@ export type Tile = {
  * 2次元配列（map[y][x]でアクセス）
  */
 export type GameMap = Tile[][];
+
+/**
+ * 特殊タイル種別
+ */
+export type SpecialTileType = Extract<
+	TileType,
+	"trap" | "treasure" | "rest_area"
+>;

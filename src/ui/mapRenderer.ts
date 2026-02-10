@@ -5,13 +5,13 @@
 
 import { Container, Graphics, Text, Ticker } from "pixi.js";
 import { CELL_SIZE, COLORS } from "../constants";
-import type { SpecialTileType } from "../game/tileEffect";
 import type {
 	Direction,
 	Enemy,
 	GameMap,
 	Player,
 	Position,
+	SpecialTileType,
 	TileType,
 } from "../types";
 import { DIRECTION_DELTA } from "../types";

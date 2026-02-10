@@ -4,12 +4,9 @@
  */
 
 import { TRAP_DAMAGE, TREASURE_HEAL } from "../constants";
-import type { GameState, TileType } from "../types";
+import type { GameState, SpecialTileType, TileType } from "../types";
 import { applyDamageToPlayer, checkGameOver, isDefeated } from "./combat";
 import { addActionLog, setTile, updatePlayer } from "./state";
-
-/** 特殊タイル種別 */
-export type SpecialTileType = "trap" | "treasure" | "rest_area";
 
 /** タイル効果の発動結果 */
 export type TileEffectResult = {

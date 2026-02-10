@@ -22,9 +22,8 @@ import {
 	startPlayerTurn,
 } from "../game";
 import { canEnqueueCard } from "../game/cardQueue";
-import type { SpecialTileType } from "../game/tileEffect";
 import type { GameContext } from "../gameContext";
-import type { Card, Direction, Position } from "../types";
+import type { Card, Direction, Position, SpecialTileType } from "../types";
 import { DIRECTION_DELTA } from "../types";
 import { deleteSaveData, hasSaveData, loadGame } from "../utils/storage";
 import { createJumpParticleConfig } from "./battleParticles";
