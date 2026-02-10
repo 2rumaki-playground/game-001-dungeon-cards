@@ -130,10 +130,9 @@ describe("DeckViewer", () => {
 			// 最後の子要素が閉じるボタン
 			const closeBtn = container.children[container.children.length - 1];
 			expect(closeBtn.eventMode).toBe("static");
-			closeBtn.emit(
-				"pointerdown",
-				{} as import("pixi.js").FederatedPointerEvent,
-			);
+			closeBtn.emit("pointerdown", {
+				button: 0,
+			} as import("pixi.js").FederatedPointerEvent);
 
 			expect(callback).toHaveBeenCalled();
 		});
@@ -155,7 +154,9 @@ describe("DeckViewer", () => {
 			const btnContainer = viewer.getButtonContainer();
 			const button = btnContainer.children[0];
 			expect(button.eventMode).toBe("static");
-			button.emit("pointerdown", {} as import("pixi.js").FederatedPointerEvent);
+			button.emit("pointerdown", {
+				button: 0,
+			} as import("pixi.js").FederatedPointerEvent);
 
 			expect(callback).toHaveBeenCalled();
 		});

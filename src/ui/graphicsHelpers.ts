@@ -50,5 +50,8 @@ export function makeInteractive(
 ): void {
 	target.eventMode = "static";
 	target.cursor = "pointer";
-	target.on("pointerdown", onClick);
+	target.on("pointerdown", (event: FederatedPointerEvent) => {
+		if (event.button !== 0) return;
+		onClick(event);
+	});
 }

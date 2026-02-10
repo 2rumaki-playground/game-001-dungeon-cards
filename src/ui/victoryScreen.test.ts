@@ -107,7 +107,9 @@ describe("VictoryScreen", () => {
 			screen.render(20, 400, 600);
 			const continueButton = findButtonByLabel(screen.getContainer(), "続ける");
 			expect(continueButton).toBeDefined();
-			continueButton?.emit("pointerdown", {} as FederatedPointerEvent);
+			continueButton?.emit("pointerdown", {
+				button: 0,
+			} as FederatedPointerEvent);
 			expect(callback).toHaveBeenCalledTimes(1);
 		});
 
@@ -120,7 +122,7 @@ describe("VictoryScreen", () => {
 				"タイトルに戻る",
 			);
 			expect(returnButton).toBeDefined();
-			returnButton?.emit("pointerdown", {} as FederatedPointerEvent);
+			returnButton?.emit("pointerdown", { button: 0 } as FederatedPointerEvent);
 			expect(callback).toHaveBeenCalledTimes(1);
 		});
 	});

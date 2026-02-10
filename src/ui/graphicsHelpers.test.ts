@@ -131,7 +131,10 @@ describe("makeInteractive", () => {
 
 		makeInteractive(container, onClick);
 
-		expect(container.on).toHaveBeenCalledWith("pointerdown", onClick);
+		expect(container.on).toHaveBeenCalledWith(
+			"pointerdown",
+			expect.any(Function),
+		);
 	});
 
 	it("コールバックにFederatedPointerEventが渡される", () => {
@@ -141,6 +144,7 @@ describe("makeInteractive", () => {
 		makeInteractive(container, onClick);
 
 		const mockEvent = {
+			button: 0,
 			stopPropagation: vi.fn(),
 		} as unknown as FederatedPointerEvent;
 		const registeredCallback = container.on.mock.calls[0][1] as (
@@ -149,5 +153,41 @@ describe("makeInteractive", () => {
 		registeredCallback(mockEvent);
 
 		expect(onClick).toHaveBeenCalledWith(mockEvent);
+	});
+
+	it("右クリック（button=2）ではコールバックを呼ばない", () => {
+		const container = createMockContainer();
+		const onClick = vi.fn();
+
+		makeInteractive(container, onClick);
+
+		const mockEvent = {
+			button: 2,
+			stopPropagation: vi.fn(),
+		} as unknown as FederatedPointerEvent;
+		const registeredCallback = container.on.mock.calls[0][1] as (
+			e: FederatedPointerEvent,
+		) => void;
+		registeredCallback(mockEvent);
+
+		expect(onClick).not.toHaveBeenCalled();
+	});
+
+	it("中クリック（button=1）ではコールバックを呼ばない", () => {
+		const container = createMockContainer();
+		const onClick = vi.fn();
+
+		makeInteractive(container, onClick);
+
+		const mockEvent = {
+			button: 1,
+			stopPropagation: vi.fn(),
+		} as unknown as FederatedPointerEvent;
+		const registeredCallback = container.on.mock.calls[0][1] as (
+			e: FederatedPointerEvent,
+		) => void;
+		registeredCallback(mockEvent);
+
+		expect(onClick).not.toHaveBeenCalled();
 	});
 });

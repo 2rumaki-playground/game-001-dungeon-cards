@@ -119,13 +119,13 @@ describe("RewardScreen", () => {
 			const container = screen.getContainer();
 			// children[2]がカードコンテナ（クリック可能）
 			const cardContainer = container.children[2];
-			cardContainer.emit("pointerdown", {} as FederatedPointerEvent);
+			cardContainer.emit("pointerdown", { button: 0 } as FederatedPointerEvent);
 
 			// 獲得ボタンを探す
 			const acquireBtn = findByLabel(container, "acquireBtn");
 			expect(acquireBtn).toBeDefined();
 			expect(acquireBtn?.eventMode).toBe("static");
-			acquireBtn?.emit("pointerdown", {} as FederatedPointerEvent);
+			acquireBtn?.emit("pointerdown", { button: 0 } as FederatedPointerEvent);
 
 			expect(callback).toHaveBeenCalledWith(0);
 		});
@@ -149,7 +149,9 @@ describe("RewardScreen", () => {
 			expect(acquireBtn?.eventMode).toBe("none");
 
 			// カードをクリック
-			container.children[2].emit("pointerdown", {} as FederatedPointerEvent);
+			container.children[2].emit("pointerdown", {
+				button: 0,
+			} as FederatedPointerEvent);
 			expect(acquireBtn?.eventMode).toBe("static");
 		});
 	});
@@ -162,7 +164,7 @@ describe("RewardScreen", () => {
 			const container = screen.getContainer();
 			const card0 = container.children[2] as Container;
 
-			card0.emit("pointerdown", {} as FederatedPointerEvent);
+			card0.emit("pointerdown", { button: 0 } as FederatedPointerEvent);
 
 			const highlight = card0.children.find((c) => c.label === "highlight");
 			expect(highlight).toBeDefined();
@@ -177,11 +179,11 @@ describe("RewardScreen", () => {
 			const card1 = container.children[3] as Container;
 
 			// 1枚目を選択
-			card0.emit("pointerdown", {} as FederatedPointerEvent);
+			card0.emit("pointerdown", { button: 0 } as FederatedPointerEvent);
 			expect(card0.children.find((c) => c.label === "highlight")).toBeDefined();
 
 			// 2枚目を選択
-			card1.emit("pointerdown", {} as FederatedPointerEvent);
+			card1.emit("pointerdown", { button: 0 } as FederatedPointerEvent);
 			expect(
 				card0.children.find((c) => c.label === "highlight"),
 			).toBeUndefined();
@@ -199,7 +201,7 @@ describe("RewardScreen", () => {
 			const container = screen.getContainer();
 			const skipBtn = findByLabel(container, "skipBtn");
 			expect(skipBtn).toBeDefined();
-			skipBtn?.emit("pointerdown", {} as FederatedPointerEvent);
+			skipBtn?.emit("pointerdown", { button: 0 } as FederatedPointerEvent);
 
 			expect(callback).toHaveBeenCalled();
 		});
@@ -280,13 +282,13 @@ describe("RewardScreen", () => {
 			) as Container;
 			expect(scrollContainer).toBeDefined();
 			const firstItem = scrollContainer.children[0] as Container;
-			firstItem.emit("pointertap", {} as FederatedPointerEvent);
+			firstItem.emit("pointertap", { button: 0 } as FederatedPointerEvent);
 
 			// 除去ボタンをクリック
 			const removeBtn = findByLabel(container, "removeBtn");
 			expect(removeBtn).toBeDefined();
 			expect(removeBtn?.eventMode).toBe("static");
-			removeBtn?.emit("pointerdown", {} as FederatedPointerEvent);
+			removeBtn?.emit("pointerdown", { button: 0 } as FederatedPointerEvent);
 
 			// animateCardRemoveが非同期のためmicrotask flush
 			await vi.waitFor(() => {
@@ -317,7 +319,7 @@ describe("RewardScreen", () => {
 				(c) => "mask" in c && c.mask != null,
 			) as Container;
 			const firstItem = scrollContainer.children[0] as Container;
-			firstItem.emit("pointertap", {} as FederatedPointerEvent);
+			firstItem.emit("pointertap", { button: 0 } as FederatedPointerEvent);
 
 			expect(removeBtn?.eventMode).toBe("static");
 		});
@@ -331,7 +333,7 @@ describe("RewardScreen", () => {
 				(c) => "mask" in c && c.mask != null,
 			) as Container;
 			const firstItem = scrollContainer.children[0] as Container;
-			firstItem.emit("pointertap", {} as FederatedPointerEvent);
+			firstItem.emit("pointertap", { button: 0 } as FederatedPointerEvent);
 
 			const highlight = firstItem.children.find((c) => c.label === "highlight");
 			expect(highlight).toBeDefined();
@@ -348,10 +350,10 @@ describe("RewardScreen", () => {
 			const item0 = scrollContainer.children[0] as Container;
 			const item1 = scrollContainer.children[1] as Container;
 
-			item0.emit("pointertap", {} as FederatedPointerEvent);
+			item0.emit("pointertap", { button: 0 } as FederatedPointerEvent);
 			expect(item0.children.find((c) => c.label === "highlight")).toBeDefined();
 
-			item1.emit("pointertap", {} as FederatedPointerEvent);
+			item1.emit("pointertap", { button: 0 } as FederatedPointerEvent);
 			expect(
 				item0.children.find((c) => c.label === "highlight"),
 			).toBeUndefined();
@@ -367,7 +369,7 @@ describe("RewardScreen", () => {
 			const container = screen.getContainer();
 			const skipBtn = findByLabel(container, "skipBtn");
 			expect(skipBtn).toBeDefined();
-			skipBtn?.emit("pointerdown", {} as FederatedPointerEvent);
+			skipBtn?.emit("pointerdown", { button: 0 } as FederatedPointerEvent);
 
 			expect(callback).toHaveBeenCalled();
 		});
@@ -418,14 +420,13 @@ describe("RewardScreen", () => {
 			const scrollContainer = container.children.find(
 				(c) => "mask" in c && c.mask != null,
 			) as Container;
-			scrollContainer.children[0].emit(
-				"pointertap",
-				{} as FederatedPointerEvent,
-			);
+			scrollContainer.children[0].emit("pointertap", {
+				button: 0,
+			} as FederatedPointerEvent);
 
 			// 除去ボタンをクリック
 			const removeBtn = findByLabel(container, "removeBtn");
-			removeBtn?.emit("pointerdown", {} as FederatedPointerEvent);
+			removeBtn?.emit("pointerdown", { button: 0 } as FederatedPointerEvent);
 
 			// tween/emitは非同期なのでmicrotask flush
 			await vi.waitFor(() => {
@@ -448,14 +449,13 @@ describe("RewardScreen", () => {
 			const scrollContainer = container.children.find(
 				(c) => "mask" in c && c.mask != null,
 			) as Container;
-			scrollContainer.children[0].emit(
-				"pointertap",
-				{} as FederatedPointerEvent,
-			);
+			scrollContainer.children[0].emit("pointertap", {
+				button: 0,
+			} as FederatedPointerEvent);
 
 			// 除去ボタンをクリック
 			const removeBtn = findByLabel(container, "removeBtn");
-			removeBtn?.emit("pointerdown", {} as FederatedPointerEvent);
+			removeBtn?.emit("pointerdown", { button: 0 } as FederatedPointerEvent);
 
 			// confirmButtonContainerのinteractiveChildrenがfalseになる
 			const confirmContainer = container.children.find(
@@ -479,14 +479,13 @@ describe("RewardScreen", () => {
 			const scrollContainer = container.children.find(
 				(c) => "mask" in c && c.mask != null,
 			) as Container;
-			scrollContainer.children[0].emit(
-				"pointertap",
-				{} as FederatedPointerEvent,
-			);
+			scrollContainer.children[0].emit("pointertap", {
+				button: 0,
+			} as FederatedPointerEvent);
 
 			// 除去ボタンをクリック
 			const removeBtn = findByLabel(container, "removeBtn");
-			removeBtn?.emit("pointerdown", {} as FederatedPointerEvent);
+			removeBtn?.emit("pointerdown", { button: 0 } as FederatedPointerEvent);
 
 			// スクロールコンテナのinteractiveChildrenがfalseになる
 			expect(scrollContainer?.interactiveChildren).toBe(false);
