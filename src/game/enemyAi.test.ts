@@ -19,6 +19,7 @@ import {
 	manhattanDistance,
 	pickMoveDirection,
 } from "./enemyAi";
+import { createFixedLayoutMap } from "./map";
 
 describe("isAdjacent", () => {
 	it("上方向に隣接している場合trueを返す", () => {
@@ -1078,6 +1079,102 @@ describe("executeEnemyTurn", () => {
 			expect(scoutResult.enemies[0].position).not.toEqual({ x: 5, y: 5 });
 			// normalは索敵範囲外なので移動しない
 			expect(normalResult.enemies[0].position).toEqual({ x: 5, y: 5 });
+		});
+
+		it("ミニボスの索敵範囲境界で追従/待機が切り替わる", () => {
+			// miniboss senseRange=7
+			// プレイヤー(1,1)、敵(5,4) → 距離7 → 範囲内 → 移動する
+			// プレイヤー(1,1)、敵(5,5) → 距離8 → 範囲外 → 移動しない
+			const playerOverride = {
+				position: { x: 1, y: 1 },
+				hp: PLAYER_INITIAL_HP,
+				maxHp: PLAYER_INITIAL_HP,
+				ap: MAX_AP,
+				maxAp: MAX_AP,
+			};
+
+			const inRangeState = createTestState({
+				turn: "enemy",
+				enemies: [
+					{
+						id: "enemy-1",
+						type: "miniboss",
+						position: { x: 5, y: 4 },
+						hp: ENEMY_PARAMS.miniboss.hp,
+						maxHp: ENEMY_PARAMS.miniboss.hp,
+					},
+				],
+				player: playerOverride,
+			});
+			const outOfRangeState = createTestState({
+				turn: "enemy",
+				enemies: [
+					{
+						id: "enemy-1",
+						type: "miniboss",
+						position: { x: 5, y: 5 },
+						hp: ENEMY_PARAMS.miniboss.hp,
+						maxHp: ENEMY_PARAMS.miniboss.hp,
+					},
+				],
+				player: playerOverride,
+			});
+
+			const { state: inRangeResult } = executeEnemyTurn(inRangeState);
+			const { state: outOfRangeResult } = executeEnemyTurn(outOfRangeState);
+
+			expect(inRangeResult.enemies[0].position).not.toEqual({ x: 5, y: 4 });
+			expect(outOfRangeResult.enemies[0].position).toEqual({ x: 5, y: 5 });
+		});
+
+		it("ボスの索敵範囲境界で追従/待機が切り替わる", () => {
+			// boss senseRange=10
+			// 15x15マップを使用して距離10以上を実現
+			// プレイヤー(1,1)、敵(8,4) → 距離10 → 範囲内 → 移動する
+			// プレイヤー(1,1)、敵(8,5) → 距離11 → 範囲外 → 移動しない
+			const largeMap = createFixedLayoutMap(15, 15);
+			const playerOverride = {
+				position: { x: 1, y: 1 },
+				hp: PLAYER_INITIAL_HP,
+				maxHp: PLAYER_INITIAL_HP,
+				ap: MAX_AP,
+				maxAp: MAX_AP,
+			};
+
+			const inRangeState = createTestState({
+				turn: "enemy",
+				map: largeMap,
+				enemies: [
+					{
+						id: "enemy-1",
+						type: "boss",
+						position: { x: 8, y: 4 },
+						hp: ENEMY_PARAMS.boss.hp,
+						maxHp: ENEMY_PARAMS.boss.hp,
+					},
+				],
+				player: playerOverride,
+			});
+			const outOfRangeState = createTestState({
+				turn: "enemy",
+				map: largeMap,
+				enemies: [
+					{
+						id: "enemy-1",
+						type: "boss",
+						position: { x: 8, y: 5 },
+						hp: ENEMY_PARAMS.boss.hp,
+						maxHp: ENEMY_PARAMS.boss.hp,
+					},
+				],
+				player: playerOverride,
+			});
+
+			const { state: inRangeResult } = executeEnemyTurn(inRangeState);
+			const { state: outOfRangeResult } = executeEnemyTurn(outOfRangeState);
+
+			expect(inRangeResult.enemies[0].position).not.toEqual({ x: 8, y: 4 });
+			expect(outOfRangeResult.enemies[0].position).toEqual({ x: 8, y: 5 });
 		});
 	});
 
