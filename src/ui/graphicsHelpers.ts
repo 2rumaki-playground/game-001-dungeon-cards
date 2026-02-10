@@ -60,7 +60,7 @@ export function makeInteractive(
 	let alphaBeforeHover = target.alpha;
 	target.on("pointerover", () => {
 		alphaBeforeHover = target.alpha;
-		target.alpha = HOVER_ALPHA;
+		target.alpha = Math.min(HOVER_ALPHA, alphaBeforeHover);
 	});
 	target.on("pointerout", () => {
 		if (target.alpha === HOVER_ALPHA) {

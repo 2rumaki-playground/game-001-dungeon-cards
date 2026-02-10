@@ -285,7 +285,8 @@ describe("makeInteractive", () => {
 		expect(pointerover).toBeDefined();
 		expect(pointerout).toBeDefined();
 		pointerover?.();
-		expect(container.alpha).toBe(0.8);
+		// alphaBeforeHover(0.5) < HOVER_ALPHA(0.8) なのでalphaは増加しない
+		expect(container.alpha).toBe(0.5);
 		pointerout?.();
 
 		expect(container.alpha).toBe(0.5);
