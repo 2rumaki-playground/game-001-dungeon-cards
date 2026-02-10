@@ -7,6 +7,7 @@
 
 import { writeFileSync, mkdirSync } from "node:fs";
 import { join, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 import { deflateSync } from "node:zlib";
 
 const SIZE = 64;
@@ -119,7 +120,7 @@ const assets = [
 	{ path: "enemies/boss.png", color: 0xdd3333 },
 ];
 
-const baseDir = join(dirname(new URL(import.meta.url).pathname), "..", "public", "assets");
+const baseDir = join(dirname(fileURLToPath(import.meta.url)), "..", "public", "assets");
 
 for (const { path, color } of assets) {
 	const fullPath = join(baseDir, path);
