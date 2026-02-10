@@ -45,6 +45,9 @@ export async function loadGameAssets(): Promise<void> {
 
 	const textures = await Assets.load<Texture>(allPaths);
 
+	// 前回のキャッシュをクリアして再読み込みに備える
+	textureCache.clear();
+
 	// テクスチャをキャッシュし、NEAREST スケールモードを設定
 	const missingPaths: string[] = [];
 	for (const path of allPaths) {
