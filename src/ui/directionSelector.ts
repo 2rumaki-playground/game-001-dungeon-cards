@@ -5,23 +5,25 @@
 
 import { Container, Graphics, Text } from "pixi.js";
 import type { Direction } from "../types";
+import { Easing, tween } from "../utils/tween";
 import { drawRoundedRect, makeInteractive } from "./graphicsHelpers";
+import { HOVER_EFFECT } from "./titleAnimation";
 
 /** ボタンサイズ */
-const BUTTON_SIZE = 56;
-const BUTTON_GAP = 8;
-const BUTTON_RADIUS = 8;
+const BUTTON_SIZE = 64;
+const BUTTON_GAP = 10;
+const BUTTON_RADIUS = 12;
 
 /** 方向ボタン色 */
 const DIRECTION_COLORS = {
-	bg: 0x2a5a3a,
-	border: 0x4a8a5a,
+	bg: 0x2e6640,
+	border: 0x5aaa6a,
 } as const;
 
 /** キャンセルボタン色 */
 const CANCEL_COLORS = {
-	bg: 0x5a3a3a,
-	border: 0x8a5a5a,
+	bg: 0x663030,
+	border: 0xaa5a5a,
 } as const;
 
 /** 方向ボタン定義 */
@@ -140,14 +142,14 @@ export class DirectionSelector {
 		const bg = new Graphics();
 		drawRoundedRect(bg, BUTTON_SIZE, BUTTON_SIZE, BUTTON_RADIUS, colors.bg, {
 			color: colors.border,
-			width: 2,
+			width: 2.5,
 		});
 		button.addChild(bg);
 
 		const text = new Text({
 			text: label,
 			style: {
-				fontSize: 20,
+				fontSize: 24,
 				fontFamily: "sans-serif",
 				fill: 0xffffff,
 				fontWeight: "bold",
@@ -159,7 +161,47 @@ export class DirectionSelector {
 		button.addChild(text);
 
 		makeInteractive(button, onClick);
+		this.addHoverEffect(button);
 
 		return button;
+	}
+
+	/**
+	 * ボタンにホバー演出を追加
+	 */
+	private addHoverEffect(button: Container): void {
+		button.pivot.set(BUTTON_SIZE / 2, BUTTON_SIZE / 2);
+		button.x += BUTTON_SIZE / 2;
+		button.y += BUTTON_SIZE / 2;
+
+		let hoverAbort: AbortController | null = null;
+
+		button.on("pointerover", () => {
+			hoverAbort?.abort();
+			hoverAbort = new AbortController();
+			tween(
+				button,
+				{ scaleX: HOVER_EFFECT.scale, scaleY: HOVER_EFFECT.scale },
+				{
+					duration: HOVER_EFFECT.duration,
+					easing: Easing.easeOut,
+					signal: hoverAbort.signal,
+				},
+			);
+		});
+
+		button.on("pointerout", () => {
+			hoverAbort?.abort();
+			hoverAbort = new AbortController();
+			tween(
+				button,
+				{ scaleX: 1, scaleY: 1 },
+				{
+					duration: HOVER_EFFECT.duration,
+					easing: Easing.easeOut,
+					signal: hoverAbort.signal,
+				},
+			);
+		});
 	}
 }
