@@ -741,6 +741,7 @@ export class MapRenderer {
 		this.lastRenderedMap = null;
 		this.remnantsGraphics.clear();
 		this.playerSprite.texture = Texture.EMPTY;
+		this.playerSprite.alpha = 1;
 		this.isPlayerInitialized = false;
 		this.enemiesContainer.removeChildren();
 		for (const container of this.enemyContainerMap.values()) {
