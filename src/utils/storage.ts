@@ -5,12 +5,33 @@
 
 import { getEnemyCount, INITIAL_FLOOR } from "../constants";
 import { initCardIdCounterFromDeck } from "../game/deck";
-import type { GameState } from "../types";
+import type { GameState, Room } from "../types";
 import { RNG } from "./rng";
 
 const SAVE_KEY = "dungeon-cards-save";
 
 const COORDINATE_KEY_PATTERN = /^\d+,\d+$/;
+
+/**
+ * rooms をバリデーションし、安全な配列として再構築
+ */
+function sanitizeRooms(raw: unknown): Room[] {
+	if (!Array.isArray(raw)) return [];
+	return raw.filter((item): item is Room => {
+		if (item == null || typeof item !== "object") return false;
+		const { x, y, width, height } = item as Record<string, unknown>;
+		return (
+			Number.isInteger(x) &&
+			(x as number) >= 0 &&
+			Number.isInteger(y) &&
+			(y as number) >= 0 &&
+			Number.isInteger(width) &&
+			(width as number) > 0 &&
+			Number.isInteger(height) &&
+			(height as number) > 0
+		);
+	});
+}
 
 /**
  * remnants をバリデーションし、安全な辞書として再構築
@@ -125,7 +146,7 @@ export function loadGame(): GameState | null {
 			...data,
 			enemies,
 			actionLog,
-			rooms: Array.isArray(data.rooms) ? data.rooms : [],
+			rooms: sanitizeRooms(data.rooms),
 			rng: RNG.deserialize(data.rng),
 			isCleared: data.isCleared === true,
 			defeatedEnemyCount:
