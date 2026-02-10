@@ -48,7 +48,9 @@ describe("NextFloorButton", () => {
 
 			const container = button.getContainer();
 			const buttonContainer = container.children[0];
-			buttonContainer.emit("pointerdown", {} as FederatedPointerEvent);
+			buttonContainer.emit("pointerdown", {
+				button: 0,
+			} as FederatedPointerEvent);
 
 			expect(callback).toHaveBeenCalledTimes(1);
 		});

@@ -214,6 +214,7 @@ describe("HandRenderer ホバー・選択演出", () => {
 		// waitカード（方向なし）をクリック
 		const card2 = findCardContainer(renderer, 2);
 		card2.emit("pointerdown", {
+			button: 0,
 			global: { x: 0, y: 0 },
 		} as FederatedPointerEvent);
 
@@ -236,6 +237,7 @@ describe("HandRenderer ホバー・選択演出", () => {
 
 		const card2 = findCardContainer(renderer, 2);
 		card2.emit("pointerdown", {
+			button: 0,
 			global: { x: 0, y: 0 },
 		} as FederatedPointerEvent);
 
@@ -259,6 +261,7 @@ describe("HandRenderer ホバー・選択演出", () => {
 
 		const card2 = findCardContainer(renderer, 2);
 		card2.emit("pointerdown", {
+			button: 0,
 			global: { x: 0, y: 0 },
 		} as FederatedPointerEvent);
 
@@ -298,6 +301,7 @@ describe("HandRenderer ホバー・選択演出", () => {
 		const card2 = findCardContainer(renderer, 2);
 		// 1回目のクリック
 		card2.emit("pointerdown", {
+			button: 0,
 			global: { x: 0, y: 0 },
 		} as FederatedPointerEvent);
 
@@ -310,6 +314,7 @@ describe("HandRenderer ホバー・選択演出", () => {
 
 		// 2回目のクリックを試行（isInputLockedガードで早期return）
 		card2.emit("pointerdown", {
+			button: 0,
 			global: { x: 0, y: 0 },
 		} as FederatedPointerEvent);
 
@@ -349,6 +354,7 @@ describe("HandRenderer ホバー・選択演出", () => {
 		// 1回目のクリックで入力ロック
 		const card0 = findCardContainer(renderer, 0);
 		card0.emit("pointerdown", {
+			button: 0,
 			global: { x: 0, y: 0 },
 		} as FederatedPointerEvent);
 
@@ -365,6 +371,7 @@ describe("HandRenderer ホバー・選択演出", () => {
 		// クリックしてもtweenは増えない（ロック維持）
 		const card0After = findCardContainer(renderer, 0);
 		card0After.emit("pointerdown", {
+			button: 0,
 			global: { x: 0, y: 0 },
 		} as FederatedPointerEvent);
 		expect(mockedTween.mock.calls.length).toBe(tweenCountAfterFirst);
@@ -393,6 +400,7 @@ describe("HandRenderer ホバー・選択演出", () => {
 
 		const card2 = findCardContainer(renderer, 2);
 		card2.emit("pointerdown", {
+			button: 0,
 			global: { x: 0, y: 0 },
 		} as FederatedPointerEvent);
 
@@ -405,6 +413,7 @@ describe("HandRenderer ホバー・選択演出", () => {
 
 		// アニメーション中は2回目のクリックが無視される
 		card2.emit("pointerdown", {
+			button: 0,
 			global: { x: 0, y: 0 },
 		} as FederatedPointerEvent);
 		expect(mockedTween.mock.calls.length).toBe(tweenCountAfterFirst);
@@ -420,6 +429,7 @@ describe("HandRenderer ホバー・選択演出", () => {
 		// render()で再描画されるので新しいカードコンテナを取得
 		const card2After = findCardContainer(renderer, 2);
 		card2After.emit("pointerdown", {
+			button: 0,
 			global: { x: 0, y: 0 },
 		} as FederatedPointerEvent);
 		expect(mockedTween.mock.calls.length).toBeGreaterThan(tweenCountAfterFirst);
@@ -446,6 +456,7 @@ describe("HandRenderer ホバー・選択演出", () => {
 		// → animateCardConsume完了 → invokeCallback呼び出し → 非同期コールバック保留
 		const card2 = findCardContainer(renderer, 2);
 		card2.emit("pointerdown", {
+			button: 0,
 			global: { x: 0, y: 0 },
 		} as FederatedPointerEvent);
 
@@ -458,6 +469,7 @@ describe("HandRenderer ホバー・選択演出", () => {
 
 		// コールバックのPromise未解決中は入力ロックが維持される
 		card2.emit("pointerdown", {
+			button: 0,
 			global: { x: 0, y: 0 },
 		} as FederatedPointerEvent);
 		expect(mockedTween.mock.calls.length).toBe(tweenCountAfterFirst);
@@ -475,6 +487,7 @@ describe("HandRenderer ホバー・選択演出", () => {
 		// 再描画完了後に、改めて新しいカードコンテナを取得してクリック
 		const card2After = findCardContainer(renderer, 2);
 		card2After.emit("pointerdown", {
+			button: 0,
 			global: { x: 0, y: 0 },
 		} as FederatedPointerEvent);
 		expect(mockedTween.mock.calls.length).toBeGreaterThan(tweenCountAfterFirst);
@@ -499,6 +512,7 @@ describe("HandRenderer ホバー・選択演出", () => {
 
 		const card2 = findCardContainer(renderer, 2);
 		card2.emit("pointerdown", {
+			button: 0,
 			global: { x: 0, y: 0 },
 		} as FederatedPointerEvent);
 
