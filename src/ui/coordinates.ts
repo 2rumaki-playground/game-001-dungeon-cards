@@ -86,7 +86,7 @@ export function getMapPixelSize(
 }
 
 /**
- * ビューポート（9×9タイル）のピクセルサイズを計算
+ * ビューポート（VIEWPORT_TILES × VIEWPORT_TILES タイル）のピクセルサイズを計算
  * @returns ビューポートの幅と高さ（ピクセル）
  */
 export function getViewportPixelSize(): { width: number; height: number } {
