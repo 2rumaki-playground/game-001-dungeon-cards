@@ -46,10 +46,20 @@ export async function loadGameAssets(): Promise<void> {
 	const textures = await Assets.load<Texture>(allPaths);
 
 	// テクスチャをキャッシュし、NEAREST スケールモードを設定
+	const missingPaths: string[] = [];
 	for (const path of allPaths) {
 		const texture = textures[path];
+		if (!texture) {
+			missingPaths.push(path);
+			continue;
+		}
 		texture.source.scaleMode = "nearest";
 		textureCache.set(path, texture);
+	}
+	if (missingPaths.length > 0) {
+		throw new Error(
+			`テクスチャの読み込みに失敗しました: ${missingPaths.join(", ")}`,
+		);
 	}
 }
 
