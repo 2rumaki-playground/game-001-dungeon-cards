@@ -1265,12 +1265,12 @@ describe("executeEnemyTurn", () => {
 		});
 
 		it("部屋内の敵でもプレイヤーが隣接していれば攻撃する", () => {
-			// 敵がroomAにいて、プレイヤーが隣接だが部屋外
+			// 敵がroomA端(3,2)にいて、プレイヤーが部屋外かつ隣接(4,2)
 			const enemies: Enemy[] = [
 				{
 					id: "enemy-1",
 					type: "normal",
-					position: { x: 1, y: 1 },
+					position: { x: 3, y: 2 },
 					hp: ENEMY_HP,
 					maxHp: ENEMY_HP,
 				},
@@ -1280,7 +1280,7 @@ describe("executeEnemyTurn", () => {
 				enemies,
 				rooms: [roomA],
 				player: {
-					position: { x: 1, y: 2 },
+					position: { x: 4, y: 2 },
 					hp: PLAYER_INITIAL_HP,
 					maxHp: PLAYER_INITIAL_HP,
 					ap: MAX_AP,
