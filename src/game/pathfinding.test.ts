@@ -66,7 +66,7 @@ describe("bfsFirstStep", () => {
 		expect(bfsFirstStep(map, { x: 1, y: 3 }, { x: 1, y: 1 })).toBeNull();
 	});
 
-	it("ゴールが壁で囲まれている場合nullを返す", () => {
+	it("ゴール周辺が壁でも到達可能なら経路を返す", () => {
 		const map = mapFromStrings(["WWWWW", "WWFWW", "WFFFW", "WFFFW", "WWWWW"]);
 		// プレイヤー(2,1)の左右が壁、上も壁、下(2,2)は床
 		// 敵(2,3) → BFSは(2,2)→(2,1)と到達可能（(2,1)自体は床）
