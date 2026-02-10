@@ -256,7 +256,7 @@ describe("makeInteractive", () => {
 		expect(container.alpha).toBe(1);
 	});
 
-	it("ホバー中にalphaが外部変更された場合でもpointeroutでホバー前の値に復元する", () => {
+	it("ホバー中にalphaが外部変更された場合、pointeroutで復元しない", () => {
 		const container = createMockContainer();
 
 		makeInteractive(container, vi.fn());
@@ -272,8 +272,8 @@ describe("makeInteractive", () => {
 		container.alpha = 1.0;
 		pointerout?.();
 
-		// isHoveringフラグによりホバー前の値に復元される
-		expect(container.alpha).toBe(1);
+		// 外部変更後の値が維持される（ホバー前の値に巻き戻さない）
+		expect(container.alpha).toBe(1.0);
 	});
 
 	it("pointeroverが複数回発火してもpointeroutで元のalphaに戻る", () => {

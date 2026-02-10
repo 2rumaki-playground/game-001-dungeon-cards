@@ -58,16 +58,23 @@ export function makeInteractive(
 		onClick(event);
 	});
 	let alphaBeforeHover = target.alpha;
+	let hoverAlpha: number | null = null;
 	let isHovering = false;
 	target.on("pointerover", () => {
 		if (isHovering) return;
 		isHovering = true;
 		alphaBeforeHover = target.alpha;
-		target.alpha = Math.min(HOVER_ALPHA, alphaBeforeHover);
+		const nextAlpha = Math.min(HOVER_ALPHA, alphaBeforeHover);
+		target.alpha = nextAlpha;
+		hoverAlpha = nextAlpha;
 	});
 	target.on("pointerout", () => {
 		if (!isHovering) return;
-		target.alpha = alphaBeforeHover;
+		// ホバーで設定した alpha がまだ維持されている場合のみ復元する
+		if (hoverAlpha !== null && target.alpha === hoverAlpha) {
+			target.alpha = alphaBeforeHover;
+		}
 		isHovering = false;
+		hoverAlpha = null;
 	});
 }
