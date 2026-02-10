@@ -771,7 +771,7 @@ describe("MapRenderer HPバー", () => {
 		expect(enemyContainer.children.length).toBe(2);
 	});
 
-	it("通常敵のコンテナにはHPバーが含まれない", () => {
+	it("normal敵のコンテナにもHPバーが含まれる", () => {
 		const renderer = new MapRenderer();
 		const map = createTestMap();
 		const enemies = [
@@ -795,9 +795,95 @@ describe("MapRenderer HPバー", () => {
 		const container = renderer.getContainer();
 		const enemiesContainer = container.children[2];
 		expect(enemiesContainer.children.length).toBe(1);
-		// 敵コンテナ内にGraphicsのみ
+		// 敵コンテナ内にGraphics(1) + HPバー(1) = 2
 		const enemyContainer = enemiesContainer.children[0];
-		expect(enemyContainer.children.length).toBe(1);
+		expect(enemyContainer.children.length).toBe(2);
+	});
+
+	it("heavy敵のコンテナにもHPバーが含まれる", () => {
+		const renderer = new MapRenderer();
+		const map = createTestMap();
+		const enemies = [
+			{
+				id: "e-heavy",
+				position: { x: 1, y: 1 },
+				hp: 5,
+				maxHp: 5,
+				type: "heavy" as const,
+			},
+		];
+		const player = {
+			position: { x: 0, y: 0 },
+			hp: 10,
+			maxHp: 10,
+			ap: 3,
+			maxAp: 3,
+		};
+		renderer.render(map, player, enemies);
+
+		const container = renderer.getContainer();
+		const enemiesContainer = container.children[2];
+		expect(enemiesContainer.children.length).toBe(1);
+		// 敵コンテナ内にGraphics(1) + HPバー(1) = 2
+		const enemyContainer = enemiesContainer.children[0];
+		expect(enemyContainer.children.length).toBe(2);
+	});
+
+	it("scout敵のコンテナにもHPバーが含まれる", () => {
+		const renderer = new MapRenderer();
+		const map = createTestMap();
+		const enemies = [
+			{
+				id: "e-scout",
+				position: { x: 1, y: 1 },
+				hp: 2,
+				maxHp: 2,
+				type: "scout" as const,
+			},
+		];
+		const player = {
+			position: { x: 0, y: 0 },
+			hp: 10,
+			maxHp: 10,
+			ap: 3,
+			maxAp: 3,
+		};
+		renderer.render(map, player, enemies);
+
+		const container = renderer.getContainer();
+		const enemiesContainer = container.children[2];
+		expect(enemiesContainer.children.length).toBe(1);
+		// 敵コンテナ内にGraphics(1) + HPバー(1) = 2
+		const enemyContainer = enemiesContainer.children[0];
+		expect(enemyContainer.children.length).toBe(2);
+	});
+
+	it("HP減少が通常敵のHPバーに反映される", () => {
+		const renderer = new MapRenderer();
+		const map = createTestMap();
+		const enemies = [
+			{
+				id: "e-normal",
+				position: { x: 1, y: 1 },
+				hp: 1,
+				maxHp: 3,
+				type: "normal" as const,
+			},
+		];
+		const player = {
+			position: { x: 0, y: 0 },
+			hp: 10,
+			maxHp: 10,
+			ap: 3,
+			maxAp: 3,
+		};
+		renderer.render(map, player, enemies);
+
+		const container = renderer.getContainer();
+		const enemiesContainer = container.children[2];
+		const enemyContainer = enemiesContainer.children[0];
+		// HPバーが存在する（Graphics + HPバー = 2）
+		expect(enemyContainer.children.length).toBe(2);
 	});
 
 	it("clear後にコンテナがクリアされる", () => {
