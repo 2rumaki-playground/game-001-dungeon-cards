@@ -12,8 +12,6 @@ import type { CardType, GameState, RewardState } from "../types";
 import { generateRewardChoices } from "./cardPool";
 import { createCard, getTotalDeckSize } from "./deck";
 
-export { getTotalDeckSize };
-
 /**
  * 報酬状態を生成する
  *

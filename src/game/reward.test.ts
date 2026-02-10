@@ -2,11 +2,10 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { DECK_MIN_SIZE, getEnemyCount, INITIAL_FLOOR } from "../constants";
 import { createTestState } from "../test-utils/createTestFixtures";
 import type { Card } from "../types";
-import { resetCardIdCounter } from "./deck";
+import { getTotalDeckSize, resetCardIdCounter } from "./deck";
 import {
 	addRewardCardToDeck,
 	createRewardState,
-	getTotalDeckSize,
 	removeCardFromDeck,
 	shouldTriggerCardRemoval,
 } from "./reward";
