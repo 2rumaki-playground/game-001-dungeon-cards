@@ -115,15 +115,10 @@ describe("DeckViewer", () => {
 			const deck = createTestDeck();
 			const screenWidth = 800;
 			const screenHeight = 600;
-			const gameAreaWidth = 480;
-			const gameAreaHeight = 500;
-			viewer.render(
-				deck,
-				screenWidth,
-				screenHeight,
-				gameAreaWidth,
-				gameAreaHeight,
-			);
+			viewer.render(deck, screenWidth, screenHeight, {
+				width: 480,
+				height: 500,
+			});
 
 			const container = viewer.getContainer();
 			const overlay = container.children[0] as Graphics;
@@ -136,7 +131,10 @@ describe("DeckViewer", () => {
 			const deck = createTestDeck();
 			const screenWidth = 800;
 			const gameAreaWidth = 480;
-			viewer.render(deck, screenWidth, 600, gameAreaWidth, 500);
+			viewer.render(deck, screenWidth, 600, {
+				width: gameAreaWidth,
+				height: 500,
+			});
 
 			const container = viewer.getContainer();
 			const title = container.children[1] as import("pixi.js").Text;
@@ -148,7 +146,10 @@ describe("DeckViewer", () => {
 			const deck = createTestDeck();
 			const screenWidth = 800;
 			const gameAreaWidth = 480;
-			viewer.render(deck, screenWidth, 600, gameAreaWidth, 500);
+			viewer.render(deck, screenWidth, 600, {
+				width: gameAreaWidth,
+				height: 500,
+			});
 
 			const container = viewer.getContainer();
 			// children[2]が最初のカード行
@@ -162,7 +163,10 @@ describe("DeckViewer", () => {
 			const deck = createTestDeck();
 			const screenWidth = 800;
 			const gameAreaHeight = 500;
-			viewer.render(deck, screenWidth, 600, 480, gameAreaHeight);
+			viewer.render(deck, screenWidth, 600, {
+				width: 480,
+				height: gameAreaHeight,
+			});
 
 			const container = viewer.getContainer();
 			const title = container.children[1] as import("pixi.js").Text;

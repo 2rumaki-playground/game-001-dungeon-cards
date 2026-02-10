@@ -471,8 +471,7 @@ export function setupEventHandlers(ctx: GameContext): void {
 			ctx.state.deck,
 			screen.width,
 			screen.height,
-			gameArea.width,
-			gameArea.height,
+			gameArea,
 		);
 		ctx.ui.deckViewer.show();
 	});

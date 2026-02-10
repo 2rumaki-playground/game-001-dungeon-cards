@@ -120,15 +120,13 @@ export class DeckViewer {
 
 	/**
 	 * デッキ情報をオーバーレイに描画
-	 * @param gameAreaWidth ゲームエリアの幅（ログエリアを除いた領域）
-	 * @param gameAreaHeight ゲームエリアの高さ
+	 * @param gameArea ゲームエリアのサイズ（ログエリアを除いた領域）。省略時は画面全体を使う
 	 */
 	render(
 		deck: DeckState,
 		screenWidth: number,
 		screenHeight: number,
-		gameAreaWidth?: number,
-		gameAreaHeight?: number,
+		gameArea?: { width: number; height: number },
 	): void {
 		this.container.removeChildren();
 
@@ -141,8 +139,8 @@ export class DeckViewer {
 		this.container.addChild(overlay);
 
 		// コンテンツ配置用のエリアサイズ（指定がなければ画面全体を使う）
-		const areaW = gameAreaWidth ?? screenWidth;
-		const areaH = gameAreaHeight ?? screenHeight;
+		const areaW = gameArea?.width ?? screenWidth;
+		const areaH = gameArea?.height ?? screenHeight;
 
 		const types = CARD_TYPE_ORDER.filter((t) => (cardCounts.get(t) ?? 0) > 0);
 
