@@ -63,3 +63,59 @@ src/
 ```
 
 ゲームの仕様は `docs/spec/` 配下で管理しています。
+
+## 画像アセット
+
+ゲーム内の描画はPNGスプライトで行っています。すべてのアセットは `public/assets/` 配下に配置します。
+
+### ディレクトリ構成
+
+```
+public/assets/
+├── tiles/
+│   ├── floor.png
+│   ├── wall.png
+│   ├── stairs.png
+│   ├── trap.png
+│   ├── treasure.png
+│   └── rest_area.png
+├── enemies/
+│   ├── normal.png
+│   ├── heavy.png
+│   ├── scout.png
+│   ├── miniboss.png
+│   └── boss.png
+└── player.png
+```
+
+### 画像仕様
+
+| 項目 | 値 |
+|------|-----|
+| サイズ | 64×64 px（`CELL_SIZE` と一致） |
+| フォーマット | PNG |
+| scaleMode | `nearest`（ピクセルアート向け、拡大時にぼやけない） |
+
+### 既存画像の差し替え
+
+同じファイル名・同じサイズのPNGで上書きするだけで反映されます。
+
+### 新しいタイル / 敵タイプの追加
+
+新しい種類のタイルや敵を追加する場合、以下のファイルを変更します。
+
+1. **型定義** — `src/types/map.ts`（`TileType`）または `src/types/character.ts`（`EnemyType`）に値を追加
+2. **アセットパス** — `src/ui/assetLoader.ts` の `TILE_ASSET_PATHS` / `ENEMY_ASSET_PATHS` にエントリを追加
+3. **画像ファイル** — `public/assets/tiles/` または `public/assets/enemies/` にPNGを配置
+4. **プレースホルダー生成** — `scripts/generate-placeholders.mjs` の `assets` 配列にエントリを追加
+5. **敵タイプの場合** — `src/ui/mapRenderer.ts` の `ENEMY_PADDING` にパディング値を追加
+
+### プレースホルダー画像の生成
+
+開発用に単色のプレースホルダーPNG（64×64px）を一括生成できます。
+
+```bash
+node scripts/generate-placeholders.mjs
+```
+
+`public/assets/` 配下の全アセットが上書き生成されます。本番用の画像を配置済みの場合は実行に注意してください。
