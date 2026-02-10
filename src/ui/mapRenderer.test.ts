@@ -32,6 +32,17 @@ vi.mock("pixi.js", async () => {
 	};
 });
 
+// assetLoader をモック化（ダミーテクスチャを返す）
+vi.mock("./assetLoader", async () => {
+	const pixi = await vi.importActual<typeof import("pixi.js")>("pixi.js");
+	const dummyTexture = pixi.Texture.WHITE;
+	return {
+		getTileTexture: () => dummyTexture,
+		getPlayerTexture: () => dummyTexture,
+		getEnemyTexture: () => dummyTexture,
+	};
+});
+
 /**
  * テスト用のマップ状態を作成
  */
@@ -286,10 +297,10 @@ describe("MapRenderer 攻撃エフェクト", () => {
 
 		await renderer.animateEnemyAttackHit(1);
 
-		// コンテナ内のプレイヤーグラフィックス（4番目の子要素）のalphaが1であること
+		// コンテナ内のプレイヤースプライト（4番目の子要素）のalphaが1であること
 		const container = renderer.getContainer();
-		const playerGraphics = container.children[3];
-		expect(playerGraphics.alpha).toBe(1);
+		const playerSprite = container.children[3];
+		expect(playerSprite.alpha).toBe(1);
 	});
 
 	it("animateAttackHit完了後にコンテナの座標が元に戻る", async () => {
@@ -427,7 +438,7 @@ describe("MapRenderer タイプ別敵描画", () => {
 
 		const container = renderer.getContainer();
 		const enemiesContainer = container.children[2];
-		// 敵コンテナ1つ（内部にGraphics + HPバー）
+		// 敵コンテナ1つ（内部にSprite + HPバー）
 		expect(enemiesContainer.children.length).toBe(1);
 	});
 
@@ -454,7 +465,7 @@ describe("MapRenderer タイプ別敵描画", () => {
 
 		const container = renderer.getContainer();
 		const enemiesContainer = container.children[2];
-		// 敵コンテナ1つ（内部にGraphics + HPバー）
+		// 敵コンテナ1つ（内部にSprite + HPバー）
 		expect(enemiesContainer.children.length).toBe(1);
 	});
 
@@ -630,7 +641,7 @@ describe("MapRenderer 敵撃破アニメーション", () => {
 		await expect(renderer.animateEnemyDefeat("e1")).resolves.toBeUndefined();
 	});
 
-	it("撃破アニメーション完了後に敵Graphicsが削除される", async () => {
+	it("撃破アニメーション完了後に敵コンテナが削除される", async () => {
 		const renderer = new MapRenderer();
 		const map = createTestMap();
 		const enemies = [
@@ -651,14 +662,14 @@ describe("MapRenderer 敵撃破アニメーション", () => {
 		};
 		renderer.render(map, player, enemies);
 
-		// enemiesContainerに敵Graphicsが存在すること
+		// enemiesContainerに敵コンテナが存在すること
 		const container = renderer.getContainer();
 		const enemiesContainer = container.children[2];
 		expect(enemiesContainer.children.length).toBe(1);
 
 		await renderer.animateEnemyDefeat("e1");
 
-		// 撃破後、敵Graphicsが削除されていること
+		// 撃破後、敵コンテナが削除されていること
 		expect(enemiesContainer.children.length).toBe(0);
 	});
 
@@ -737,7 +748,7 @@ describe("MapRenderer HPバー", () => {
 		const enemiesContainer = container.children[2];
 		// 敵コンテナ1つ
 		expect(enemiesContainer.children.length).toBe(1);
-		// 敵コンテナ内にGraphics(1) + HPバー(1) = 2
+		// 敵コンテナ内にSprite(1) + HPバー(1) = 2
 		const enemyContainer = enemiesContainer.children[0];
 		expect(enemyContainer.children.length).toBe(2);
 	});
@@ -766,7 +777,7 @@ describe("MapRenderer HPバー", () => {
 		const container = renderer.getContainer();
 		const enemiesContainer = container.children[2];
 		expect(enemiesContainer.children.length).toBe(1);
-		// 敵コンテナ内にGraphics(1) + HPバー(1) = 2
+		// 敵コンテナ内にSprite(1) + HPバー(1) = 2
 		const enemyContainer = enemiesContainer.children[0];
 		expect(enemyContainer.children.length).toBe(2);
 	});
@@ -795,7 +806,7 @@ describe("MapRenderer HPバー", () => {
 		const container = renderer.getContainer();
 		const enemiesContainer = container.children[2];
 		expect(enemiesContainer.children.length).toBe(1);
-		// 敵コンテナ内にGraphics(1) + HPバー(1) = 2
+		// 敵コンテナ内にSprite(1) + HPバー(1) = 2
 		const enemyContainer = enemiesContainer.children[0];
 		expect(enemyContainer.children.length).toBe(2);
 	});
@@ -824,7 +835,7 @@ describe("MapRenderer HPバー", () => {
 		const container = renderer.getContainer();
 		const enemiesContainer = container.children[2];
 		expect(enemiesContainer.children.length).toBe(1);
-		// 敵コンテナ内にGraphics(1) + HPバー(1) = 2
+		// 敵コンテナ内にSprite(1) + HPバー(1) = 2
 		const enemyContainer = enemiesContainer.children[0];
 		expect(enemyContainer.children.length).toBe(2);
 	});
@@ -853,7 +864,7 @@ describe("MapRenderer HPバー", () => {
 		const container = renderer.getContainer();
 		const enemiesContainer = container.children[2];
 		expect(enemiesContainer.children.length).toBe(1);
-		// 敵コンテナ内にGraphics(1) + HPバー(1) = 2
+		// 敵コンテナ内にSprite(1) + HPバー(1) = 2
 		const enemyContainer = enemiesContainer.children[0];
 		expect(enemyContainer.children.length).toBe(2);
 	});
@@ -944,70 +955,70 @@ describe("MapRenderer HPバー", () => {
 	});
 });
 
-describe("MapRenderer 特殊タイルアイコン描画", () => {
-	it("罠タイルでcircle（波紋）が呼ばれる", () => {
+describe("MapRenderer タイルスプライト描画", () => {
+	it("マップのタイル数と同じスプライトが生成される", () => {
 		const renderer = new MapRenderer();
-		const map = [[{ type: "trap" as const }]];
-		const circleSpy = vi.spyOn(Graphics.prototype, "circle");
-
+		const map = createTestMap(); // 5x5
 		renderer.renderMap(map);
 
-		// 背景rect + 波紋3層 = circle 3回以上
-		expect(circleSpy).toHaveBeenCalled();
-		circleSpy.mockRestore();
+		const container = renderer.getContainer();
+		const tilesContainer = container.children[0];
+		expect(tilesContainer.children.length).toBe(25);
 	});
 
-	it("宝箱タイルでroundRect（箱の本体・蓋）が呼ばれる", () => {
+	it("特殊タイルを含むマップが正しく描画される", () => {
 		const renderer = new MapRenderer();
-		const map = [[{ type: "treasure" as const }]];
-		const roundRectSpy = vi.spyOn(Graphics.prototype, "roundRect");
-
+		const map = [
+			[{ type: "floor" as const }, { type: "trap" as const }],
+			[{ type: "treasure" as const }, { type: "rest_area" as const }],
+		];
 		renderer.renderMap(map);
 
-		expect(roundRectSpy).toHaveBeenCalled();
-		roundRectSpy.mockRestore();
+		const container = renderer.getContainer();
+		const tilesContainer = container.children[0];
+		expect(tilesContainer.children.length).toBe(4);
 	});
 
-	it("休憩所タイルでellipse（肉）が呼ばれる", () => {
-		const renderer = new MapRenderer();
-		const map = [[{ type: "rest_area" as const }]];
-		const ellipseSpy = vi.spyOn(Graphics.prototype, "ellipse");
-
-		renderer.renderMap(map);
-
-		expect(ellipseSpy).toHaveBeenCalled();
-		ellipseSpy.mockRestore();
-	});
-
-	it("階段タイルでstroke（階段の線）が呼ばれる", () => {
+	it("階段タイルがスプライトとして描画される", () => {
 		const renderer = new MapRenderer();
 		const map = [[{ type: "stairs" as const }]];
-		const strokeSpy = vi.spyOn(Graphics.prototype, "stroke");
-
 		renderer.renderMap(map);
 
-		expect(strokeSpy).toHaveBeenCalled();
-		strokeSpy.mockRestore();
+		const container = renderer.getContainer();
+		const tilesContainer = container.children[0];
+		expect(tilesContainer.children.length).toBe(1);
 	});
 
-	it("床タイルではアイコン描画が呼ばれない", () => {
+	it("同一map参照で再呼び出しするとSprite再生成がスキップされる", () => {
 		const renderer = new MapRenderer();
-		const map = [[{ type: "floor" as const }]];
-		const circleSpy = vi.spyOn(Graphics.prototype, "circle");
-		const roundRectSpy = vi.spyOn(Graphics.prototype, "roundRect");
-		const ellipseSpy = vi.spyOn(Graphics.prototype, "ellipse");
-		const strokeSpy = vi.spyOn(Graphics.prototype, "stroke");
-
+		const map = createTestMap();
 		renderer.renderMap(map);
 
-		expect(circleSpy).not.toHaveBeenCalled();
-		expect(roundRectSpy).not.toHaveBeenCalled();
-		expect(ellipseSpy).not.toHaveBeenCalled();
-		expect(strokeSpy).not.toHaveBeenCalled();
+		const container = renderer.getContainer();
+		const tilesContainer = container.children[0];
+		const childrenBefore = [...tilesContainer.children];
 
-		circleSpy.mockRestore();
-		roundRectSpy.mockRestore();
-		ellipseSpy.mockRestore();
-		strokeSpy.mockRestore();
+		// 同一参照で再呼び出し
+		renderer.renderMap(map);
+
+		// children の参照が維持されていること（Spriteが差し替わっていない）
+		expect(tilesContainer.children.length).toBe(childrenBefore.length);
+		for (let i = 0; i < childrenBefore.length; i++) {
+			expect(tilesContainer.children[i]).toBe(childrenBefore[i]);
+		}
+	});
+
+	it("renderMapを再呼び出しすると前のスプライトがクリアされる", () => {
+		const renderer = new MapRenderer();
+		const map1 = [[{ type: "floor" as const }]]; // 1x1
+		const map2 = createTestMap(); // 5x5
+
+		renderer.renderMap(map1);
+		const container = renderer.getContainer();
+		const tilesContainer = container.children[0];
+		expect(tilesContainer.children.length).toBe(1);
+
+		renderer.renderMap(map2);
+		expect(tilesContainer.children.length).toBe(25);
 	});
 });

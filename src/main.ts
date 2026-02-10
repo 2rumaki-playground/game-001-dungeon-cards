@@ -27,6 +27,7 @@ import {
 	TurnEndButton,
 	VictoryScreen,
 } from "./ui";
+import { loadGameAssets } from "./ui/assetLoader";
 import { setupEventHandlers } from "./ui/eventHandlers";
 import { render, updateState } from "./ui/gameRenderer";
 import {
@@ -229,6 +230,9 @@ async function main() {
 	});
 
 	document.body.appendChild(app.canvas);
+
+	// ゲームアセットをプリロード
+	await loadGameAssets();
 
 	// UIコンポーネントをビューポートサイズで初期化
 	const ui = await initializeUIComponents(app, viewportSize, totalHeight);
