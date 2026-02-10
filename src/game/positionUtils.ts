@@ -8,7 +8,7 @@ import type { Position } from "../types";
  * 2点が4近傍で隣接しているか判定
  */
 export function isAdjacent(a: Position, b: Position): boolean {
-	return Math.abs(a.x - b.x) + Math.abs(a.y - b.y) === 1;
+	return manhattanDistance(a, b) === 1;
 }
 
 /**
