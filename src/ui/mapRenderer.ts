@@ -211,7 +211,10 @@ export class MapRenderer {
 	 * マップを描画
 	 */
 	renderMap(map: GameMap): void {
-		this.tilesContainer.removeChildren();
+		const removedTiles = this.tilesContainer.removeChildren();
+		for (const child of removedTiles) {
+			child.destroy();
+		}
 
 		for (let y = 0; y < map.length; y++) {
 			const row = map[y];
