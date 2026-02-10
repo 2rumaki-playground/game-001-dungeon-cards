@@ -13,23 +13,33 @@ const SAVE_KEY = "dungeon-cards-save";
 const COORDINATE_KEY_PATTERN = /^\d+,\d+$/;
 
 /**
- * rooms をバリデーションし、安全な配列として再構築
+ * rooms をバリデーションし、不正な要素を除外して安全な配列として再構築
  */
 function sanitizeRooms(raw: unknown): Room[] {
 	if (!Array.isArray(raw)) return [];
-	return raw.filter((item): item is Room => {
-		if (item == null || typeof item !== "object") return false;
+	return raw.flatMap((item): Room[] => {
+		if (item == null || typeof item !== "object") return [];
 		const { x, y, width, height } = item as Record<string, unknown>;
-		return (
-			Number.isInteger(x) &&
-			(x as number) >= 0 &&
-			Number.isInteger(y) &&
-			(y as number) >= 0 &&
-			Number.isInteger(width) &&
-			(width as number) > 0 &&
-			Number.isInteger(height) &&
-			(height as number) > 0
-		);
+		if (
+			!Number.isInteger(x) ||
+			(x as number) < 0 ||
+			!Number.isInteger(y) ||
+			(y as number) < 0 ||
+			!Number.isInteger(width) ||
+			(width as number) <= 0 ||
+			!Number.isInteger(height) ||
+			(height as number) <= 0
+		) {
+			return [];
+		}
+		return [
+			{
+				x: x as number,
+				y: y as number,
+				width: width as number,
+				height: height as number,
+			},
+		];
 	});
 }
 
