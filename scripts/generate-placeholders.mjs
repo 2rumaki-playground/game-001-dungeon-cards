@@ -104,20 +104,21 @@ for (let n = 0; n < 256; n++) {
 	crcTable[n] = c;
 }
 
-// 生成対象の定義（COLORS定数と同じ値）
+// 生成対象の定義
+// 色値: src/constants.ts の COLORS、パス: src/ui/assetLoader.ts の *_ASSET_PATHS と同期すること
 const assets = [
-	{ path: "tiles/floor.png", color: 0x3a3a3a },
-	{ path: "tiles/wall.png", color: 0x1a1a1a },
-	{ path: "tiles/stairs.png", color: 0x4a6a4a },
-	{ path: "tiles/trap.png", color: 0x9b59b6 },
-	{ path: "tiles/treasure.png", color: 0xccaa44 },
-	{ path: "tiles/rest_area.png", color: 0x44aa88 },
-	{ path: "player.png", color: 0x4a8cca },
-	{ path: "enemies/normal.png", color: 0xca4a4a },
-	{ path: "enemies/heavy.png", color: 0x8855aa },
-	{ path: "enemies/scout.png", color: 0x88cc44 },
-	{ path: "enemies/miniboss.png", color: 0xdd8833 },
-	{ path: "enemies/boss.png", color: 0xdd3333 },
+	{ path: "tiles/floor.png", color: 0x3a3a3a },       // COLORS.floor
+	{ path: "tiles/wall.png", color: 0x1a1a1a },        // COLORS.wall
+	{ path: "tiles/stairs.png", color: 0x4a6a4a },      // COLORS.stairs
+	{ path: "tiles/trap.png", color: 0x9b59b6 },        // COLORS.trap
+	{ path: "tiles/treasure.png", color: 0xccaa44 },    // COLORS.treasure
+	{ path: "tiles/rest_area.png", color: 0x44aa88 },   // COLORS.restArea
+	{ path: "player.png", color: 0x4a8cca },            // COLORS.player
+	{ path: "enemies/normal.png", color: 0xca4a4a },    // COLORS.enemyNormal
+	{ path: "enemies/heavy.png", color: 0x8855aa },     // COLORS.enemyHeavy
+	{ path: "enemies/scout.png", color: 0x88cc44 },     // COLORS.enemyScout
+	{ path: "enemies/miniboss.png", color: 0xdd8833 },  // COLORS.enemyMiniboss
+	{ path: "enemies/boss.png", color: 0xdd3333 },      // COLORS.enemyBoss
 ];
 
 const baseDir = join(dirname(fileURLToPath(import.meta.url)), "..", "public", "assets");
