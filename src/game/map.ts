@@ -18,7 +18,7 @@ import {
 import type { GameMap, Position, Tile, TileType } from "../types";
 import type { RNG } from "../utils/rng";
 import { generateBSPMap, type Room } from "./bsp";
-import { positionToKey } from "./state";
+import { positionToKey } from "./positionUtils";
 
 /**
  * 座標がマップ範囲内かを判定

@@ -5,7 +5,7 @@
 
 import { Container, Graphics, Text } from "pixi.js";
 import { CELL_SIZE } from "../constants";
-import { positionToKey } from "../game/state";
+import { positionToKey } from "../game/positionUtils";
 import type { Enemy, GameMap, Position } from "../types";
 import { gridToPixel } from "./coordinates";
 import { makeInteractive } from "./graphicsHelpers";
