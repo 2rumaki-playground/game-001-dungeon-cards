@@ -198,11 +198,11 @@ describe("pickMoveDirection", () => {
 			hp: ENEMY_HP,
 			maxHp: ENEMY_HP,
 		};
-		// 壁回避の経路探索は行わない → 最善方向がブロックなら留まる
+		// BFS経路の最初の一歩に他の敵がいる → canEnemyMoveToで拒否
 		expect(pickMoveDirection(state, enemy)).toBeNull();
 	});
 
-	it("最善方向が階段タイルの場合、移動失敗でnullを返す", () => {
+	it("最善方向が階段タイルの場合、迂回して移動する", () => {
 		const map = createTestMap();
 		// (3,2)を階段タイルに設定
 		map[2][3] = { type: "stairs" };
@@ -223,8 +223,8 @@ describe("pickMoveDirection", () => {
 			hp: ENEMY_HP,
 			maxHp: ENEMY_HP,
 		};
-		// 最善方向は上(3,2)だが階段 → 留まる
-		expect(pickMoveDirection(state, enemy)).toBeNull();
+		// 最善方向は上(3,2)だが階段 → BFSが迂回路を見つけてleftを返す
+		expect(pickMoveDirection(state, enemy)).toBe("left");
 	});
 
 	it("全方向移動不可の場合nullを返す", () => {
@@ -268,6 +268,58 @@ describe("pickMoveDirection", () => {
 				maxAp: MAX_AP,
 			},
 			enemies,
+		});
+		const enemy: Enemy = {
+			id: "enemy-1",
+			type: "normal",
+			position: { x: 3, y: 3 },
+			hp: ENEMY_HP,
+			maxHp: ENEMY_HP,
+		};
+		expect(pickMoveDirection(state, enemy)).toBeNull();
+	});
+
+	it("壁で直線が塞がれた場合、迂回して移動する", () => {
+		const map = createTestMap();
+		// (3,2)を壁に設定 → 敵(3,3)から上への直線をブロック
+		map[2][3] = { type: "wall" };
+		const state = createTestState({
+			map,
+			player: {
+				position: { x: 3, y: 1 },
+				hp: PLAYER_INITIAL_HP,
+				maxHp: PLAYER_INITIAL_HP,
+				ap: MAX_AP,
+				maxAp: MAX_AP,
+			},
+		});
+		const enemy: Enemy = {
+			id: "enemy-1",
+			type: "normal",
+			position: { x: 3, y: 3 },
+			hp: ENEMY_HP,
+			maxHp: ENEMY_HP,
+		};
+		// BFSが壁を迂回してleft(2,3)→(2,2)→(2,1)→(3,1)の経路を見つける
+		expect(pickMoveDirection(state, enemy)).toBe("left");
+	});
+
+	it("到達不可能な場合nullを返す", () => {
+		const map = createTestMap();
+		// 敵(3,3)を壁で完全に囲む
+		map[2][3] = { type: "wall" };
+		map[4][3] = { type: "wall" };
+		map[3][2] = { type: "wall" };
+		map[3][4] = { type: "wall" };
+		const state = createTestState({
+			map,
+			player: {
+				position: { x: 1, y: 1 },
+				hp: PLAYER_INITIAL_HP,
+				maxHp: PLAYER_INITIAL_HP,
+				ap: MAX_AP,
+				maxAp: MAX_AP,
+			},
 		});
 		const enemy: Enemy = {
 			id: "enemy-1",
@@ -1366,5 +1418,36 @@ describe("executeEnemyTurn", () => {
 			PLAYER_INITIAL_HP - ENEMY_PARAMS.normal.attackDamage,
 		);
 		expect(totalDamage).toBe(ENEMY_PARAMS.normal.attackDamage);
+	});
+
+	it("壁で直線が塞がれた敵が迂回して接近する", () => {
+		const map = createTestMap();
+		// (3,2)を壁に設定 → 敵(3,3)からプレイヤー(3,1)への直線をブロック
+		map[2][3] = { type: "wall" };
+		const enemies: Enemy[] = [
+			{
+				id: "enemy-1",
+				type: "normal",
+				position: { x: 3, y: 3 },
+				hp: ENEMY_HP,
+				maxHp: ENEMY_HP,
+			},
+		];
+		const state = createTestState({
+			turn: "enemy",
+			map,
+			enemies,
+			player: {
+				position: { x: 3, y: 1 },
+				hp: PLAYER_INITIAL_HP,
+				maxHp: PLAYER_INITIAL_HP,
+				ap: MAX_AP,
+				maxAp: MAX_AP,
+			},
+		});
+		const { state: result } = executeEnemyTurn(state);
+		const enemy = result.enemies.find((e) => e.id === "enemy-1");
+		// BFSで迂回: left(2,3)に移動
+		expect(enemy?.position).toEqual({ x: 2, y: 3 });
 	});
 });

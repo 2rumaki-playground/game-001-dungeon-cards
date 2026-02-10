@@ -14,14 +14,12 @@ import {
 } from "./bossSkill";
 import { applyDamageToPlayer, checkGameOver, isDefeated } from "./combat";
 import { isInBounds } from "./map";
+import { bfsFirstStep } from "./pathfinding";
 import { isAdjacent, manhattanDistance } from "./positionUtils";
 import { findRoomAt, isInRoom } from "./roomUtils";
 import { addActionLog, setEnemies, updateEnemy } from "./state";
 
 export { isAdjacent, manhattanDistance };
-
-/** 優先順序: 上→下→左→右 */
-const DIRECTION_PRIORITY: Direction[] = ["up", "down", "left", "right"];
 
 /**
  * 敵の移動可否を判定
@@ -66,41 +64,26 @@ function canEnemyMoveTo(
 /**
  * 敵の移動方向を決定
  *
- * 1. マンハッタン距離が最小になる方向を選択（障害物を考慮しない）
+ * 1. BFSで最短経路の最初の一歩を取得（壁・階段を迂回）
  * 2. 同距離の場合は固定順序（上→下→左→右）で優先
- * 3. 選択した方向が移動不可ならnullを返す（壁回避の経路探索は行わない）
+ * 3. 動的障害物（他の敵・プレイヤー）で移動不可ならnullを返す
  */
 export function pickMoveDirection(
 	state: GameState,
 	enemy: Enemy,
 ): Direction | null {
-	let bestDirection: Direction | null = null;
-	let bestDistance = Number.POSITIVE_INFINITY;
+	const dir = bfsFirstStep(state.map, enemy.position, state.player.position);
+	if (dir === null) return null;
 
-	// 障害物を無視して最善方向を決定
-	for (const dir of DIRECTION_PRIORITY) {
-		const delta = DIRECTION_DELTA[dir];
-		const nx = enemy.position.x + delta.x;
-		const ny = enemy.position.y + delta.y;
-
-		const dist = manhattanDistance({ x: nx, y: ny }, state.player.position);
-		if (dist < bestDistance) {
-			bestDistance = dist;
-			bestDirection = dir;
-		}
-	}
-
-	if (!bestDirection) return null;
-
-	// 移動可否を判定（移動不可なら留まる）
-	const delta = DIRECTION_DELTA[bestDirection];
+	// 動的障害物チェック（他の敵・プレイヤー位置）
+	const delta = DIRECTION_DELTA[dir];
 	const nx = enemy.position.x + delta.x;
 	const ny = enemy.position.y + delta.y;
 	if (!canEnemyMoveTo(state, enemy, nx, ny)) {
 		return null;
 	}
 
-	return bestDirection;
+	return dir;
 }
 
 /**
