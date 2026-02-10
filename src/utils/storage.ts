@@ -102,7 +102,9 @@ export function loadGame(): GameState | null {
 			? data.actionLog
 					.filter(
 						(entry: unknown): entry is Record<string, unknown> =>
-							entry != null && typeof entry === "object",
+							entry != null &&
+							typeof entry === "object" &&
+							!Array.isArray(entry),
 					)
 					.map((entry: Record<string, unknown>) => {
 						const actorValue = (entry as { actor?: unknown }).actor;
