@@ -160,9 +160,10 @@ describe("makeInteractive", () => {
 			button: 0,
 			stopPropagation: vi.fn(),
 		} as unknown as FederatedPointerEvent;
-		const registeredCallback = container.on.mock.calls[0][1] as (
-			e: FederatedPointerEvent,
-		) => void;
+		const registeredCallback = getRegisteredCallback(
+			container,
+			"pointerdown",
+		) as (e: FederatedPointerEvent) => void;
 		registeredCallback(mockEvent);
 
 		expect(onClick).toHaveBeenCalledWith(mockEvent);
@@ -178,9 +179,10 @@ describe("makeInteractive", () => {
 			button: 2,
 			stopPropagation: vi.fn(),
 		} as unknown as FederatedPointerEvent;
-		const registeredCallback = container.on.mock.calls[0][1] as (
-			e: FederatedPointerEvent,
-		) => void;
+		const registeredCallback = getRegisteredCallback(
+			container,
+			"pointerdown",
+		) as (e: FederatedPointerEvent) => void;
 		registeredCallback(mockEvent);
 
 		expect(onClick).not.toHaveBeenCalled();
@@ -254,7 +256,7 @@ describe("makeInteractive", () => {
 		expect(container.alpha).toBe(1);
 	});
 
-	it("ホバー中にalphaが外部変更された場合、pointeroutで復元しない", () => {
+	it("ホバー中にalphaが外部変更された場合でもpointeroutでホバー前の値に復元する", () => {
 		const container = createMockContainer();
 
 		makeInteractive(container, vi.fn());
@@ -270,8 +272,30 @@ describe("makeInteractive", () => {
 		container.alpha = 1.0;
 		pointerout?.();
 
-		// 外部変更後の値が維持される（ホバー前の値に巻き戻さない）
-		expect(container.alpha).toBe(1.0);
+		// isHoveringフラグによりホバー前の値に復元される
+		expect(container.alpha).toBe(1);
+	});
+
+	it("pointeroverが複数回発火してもpointeroutで元のalphaに戻る", () => {
+		const container = createMockContainer();
+
+		makeInteractive(container, vi.fn());
+
+		const pointerover = getRegisteredCallback(container, "pointerover");
+		const pointerout = getRegisteredCallback(container, "pointerout");
+		expect(pointerover).toBeDefined();
+		expect(pointerout).toBeDefined();
+
+		// pointeroverが2回発火（バブリングによる再入）
+		pointerover?.();
+		expect(container.alpha).toBe(0.8);
+		pointerover?.();
+		// 2回目のpointeroverでalphaBeforeHoverが上書きされない
+		expect(container.alpha).toBe(0.8);
+
+		pointerout?.();
+		// 元のalpha(1)に正しく復元される
+		expect(container.alpha).toBe(1);
 	});
 
 	it("初期alphaが1以外の場合もホバー解除時に元の値に戻る", () => {

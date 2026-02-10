@@ -58,13 +58,16 @@ export function makeInteractive(
 		onClick(event);
 	});
 	let alphaBeforeHover = target.alpha;
+	let isHovering = false;
 	target.on("pointerover", () => {
+		if (isHovering) return;
+		isHovering = true;
 		alphaBeforeHover = target.alpha;
 		target.alpha = Math.min(HOVER_ALPHA, alphaBeforeHover);
 	});
 	target.on("pointerout", () => {
-		if (target.alpha === HOVER_ALPHA) {
-			target.alpha = alphaBeforeHover;
-		}
+		if (!isHovering) return;
+		target.alpha = alphaBeforeHover;
+		isHovering = false;
 	});
 }
