@@ -88,7 +88,7 @@ export class ActionLogRenderer {
 				style: {
 					fontSize: LOG_FONT_SIZE,
 					fontFamily: "sans-serif",
-					fill: 0x888888,
+					fill: COLORS.system,
 				},
 			});
 			actorLabel.x = LOG_AREA_PADDING;
