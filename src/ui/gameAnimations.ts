@@ -78,6 +78,9 @@ export async function updateStateWithMoveAnimation(
 	if (ctx.isAnimating) return;
 	ctx.isAnimating = true;
 
+	// ドラッグオフセットをリセット（カメラをプレイヤー中心に復帰）
+	ctx.ui.cameraDragController.reset();
+
 	const prevAp = ctx.state.player.ap;
 
 	// render前にカメラ位置を保存
@@ -409,6 +412,9 @@ export async function updateStateWithStairsAnimation(
 	if (ctx.isAnimating) return;
 	ctx.isAnimating = true;
 
+	// ドラッグオフセットをリセット
+	ctx.ui.cameraDragController.reset();
+
 	try {
 		await ctx.ui.mapRenderer.animatePlayerMove(stairsGridPos);
 		applyState(ctx, stairsState);
@@ -446,6 +452,9 @@ export async function updateStateWithBumpAnimation(
 	if (ctx.isAnimating) return;
 	ctx.isAnimating = true;
 
+	// ドラッグオフセットをリセット
+	ctx.ui.cameraDragController.reset();
+
 	const prevAp = ctx.state.player.ap;
 	applyState(ctx, newState);
 
@@ -482,6 +491,9 @@ export async function updateStateWithAttackAnimation(
 ): Promise<void> {
 	if (ctx.isAnimating) return;
 	ctx.isAnimating = true;
+
+	// ドラッグオフセットをリセット
+	ctx.ui.cameraDragController.reset();
 
 	const prevAp = ctx.state.player.ap;
 	const hitEnemy = ctx.state.enemies.find((e) => e.id === hitEnemyId);
@@ -550,6 +562,9 @@ export async function updateStateWithMissAnimation(
 ): Promise<void> {
 	if (ctx.isAnimating) return;
 	ctx.isAnimating = true;
+
+	// ドラッグオフセットをリセット
+	ctx.ui.cameraDragController.reset();
 
 	const prevAp = ctx.state.player.ap;
 	const delta = DIRECTION_DELTA[direction];

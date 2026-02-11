@@ -7,6 +7,7 @@ import type { QueuedCard } from "./game/cardQueue";
 import type { Card, GameState } from "./types";
 import type {
 	ActionLogRenderer,
+	CameraDragController,
 	DeckViewer,
 	DirectionSelector,
 	FloorBanner,
@@ -15,6 +16,7 @@ import type {
 	MapRenderer,
 	NextFloorButton,
 	ParticleSystem,
+	ReturnToPlayerButton,
 	RewardScreen,
 	ScreenTransition,
 	StatusBar,
@@ -44,6 +46,8 @@ export interface UIComponents {
 	floorBanner: FloorBanner;
 	particleSystem: ParticleSystem;
 	victoryScreen: VictoryScreen;
+	cameraDragController: CameraDragController;
+	returnToPlayerButton: ReturnToPlayerButton;
 	debugCardRenderer: DebugCardRenderer | null;
 	debugTargetSelector: DebugTargetSelector | null;
 }

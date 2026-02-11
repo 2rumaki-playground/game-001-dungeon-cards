@@ -27,7 +27,11 @@ import type { Card, Direction, Position, SpecialTileType } from "../types";
 import { DIRECTION_DELTA } from "../types";
 import { deleteSaveData, hasSaveData, loadGame } from "../utils/storage";
 import { createJumpParticleConfig } from "./battleParticles";
-import { gridToCenterPixel } from "./coordinates";
+import {
+	calculateCameraOffset,
+	clampCameraOffset,
+	gridToCenterPixel,
+} from "./coordinates";
 import { detectEnemyMoves } from "./enemyMoveDetector";
 import {
 	executeNextFloorTransition,
@@ -552,8 +556,9 @@ export function setupEventHandlers(ctx: GameContext): void {
 	// ターン終了処理
 	async function handleEndTurn(): Promise<void> {
 		if (ctx.isAnimating) return; // アニメーション中は無効
-		// ターン終了時にキューをクリア
+		// ターン終了時にキューとドラッグオフセットをクリア
 		clearCardQueue(ctx);
+		ctx.ui.cameraDragController.reset();
 		ctx.isAnimating = true;
 
 		try {
@@ -634,5 +639,53 @@ export function setupEventHandlers(ctx: GameContext): void {
 		void handleEndTurn().catch((error) => {
 			console.error("右クリックによるターン終了処理に失敗しました", error);
 		});
+	});
+
+	// カメラドラッグ制御の設定
+	const cameraDrag = ctx.ui.cameraDragController;
+	cameraDrag.setCanDrag(
+		() =>
+			ctx.state.screen === "game" &&
+			ctx.state.turn === "player" &&
+			!ctx.isAnimating &&
+			!ctx.isCardActionAnimating,
+	);
+
+	ctx.app.canvas.addEventListener("pointerdown", (e) => {
+		if (e.button !== 0) return;
+		cameraDrag.handlePointerDown(e.offsetX, e.offsetY);
+	});
+
+	ctx.app.canvas.addEventListener("pointermove", (e) => {
+		cameraDrag.handlePointerMove(e.offsetX, e.offsetY);
+		if (cameraDrag.isCurrentlyDragging()) {
+			const mapContainer = ctx.ui.mapRenderer.getContainer();
+			const mapWidth = ctx.state.map[0]?.length ?? 0;
+			const mapHeight = ctx.state.map.length;
+			const baseOffset = calculateCameraOffset(
+				ctx.state.player.position,
+				mapWidth,
+				mapHeight,
+			);
+			const offset = clampCameraOffset(
+				baseOffset,
+				cameraDrag.getDragOffset(),
+				mapWidth,
+				mapHeight,
+			);
+			mapContainer.x = offset.x;
+			mapContainer.y = offset.y;
+			ctx.ui.returnToPlayerButton.render(cameraDrag.isDragActive());
+		}
+	});
+
+	ctx.app.canvas.addEventListener("pointerup", () => {
+		cameraDrag.handlePointerUp();
+	});
+
+	// 「プレイヤーへ戻る」ボタンのコールバック設定
+	ctx.ui.returnToPlayerButton.setOnClick(() => {
+		cameraDrag.reset();
+		renderGameScreen(ctx);
 	});
 }

@@ -5,7 +5,11 @@
 import { LOG_AREA_GAP, STATUS_BAR_HEIGHT } from "../constants";
 import type { GameContext } from "../gameContext";
 import type { GameState } from "../types";
-import { calculateCameraOffset, getViewportPixelSize } from "./coordinates";
+import {
+	calculateCameraOffset,
+	clampCameraOffset,
+	getViewportPixelSize,
+} from "./coordinates";
 import { HAND_AREA_HEIGHT } from "./layout";
 
 /**
@@ -44,6 +48,7 @@ function renderTitleScreen(ctx: GameContext): void {
 	ctx.ui.statusBar.hide();
 	ctx.ui.turnEndButton.hide();
 	ctx.ui.nextFloorButton.hide();
+	ctx.ui.returnToPlayerButton.hide();
 	ctx.ui.deckViewer.hideButton();
 	ctx.ui.actionLogRenderer.hide();
 	ctx.ui.mapRenderer.clear();
@@ -80,13 +85,20 @@ export function renderGameScreen(
 	const mapContainer = ctx.ui.mapRenderer.getContainer();
 	const mapWidth = ctx.state.map[0]?.length ?? 0;
 	const mapHeight = ctx.state.map.length;
-	const offset = calculateCameraOffset(
+	const baseOffset = calculateCameraOffset(
 		ctx.state.player.position,
 		mapWidth,
 		mapHeight,
 	);
+	const dragOffset = ctx.ui.cameraDragController.getDragOffset();
+	const offset = clampCameraOffset(baseOffset, dragOffset, mapWidth, mapHeight);
 	mapContainer.x = offset.x;
 	mapContainer.y = offset.y;
+
+	// 「プレイヤーへ戻る」ボタン表示制御
+	ctx.ui.returnToPlayerButton.render(
+		ctx.ui.cameraDragController.isDragActive(),
+	);
 	if (!skipHand) {
 		ctx.ui.handRenderer.render(ctx.state.deck.hand, ctx.state.player.ap);
 	}
@@ -115,6 +127,7 @@ function renderGameOverScreen(ctx: GameContext): void {
 	ctx.ui.statusBar.hide();
 	ctx.ui.turnEndButton.hide();
 	ctx.ui.nextFloorButton.hide();
+	ctx.ui.returnToPlayerButton.hide();
 	ctx.ui.deckViewer.hideButton();
 	ctx.ui.actionLogRenderer.hide();
 	ctx.ui.mapRenderer.clear();
@@ -137,6 +150,7 @@ function renderVictoryScreen(ctx: GameContext): void {
 	ctx.ui.statusBar.hide();
 	ctx.ui.turnEndButton.hide();
 	ctx.ui.nextFloorButton.hide();
+	ctx.ui.returnToPlayerButton.hide();
 	ctx.ui.deckViewer.hideButton();
 	ctx.ui.actionLogRenderer.hide();
 	ctx.ui.mapRenderer.clear();
