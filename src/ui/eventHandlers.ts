@@ -668,6 +668,7 @@ export function setupEventHandlers(ctx: GameContext): void {
 	let pinchStartDistance = 0;
 	let pinchStartZoom = 1.0;
 	const activeTouches = new Map<number, { x: number; y: number }>();
+	let capturedPointerId: number | null = null;
 
 	canvas.addEventListener("pointerdown", (e) => {
 		if (e.button !== 0) return;
@@ -702,6 +703,7 @@ export function setupEventHandlers(ctx: GameContext): void {
 		if (started) {
 			// canvas外でpointerupしてもイベントを受け取れるようにする
 			canvas.setPointerCapture(e.pointerId);
+			capturedPointerId = e.pointerId;
 		}
 	});
 
@@ -716,6 +718,7 @@ export function setupEventHandlers(ctx: GameContext): void {
 
 	canvas.addEventListener("pointerup", (e) => {
 		cameraDrag.handlePointerUp();
+		capturedPointerId = null;
 		if (canvas.hasPointerCapture(e.pointerId)) {
 			canvas.releasePointerCapture(e.pointerId);
 		}
@@ -723,6 +726,7 @@ export function setupEventHandlers(ctx: GameContext): void {
 
 	canvas.addEventListener("pointerleave", () => {
 		cameraDrag.handlePointerUp();
+		capturedPointerId = null;
 	});
 
 	/** pivot基点でズームを適用し、dragOffsetを更新する */
@@ -815,6 +819,12 @@ export function setupEventHandlers(ctx: GameContext): void {
 			}
 			if (activeTouches.size === 2 && cameraDrag.canInteract()) {
 				e.preventDefault();
+				// ドラッグ中だった場合はピンチに切り替えるため解除
+				cameraDrag.handlePointerUp();
+				if (capturedPointerId !== null) {
+					canvas.releasePointerCapture(capturedPointerId);
+					capturedPointerId = null;
+				}
 				const touches = [...activeTouches.values()];
 				pinchStartDistance = Math.hypot(
 					touches[1].x - touches[0].x,
