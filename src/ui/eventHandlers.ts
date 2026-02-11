@@ -877,11 +877,17 @@ export function setupEventHandlers(ctx: GameContext): void {
 		for (const touch of e.changedTouches) {
 			activeTouches.delete(touch.identifier);
 		}
+		if (activeTouches.size < 2) {
+			pinchStartDistance = 0;
+		}
 	});
 
 	canvas.addEventListener("touchcancel", (e) => {
 		for (const touch of e.changedTouches) {
 			activeTouches.delete(touch.identifier);
+		}
+		if (activeTouches.size < 2) {
+			pinchStartDistance = 0;
 		}
 	});
 
