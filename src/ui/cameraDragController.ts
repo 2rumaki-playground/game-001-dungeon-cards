@@ -36,7 +36,9 @@ export class CameraDragController {
 	}
 
 	setZoomLevel(level: number): void {
-		this.zoomLevel = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, level));
+		const clamped = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, level));
+		// 浮動小数誤差で ZOOM_DEFAULT と厳密一致しない問題を避けるため、0.01 単位に丸める
+		this.zoomLevel = Math.round(clamped * 100) / 100;
 	}
 
 	isDragActive(): boolean {
