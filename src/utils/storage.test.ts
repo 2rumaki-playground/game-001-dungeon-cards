@@ -428,7 +428,7 @@ describe("storage", () => {
 		expect(loaded?.visitedTiles.size).toBe(4);
 	});
 
-	it("不正なvisitedTilesデータは空Setになる", () => {
+	it("不正なvisitedTilesエントリは除外され有効な座標のみ残る", () => {
 		const state = createTitleScreenState(42);
 		const saveData = {
 			...state,
