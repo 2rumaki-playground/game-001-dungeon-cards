@@ -680,9 +680,11 @@ export function setupEventHandlers(ctx: GameContext): void {
 			return;
 		}
 
-		cameraDrag.handlePointerDown(x, y);
-		// canvas外でpointerupしてもイベントを受け取れるようにする
-		canvas.setPointerCapture(e.pointerId);
+		const started = cameraDrag.handlePointerDown(x, y);
+		if (started) {
+			// canvas外でpointerupしてもイベントを受け取れるようにする
+			canvas.setPointerCapture(e.pointerId);
+		}
 	});
 
 	canvas.addEventListener("pointermove", (e) => {

@@ -47,12 +47,13 @@ export class CameraDragController {
 		this.onDragStateChange = fn;
 	}
 
-	handlePointerDown(x: number, y: number): void {
-		if (!this.canDrag?.()) return;
+	handlePointerDown(x: number, y: number): boolean {
+		if (!this.canDrag?.()) return false;
 		this.isDragging = true;
 		this.dragConfirmed = false;
 		this.dragStartPos = { x, y };
 		this.dragStartOffset = { ...this.dragOffset };
+		return true;
 	}
 
 	handlePointerMove(x: number, y: number): void {
