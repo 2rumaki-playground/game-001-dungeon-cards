@@ -60,6 +60,36 @@ function sanitizeRemnants(raw: unknown): Record<string, number> {
 }
 
 /**
+ * visitedTiles をバリデーションし、安全なSetとして再構築
+ */
+function sanitizeVisitedTiles(raw: unknown): Set<string> {
+	if (!Array.isArray(raw)) return new Set<string>();
+	const result = new Set<string>();
+	for (const item of raw) {
+		if (typeof item === "string" && COORDINATE_KEY_PATTERN.test(item)) {
+			result.add(item);
+		}
+	}
+	return result;
+}
+
+/**
+ * 旧セーブデータ用: マップ全体を訪問済みとするSetを生成
+ */
+function createFullyVisitedTiles(map: unknown): Set<string> {
+	const result = new Set<string>();
+	if (!Array.isArray(map)) return result;
+	for (let y = 0; y < map.length; y++) {
+		const row = map[y];
+		if (!Array.isArray(row)) continue;
+		for (let x = 0; x < row.length; x++) {
+			result.add(`${x},${y}`);
+		}
+	}
+	return result;
+}
+
+/**
  * ゲーム状態を保存
  */
 export function saveGame(state: GameState): void {
@@ -69,6 +99,7 @@ export function saveGame(state: GameState): void {
 		const saveData = {
 			...state,
 			rng: state.rng.serialize(),
+			visitedTiles: Array.from(state.visitedTiles),
 		};
 		localStorage.setItem(SAVE_KEY, JSON.stringify(saveData));
 	} catch (e) {
@@ -152,12 +183,18 @@ export function loadGame(): GameState | null {
 					})
 			: [];
 
+		// 旧セーブデータ互換: visitedTilesがない場合はマップ全体を訪問済みに
+		const visitedTiles = Array.isArray(data.visitedTiles)
+			? sanitizeVisitedTiles(data.visitedTiles)
+			: createFullyVisitedTiles(data.map);
+
 		const state: GameState = {
 			...data,
 			enemies,
 			actionLog,
 			rooms: sanitizeRooms(data.rooms),
 			rng: RNG.deserialize(data.rng),
+			visitedTiles,
 			isCleared: data.isCleared === true,
 			defeatedEnemyCount:
 				typeof data.defeatedEnemyCount === "number" &&

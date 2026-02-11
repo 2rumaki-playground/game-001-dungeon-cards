@@ -974,3 +974,89 @@ describe("executeJump", () => {
 		expect(state.deck.hand).toHaveLength(1);
 	});
 });
+
+describe("executeMove - visitedTiles", () => {
+	it("移動成功時に移動先が訪問済みに追加される", () => {
+		const state = createTestState({
+			deck: {
+				drawPile: [],
+				hand: [{ id: "move-1", type: "move" }],
+				discardPile: [],
+			},
+		});
+		const result = executeMove(state, "move-1", "right");
+		expect(result.state.visitedTiles.has("4,3")).toBe(true);
+	});
+
+	it("移動失敗時にvisitedTilesは変更されない", () => {
+		const state = createTestState({
+			player: {
+				position: { x: 1, y: 1 },
+				hp: PLAYER_INITIAL_HP,
+				maxHp: PLAYER_INITIAL_HP,
+				ap: MAX_AP,
+				maxAp: MAX_AP,
+			},
+			deck: {
+				drawPile: [],
+				hand: [{ id: "move-1", type: "move" }],
+				discardPile: [],
+			},
+		});
+		// (1,1)からupは(1,0)=壁なので失敗
+		const result = executeMove(state, "move-1", "up");
+		expect(result.state.visitedTiles.size).toBe(0);
+	});
+
+	it("部屋に入った場合、部屋全体が訪問済みになる", () => {
+		const room = { x: 4, y: 2, width: 2, height: 2 };
+		const state = createTestState({
+			rooms: [room],
+			deck: {
+				drawPile: [],
+				hand: [{ id: "move-1", type: "move" }],
+				discardPile: [],
+			},
+		});
+		// (3,3)から右に移動→(4,3)は部屋内
+		const result = executeMove(state, "move-1", "right");
+		expect(result.state.visitedTiles.has("4,2")).toBe(true);
+		expect(result.state.visitedTiles.has("5,2")).toBe(true);
+		expect(result.state.visitedTiles.has("4,3")).toBe(true);
+		expect(result.state.visitedTiles.has("5,3")).toBe(true);
+	});
+});
+
+describe("executeJump - visitedTiles", () => {
+	it("ジャンプ着地時に着地先が訪問済みに追加される", () => {
+		const state = createTestState({
+			deck: {
+				drawPile: [],
+				hand: [{ id: "jump-1", type: "jump" }],
+				discardPile: [],
+			},
+		});
+		const result = executeJump(state, "jump-1", "right");
+		expect(result.state.visitedTiles.has("5,3")).toBe(true);
+	});
+
+	it("ジャンプ失敗時にvisitedTilesは変更されない", () => {
+		const state = createTestState({
+			player: {
+				position: { x: 1, y: 1 },
+				hp: PLAYER_INITIAL_HP,
+				maxHp: PLAYER_INITIAL_HP,
+				ap: MAX_AP,
+				maxAp: MAX_AP,
+			},
+			deck: {
+				drawPile: [],
+				hand: [{ id: "jump-1", type: "jump" }],
+				discardPile: [],
+			},
+		});
+		// (1,1)からupは(1,-1)=マップ外なので失敗
+		const result = executeJump(state, "jump-1", "up");
+		expect(result.state.visitedTiles.size).toBe(0);
+	});
+});

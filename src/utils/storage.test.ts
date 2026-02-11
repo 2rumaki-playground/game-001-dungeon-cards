@@ -373,4 +373,75 @@ describe("storage", () => {
 
 		warnSpy.mockRestore();
 	});
+
+	it("saveGameでvisitedTilesがArrayとして保存される", () => {
+		const state = createTitleScreenState(42);
+		state.visitedTiles = new Set(["1,1", "2,2"]);
+		saveGame(state);
+
+		const saved = JSON.parse(
+			localStorageMock.setItem.mock.calls[0][1] as string,
+		);
+		expect(Array.isArray(saved.visitedTiles)).toBe(true);
+		expect(saved.visitedTiles).toContain("1,1");
+		expect(saved.visitedTiles).toContain("2,2");
+	});
+
+	it("loadGameでArrayがSetに復元される", () => {
+		const state = createTitleScreenState(42);
+		const saveData = {
+			...state,
+			screen: "game",
+			rng: state.rng.serialize(),
+			visitedTiles: ["3,3", "4,4"],
+		};
+		localStorageMock.setItem("dungeon-cards-save", JSON.stringify(saveData));
+
+		const loaded = loadGame();
+		expect(loaded).not.toBeNull();
+		expect(loaded?.visitedTiles).toBeInstanceOf(Set);
+		expect(loaded?.visitedTiles.has("3,3")).toBe(true);
+		expect(loaded?.visitedTiles.has("4,4")).toBe(true);
+	});
+
+	it("旧セーブデータ（visitedTilesなし）はマップ全体が訪問済みとなる", () => {
+		const state = createTitleScreenState(42);
+		const saveData = {
+			...state,
+			screen: "game",
+			map: [
+				[{ type: "wall" }, { type: "floor" }],
+				[{ type: "floor" }, { type: "stairs" }],
+			],
+			rng: state.rng.serialize(),
+		};
+		// visitedTiles フィールドを削除
+		delete (saveData as Record<string, unknown>).visitedTiles;
+		localStorageMock.setItem("dungeon-cards-save", JSON.stringify(saveData));
+
+		const loaded = loadGame();
+		expect(loaded).not.toBeNull();
+		expect(loaded?.visitedTiles.has("0,0")).toBe(true);
+		expect(loaded?.visitedTiles.has("1,0")).toBe(true);
+		expect(loaded?.visitedTiles.has("0,1")).toBe(true);
+		expect(loaded?.visitedTiles.has("1,1")).toBe(true);
+		expect(loaded?.visitedTiles.size).toBe(4);
+	});
+
+	it("不正なvisitedTilesエントリは除外され有効な座標のみ残る", () => {
+		const state = createTitleScreenState(42);
+		const saveData = {
+			...state,
+			screen: "game",
+			rng: state.rng.serialize(),
+			visitedTiles: [123, null, "invalid", "1,2", "bad,data"],
+		};
+		localStorageMock.setItem("dungeon-cards-save", JSON.stringify(saveData));
+
+		const loaded = loadGame();
+		expect(loaded).not.toBeNull();
+		// 有効なエントリは "1,2" のみ
+		expect(loaded?.visitedTiles.size).toBe(1);
+		expect(loaded?.visitedTiles.has("1,2")).toBe(true);
+	});
 });

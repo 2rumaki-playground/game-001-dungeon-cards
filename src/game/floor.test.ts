@@ -75,6 +75,7 @@ function createTestState(overrides?: Partial<GameState>): GameState {
 		isCleared: false,
 		remnants: {},
 		rooms: [],
+		visitedTiles: new Set<string>(),
 		...overrides,
 	};
 }
@@ -253,5 +254,20 @@ describe("transitionFloor", () => {
 		// 念のため、保存された状態が期待通りか確認（例：階層が進んでいるか）
 		const savedState = vi.mocked(storage.saveGame).mock.calls[0][0];
 		expect(savedState.floor).toBe(6);
+	});
+
+	it("階層遷移時にvisitedTilesがリセットされ新開始位置が訪問済みになる", () => {
+		const state = createTestState({
+			visitedTiles: new Set(["1,1", "2,2", "3,3"]),
+		});
+		const result = transitionFloor(state);
+
+		// 旧visitedTilesはリセットされている
+		expect(result.visitedTiles.has("1,1")).toBe(false);
+		// 新プレイヤー位置は訪問済み
+		const playerKey = `${result.player.position.x},${result.player.position.y}`;
+		expect(result.visitedTiles.has(playerKey)).toBe(true);
+		// 少なくとも1つは訪問済み
+		expect(result.visitedTiles.size).toBeGreaterThanOrEqual(1);
 	});
 });

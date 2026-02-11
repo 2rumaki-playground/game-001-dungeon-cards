@@ -6,6 +6,7 @@
 import type { GameState } from "../types";
 import { saveGame } from "../utils/storage";
 import { reshuffleDeck } from "./deck";
+import { createEmptyVisitedTiles, revealAtPosition } from "./fogOfWar";
 import { generateMapPlacement } from "./map";
 import {
 	addActionLog,
@@ -60,13 +61,14 @@ export function transitionFloor(state: GameState): GameState {
 	// 6. プレイヤーターン開始処理（AP リセット + 手札補充）
 	next = startPlayerTurn(next);
 
-	// 7. 撃破カウント・報酬状態・残骸をリセット
+	// 7. 撃破カウント・報酬状態・残骸・訪問済みタイルをリセット
 	next = {
 		...next,
 		rng: next.rng.clone(),
 		defeatedEnemyCount: 0,
 		rewardState: null,
 		remnants: {},
+		visitedTiles: revealAtPosition(createEmptyVisitedTiles(), player, rooms),
 	};
 
 	// 8. 行動ログに記録

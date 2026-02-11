@@ -26,6 +26,7 @@ import type {
 } from "../types";
 import { RNG } from "../utils/rng";
 import { createInitialDeckState, drawCards } from "./deck";
+import { createEmptyVisitedTiles, revealAtPosition } from "./fogOfWar";
 import { generateMapPlacement } from "./map";
 import { positionToKey } from "./positionUtils";
 
@@ -143,6 +144,7 @@ export function createTitleScreenState(seed?: number): GameState {
 		rewardState: null,
 		isCleared: false,
 		remnants: {},
+		visitedTiles: createEmptyVisitedTiles(),
 	};
 }
 
@@ -176,6 +178,7 @@ export function createInitialGameState(
 		rewardState: null,
 		isCleared: false,
 		remnants: {},
+		visitedTiles: revealAtPosition(createEmptyVisitedTiles(), player, rooms),
 	};
 }
 
@@ -300,6 +303,16 @@ export function removeEnemy(state: GameState, enemyId: string): GameState {
  */
 export function setDeck(state: GameState, deck: DeckState): GameState {
 	return { ...state, deck, rng: cloneRng(state.rng) };
+}
+
+/**
+ * 訪問済みタイルを設定
+ */
+export function setVisitedTiles(
+	state: GameState,
+	visitedTiles: Set<string>,
+): GameState {
+	return { ...state, visitedTiles, rng: cloneRng(state.rng) };
 }
 
 /**

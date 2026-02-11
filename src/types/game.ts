@@ -74,4 +74,6 @@ export type GameState = {
 	isCleared: boolean;
 	/** 敵撃破の残骸情報（key: "x,y" 形式の座標、value: 撃破数） */
 	remnants: Record<string, number>;
+	/** 訪問済みタイル座標（"x,y" 形式のSet） */
+	visitedTiles: Set<string>;
 };
