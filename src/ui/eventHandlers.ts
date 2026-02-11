@@ -847,7 +847,12 @@ export function setupEventHandlers(ctx: GameContext): void {
 				const centerX = (touches[0].x + touches[1].x) / 2;
 				const centerY = (touches[0].y + touches[1].y) / 2 - STATUS_BAR_HEIGHT;
 
-				if (centerY >= 0 && centerY <= viewportSize.height) {
+				if (
+					centerX >= 0 &&
+					centerX <= viewportSize.width &&
+					centerY >= 0 &&
+					centerY <= viewportSize.height
+				) {
 					const mapWidth = ctx.state.map[0]?.length ?? 0;
 					const mapHeight = ctx.state.map.length;
 					const oldBase = calculateCameraOffset(
