@@ -51,9 +51,8 @@ import {
 	renderGameScreen,
 	updateState,
 } from "./gameRenderer";
-import { BUTTON_HEIGHT } from "./layout";
+import { BUTTON_HEIGHT, RETURN_TO_PLAYER_BUTTON_WIDTH } from "./layout";
 import { relayoutUI } from "./relayout";
-import { RETURN_TO_PLAYER_BUTTON_WIDTH } from "./returnToPlayerButton";
 
 /**
  * タイル効果ポップアップを表示

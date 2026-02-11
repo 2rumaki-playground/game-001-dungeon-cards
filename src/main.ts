@@ -41,9 +41,9 @@ import {
 	HAND_AREA_HEIGHT,
 	HAND_AREA_TOP_PADDING,
 	NEXT_FLOOR_BUTTON_WIDTH,
+	RETURN_TO_PLAYER_BUTTON_WIDTH,
 	TURN_END_BUTTON_WIDTH,
 } from "./ui/layout";
-import { RETURN_TO_PLAYER_BUTTON_WIDTH } from "./ui/returnToPlayerButton";
 import { hasSaveData } from "./utils/storage";
 
 /** アプリケーションコンテキスト */

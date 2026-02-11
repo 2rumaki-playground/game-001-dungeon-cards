@@ -5,11 +5,8 @@
 
 import { Container, Graphics, Text } from "pixi.js";
 import { drawRoundedRect } from "./graphicsHelpers";
-import { BUTTON_HEIGHT } from "./layout";
+import { BUTTON_HEIGHT, RETURN_TO_PLAYER_BUTTON_WIDTH } from "./layout";
 import { UI_COLORS_BUTTON_PRIMARY } from "./uiColors";
-
-/** ボタン幅 */
-export const RETURN_TO_PLAYER_BUTTON_WIDTH = 140;
 
 /** ボタンサイズ */
 const BUTTON_RADIUS = 6;
