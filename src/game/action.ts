@@ -19,6 +19,22 @@ import { addActionLog, setDeck, setVisitedTiles, updatePlayer } from "./state";
 import { applyTileEffect } from "./tileEffect";
 
 /**
+ * AP消費 + カードを捨て札へ移動する共通ヘルパー
+ */
+export function consumeApAndPlayCard(
+	state: GameState,
+	cardId: string,
+	apCost: number,
+): GameState {
+	let next = updatePlayer(state, (p) => ({
+		...p,
+		ap: p.ap - apCost,
+	}));
+	next = setDeck(next, playCard(next.deck, cardId));
+	return next;
+}
+
+/**
  * 移動可否を判定
  */
 function canMove(state: GameState, direction: Direction): boolean {
@@ -67,14 +83,8 @@ export function executeMove(
 	cardId: string,
 	direction: Direction,
 ): MoveResult {
-	// AP消費
-	let next = updatePlayer(state, (p) => ({
-		...p,
-		ap: p.ap - CARD_COST.move,
-	}));
-
-	// カードを捨て札へ
-	next = setDeck(next, playCard(next.deck, cardId));
+	// AP消費 + カードを捨て札へ
+	let next = consumeApAndPlayCard(state, cardId, CARD_COST.move);
 
 	// 移動判定
 	if (!canMove(state, direction)) {
@@ -182,14 +192,8 @@ function executeAttackBase(
 	damage: number,
 	missLog: string,
 ): AttackResult {
-	// AP消費
-	let next = updatePlayer(state, (p) => ({
-		...p,
-		ap: p.ap - apCost,
-	}));
-
-	// カードを捨て札へ
-	next = setDeck(next, playCard(next.deck, cardId));
+	// AP消費 + カードを捨て札へ
+	let next = consumeApAndPlayCard(state, cardId, apCost);
 
 	// 攻撃判定（AP消費・カード使用後の状態で判定）
 	const result = canAttack(next, direction);
@@ -277,14 +281,8 @@ export function executeJump(
 ): JumpResult {
 	const delta = DIRECTION_DELTA[direction];
 
-	// AP消費
-	let next = updatePlayer(state, (p) => ({
-		...p,
-		ap: p.ap - CARD_COST.jump,
-	}));
-
-	// カードを捨て札へ
-	next = setDeck(next, playCard(next.deck, cardId));
+	// AP消費 + カードを捨て札へ
+	let next = consumeApAndPlayCard(state, cardId, CARD_COST.jump);
 
 	// 着地先（2マス先）の座標を計算
 	const landX = next.player.position.x + delta.x * JUMP_DISTANCE;
@@ -388,14 +386,8 @@ export function executeJump(
  * APコスト0。カードを捨て札へ移動し、行動ログを記録する。
  */
 export function executeWait(state: GameState, cardId: string): GameState {
-	// AP消費（コスト0）
-	let next = updatePlayer(state, (p) => ({
-		...p,
-		ap: p.ap - CARD_COST.wait,
-	}));
-
-	// カードを捨て札へ
-	next = setDeck(next, playCard(next.deck, cardId));
+	// AP消費 + カードを捨て札へ
+	const next = consumeApAndPlayCard(state, cardId, CARD_COST.wait);
 
 	return addActionLog(next, "待機した", "player");
 }

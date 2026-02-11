@@ -15,12 +15,75 @@ import {
 } from "../test-utils/createTestFixtures";
 import type { Enemy } from "../types";
 import {
+	consumeApAndPlayCard,
 	executeAttack,
 	executeJump,
 	executeMove,
 	executeStrongAttack,
 	executeWait,
 } from "./action";
+
+describe("consumeApAndPlayCard", () => {
+	it("APが指定コスト分減少する", () => {
+		const state = createTestState({
+			deck: {
+				drawPile: [],
+				hand: [{ id: "move-1", type: "move" }],
+				discardPile: [],
+			},
+		});
+		const result = consumeApAndPlayCard(state, "move-1", CARD_COST.move);
+
+		expect(result.player.ap).toBe(MAX_AP - CARD_COST.move);
+	});
+
+	it("カードが手札から捨て札に移動する", () => {
+		const state = createTestState({
+			deck: {
+				drawPile: [],
+				hand: [{ id: "attack-1", type: "attack" }],
+				discardPile: [],
+			},
+		});
+		const result = consumeApAndPlayCard(state, "attack-1", CARD_COST.attack);
+
+		expect(result.deck.hand).toHaveLength(0);
+		expect(result.deck.discardPile).toHaveLength(1);
+		expect(result.deck.discardPile[0].id).toBe("attack-1");
+	});
+
+	it("コスト0の場合APが変化しない", () => {
+		const state = createTestState({
+			deck: {
+				drawPile: [],
+				hand: [{ id: "wait-1", type: "wait" }],
+				discardPile: [],
+			},
+		});
+		const result = consumeApAndPlayCard(state, "wait-1", CARD_COST.wait);
+
+		expect(result.player.ap).toBe(MAX_AP);
+		expect(result.deck.hand).toHaveLength(0);
+		expect(result.deck.discardPile).toHaveLength(1);
+	});
+
+	it("元のGameStateが変更されない（イミュータブル）", () => {
+		const state = createTestState({
+			deck: {
+				drawPile: [],
+				hand: [{ id: "move-1", type: "move" }],
+				discardPile: [],
+			},
+		});
+		const originalAp = state.player.ap;
+
+		consumeApAndPlayCard(state, "move-1", CARD_COST.move);
+
+		expect(state.player.ap).toBe(originalAp);
+		expect(state.deck.hand).toHaveLength(1);
+		expect(state.deck.discardPile).toHaveLength(0);
+	});
+});
 
 describe("executeMove", () => {
 	it("床タイルへの移動成功: 位置更新・AP消費・カード捨て札移動・行動ログ", () => {
