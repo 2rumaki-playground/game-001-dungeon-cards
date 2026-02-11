@@ -30,9 +30,13 @@ export class CameraDragController {
 	}
 
 	reset(): void {
+		const wasActive = this.isDragActive();
 		this.dragOffset = { x: 0, y: 0 };
 		this.isDragging = false;
 		this.dragConfirmed = false;
+		if (wasActive) {
+			this.onDragStateChange?.(false);
+		}
 	}
 
 	setCanDrag(fn: () => boolean): void {
@@ -71,7 +75,8 @@ export class CameraDragController {
 	}
 
 	handlePointerUp(): boolean {
-		const wasDrag = this.isDragging && this.dragConfirmed;
+		if (!this.isDragging) return false;
+		const wasDrag = this.dragConfirmed;
 		this.isDragging = false;
 		if (!wasDrag) {
 			// クリック判定: ドラッグ中の一時オフセットを元に戻す

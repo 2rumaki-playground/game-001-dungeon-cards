@@ -137,5 +137,42 @@ describe("CameraDragController", () => {
 			ctrl.handlePointerMove(102, 103);
 			expect(callback).not.toHaveBeenCalled();
 		});
+
+		it("resetでfalse通知が発火する", () => {
+			const ctrl = new CameraDragController();
+			ctrl.setCanDrag(() => true);
+			const callback = vi.fn();
+			ctrl.setOnDragStateChange(callback);
+			ctrl.handlePointerDown(100, 100);
+			ctrl.handlePointerMove(120, 130);
+			ctrl.handlePointerUp();
+			callback.mockClear();
+			ctrl.reset();
+			expect(callback).toHaveBeenCalledWith(false);
+		});
+
+		it("offsetが0の状態でresetしてもfalse通知は発火しない", () => {
+			const ctrl = new CameraDragController();
+			const callback = vi.fn();
+			ctrl.setOnDragStateChange(callback);
+			ctrl.reset();
+			expect(callback).not.toHaveBeenCalled();
+		});
+	});
+
+	describe("handlePointerUp早期return", () => {
+		it("ドラッグ未開始のpointerupはfalseを返しoffsetを変更しない", () => {
+			const ctrl = new CameraDragController();
+			ctrl.setCanDrag(() => true);
+			// ドラッグして蓄積
+			ctrl.handlePointerDown(100, 100);
+			ctrl.handlePointerMove(120, 130);
+			ctrl.handlePointerUp();
+			const offset = ctrl.getDragOffset();
+			// pointerdown無しでpointerup
+			const wasDrag = ctrl.handlePointerUp();
+			expect(wasDrag).toBe(false);
+			expect(ctrl.getDragOffset()).toEqual(offset);
+		});
 	});
 });
