@@ -728,6 +728,7 @@ export function setupEventHandlers(ctx: GameContext): void {
 
 	// 「プレイヤーへ戻る」ボタンのコールバック設定
 	ctx.ui.returnToPlayerButton.setOnClick(() => {
+		if (ctx.state.screen !== "game") return;
 		cameraDrag.reset();
 		renderGameScreen(ctx);
 	});
