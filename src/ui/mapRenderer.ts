@@ -23,6 +23,7 @@ import {
 } from "./assetLoader";
 import { gridToPixel } from "./coordinates";
 import type { EnemyMove } from "./enemyMoveDetector";
+import { EnemyTooltip } from "./enemyTooltip";
 
 /** プレイヤー移動アニメーションの時間（ms） */
 const PLAYER_MOVE_DURATION = 150;
@@ -113,7 +114,7 @@ const ENEMY_PADDING: Record<EnemyType, number> = {
 };
 
 /** HPバーの高さ（px） */
-const HP_BAR_HEIGHT = 4;
+const HP_BAR_HEIGHT = 6;
 
 /** HPバー背景色 */
 const HP_BAR_BG_COLOR = 0x333333;
@@ -186,7 +187,10 @@ export class MapRenderer {
 	private enemyTypeMap: Map<string, EnemyType> = new Map();
 	private playerGridPos: Position = { x: 0, y: 0 };
 	private enemyGridPosMap: Map<string, Position> = new Map();
+	private enemyDataMap: Map<string, Enemy> = new Map();
 	private lastRenderedMap: GameMap | null = null;
+	private enemyTooltip: EnemyTooltip;
+	private tooltipEnemyId: string | null = null;
 
 	constructor() {
 		this.container = new Container();
@@ -195,12 +199,14 @@ export class MapRenderer {
 		this.playerSprite = new Sprite();
 		this.enemiesContainer = new Container();
 		this.fogGraphics = new Graphics();
+		this.enemyTooltip = new EnemyTooltip();
 
 		this.container.addChild(this.tilesContainer);
 		this.container.addChild(this.remnantsGraphics);
 		this.container.addChild(this.enemiesContainer);
 		this.container.addChild(this.fogGraphics);
 		this.container.addChild(this.playerSprite);
+		this.container.addChild(this.enemyTooltip.getContainer());
 	}
 
 	/**
@@ -364,7 +370,7 @@ export class MapRenderer {
 	 * 敵1体分のコンテナを作成（Sprite + HPバーを子要素として含む）
 	 * コンテナ単位で座標移動するため、アニメーション時にHPバーも追従する
 	 */
-	private createEnemyContainer(type: EnemyType): Container {
+	private createEnemyContainer(type: EnemyType, enemyId: string): Container {
 		const enemyContainer = new Container();
 		const sprite = new Sprite(getEnemyTexture(type));
 		const padding = ENEMY_PADDING[type];
@@ -376,6 +382,15 @@ export class MapRenderer {
 		sprite.width = size;
 		sprite.height = size;
 		enemyContainer.addChild(sprite);
+
+		// ホバーイベント設定
+		enemyContainer.eventMode = "static";
+		enemyContainer.on("pointerover", () => {
+			this.showEnemyTooltip(enemyId);
+		});
+		enemyContainer.on("pointerout", () => {
+			this.hideEnemyTooltip();
+		});
 
 		return enemyContainer;
 	}
@@ -416,6 +431,9 @@ export class MapRenderer {
 	 * 敵1体分のコンテナを破棄
 	 */
 	private destroyEnemyEntry(id: string): void {
+		if (this.tooltipEnemyId === id) {
+			this.hideEnemyTooltip();
+		}
 		const enemyContainer = this.enemyContainerMap.get(id);
 		if (enemyContainer) {
 			this.enemiesContainer.removeChild(enemyContainer);
@@ -425,6 +443,7 @@ export class MapRenderer {
 		this.enemyHpBarMap.delete(id);
 		this.enemyTypeMap.delete(id);
 		this.enemyGridPosMap.delete(id);
+		this.enemyDataMap.delete(id);
 	}
 
 	/**
@@ -456,12 +475,13 @@ export class MapRenderer {
 
 			let enemyContainer = this.enemyContainerMap.get(enemy.id);
 			if (!enemyContainer) {
-				enemyContainer = this.createEnemyContainer(enemy.type);
+				enemyContainer = this.createEnemyContainer(enemy.type, enemy.id);
 				this.enemyContainerMap.set(enemy.id, enemyContainer);
 				this.enemyTypeMap.set(enemy.id, enemy.type);
 				this.enemiesContainer.addChild(enemyContainer);
 			}
 
+			this.enemyDataMap.set(enemy.id, enemy);
 			this.enemyGridPosMap.set(enemy.id, enemy.position);
 			const pixelPos = gridToPixel(enemy.position);
 			enemyContainer.x = pixelPos.x;
@@ -785,5 +805,27 @@ export class MapRenderer {
 		this.enemyHpBarMap.clear();
 		this.enemyTypeMap.clear();
 		this.enemyGridPosMap.clear();
+		this.enemyDataMap.clear();
+		this.hideEnemyTooltip();
+	}
+
+	/**
+	 * 敵ツールチップを表示
+	 */
+	private showEnemyTooltip(enemyId: string): void {
+		const enemy = this.enemyDataMap.get(enemyId);
+		const enemyContainer = this.enemyContainerMap.get(enemyId);
+		if (!enemy || !enemyContainer) return;
+
+		this.tooltipEnemyId = enemyId;
+		this.enemyTooltip.show(enemy, enemyContainer.x, enemyContainer.y);
+	}
+
+	/**
+	 * 敵ツールチップを非表示
+	 */
+	private hideEnemyTooltip(): void {
+		this.tooltipEnemyId = null;
+		this.enemyTooltip.hide();
 	}
 }

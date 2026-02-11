@@ -895,7 +895,7 @@ describe("MapRenderer HPバー", () => {
 
 		// HPバー描画: 背景rect + HP部分rect
 		const fullHpCalls = rectSpy.mock.calls.filter(
-			(args) => args[2] !== undefined && args[3] === 4,
+			(args) => args[2] !== undefined && args[3] === 6,
 		);
 		// 背景(幅40) + HP部分(幅40)
 		expect(fullHpCalls).toHaveLength(2);
@@ -915,7 +915,7 @@ describe("MapRenderer HPバー", () => {
 		renderer.render(map, player, damagedEnemies);
 
 		const damagedHpCalls = rectSpy.mock.calls.filter(
-			(args) => args[2] !== undefined && args[3] === 4,
+			(args) => args[2] !== undefined && args[3] === 6,
 		);
 		expect(damagedHpCalls).toHaveLength(2);
 		const damagedBarWidth = damagedHpCalls[1][2] as number;
@@ -1160,5 +1160,41 @@ describe("MapRenderer Fog of War", () => {
 
 			fillSpy.mockRestore();
 		});
+	});
+});
+
+describe("MapRenderer 敵ホバーツールチップ", () => {
+	it("敵コンテナのeventModeがstaticに設定される", () => {
+		const renderer = new MapRenderer();
+		const map = createTestMap();
+		const enemies = [
+			{
+				id: "e1",
+				position: { x: 1, y: 1 },
+				hp: 3,
+				maxHp: 3,
+				type: "normal" as const,
+			},
+		];
+		const player = {
+			position: { x: 0, y: 0 },
+			hp: 10,
+			maxHp: 10,
+			ap: 3,
+			maxAp: 3,
+		};
+		renderer.render(map, player, enemies);
+
+		const container = renderer.getContainer();
+		const enemiesContainer = container.children[2];
+		const enemyContainer = enemiesContainer.children[0];
+		expect(enemyContainer.eventMode).toBe("static");
+	});
+
+	it("ツールチップコンテナがルートコンテナの最上位に追加される", () => {
+		const renderer = new MapRenderer();
+		const container = renderer.getContainer();
+		// tilesContainer[0], remnants[1], enemies[2], fog[3], player[4], tooltip[5]
+		expect(container.children.length).toBe(6);
 	});
 });

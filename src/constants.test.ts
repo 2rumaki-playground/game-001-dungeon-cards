@@ -6,6 +6,7 @@ import {
 	ENEMY_COUNT,
 	ENEMY_HP,
 	ENEMY_PARAMS,
+	ENEMY_TYPE_LABEL,
 	FLOOR_TILE_COUNT,
 	getEnemyComposition,
 	getEnemyCount,
@@ -18,6 +19,7 @@ import {
 	STAIRS_COUNT,
 	TOTAL_DECK_SIZE,
 } from "./constants";
+import type { EnemyType } from "./types";
 
 describe("constants", () => {
 	it("デッキ合計枚数が正しい", () => {
@@ -163,6 +165,22 @@ describe("constants", () => {
 			expect(getEnemyCount(15)).toBe(8);
 			expect(getEnemyCount(20)).toBe(8);
 			expect(getEnemyCount(99)).toBe(8);
+		});
+	});
+
+	describe("ENEMY_TYPE_LABEL", () => {
+		it("全敵タイプにラベルが定義されている", () => {
+			const types: EnemyType[] = [
+				"normal",
+				"heavy",
+				"scout",
+				"miniboss",
+				"boss",
+			];
+			for (const type of types) {
+				expect(ENEMY_TYPE_LABEL[type]).toBeDefined();
+				expect(typeof ENEMY_TYPE_LABEL[type]).toBe("string");
+			}
 		});
 	});
 
