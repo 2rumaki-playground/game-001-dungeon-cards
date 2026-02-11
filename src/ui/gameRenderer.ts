@@ -49,6 +49,7 @@ function renderTitleScreen(ctx: GameContext): void {
 	ctx.ui.turnEndButton.hide();
 	ctx.ui.nextFloorButton.hide();
 	ctx.ui.returnToPlayerButton.hide();
+	ctx.ui.cameraDragController.reset();
 	ctx.ui.deckViewer.hideButton();
 	ctx.ui.actionLogRenderer.hide();
 	ctx.ui.mapRenderer.clear();
@@ -95,10 +96,9 @@ export function renderGameScreen(
 	mapContainer.x = offset.x;
 	mapContainer.y = offset.y;
 
-	// 「プレイヤーへ戻る」ボタン表示制御
-	ctx.ui.returnToPlayerButton.render(
-		ctx.ui.cameraDragController.isDragActive(),
-	);
+	// 「プレイヤーへ戻る」ボタン表示制御（実際にカメラが移動している場合のみ）
+	const isCameraMoved = offset.x !== baseOffset.x || offset.y !== baseOffset.y;
+	ctx.ui.returnToPlayerButton.render(isCameraMoved);
 	if (!skipHand) {
 		ctx.ui.handRenderer.render(ctx.state.deck.hand, ctx.state.player.ap);
 	}
@@ -128,6 +128,7 @@ function renderGameOverScreen(ctx: GameContext): void {
 	ctx.ui.turnEndButton.hide();
 	ctx.ui.nextFloorButton.hide();
 	ctx.ui.returnToPlayerButton.hide();
+	ctx.ui.cameraDragController.reset();
 	ctx.ui.deckViewer.hideButton();
 	ctx.ui.actionLogRenderer.hide();
 	ctx.ui.mapRenderer.clear();
@@ -151,6 +152,7 @@ function renderVictoryScreen(ctx: GameContext): void {
 	ctx.ui.turnEndButton.hide();
 	ctx.ui.nextFloorButton.hide();
 	ctx.ui.returnToPlayerButton.hide();
+	ctx.ui.cameraDragController.reset();
 	ctx.ui.deckViewer.hideButton();
 	ctx.ui.actionLogRenderer.hide();
 	ctx.ui.mapRenderer.clear();
