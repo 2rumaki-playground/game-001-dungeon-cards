@@ -51,7 +51,9 @@ import {
 	renderGameScreen,
 	updateState,
 } from "./gameRenderer";
+import { BUTTON_HEIGHT } from "./layout";
 import { relayoutUI } from "./relayout";
+import { RETURN_TO_PLAYER_BUTTON_WIDTH } from "./returnToPlayerButton";
 
 /**
  * タイル効果ポップアップを表示
@@ -667,6 +669,18 @@ export function setupEventHandlers(ctx: GameContext): void {
 			x > viewportSize.width ||
 			y < STATUS_BAR_HEIGHT ||
 			y > STATUS_BAR_HEIGHT + viewportSize.height
+		) {
+			return;
+		}
+
+		// ReturnToPlayerButton の矩形上ではドラッグを開始しない
+		const btnContainer = ctx.ui.returnToPlayerButton.getContainer();
+		if (
+			btnContainer.visible &&
+			x >= btnContainer.x &&
+			x <= btnContainer.x + RETURN_TO_PLAYER_BUTTON_WIDTH &&
+			y >= btnContainer.y &&
+			y <= btnContainer.y + BUTTON_HEIGHT
 		) {
 			return;
 		}
