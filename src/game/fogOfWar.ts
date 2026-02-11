@@ -72,10 +72,68 @@ function getConnectedCorridorTiles(
 }
 
 /**
- * 指定位置を訪問済みにする（部屋全体・通路全体を含む）
+ * 部屋に隣接する通路入口タイルの座標を取得
+ *
+ * 部屋の各辺の外側1マスをスキャンし、壁でないタイルを通路入口として返す。
+ */
+function getCorridorEntrances(room: Room, map: GameMap): Position[] {
+	const entrances: Position[] = [];
+	const mapHeight = map.length;
+	const mapWidth = map[0]?.length ?? 0;
+
+	// 上辺の外側1マス
+	const topY = room.y - 1;
+	if (topY >= 0) {
+		for (let x = room.x; x < room.x + room.width; x++) {
+			if (x >= 0 && x < mapWidth && map[topY][x].type !== "wall") {
+				entrances.push({ x, y: topY });
+			}
+		}
+	}
+
+	// 下辺の外側1マス
+	const bottomY = room.y + room.height;
+	if (bottomY < mapHeight) {
+		for (let x = room.x; x < room.x + room.width; x++) {
+			if (x >= 0 && x < mapWidth && map[bottomY][x].type !== "wall") {
+				entrances.push({ x, y: bottomY });
+			}
+		}
+	}
+
+	// 左辺の外側1マス
+	const leftX = room.x - 1;
+	if (leftX >= 0) {
+		for (let y = room.y; y < room.y + room.height; y++) {
+			if (
+				y >= 0 &&
+				y < mapHeight &&
+				leftX < mapWidth &&
+				map[y][leftX].type !== "wall"
+			) {
+				entrances.push({ x: leftX, y });
+			}
+		}
+	}
+
+	// 右辺の外側1マス
+	const rightX = room.x + room.width;
+	if (rightX < mapWidth) {
+		for (let y = room.y; y < room.y + room.height; y++) {
+			if (y >= 0 && y < mapHeight && map[y][rightX].type !== "wall") {
+				entrances.push({ x: rightX, y });
+			}
+		}
+	}
+
+	return entrances;
+}
+
+/**
+ * 指定位置を訪問済みにする（部屋全体・通路入口・通路全体を含む）
  *
  * - タイル自体を訪問済みに追加
- * - 部屋内にいる場合、その部屋の全タイルを訪問済みに追加
+ * - 部屋内にいる場合、その部屋の全タイル + 隣接する通路入口タイルを訪問済みに追加
  * - 通路にいる場合（BSPモード）、繋がった通路タイルを全て訪問済みに追加
  *
  * 新しいSetを返す（イミュータブル）
@@ -94,6 +152,12 @@ export function revealAtPosition(
 		for (let y = room.y; y < room.y + room.height; y++) {
 			for (let x = room.x; x < room.x + room.width; x++) {
 				newSet.add(positionToKey({ x, y }));
+			}
+		}
+
+		if (map.length > 0) {
+			for (const entrance of getCorridorEntrances(room, map)) {
+				newSet.add(positionToKey(entrance));
 			}
 		}
 	} else if (rooms.length > 0 && map.length > 0) {
