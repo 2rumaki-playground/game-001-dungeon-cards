@@ -703,7 +703,9 @@ export function setupEventHandlers(ctx: GameContext): void {
 
 	canvas.addEventListener("pointerup", (e) => {
 		cameraDrag.handlePointerUp();
-		canvas.releasePointerCapture(e.pointerId);
+		if (canvas.hasPointerCapture(e.pointerId)) {
+			canvas.releasePointerCapture(e.pointerId);
+		}
 	});
 
 	canvas.addEventListener("pointerleave", () => {
