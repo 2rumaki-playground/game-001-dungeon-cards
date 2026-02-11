@@ -281,5 +281,25 @@ describe("map", () => {
 				expect(specialTiles.length).toBe(getSpecialTileCount(floor));
 			}
 		});
+
+		it("階段が部屋内に配置される", () => {
+			for (let seed = 0; seed < 20; seed++) {
+				const rng = new RNG(seed);
+				const { rooms, stairs } = generateBSPMapPlacement(
+					rng,
+					BSP_MAP_WIDTH,
+					BSP_MAP_HEIGHT,
+					1,
+				);
+				const inRoom = rooms.some(
+					(room) =>
+						stairs.x >= room.x &&
+						stairs.x < room.x + room.width &&
+						stairs.y >= room.y &&
+						stairs.y < room.y + room.height,
+				);
+				expect(inRoom).toBe(true);
+			}
+		});
 	});
 });

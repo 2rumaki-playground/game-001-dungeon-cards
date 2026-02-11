@@ -25,6 +25,54 @@ export function isVisited(
 }
 
 /**
+ * 通路タイルから繋がっている全通路タイルをBFSで探索
+ *
+ * 部屋に属さない、壁でないタイルを通路として扱い、
+ * 4方向に隣接する通路タイルを全て返す。
+ */
+function getConnectedCorridorTiles(
+	position: Position,
+	rooms: Room[],
+	map: GameMap,
+): Position[] {
+	const mapHeight = map.length;
+	const mapWidth = map[0]?.length ?? 0;
+	const seen = new Set<string>();
+	const result: Position[] = [];
+	const queue: Position[] = [position];
+	let head = 0;
+
+	while (head < queue.length) {
+		const current = queue[head++] as Position;
+
+		if (
+			current.x < 0 ||
+			current.x >= mapWidth ||
+			current.y < 0 ||
+			current.y >= mapHeight
+		)
+			continue;
+
+		const key = positionToKey(current);
+		if (seen.has(key)) continue;
+		seen.add(key);
+
+		if (map[current.y][current.x].type === "wall") continue;
+
+		if (findRoomAt(current, rooms)) continue;
+
+		result.push(current);
+
+		queue.push({ x: current.x + 1, y: current.y });
+		queue.push({ x: current.x - 1, y: current.y });
+		queue.push({ x: current.x, y: current.y + 1 });
+		queue.push({ x: current.x, y: current.y - 1 });
+	}
+
+	return result;
+}
+
+/**
  * 部屋に隣接する通路入口タイルの座標を取得
  *
  * 部屋の各辺の外側1マスをスキャンし、壁でないタイルを通路入口として返す。
@@ -83,11 +131,11 @@ function getCorridorEntrances(room: Room, map: GameMap): Position[] {
 }
 
 /**
- * 指定位置を訪問済みにする（部屋全体 + 通路入口を含む）
+ * 指定位置を訪問済みにする（部屋全体・通路入口・通路全体を含む）
  *
  * - タイル自体を訪問済みに追加
- * - 部屋内にいる場合、その部屋の全タイルを訪問済みに追加
- * - 部屋に隣接する通路入口タイル（各辺の外側1マスで壁でないタイル）も訪問済みに追加
+ * - 部屋内にいる場合、その部屋の全タイル + 隣接する通路入口タイルを訪問済みに追加
+ * - 通路にいる場合（BSPモード）、繋がった通路タイルを全て訪問済みに追加
  *
  * 新しいSetを返す（イミュータブル）
  */
@@ -112,6 +160,10 @@ export function revealAtPosition(
 			for (const entrance of getCorridorEntrances(room, map)) {
 				newSet.add(positionToKey(entrance));
 			}
+		}
+	} else if (rooms.length > 0 && map.length > 0) {
+		for (const tile of getConnectedCorridorTiles(position, rooms, map)) {
+			newSet.add(positionToKey(tile));
 		}
 	}
 
