@@ -68,7 +68,12 @@ export function transitionFloor(state: GameState): GameState {
 		defeatedEnemyCount: 0,
 		rewardState: null,
 		remnants: {},
-		visitedTiles: revealAtPosition(createEmptyVisitedTiles(), player, rooms),
+		visitedTiles: revealAtPosition(
+			createEmptyVisitedTiles(),
+			player,
+			rooms,
+			map,
+		),
 	};
 
 	// 8. 行動ログに記録
