@@ -178,7 +178,12 @@ export function createInitialGameState(
 		rewardState: null,
 		isCleared: false,
 		remnants: {},
-		visitedTiles: revealAtPosition(createEmptyVisitedTiles(), player, rooms),
+		visitedTiles: revealAtPosition(
+			createEmptyVisitedTiles(),
+			player,
+			rooms,
+			map,
+		),
 	};
 }
 
