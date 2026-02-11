@@ -10,6 +10,7 @@ import type { GameContext, UIComponents } from "./gameContext";
 import type { GameState } from "./types";
 import {
 	ActionLogRenderer,
+	CameraDragController,
 	DeckViewer,
 	DirectionSelector,
 	FloorBanner,
@@ -19,6 +20,7 @@ import {
 	MapRenderer,
 	NextFloorButton,
 	ParticleSystem,
+	ReturnToPlayerButton,
 	RewardScreen,
 	ScreenTransition,
 	StatusBar,
@@ -39,6 +41,7 @@ import {
 	HAND_AREA_HEIGHT,
 	HAND_AREA_TOP_PADDING,
 	NEXT_FLOOR_BUTTON_WIDTH,
+	RETURN_TO_PLAYER_BUTTON_WIDTH,
 	TURN_END_BUTTON_WIDTH,
 } from "./ui/layout";
 import { hasSaveData } from "./utils/storage";
@@ -110,6 +113,16 @@ async function initializeUIComponents(
 	deckButtonContainer.x = nextFloorContainer.x - DECK_BUTTON_WIDTH - BUTTON_GAP;
 	deckButtonContainer.y = totalHeight - BUTTON_HEIGHT - BUTTON_BOTTOM_MARGIN;
 	app.stage.addChild(deckButtonContainer);
+
+	// カメラドラッグ制御
+	const cameraDragController = new CameraDragController();
+
+	// 「プレイヤーへ戻る」ボタン（ビューポート右上に配置）
+	const returnToPlayerButton = new ReturnToPlayerButton();
+	const returnBtnContainer = returnToPlayerButton.getContainer();
+	returnBtnContainer.x = viewportSize.width - RETURN_TO_PLAYER_BUTTON_WIDTH - 8;
+	returnBtnContainer.y = STATUS_BAR_HEIGHT + 8;
+	app.stage.addChild(returnBtnContainer);
 
 	const actionLogRenderer = new ActionLogRenderer(totalHeight);
 	const logContainer = actionLogRenderer.getContainer();
@@ -192,6 +205,8 @@ async function initializeUIComponents(
 		floorBanner,
 		particleSystem,
 		victoryScreen,
+		cameraDragController,
+		returnToPlayerButton,
 		debugCardRenderer,
 		debugTargetSelector,
 	};

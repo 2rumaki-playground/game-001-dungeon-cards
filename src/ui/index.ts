@@ -4,6 +4,7 @@
 
 export * from "./actionLogRenderer";
 export * from "./battleParticles";
+export * from "./cameraDragController";
 export * from "./cardConstants";
 export * from "./coordinates";
 export * from "./deckViewer";
@@ -16,6 +17,7 @@ export * from "./mapRenderer";
 export * from "./nextFloorButton";
 export * from "./particleLogic";
 export * from "./particleSystem";
+export * from "./returnToPlayerButton";
 export * from "./rewardScreen";
 export * from "./screenTransition";
 export * from "./statusBar";

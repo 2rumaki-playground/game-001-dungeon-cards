@@ -5,6 +5,7 @@
 import {
 	CARD_COST,
 	JUMP_DISTANCE,
+	STATUS_BAR_HEIGHT,
 	TRAP_DAMAGE,
 	TREASURE_HEAL,
 } from "../constants";
@@ -27,7 +28,7 @@ import type { Card, Direction, Position, SpecialTileType } from "../types";
 import { DIRECTION_DELTA } from "../types";
 import { deleteSaveData, hasSaveData, loadGame } from "../utils/storage";
 import { createJumpParticleConfig } from "./battleParticles";
-import { gridToCenterPixel } from "./coordinates";
+import { getViewportPixelSize, gridToCenterPixel } from "./coordinates";
 import { detectEnemyMoves } from "./enemyMoveDetector";
 import {
 	executeNextFloorTransition,
@@ -40,11 +41,13 @@ import {
 	updateStateWithStairsAnimation,
 } from "./gameAnimations";
 import {
+	applyCameraOffset,
 	applyState,
 	render,
 	renderGameScreen,
 	updateState,
 } from "./gameRenderer";
+import { BUTTON_HEIGHT, RETURN_TO_PLAYER_BUTTON_WIDTH } from "./layout";
 import { relayoutUI } from "./relayout";
 
 /**
@@ -552,8 +555,9 @@ export function setupEventHandlers(ctx: GameContext): void {
 	// ターン終了処理
 	async function handleEndTurn(): Promise<void> {
 		if (ctx.isAnimating) return; // アニメーション中は無効
-		// ターン終了時にキューをクリア
+		// ターン終了時にキューとドラッグオフセットをクリア
 		clearCardQueue(ctx);
+		ctx.ui.cameraDragController.reset();
 		ctx.isAnimating = true;
 
 		try {
@@ -634,5 +638,77 @@ export function setupEventHandlers(ctx: GameContext): void {
 		void handleEndTurn().catch((error) => {
 			console.error("右クリックによるターン終了処理に失敗しました", error);
 		});
+	});
+
+	// カメラドラッグ制御の設定
+	const cameraDrag = ctx.ui.cameraDragController;
+	cameraDrag.setCanDrag(
+		() =>
+			ctx.state.screen === "game" &&
+			ctx.state.turn === "player" &&
+			!ctx.isAnimating &&
+			!ctx.isCardActionAnimating,
+	);
+
+	const canvas = ctx.app.canvas;
+	const viewportSize = getViewportPixelSize();
+
+	canvas.addEventListener("pointerdown", (e) => {
+		if (e.button !== 0) return;
+
+		// マップ表示領域（ビューポート）内でのみカメラドラッグを開始する
+		const x = e.offsetX;
+		const y = e.offsetY;
+		if (
+			x < 0 ||
+			x > viewportSize.width ||
+			y < STATUS_BAR_HEIGHT ||
+			y > STATUS_BAR_HEIGHT + viewportSize.height
+		) {
+			return;
+		}
+
+		// ReturnToPlayerButton の矩形上ではドラッグを開始しない
+		const btnContainer = ctx.ui.returnToPlayerButton.getContainer();
+		if (
+			btnContainer.visible &&
+			x >= btnContainer.x &&
+			x <= btnContainer.x + RETURN_TO_PLAYER_BUTTON_WIDTH &&
+			y >= btnContainer.y &&
+			y <= btnContainer.y + BUTTON_HEIGHT
+		) {
+			return;
+		}
+
+		const started = cameraDrag.handlePointerDown(x, y);
+		if (started) {
+			// canvas外でpointerupしてもイベントを受け取れるようにする
+			canvas.setPointerCapture(e.pointerId);
+		}
+	});
+
+	canvas.addEventListener("pointermove", (e) => {
+		cameraDrag.handlePointerMove(e.offsetX, e.offsetY);
+		if (cameraDrag.isCurrentlyDragging()) {
+			applyCameraOffset(ctx);
+		}
+	});
+
+	canvas.addEventListener("pointerup", (e) => {
+		cameraDrag.handlePointerUp();
+		if (canvas.hasPointerCapture(e.pointerId)) {
+			canvas.releasePointerCapture(e.pointerId);
+		}
+	});
+
+	canvas.addEventListener("pointerleave", () => {
+		cameraDrag.handlePointerUp();
+	});
+
+	// 「プレイヤーへ戻る」ボタンのコールバック設定
+	ctx.ui.returnToPlayerButton.setOnClick(() => {
+		if (ctx.state.screen !== "game") return;
+		cameraDrag.reset();
+		renderGameScreen(ctx);
 	});
 }

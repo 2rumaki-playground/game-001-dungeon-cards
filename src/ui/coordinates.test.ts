@@ -8,6 +8,7 @@ import {
 } from "../constants";
 import {
 	calculateCameraOffset,
+	clampCameraOffset,
 	getMapPixelSize,
 	getViewportPixelSize,
 	gridToCenterPixel,
@@ -197,5 +198,66 @@ describe("calculateCameraOffset", () => {
 		const mapPx = 7 * CELL_WITH_GAP + CELL_GAP;
 		const offset = (viewportPx - mapPx) / 2;
 		expect(result).toEqual({ x: offset, y: offset });
+	});
+});
+
+describe("clampCameraOffset", () => {
+	const CELL_WITH_GAP = CELL_SIZE + CELL_GAP;
+	const viewportPx = VIEWPORT_TILES * CELL_WITH_GAP + CELL_GAP;
+
+	it("マップ=ビューポート → ドラッグオフセットは無視される", () => {
+		const baseOffset = { x: 0, y: 0 };
+		const dragOffset = { x: 50, y: 50 };
+		const result = clampCameraOffset(
+			baseOffset,
+			dragOffset,
+			VIEWPORT_TILES,
+			VIEWPORT_TILES,
+		);
+		expect(result).toEqual({ x: 0, y: 0 });
+	});
+
+	it("マップ<ビューポート → ドラッグオフセットは無視され中央配置", () => {
+		const mapPx = 7 * CELL_WITH_GAP + CELL_GAP;
+		const centered = (viewportPx - mapPx) / 2;
+		const baseOffset = { x: centered, y: centered };
+		const dragOffset = { x: 100, y: 100 };
+		const result = clampCameraOffset(baseOffset, dragOffset, 7, 7);
+		expect(result).toEqual({ x: centered, y: centered });
+	});
+
+	it("dragOffset=(0,0) → baseOffsetそのまま", () => {
+		const mapPx = 11 * CELL_WITH_GAP + CELL_GAP;
+		const playerCenter = 5 * CELL_WITH_GAP + CELL_GAP + CELL_SIZE / 2;
+		const raw = viewportPx / 2 - playerCenter;
+		const min = viewportPx - mapPx;
+		const expected = Math.max(min, Math.min(0, raw));
+		const baseOffset = { x: expected, y: expected };
+		const result = clampCameraOffset(baseOffset, { x: 0, y: 0 }, 11, 11);
+		expect(result).toEqual(baseOffset);
+	});
+
+	it("11×11マップ、範囲内のドラッグ → 合算値を返す", () => {
+		const baseOffset = { x: -68, y: -68 };
+		const dragOffset = { x: 30, y: 30 };
+		const result = clampCameraOffset(baseOffset, dragOffset, 11, 11);
+		// base + drag = -38, -38 → [min, 0]の範囲内
+		expect(result).toEqual({ x: -38, y: -38 });
+	});
+
+	it("11×11マップ、正方向に範囲外ドラッグ → 上限0にクランプ", () => {
+		const baseOffset = { x: -68, y: -68 };
+		const dragOffset = { x: 1000, y: 1000 };
+		const result = clampCameraOffset(baseOffset, dragOffset, 11, 11);
+		expect(result).toEqual({ x: 0, y: 0 });
+	});
+
+	it("11×11マップ、負方向に範囲外ドラッグ → 下限にクランプ", () => {
+		const mapPx = 11 * CELL_WITH_GAP + CELL_GAP;
+		const min = viewportPx - mapPx;
+		const baseOffset = { x: -68, y: -68 };
+		const dragOffset = { x: -1000, y: -1000 };
+		const result = clampCameraOffset(baseOffset, dragOffset, 11, 11);
+		expect(result).toEqual({ x: min, y: min });
 	});
 });

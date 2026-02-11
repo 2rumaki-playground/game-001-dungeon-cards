@@ -24,3 +24,6 @@ export const BUTTON_GAP = 8;
 
 /** 次の階層へボタンの幅 */
 export const NEXT_FLOOR_BUTTON_WIDTH = 140;
+
+/** プレイヤーへ戻るボタンの幅 */
+export const RETURN_TO_PLAYER_BUTTON_WIDTH = 140;

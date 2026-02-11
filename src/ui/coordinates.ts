@@ -117,6 +117,36 @@ export function calculateCameraOffset(
 	};
 }
 
+/**
+ * カメラオフセット（player中心 + dragOffset）をマップ範囲内にクランプ
+ * @param baseOffset calculateCameraOffsetの返値
+ * @param dragOffset ドラッグによる追加オフセット
+ * @param mapWidth マップの幅（グリッド数）
+ * @param mapHeight マップの高さ（グリッド数）
+ * @returns クランプ済みの最終オフセット
+ */
+export function clampCameraOffset(
+	baseOffset: Position,
+	dragOffset: Position,
+	mapWidth: number,
+	mapHeight: number,
+): Position {
+	const viewport = getViewportPixelSize();
+	const map = getMapPixelSize(mapWidth, mapHeight);
+	return {
+		x: clampAxis(baseOffset.x + dragOffset.x, viewport.width, map.width),
+		y: clampAxis(baseOffset.y + dragOffset.y, viewport.height, map.height),
+	};
+}
+
+function clampAxis(raw: number, viewportPx: number, mapPx: number): number {
+	if (mapPx <= viewportPx) {
+		return (viewportPx - mapPx) / 2;
+	}
+	const min = viewportPx - mapPx;
+	return Math.max(min, Math.min(0, raw));
+}
+
 function calcAxis(
 	viewportPx: number,
 	mapPx: number,
