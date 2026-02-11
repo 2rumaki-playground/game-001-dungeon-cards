@@ -100,20 +100,30 @@ export function getViewportPixelSize(): { width: number; height: number } {
  * @param playerPos プレイヤーのグリッド座標
  * @param mapWidth マップの幅（グリッド数）
  * @param mapHeight マップの高さ（グリッド数）
+ * @param zoomLevel ズーム倍率（スケール後のマップサイズで計算する）
  * @returns mapContainerに設定するピクセルオフセット
  */
 export function calculateCameraOffset(
 	playerPos: Position,
 	mapWidth: number,
 	mapHeight: number,
+	zoomLevel = 1.0,
 ): Position {
 	const viewport = getViewportPixelSize();
 	const map = getMapPixelSize(mapWidth, mapHeight);
 	const playerCenter = gridToCenterPixel(playerPos);
 
 	return {
-		x: calcAxis(viewport.width, map.width, playerCenter.x),
-		y: calcAxis(viewport.height, map.height, playerCenter.y),
+		x: calcAxis(
+			viewport.width,
+			map.width * zoomLevel,
+			playerCenter.x * zoomLevel,
+		),
+		y: calcAxis(
+			viewport.height,
+			map.height * zoomLevel,
+			playerCenter.y * zoomLevel,
+		),
 	};
 }
 
@@ -123,6 +133,7 @@ export function calculateCameraOffset(
  * @param dragOffset ドラッグによる追加オフセット
  * @param mapWidth マップの幅（グリッド数）
  * @param mapHeight マップの高さ（グリッド数）
+ * @param zoomLevel ズーム倍率（クランプ範囲がmapPx×zoomLevelに変わる）
  * @returns クランプ済みの最終オフセット
  */
 export function clampCameraOffset(
@@ -130,12 +141,21 @@ export function clampCameraOffset(
 	dragOffset: Position,
 	mapWidth: number,
 	mapHeight: number,
+	zoomLevel = 1.0,
 ): Position {
 	const viewport = getViewportPixelSize();
 	const map = getMapPixelSize(mapWidth, mapHeight);
 	return {
-		x: clampAxis(baseOffset.x + dragOffset.x, viewport.width, map.width),
-		y: clampAxis(baseOffset.y + dragOffset.y, viewport.height, map.height),
+		x: clampAxis(
+			baseOffset.x + dragOffset.x,
+			viewport.width,
+			map.width * zoomLevel,
+		),
+		y: clampAxis(
+			baseOffset.y + dragOffset.y,
+			viewport.height,
+			map.height * zoomLevel,
+		),
 	};
 }
 

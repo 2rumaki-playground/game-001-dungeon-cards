@@ -64,17 +64,29 @@ export function applyCameraOffset(ctx: GameContext): void {
 	const mapContainer = ctx.ui.mapRenderer.getContainer();
 	const mapWidth = ctx.state.map[0]?.length ?? 0;
 	const mapHeight = ctx.state.map.length;
+	const zoomLevel = ctx.ui.cameraDragController.getZoomLevel();
 	const baseOffset = calculateCameraOffset(
 		ctx.state.player.position,
 		mapWidth,
 		mapHeight,
+		zoomLevel,
 	);
 	const dragOffset = ctx.ui.cameraDragController.getDragOffset();
-	const offset = clampCameraOffset(baseOffset, dragOffset, mapWidth, mapHeight);
+	const offset = clampCameraOffset(
+		baseOffset,
+		dragOffset,
+		mapWidth,
+		mapHeight,
+		zoomLevel,
+	);
 	mapContainer.x = offset.x;
 	mapContainer.y = offset.y;
+	mapContainer.scale.set(zoomLevel);
 
-	const isCameraMoved = offset.x !== baseOffset.x || offset.y !== baseOffset.y;
+	const isCameraMoved =
+		offset.x !== baseOffset.x ||
+		offset.y !== baseOffset.y ||
+		ctx.ui.cameraDragController.isZoomed();
 	ctx.ui.returnToPlayerButton.render(isCameraMoved);
 }
 

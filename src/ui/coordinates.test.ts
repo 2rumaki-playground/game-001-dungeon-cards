@@ -261,3 +261,83 @@ describe("clampCameraOffset", () => {
 		expect(result).toEqual({ x: min, y: min });
 	});
 });
+
+describe("calculateCameraOffset（ズーム対応）", () => {
+	const CELL_WITH_GAP = CELL_SIZE + CELL_GAP;
+	const viewportPx = VIEWPORT_TILES * CELL_WITH_GAP + CELL_GAP;
+
+	it("zoomLevel省略時は従来と同じ動作", () => {
+		const result = calculateCameraOffset({ x: 5, y: 5 }, 11, 11);
+		const resultWithDefault = calculateCameraOffset(
+			{ x: 5, y: 5 },
+			11,
+			11,
+			1.0,
+		);
+		expect(result).toEqual(resultWithDefault);
+	});
+
+	it("zoomLevel=2.0ではスケールされたマップに基づくオフセットを返す", () => {
+		const result = calculateCameraOffset({ x: 5, y: 5 }, 11, 11, 2.0);
+		const mapPx = 11 * CELL_WITH_GAP + CELL_GAP;
+		const playerCenter = 5 * CELL_WITH_GAP + CELL_GAP + CELL_SIZE / 2;
+		const scaledMapPx = mapPx * 2.0;
+		const scaledPlayerCenter = playerCenter * 2.0;
+		const raw = viewportPx / 2 - scaledPlayerCenter;
+		const min = viewportPx - scaledMapPx;
+		expect(result).toEqual({
+			x: Math.max(min, Math.min(0, raw)),
+			y: Math.max(min, Math.min(0, raw)),
+		});
+	});
+
+	it("zoomLevel=0.5でマップがビューポート以下なら中央配置", () => {
+		const mapPx = 11 * CELL_WITH_GAP + CELL_GAP;
+		const scaledMapPx = mapPx * 0.5;
+		// scaledMapPx = 752 * 0.5 = 376 < viewportPx = 616 → 中央配置
+		const centered = (viewportPx - scaledMapPx) / 2;
+		const result = calculateCameraOffset({ x: 5, y: 5 }, 11, 11, 0.5);
+		expect(result).toEqual({ x: centered, y: centered });
+	});
+});
+
+describe("clampCameraOffset（ズーム対応）", () => {
+	const CELL_WITH_GAP = CELL_SIZE + CELL_GAP;
+	const viewportPx = VIEWPORT_TILES * CELL_WITH_GAP + CELL_GAP;
+
+	it("zoomLevel=1.0は省略時と同じ", () => {
+		const baseOffset = { x: -68, y: -68 };
+		const dragOffset = { x: 30, y: 30 };
+		const result = clampCameraOffset(baseOffset, dragOffset, 11, 11, 1.0);
+		const resultDefault = clampCameraOffset(baseOffset, dragOffset, 11, 11);
+		expect(result).toEqual(resultDefault);
+	});
+
+	it("zoomLevel=0.5でマップがビューポート以下なら中央配置", () => {
+		const mapPx = 11 * CELL_WITH_GAP + CELL_GAP;
+		const scaledMapPx = mapPx * 0.5;
+		const centered = (viewportPx - scaledMapPx) / 2;
+		const result = clampCameraOffset(
+			{ x: 0, y: 0 },
+			{ x: 0, y: 0 },
+			11,
+			11,
+			0.5,
+		);
+		expect(result).toEqual({ x: centered, y: centered });
+	});
+
+	it("zoomLevel=2.0ではマップが拡大されドラッグ可能範囲が広がる", () => {
+		const mapPx = 11 * CELL_WITH_GAP + CELL_GAP;
+		const scaledMapPx = mapPx * 2.0;
+		const min = viewportPx - scaledMapPx;
+		const result = clampCameraOffset(
+			{ x: 0, y: 0 },
+			{ x: -5000, y: -5000 },
+			11,
+			11,
+			2.0,
+		);
+		expect(result).toEqual({ x: min, y: min });
+	});
+});

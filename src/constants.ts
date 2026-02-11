@@ -232,6 +232,12 @@ export function getSpecialTileCount(floor: number): number {
 // ビューポート（表示領域）
 export const VIEWPORT_TILES = 9;
 
+// カメラズーム
+export const ZOOM_MIN = 0.5;
+export const ZOOM_MAX = 2.0;
+export const ZOOM_DEFAULT = 1.0;
+export const ZOOM_WHEEL_STEP = 0.1;
+
 // 階層別マップサイズ（v1.3）
 export const MAP_SIZE_TABLE: {
 	maxFloor: number;
