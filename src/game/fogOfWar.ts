@@ -44,8 +44,6 @@ function getConnectedCorridorTiles(
 
 	while (head < queue.length) {
 		const current = queue[head++] as Position;
-		const key = positionToKey(current);
-		if (seen.has(key)) continue;
 
 		if (
 			current.x < 0 ||
@@ -55,11 +53,14 @@ function getConnectedCorridorTiles(
 		)
 			continue;
 
+		const key = positionToKey(current);
+		if (seen.has(key)) continue;
+		seen.add(key);
+
 		if (map[current.y][current.x].type === "wall") continue;
 
 		if (findRoomAt(current, rooms)) continue;
 
-		seen.add(key);
 		result.push(current);
 
 		queue.push({ x: current.x + 1, y: current.y });
