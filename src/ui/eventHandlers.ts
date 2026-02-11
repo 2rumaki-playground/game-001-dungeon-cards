@@ -5,6 +5,7 @@
 import {
 	CARD_COST,
 	JUMP_DISTANCE,
+	STATUS_BAR_HEIGHT,
 	TRAP_DAMAGE,
 	TREASURE_HEAL,
 } from "../constants";
@@ -30,6 +31,7 @@ import { createJumpParticleConfig } from "./battleParticles";
 import {
 	calculateCameraOffset,
 	clampCameraOffset,
+	getViewportPixelSize,
 	gridToCenterPixel,
 } from "./coordinates";
 import { detectEnemyMoves } from "./enemyMoveDetector";
@@ -651,12 +653,30 @@ export function setupEventHandlers(ctx: GameContext): void {
 			!ctx.isCardActionAnimating,
 	);
 
-	ctx.app.canvas.addEventListener("pointerdown", (e) => {
+	const canvas = ctx.app.canvas;
+	const viewportSize = getViewportPixelSize();
+
+	canvas.addEventListener("pointerdown", (e) => {
 		if (e.button !== 0) return;
-		cameraDrag.handlePointerDown(e.offsetX, e.offsetY);
+
+		// マップ表示領域（ビューポート）内でのみカメラドラッグを開始する
+		const x = e.offsetX;
+		const y = e.offsetY;
+		if (
+			x < 0 ||
+			x > viewportSize.width ||
+			y < STATUS_BAR_HEIGHT ||
+			y > STATUS_BAR_HEIGHT + viewportSize.height
+		) {
+			return;
+		}
+
+		cameraDrag.handlePointerDown(x, y);
+		// canvas外でpointerupしてもイベントを受け取れるようにする
+		canvas.setPointerCapture(e.pointerId);
 	});
 
-	ctx.app.canvas.addEventListener("pointermove", (e) => {
+	canvas.addEventListener("pointermove", (e) => {
 		cameraDrag.handlePointerMove(e.offsetX, e.offsetY);
 		if (cameraDrag.isCurrentlyDragging()) {
 			const mapContainer = ctx.ui.mapRenderer.getContainer();
@@ -675,11 +695,18 @@ export function setupEventHandlers(ctx: GameContext): void {
 			);
 			mapContainer.x = offset.x;
 			mapContainer.y = offset.y;
-			ctx.ui.returnToPlayerButton.render(cameraDrag.isDragActive());
+			const isCameraMoved =
+				offset.x !== baseOffset.x || offset.y !== baseOffset.y;
+			ctx.ui.returnToPlayerButton.render(isCameraMoved);
 		}
 	});
 
-	ctx.app.canvas.addEventListener("pointerup", () => {
+	canvas.addEventListener("pointerup", (e) => {
+		cameraDrag.handlePointerUp();
+		canvas.releasePointerCapture(e.pointerId);
+	});
+
+	canvas.addEventListener("pointerleave", () => {
 		cameraDrag.handlePointerUp();
 	});
 
