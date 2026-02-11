@@ -578,8 +578,11 @@ export function setupEventHandlers(ctx: GameContext): void {
 					applyState(ctx, next);
 					render(ctx, true, false, true); // 手札・敵スキップ
 				}
-				ctx.ui.mapRenderer.renderEnemies(next.enemies, next.visitedTiles);
+				// アニメーション用の初期描画は移動前の敵配置を使用する
+				ctx.ui.mapRenderer.renderEnemies(enemiesBefore, next.visitedTiles);
 				await ctx.ui.mapRenderer.animateEnemyMoves(enemyMoves);
+				// アニメーション完了後に移動後の敵配置で再描画する
+				ctx.ui.mapRenderer.renderEnemies(next.enemies, next.visitedTiles);
 			}
 
 			// 敵攻撃アニメーション
