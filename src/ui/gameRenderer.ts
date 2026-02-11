@@ -58,6 +58,27 @@ function renderTitleScreen(ctx: GameContext): void {
 }
 
 /**
+ * カメラ位置の合成・クランプ・ボタン表示判定を一括で適用
+ */
+export function applyCameraOffset(ctx: GameContext): void {
+	const mapContainer = ctx.ui.mapRenderer.getContainer();
+	const mapWidth = ctx.state.map[0]?.length ?? 0;
+	const mapHeight = ctx.state.map.length;
+	const baseOffset = calculateCameraOffset(
+		ctx.state.player.position,
+		mapWidth,
+		mapHeight,
+	);
+	const dragOffset = ctx.ui.cameraDragController.getDragOffset();
+	const offset = clampCameraOffset(baseOffset, dragOffset, mapWidth, mapHeight);
+	mapContainer.x = offset.x;
+	mapContainer.y = offset.y;
+
+	const isCameraMoved = offset.x !== baseOffset.x || offset.y !== baseOffset.y;
+	ctx.ui.returnToPlayerButton.render(isCameraMoved);
+}
+
+/**
  * ゲーム画面の描画
  */
 export function renderGameScreen(
@@ -83,22 +104,7 @@ export function renderGameScreen(
 		skipEnemies,
 		ctx.state.remnants,
 	);
-	const mapContainer = ctx.ui.mapRenderer.getContainer();
-	const mapWidth = ctx.state.map[0]?.length ?? 0;
-	const mapHeight = ctx.state.map.length;
-	const baseOffset = calculateCameraOffset(
-		ctx.state.player.position,
-		mapWidth,
-		mapHeight,
-	);
-	const dragOffset = ctx.ui.cameraDragController.getDragOffset();
-	const offset = clampCameraOffset(baseOffset, dragOffset, mapWidth, mapHeight);
-	mapContainer.x = offset.x;
-	mapContainer.y = offset.y;
-
-	// 「プレイヤーへ戻る」ボタン表示制御（実際にカメラが移動している場合のみ）
-	const isCameraMoved = offset.x !== baseOffset.x || offset.y !== baseOffset.y;
-	ctx.ui.returnToPlayerButton.render(isCameraMoved);
+	applyCameraOffset(ctx);
 	if (!skipHand) {
 		ctx.ui.handRenderer.render(ctx.state.deck.hand, ctx.state.player.ap);
 	}

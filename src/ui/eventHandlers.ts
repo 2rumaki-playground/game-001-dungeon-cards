@@ -28,12 +28,7 @@ import type { Card, Direction, Position, SpecialTileType } from "../types";
 import { DIRECTION_DELTA } from "../types";
 import { deleteSaveData, hasSaveData, loadGame } from "../utils/storage";
 import { createJumpParticleConfig } from "./battleParticles";
-import {
-	calculateCameraOffset,
-	clampCameraOffset,
-	getViewportPixelSize,
-	gridToCenterPixel,
-} from "./coordinates";
+import { getViewportPixelSize, gridToCenterPixel } from "./coordinates";
 import { detectEnemyMoves } from "./enemyMoveDetector";
 import {
 	executeNextFloorTransition,
@@ -46,6 +41,7 @@ import {
 	updateStateWithStairsAnimation,
 } from "./gameAnimations";
 import {
+	applyCameraOffset,
 	applyState,
 	render,
 	renderGameScreen,
@@ -692,25 +688,7 @@ export function setupEventHandlers(ctx: GameContext): void {
 	canvas.addEventListener("pointermove", (e) => {
 		cameraDrag.handlePointerMove(e.offsetX, e.offsetY);
 		if (cameraDrag.isCurrentlyDragging()) {
-			const mapContainer = ctx.ui.mapRenderer.getContainer();
-			const mapWidth = ctx.state.map[0]?.length ?? 0;
-			const mapHeight = ctx.state.map.length;
-			const baseOffset = calculateCameraOffset(
-				ctx.state.player.position,
-				mapWidth,
-				mapHeight,
-			);
-			const offset = clampCameraOffset(
-				baseOffset,
-				cameraDrag.getDragOffset(),
-				mapWidth,
-				mapHeight,
-			);
-			mapContainer.x = offset.x;
-			mapContainer.y = offset.y;
-			const isCameraMoved =
-				offset.x !== baseOffset.x || offset.y !== baseOffset.y;
-			ctx.ui.returnToPlayerButton.render(isCameraMoved);
+			applyCameraOffset(ctx);
 		}
 	});
 
