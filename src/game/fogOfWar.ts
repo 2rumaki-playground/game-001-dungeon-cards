@@ -58,7 +58,12 @@ function getCorridorEntrances(room: Room, map: GameMap): Position[] {
 	const leftX = room.x - 1;
 	if (leftX >= 0) {
 		for (let y = room.y; y < room.y + room.height; y++) {
-			if (y >= 0 && y < mapHeight && map[y][leftX].type !== "wall") {
+			if (
+				y >= 0 &&
+				y < mapHeight &&
+				leftX < mapWidth &&
+				map[y][leftX].type !== "wall"
+			) {
 				entrances.push({ x: leftX, y });
 			}
 		}
