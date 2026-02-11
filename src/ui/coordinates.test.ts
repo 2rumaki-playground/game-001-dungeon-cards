@@ -14,7 +14,6 @@ import {
 	gridToCenterPixel,
 	gridToPixel,
 	pixelToGrid,
-	screenToWorld,
 } from "./coordinates";
 
 describe("gridToPixel", () => {
@@ -340,27 +339,5 @@ describe("clampCameraOffset（ズーム対応）", () => {
 			2.0,
 		);
 		expect(result).toEqual({ x: min, y: min });
-	});
-});
-
-describe("screenToWorld", () => {
-	it("zoomLevel=1.0, offset=(0,0)ではスクリーン座標=ワールド座標", () => {
-		const result = screenToWorld({ x: 100, y: 200 }, { x: 0, y: 0 }, 1.0);
-		expect(result).toEqual({ x: 100, y: 200 });
-	});
-
-	it("zoomLevel=2.0ではワールド座標が半分になる", () => {
-		const result = screenToWorld({ x: 200, y: 400 }, { x: 0, y: 0 }, 2.0);
-		expect(result).toEqual({ x: 100, y: 200 });
-	});
-
-	it("オフセットを考慮した変換", () => {
-		const result = screenToWorld({ x: 100, y: 100 }, { x: -50, y: -50 }, 1.0);
-		expect(result).toEqual({ x: 150, y: 150 });
-	});
-
-	it("ズームとオフセットの複合", () => {
-		const result = screenToWorld({ x: 100, y: 100 }, { x: -50, y: -50 }, 2.0);
-		expect(result).toEqual({ x: 75, y: 75 });
 	});
 });

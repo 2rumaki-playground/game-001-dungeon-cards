@@ -159,24 +159,6 @@ export function clampCameraOffset(
 	};
 }
 
-/**
- * スクリーン座標からワールド座標（マップ内ピクセル座標）に変換
- * @param screenPos ビューポート内のスクリーン座標
- * @param cameraOffset 現在のカメラオフセット（mapContainer.x/y）
- * @param zoomLevel 現在のズームレベル
- * @returns ワールド座標
- */
-export function screenToWorld(
-	screenPos: Position,
-	cameraOffset: Position,
-	zoomLevel: number,
-): Position {
-	return {
-		x: (screenPos.x - cameraOffset.x) / zoomLevel,
-		y: (screenPos.y - cameraOffset.y) / zoomLevel,
-	};
-}
-
 function clampAxis(raw: number, viewportPx: number, mapPx: number): number {
 	if (mapPx <= viewportPx) {
 		return (viewportPx - mapPx) / 2;
