@@ -103,6 +103,7 @@ export function renderGameScreen(
 		skipPlayer,
 		skipEnemies,
 		ctx.state.remnants,
+		ctx.state.visitedTiles,
 	);
 	applyCameraOffset(ctx);
 	if (!skipHand) {

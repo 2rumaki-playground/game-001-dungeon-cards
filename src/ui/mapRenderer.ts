@@ -179,6 +179,7 @@ export class MapRenderer {
 	private remnantsGraphics: Graphics;
 	private playerSprite: Sprite;
 	private enemiesContainer: Container;
+	private fogGraphics: Graphics;
 	private isPlayerInitialized = false;
 	private enemyContainerMap: Map<string, Container> = new Map();
 	private enemyHpBarMap: Map<string, Graphics> = new Map();
@@ -193,10 +194,12 @@ export class MapRenderer {
 		this.remnantsGraphics = new Graphics();
 		this.playerSprite = new Sprite();
 		this.enemiesContainer = new Container();
+		this.fogGraphics = new Graphics();
 
 		this.container.addChild(this.tilesContainer);
 		this.container.addChild(this.remnantsGraphics);
 		this.container.addChild(this.enemiesContainer);
+		this.container.addChild(this.fogGraphics);
 		this.container.addChild(this.playerSprite);
 	}
 
@@ -427,8 +430,13 @@ export class MapRenderer {
 	/**
 	 * 敵を描画（永続管理）
 	 */
-	renderEnemies(enemies: Enemy[]): void {
-		const currentIds = new Set(enemies.map((e) => e.id));
+	renderEnemies(enemies: Enemy[], visitedTiles?: Set<string>): void {
+		const visibleEnemies = visitedTiles
+			? enemies.filter((e) =>
+					visitedTiles.has(`${e.position.x},${e.position.y}`),
+				)
+			: enemies;
+		const currentIds = new Set(visibleEnemies.map((e) => e.id));
 
 		// 不要になった敵を削除
 		for (const id of this.enemyContainerMap.keys()) {
@@ -438,7 +446,7 @@ export class MapRenderer {
 		}
 
 		// 各敵のコンテナを更新または作成
-		for (const enemy of enemies) {
+		for (const enemy of visibleEnemies) {
 			const prevType = this.enemyTypeMap.get(enemy.id);
 
 			// タイプが変わった場合は再作成
@@ -707,10 +715,29 @@ export class MapRenderer {
 	}
 
 	/**
+	 * Fog of Warオーバーレイを描画
+	 * 未訪問タイルを黒い矩形で覆い、内容を隠す
+	 */
+	renderFog(map: GameMap, visitedTiles: Set<string>): void {
+		this.fogGraphics.clear();
+		for (let y = 0; y < map.length; y++) {
+			const row = map[y];
+			for (let x = 0; x < row.length; x++) {
+				if (!visitedTiles.has(`${x},${y}`)) {
+					const pixelPos = gridToPixel({ x, y });
+					this.fogGraphics.rect(pixelPos.x, pixelPos.y, CELL_SIZE, CELL_SIZE);
+					this.fogGraphics.fill(0x000000);
+				}
+			}
+		}
+	}
+
+	/**
 	 * 全体を描画（マップ・プレイヤー・敵）
 	 * @param skipPlayer trueの場合、プレイヤー描画をスキップ（アニメーション中に使用）
 	 * @param skipEnemies trueの場合、敵描画をスキップ（敵移動アニメーション中に使用）
 	 * @param remnants 敵撃破の残骸情報
+	 * @param visitedTiles 訪問済みタイル（Fog of War用）
 	 */
 	render(
 		map: GameMap,
@@ -719,6 +746,7 @@ export class MapRenderer {
 		skipPlayer = false,
 		skipEnemies = false,
 		remnants: Record<string, number> = {},
+		visitedTiles?: Set<string>,
 	): void {
 		this.renderMap(map);
 		this.renderRemnants(remnants);
@@ -726,7 +754,12 @@ export class MapRenderer {
 			this.renderPlayer(player);
 		}
 		if (!skipEnemies) {
-			this.renderEnemies(enemies);
+			this.renderEnemies(enemies, visitedTiles);
+		}
+		if (visitedTiles) {
+			this.renderFog(map, visitedTiles);
+		} else {
+			this.fogGraphics.clear();
 		}
 	}
 
@@ -740,6 +773,7 @@ export class MapRenderer {
 		}
 		this.lastRenderedMap = null;
 		this.remnantsGraphics.clear();
+		this.fogGraphics.clear();
 		this.playerSprite.texture = Texture.EMPTY;
 		this.playerSprite.alpha = 1;
 		this.isPlayerInitialized = false;

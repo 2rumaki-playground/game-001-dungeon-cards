@@ -13,8 +13,9 @@ import type { Direction, GameState, Position, SpecialTileType } from "../types";
 import { DIRECTION_DELTA } from "../types";
 import { applyDamageToEnemy } from "./combat";
 import { playCard } from "./deck";
+import { revealAtPosition } from "./fogOfWar";
 import { isInBounds } from "./map";
-import { addActionLog, setDeck, updatePlayer } from "./state";
+import { addActionLog, setDeck, setVisitedTiles, updatePlayer } from "./state";
 import { applyTileEffect } from "./tileEffect";
 
 /**
@@ -94,6 +95,12 @@ export function executeMove(
 		...p,
 		position: { x: nx, y: ny },
 	}));
+
+	// 訪問済みタイル更新
+	next = setVisitedTiles(
+		next,
+		revealAtPosition(next.visitedTiles, { x: nx, y: ny }, next.rooms),
+	);
 
 	next = addActionLog(next, "移動した", "player");
 
@@ -323,6 +330,12 @@ export function executeJump(
 		...p,
 		position: { x: landX, y: landY },
 	}));
+
+	// 訪問済みタイル更新
+	next = setVisitedTiles(
+		next,
+		revealAtPosition(next.visitedTiles, { x: landX, y: landY }, next.rooms),
+	);
 
 	// 階段判定（遷移はUI層で行う）
 	if (next.map[landY][landX].type === "stairs") {
