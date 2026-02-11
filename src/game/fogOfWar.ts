@@ -40,9 +40,10 @@ function getConnectedCorridorTiles(
 	const seen = new Set<string>();
 	const result: Position[] = [];
 	const queue: Position[] = [position];
+	let head = 0;
 
-	while (queue.length > 0) {
-		const current = queue.shift()!;
+	while (head < queue.length) {
+		const current = queue[head++] as Position;
 		const key = positionToKey(current);
 		if (seen.has(key)) continue;
 

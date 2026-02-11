@@ -137,18 +137,31 @@ export function generateBSPMapPlacement(
 		const floorPositions = getFloorPositions(map);
 		if (floorPositions.length < requiredCount) continue;
 
-		// プレイヤー/階段/敵はすべての床タイルからサンプリング
-		const baseCount = 1 + STAIRS_COUNT + enemyCount;
-		const baseSampled = rng.sample(floorPositions, baseCount);
-		const player = baseSampled[0];
-		const stairsPositions = baseSampled.slice(1, 1 + STAIRS_COUNT);
-		const enemies = baseSampled.slice(1 + STAIRS_COUNT);
+		// プレイヤー/敵はすべての床タイルからサンプリング
+		const playerEnemyCount = 1 + enemyCount;
+		const playerEnemySampled = rng.sample(floorPositions, playerEnemyCount);
+		const player = playerEnemySampled[0];
+		const enemies = playerEnemySampled.slice(1);
 
-		const stairs = stairsPositions[0];
+		// 階段は部屋内の床タイルからサンプリング（通路に配置しない）
+		const baseExcludeSet = new Set(
+			playerEnemySampled.map((p) => positionToKey(p)),
+		);
+		const roomFloorForStairs = getRoomFloorPositions(
+			map,
+			rooms,
+			baseExcludeSet,
+		);
+		if (roomFloorForStairs.length < STAIRS_COUNT) continue;
+		const stairsSampled = rng.sample(roomFloorForStairs, STAIRS_COUNT);
+		const stairs = stairsSampled[0];
 		map[stairs.y][stairs.x] = createStairsTile();
 
 		// 特殊タイルは部屋内の床タイルからサンプリング（既配置位置を除外）
-		const excludeSet = new Set(baseSampled.map((p) => positionToKey(p)));
+		const excludeSet = new Set([
+			...playerEnemySampled.map((p) => positionToKey(p)),
+			...stairsSampled.map((p) => positionToKey(p)),
+		]);
 		const roomFloorPositions = getRoomFloorPositions(map, rooms, excludeSet);
 
 		if (roomFloorPositions.length < specialTileCount) continue;
