@@ -664,8 +664,15 @@ export function setupEventHandlers(ctx: GameContext): void {
 	const canvas = ctx.app.canvas;
 	const viewportSize = getViewportPixelSize();
 
+	// ピンチズーム（タッチデバイス対応）
+	let pinchStartDistance = 0;
+	let pinchStartZoom = 1.0;
+	const activeTouches = new Map<number, { x: number; y: number }>();
+
 	canvas.addEventListener("pointerdown", (e) => {
 		if (e.button !== 0) return;
+		// ピンチ中はドラッグを無効化
+		if (activeTouches.size >= 2) return;
 
 		// マップ表示領域（ビューポート）内でのみカメラドラッグを開始する
 		const x = e.offsetX;
@@ -699,6 +706,8 @@ export function setupEventHandlers(ctx: GameContext): void {
 	});
 
 	canvas.addEventListener("pointermove", (e) => {
+		// ピンチ中はドラッグを無効化
+		if (activeTouches.size >= 2) return;
 		cameraDrag.handlePointerMove(e.offsetX, e.offsetY);
 		if (cameraDrag.isCurrentlyDragging()) {
 			applyCameraOffset(ctx);
@@ -784,11 +793,6 @@ export function setupEventHandlers(ctx: GameContext): void {
 		},
 		{ passive: false },
 	);
-
-	// ピンチズーム（タッチデバイス対応）
-	let pinchStartDistance = 0;
-	let pinchStartZoom = 1.0;
-	const activeTouches = new Map<number, { x: number; y: number }>();
 
 	canvas.addEventListener(
 		"touchstart",
