@@ -720,7 +720,6 @@ export function setupEventHandlers(ctx: GameContext): void {
 	canvas.addEventListener(
 		"wheel",
 		(e) => {
-			e.preventDefault();
 			const x = e.offsetX;
 			const y = e.offsetY;
 			if (
@@ -739,6 +738,8 @@ export function setupEventHandlers(ctx: GameContext): void {
 				Math.min(ZOOM_MAX, oldZoom + direction * ZOOM_WHEEL_STEP),
 			);
 			if (newZoom === oldZoom) return;
+
+			e.preventDefault();
 
 			// カーソル基点ズーム: ズーム前後でカーソル位置のワールド座標を保持
 			const cursorInViewport = { x, y: y - STATUS_BAR_HEIGHT };
