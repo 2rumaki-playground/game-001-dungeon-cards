@@ -140,7 +140,7 @@ export function generateBSPMapPlacement(
 		// プレイヤー/敵はすべての床タイルからサンプリング
 		const playerEnemyCount = 1 + enemyCount;
 		const playerEnemySampled = rng.sample(floorPositions, playerEnemyCount);
-		const player = playerEnemySampled[0];
+		const player = playerEnemySampled[0]!;
 		const enemies = playerEnemySampled.slice(1);
 
 		// 階段は部屋内の床タイルからサンプリング（通路に配置しない）
@@ -154,7 +154,7 @@ export function generateBSPMapPlacement(
 		);
 		if (roomFloorForStairs.length < STAIRS_COUNT) continue;
 		const stairsSampled = rng.sample(roomFloorForStairs, STAIRS_COUNT);
-		const stairs = stairsSampled[0];
+		const stairs = stairsSampled[0]!;
 		map[stairs.y][stairs.x] = createStairsTile();
 
 		// 特殊タイルは部屋内の床タイルからサンプリング（既配置位置を除外）
