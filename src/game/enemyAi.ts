@@ -19,8 +19,6 @@ import { isAdjacent, manhattanDistance } from "./positionUtils";
 import { findRoomAt, isInRoom } from "./roomUtils";
 import { addActionLog, setEnemies, updateEnemy } from "./state";
 
-export { isAdjacent, manhattanDistance };
-
 /**
  * 敵の移動可否を判定
  *
