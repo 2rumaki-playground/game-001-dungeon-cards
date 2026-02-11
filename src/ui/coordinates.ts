@@ -100,6 +100,7 @@ export function getViewportPixelSize(): { width: number; height: number } {
  * @param playerPos プレイヤーのグリッド座標
  * @param mapWidth マップの幅（グリッド数）
  * @param mapHeight マップの高さ（グリッド数）
+ * @param zoomLevel ズーム倍率（スケール後のマップサイズで計算する）
  * @returns mapContainerに設定するピクセルオフセット
  */
 export function calculateCameraOffset(
@@ -132,6 +133,7 @@ export function calculateCameraOffset(
  * @param dragOffset ドラッグによる追加オフセット
  * @param mapWidth マップの幅（グリッド数）
  * @param mapHeight マップの高さ（グリッド数）
+ * @param zoomLevel ズーム倍率（クランプ範囲がmapPx×zoomLevelに変わる）
  * @returns クランプ済みの最終オフセット
  */
 export function clampCameraOffset(
