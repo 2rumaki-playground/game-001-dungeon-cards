@@ -727,6 +727,23 @@ export function setupEventHandlers(ctx: GameContext): void {
 
 	canvas.addEventListener("pointerleave", () => {
 		cameraDrag.handlePointerUp();
+		if (
+			capturedPointerId !== null &&
+			canvas.hasPointerCapture(capturedPointerId)
+		) {
+			canvas.releasePointerCapture(capturedPointerId);
+		}
+		capturedPointerId = null;
+	});
+
+	canvas.addEventListener("pointercancel", () => {
+		cameraDrag.handlePointerUp();
+		if (
+			capturedPointerId !== null &&
+			canvas.hasPointerCapture(capturedPointerId)
+		) {
+			canvas.releasePointerCapture(capturedPointerId);
+		}
 		capturedPointerId = null;
 	});
 
