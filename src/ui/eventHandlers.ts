@@ -742,6 +742,8 @@ export function setupEventHandlers(ctx: GameContext): void {
 				return;
 			}
 
+			if (e.deltaY === 0) return;
+
 			const oldZoom = cameraDrag.getZoomLevel();
 			const direction = e.deltaY > 0 ? -1 : 1;
 			const newZoom = Math.max(
