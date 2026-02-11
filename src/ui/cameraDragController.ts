@@ -49,10 +49,12 @@ export class CameraDragController {
 		return this.isDragging && this.dragConfirmed;
 	}
 
-	reset(): void {
+	reset(resetZoom = true): void {
 		const wasActive = this.isDragActive();
 		this.dragOffset = { x: 0, y: 0 };
-		this.zoomLevel = ZOOM_DEFAULT;
+		if (resetZoom) {
+			this.zoomLevel = ZOOM_DEFAULT;
+		}
 		this.isDragging = false;
 		this.dragConfirmed = false;
 		if (wasActive) {

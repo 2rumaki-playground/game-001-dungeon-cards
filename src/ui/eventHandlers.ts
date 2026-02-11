@@ -563,9 +563,9 @@ export function setupEventHandlers(ctx: GameContext): void {
 	// ターン終了処理
 	async function handleEndTurn(): Promise<void> {
 		if (ctx.isAnimating) return; // アニメーション中は無効
-		// ターン終了時にキューとドラッグオフセットをクリア
+		// ターン終了時にキューとドラッグオフセットをクリア（ズームは維持）
 		clearCardQueue(ctx);
-		ctx.ui.cameraDragController.reset();
+		ctx.ui.cameraDragController.reset(false);
 		ctx.isAnimating = true;
 
 		try {

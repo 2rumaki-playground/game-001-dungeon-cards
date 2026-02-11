@@ -78,8 +78,8 @@ export async function updateStateWithMoveAnimation(
 	if (ctx.isAnimating) return;
 	ctx.isAnimating = true;
 
-	// ドラッグオフセットをリセット（カメラをプレイヤー中心に復帰）
-	ctx.ui.cameraDragController.reset();
+	// ドラッグオフセットをリセット（カメラをプレイヤー中心に復帰、ズームは維持）
+	ctx.ui.cameraDragController.reset(false);
 
 	const prevAp = ctx.state.player.ap;
 
@@ -412,8 +412,8 @@ export async function updateStateWithStairsAnimation(
 	if (ctx.isAnimating) return;
 	ctx.isAnimating = true;
 
-	// ドラッグオフセットをリセット
-	ctx.ui.cameraDragController.reset();
+	// ドラッグオフセットをリセット（ズームは維持）
+	ctx.ui.cameraDragController.reset(false);
 
 	try {
 		await ctx.ui.mapRenderer.animatePlayerMove(stairsGridPos);
@@ -452,8 +452,8 @@ export async function updateStateWithBumpAnimation(
 	if (ctx.isAnimating) return;
 	ctx.isAnimating = true;
 
-	// ドラッグオフセットをリセット
-	ctx.ui.cameraDragController.reset();
+	// ドラッグオフセットをリセット（ズームは維持）
+	ctx.ui.cameraDragController.reset(false);
 
 	const prevAp = ctx.state.player.ap;
 	applyState(ctx, newState);
@@ -492,8 +492,8 @@ export async function updateStateWithAttackAnimation(
 	if (ctx.isAnimating) return;
 	ctx.isAnimating = true;
 
-	// ドラッグオフセットをリセット
-	ctx.ui.cameraDragController.reset();
+	// ドラッグオフセットをリセット（ズームは維持）
+	ctx.ui.cameraDragController.reset(false);
 
 	const prevAp = ctx.state.player.ap;
 	const hitEnemy = ctx.state.enemies.find((e) => e.id === hitEnemyId);
@@ -563,8 +563,8 @@ export async function updateStateWithMissAnimation(
 	if (ctx.isAnimating) return;
 	ctx.isAnimating = true;
 
-	// ドラッグオフセットをリセット
-	ctx.ui.cameraDragController.reset();
+	// ドラッグオフセットをリセット（ズームは維持）
+	ctx.ui.cameraDragController.reset(false);
 
 	const prevAp = ctx.state.player.ap;
 	const delta = DIRECTION_DELTA[direction];
