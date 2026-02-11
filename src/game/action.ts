@@ -99,7 +99,7 @@ export function executeMove(
 	// 訪問済みタイル更新
 	next = setVisitedTiles(
 		next,
-		revealAtPosition(next.visitedTiles, { x: nx, y: ny }, next.rooms),
+		revealAtPosition(next.visitedTiles, { x: nx, y: ny }, next.rooms, next.map),
 	);
 
 	next = addActionLog(next, "移動した", "player");
@@ -334,7 +334,12 @@ export function executeJump(
 	// 訪問済みタイル更新
 	next = setVisitedTiles(
 		next,
-		revealAtPosition(next.visitedTiles, { x: landX, y: landY }, next.rooms),
+		revealAtPosition(
+			next.visitedTiles,
+			{ x: landX, y: landY },
+			next.rooms,
+			next.map,
+		),
 	);
 
 	// 階段判定（遷移はUI層で行う）
