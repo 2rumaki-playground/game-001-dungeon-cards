@@ -669,6 +669,7 @@ export function setupEventHandlers(ctx: GameContext): void {
 	let pinchStartZoom = 1.0;
 	const activeTouches = new Map<number, { x: number; y: number }>();
 	let capturedPointerId: number | null = null;
+	let cachedRect: DOMRect | null = null;
 
 	canvas.addEventListener("pointerdown", (e) => {
 		if (e.button !== 0) return;
@@ -810,7 +811,8 @@ export function setupEventHandlers(ctx: GameContext): void {
 	canvas.addEventListener(
 		"touchstart",
 		(e) => {
-			const rect = canvas.getBoundingClientRect();
+			cachedRect = canvas.getBoundingClientRect();
+			const rect = cachedRect;
 			for (const touch of e.changedTouches) {
 				activeTouches.set(touch.identifier, {
 					x: touch.clientX - rect.left,
@@ -839,7 +841,7 @@ export function setupEventHandlers(ctx: GameContext): void {
 	canvas.addEventListener(
 		"touchmove",
 		(e) => {
-			const rect = canvas.getBoundingClientRect();
+			const rect = cachedRect ?? canvas.getBoundingClientRect();
 			for (const touch of e.changedTouches) {
 				activeTouches.set(touch.identifier, {
 					x: touch.clientX - rect.left,
@@ -889,6 +891,7 @@ export function setupEventHandlers(ctx: GameContext): void {
 		}
 		if (activeTouches.size < 2) {
 			pinchStartDistance = 0;
+			cachedRect = null;
 		}
 	});
 
@@ -898,6 +901,7 @@ export function setupEventHandlers(ctx: GameContext): void {
 		}
 		if (activeTouches.size < 2) {
 			pinchStartDistance = 0;
+			cachedRect = null;
 		}
 	});
 
