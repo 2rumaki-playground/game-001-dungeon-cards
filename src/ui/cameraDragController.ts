@@ -57,7 +57,7 @@ export class CameraDragController {
 		}
 		this.isDragging = false;
 		this.dragConfirmed = false;
-		if (wasActive) {
+		if (wasActive && !this.isDragActive()) {
 			this.onDragStateChange?.(false);
 		}
 	}
