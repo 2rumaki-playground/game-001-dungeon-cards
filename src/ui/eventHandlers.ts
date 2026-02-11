@@ -720,6 +720,8 @@ export function setupEventHandlers(ctx: GameContext): void {
 	canvas.addEventListener(
 		"wheel",
 		(e) => {
+			if (!cameraDrag.canInteract()) return;
+
 			const x = e.offsetX;
 			const y = e.offsetY;
 			if (
@@ -798,7 +800,7 @@ export function setupEventHandlers(ctx: GameContext): void {
 					y: touch.clientY - rect.top,
 				});
 			}
-			if (activeTouches.size === 2) {
+			if (activeTouches.size === 2 && cameraDrag.canInteract()) {
 				e.preventDefault();
 				const touches = [...activeTouches.values()];
 				pinchStartDistance = Math.hypot(
@@ -821,7 +823,11 @@ export function setupEventHandlers(ctx: GameContext): void {
 					y: touch.clientY - rect.top,
 				});
 			}
-			if (activeTouches.size === 2 && pinchStartDistance > 0) {
+			if (
+				activeTouches.size === 2 &&
+				pinchStartDistance > 0 &&
+				cameraDrag.canInteract()
+			) {
 				e.preventDefault();
 				const touches = [...activeTouches.values()];
 				const currentDistance = Math.hypot(

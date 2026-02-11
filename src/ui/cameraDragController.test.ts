@@ -242,6 +242,25 @@ describe("CameraDragController", () => {
 		});
 	});
 
+	describe("canInteract", () => {
+		it("canDrag未設定時はfalseを返す", () => {
+			const ctrl = new CameraDragController();
+			expect(ctrl.canInteract()).toBe(false);
+		});
+
+		it("canDragがtrueを返す場合はtrueを返す", () => {
+			const ctrl = new CameraDragController();
+			ctrl.setCanDrag(() => true);
+			expect(ctrl.canInteract()).toBe(true);
+		});
+
+		it("canDragがfalseを返す場合はfalseを返す", () => {
+			const ctrl = new CameraDragController();
+			ctrl.setCanDrag(() => false);
+			expect(ctrl.canInteract()).toBe(false);
+		});
+	});
+
 	describe("handlePointerUp早期return", () => {
 		it("ドラッグ未開始のpointerupはfalseを返しoffsetを変更しない", () => {
 			const ctrl = new CameraDragController();

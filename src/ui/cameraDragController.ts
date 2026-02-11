@@ -60,6 +60,10 @@ export class CameraDragController {
 		}
 	}
 
+	canInteract(): boolean {
+		return this.canDrag?.() ?? false;
+	}
+
 	setCanDrag(fn: () => boolean): void {
 		this.canDrag = fn;
 	}
