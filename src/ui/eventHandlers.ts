@@ -725,6 +725,50 @@ export function setupEventHandlers(ctx: GameContext): void {
 		cameraDrag.handlePointerUp();
 	});
 
+	/** pivot基点でズームを適用し、dragOffsetを更新する */
+	const applyZoomAtPoint = (
+		pivot: Position,
+		newZoom: number,
+		oldZoom: number,
+	) => {
+		const mapWidth = ctx.state.map[0]?.length ?? 0;
+		const mapHeight = ctx.state.map.length;
+		const oldBase = calculateCameraOffset(
+			ctx.state.player.position,
+			mapWidth,
+			mapHeight,
+			oldZoom,
+		);
+		const oldDrag = cameraDrag.getDragOffset();
+		const posBefore = clampCameraOffset(
+			oldBase,
+			oldDrag,
+			mapWidth,
+			mapHeight,
+			oldZoom,
+		);
+
+		cameraDrag.setZoomLevel(newZoom);
+
+		const ratio = newZoom / oldZoom;
+		const desiredTotal = {
+			x: pivot.x - (pivot.x - posBefore.x) * ratio,
+			y: pivot.y - (pivot.y - posBefore.y) * ratio,
+		};
+		const newBase = calculateCameraOffset(
+			ctx.state.player.position,
+			mapWidth,
+			mapHeight,
+			newZoom,
+		);
+		cameraDrag.setDragOffset({
+			x: desiredTotal.x - newBase.x,
+			y: desiredTotal.y - newBase.y,
+		});
+
+		applyCameraOffset(ctx);
+	};
+
 	// マウスホイールによるカメラズーム
 	canvas.addEventListener(
 		"wheel",
@@ -754,44 +798,7 @@ export function setupEventHandlers(ctx: GameContext): void {
 
 			e.preventDefault();
 
-			// カーソル基点ズーム: ズーム前後でカーソル位置のワールド座標を保持
-			const cursorInViewport = { x, y: y - STATUS_BAR_HEIGHT };
-			const mapWidth = ctx.state.map[0]?.length ?? 0;
-			const mapHeight = ctx.state.map.length;
-			const oldBase = calculateCameraOffset(
-				ctx.state.player.position,
-				mapWidth,
-				mapHeight,
-				oldZoom,
-			);
-			const oldDrag = cameraDrag.getDragOffset();
-			const posBefore = clampCameraOffset(
-				oldBase,
-				oldDrag,
-				mapWidth,
-				mapHeight,
-				oldZoom,
-			);
-
-			cameraDrag.setZoomLevel(newZoom);
-
-			const ratio = newZoom / oldZoom;
-			const desiredTotal = {
-				x: cursorInViewport.x - (cursorInViewport.x - posBefore.x) * ratio,
-				y: cursorInViewport.y - (cursorInViewport.y - posBefore.y) * ratio,
-			};
-			const newBase = calculateCameraOffset(
-				ctx.state.player.position,
-				mapWidth,
-				mapHeight,
-				newZoom,
-			);
-			cameraDrag.setDragOffset({
-				x: desiredTotal.x - newBase.x,
-				y: desiredTotal.y - newBase.y,
-			});
-
-			applyCameraOffset(ctx);
+			applyZoomAtPoint({ x, y: y - STATUS_BAR_HEIGHT }, newZoom, oldZoom);
 		},
 		{ passive: false },
 	);
@@ -859,42 +866,7 @@ export function setupEventHandlers(ctx: GameContext): void {
 					centerY >= 0 &&
 					centerY <= viewportSize.height
 				) {
-					const mapWidth = ctx.state.map[0]?.length ?? 0;
-					const mapHeight = ctx.state.map.length;
-					const oldBase = calculateCameraOffset(
-						ctx.state.player.position,
-						mapWidth,
-						mapHeight,
-						oldZoom,
-					);
-					const oldDrag = cameraDrag.getDragOffset();
-					const posBefore = clampCameraOffset(
-						oldBase,
-						oldDrag,
-						mapWidth,
-						mapHeight,
-						oldZoom,
-					);
-
-					cameraDrag.setZoomLevel(targetZoom);
-
-					const ratio = targetZoom / oldZoom;
-					const desiredTotal = {
-						x: centerX - (centerX - posBefore.x) * ratio,
-						y: centerY - (centerY - posBefore.y) * ratio,
-					};
-					const newBase = calculateCameraOffset(
-						ctx.state.player.position,
-						mapWidth,
-						mapHeight,
-						targetZoom,
-					);
-					cameraDrag.setDragOffset({
-						x: desiredTotal.x - newBase.x,
-						y: desiredTotal.y - newBase.y,
-					});
-
-					applyCameraOffset(ctx);
+					applyZoomAtPoint({ x: centerX, y: centerY }, targetZoom, oldZoom);
 				}
 			}
 		},
