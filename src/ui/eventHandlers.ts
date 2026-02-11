@@ -906,7 +906,15 @@ export function setupEventHandlers(ctx: GameContext): void {
 		for (const touch of e.changedTouches) {
 			activeTouches.delete(touch.identifier);
 		}
-		if (activeTouches.size < 2) {
+		if (activeTouches.size === 2 && cameraDrag.canInteract()) {
+			// 3本指以上→2本指に戻った場合、ピンチ開始状態を再初期化
+			const touches = [...activeTouches.values()];
+			pinchStartDistance = Math.hypot(
+				touches[1].x - touches[0].x,
+				touches[1].y - touches[0].y,
+			);
+			pinchStartZoom = cameraDrag.getZoomLevel();
+		} else if (activeTouches.size < 2) {
 			pinchStartDistance = 0;
 			cachedRect = null;
 		}
@@ -916,7 +924,15 @@ export function setupEventHandlers(ctx: GameContext): void {
 		for (const touch of e.changedTouches) {
 			activeTouches.delete(touch.identifier);
 		}
-		if (activeTouches.size < 2) {
+		if (activeTouches.size === 2 && cameraDrag.canInteract()) {
+			// 3本指以上→2本指に戻った場合、ピンチ開始状態を再初期化
+			const touches = [...activeTouches.values()];
+			pinchStartDistance = Math.hypot(
+				touches[1].x - touches[0].x,
+				touches[1].y - touches[0].y,
+			);
+			pinchStartZoom = cameraDrag.getZoomLevel();
+		} else if (activeTouches.size < 2) {
 			pinchStartDistance = 0;
 			cachedRect = null;
 		}
