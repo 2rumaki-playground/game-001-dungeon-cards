@@ -3,6 +3,7 @@
  * 自ターン中にマップをドラッグして見渡す機能を提供
  */
 
+import { ZOOM_DEFAULT, ZOOM_MAX, ZOOM_MIN } from "../constants";
 import type { Position } from "../types";
 
 /** ドラッグ確定閾値（ピクセル） */
@@ -16,13 +17,32 @@ export class CameraDragController {
 	private dragConfirmed = false;
 	private canDrag: (() => boolean) | null = null;
 	private onDragStateChange: ((active: boolean) => void) | null = null;
+	private zoomLevel: number = ZOOM_DEFAULT;
 
 	getDragOffset(): Position {
 		return this.dragOffset;
 	}
 
+	setDragOffset(offset: Position): void {
+		this.dragOffset = offset;
+	}
+
+	getZoomLevel(): number {
+		return this.zoomLevel;
+	}
+
+	isZoomed(): boolean {
+		return this.zoomLevel !== ZOOM_DEFAULT;
+	}
+
+	setZoomLevel(level: number): void {
+		this.zoomLevel = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, level));
+	}
+
 	isDragActive(): boolean {
-		return this.dragOffset.x !== 0 || this.dragOffset.y !== 0;
+		return (
+			this.dragOffset.x !== 0 || this.dragOffset.y !== 0 || this.isZoomed()
+		);
 	}
 
 	isCurrentlyDragging(): boolean {
@@ -32,6 +52,7 @@ export class CameraDragController {
 	reset(): void {
 		const wasActive = this.isDragActive();
 		this.dragOffset = { x: 0, y: 0 };
+		this.zoomLevel = ZOOM_DEFAULT;
 		this.isDragging = false;
 		this.dragConfirmed = false;
 		if (wasActive) {

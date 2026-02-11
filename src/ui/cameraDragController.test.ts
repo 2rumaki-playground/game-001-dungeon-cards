@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
+import { ZOOM_DEFAULT, ZOOM_MAX, ZOOM_MIN } from "../constants";
 import { CameraDragController } from "./cameraDragController";
 
 describe("CameraDragController", () => {
@@ -157,6 +158,87 @@ describe("CameraDragController", () => {
 			ctrl.setOnDragStateChange(callback);
 			ctrl.reset();
 			expect(callback).not.toHaveBeenCalled();
+		});
+	});
+
+	describe("ズーム機能", () => {
+		describe("初期状態", () => {
+			it("zoomLevelがZOOM_DEFAULTである", () => {
+				const ctrl = new CameraDragController();
+				expect(ctrl.getZoomLevel()).toBe(ZOOM_DEFAULT);
+			});
+
+			it("isZoomedがfalseである", () => {
+				const ctrl = new CameraDragController();
+				expect(ctrl.isZoomed()).toBe(false);
+			});
+		});
+
+		describe("setZoomLevel", () => {
+			it("ズームレベルを設定できる", () => {
+				const ctrl = new CameraDragController();
+				ctrl.setZoomLevel(1.5);
+				expect(ctrl.getZoomLevel()).toBe(1.5);
+				expect(ctrl.isZoomed()).toBe(true);
+			});
+
+			it("ZOOM_MAXを超えない", () => {
+				const ctrl = new CameraDragController();
+				ctrl.setZoomLevel(10.0);
+				expect(ctrl.getZoomLevel()).toBe(ZOOM_MAX);
+			});
+
+			it("ZOOM_MINを下回らない", () => {
+				const ctrl = new CameraDragController();
+				ctrl.setZoomLevel(0.01);
+				expect(ctrl.getZoomLevel()).toBe(ZOOM_MIN);
+			});
+		});
+
+		describe("setDragOffset", () => {
+			it("外部からdragOffsetを設定できる", () => {
+				const ctrl = new CameraDragController();
+				ctrl.setDragOffset({ x: 100, y: -50 });
+				expect(ctrl.getDragOffset()).toEqual({ x: 100, y: -50 });
+			});
+		});
+
+		describe("resetでズームもリセットされる", () => {
+			it("ズーム後にresetするとデフォルトに戻る", () => {
+				const ctrl = new CameraDragController();
+				ctrl.setZoomLevel(1.5);
+				expect(ctrl.isZoomed()).toBe(true);
+				ctrl.reset();
+				expect(ctrl.getZoomLevel()).toBe(ZOOM_DEFAULT);
+				expect(ctrl.isZoomed()).toBe(false);
+			});
+
+			it("ズームのみの状態でresetするとfalse通知が発火する", () => {
+				const ctrl = new CameraDragController();
+				const callback = vi.fn();
+				ctrl.setOnDragStateChange(callback);
+				ctrl.setZoomLevel(1.5);
+				ctrl.reset();
+				expect(callback).toHaveBeenCalledWith(false);
+			});
+		});
+
+		describe("isDragActive", () => {
+			it("ズームのみでもtrueを返す", () => {
+				const ctrl = new CameraDragController();
+				ctrl.setZoomLevel(1.5);
+				expect(ctrl.isDragActive()).toBe(true);
+			});
+
+			it("ズームとドラッグ両方でもtrueを返す", () => {
+				const ctrl = new CameraDragController();
+				ctrl.setCanDrag(() => true);
+				ctrl.handlePointerDown(100, 100);
+				ctrl.handlePointerMove(120, 130);
+				ctrl.handlePointerUp();
+				ctrl.setZoomLevel(1.5);
+				expect(ctrl.isDragActive()).toBe(true);
+			});
 		});
 	});
 

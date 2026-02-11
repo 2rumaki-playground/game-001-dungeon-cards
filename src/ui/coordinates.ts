@@ -106,14 +106,23 @@ export function calculateCameraOffset(
 	playerPos: Position,
 	mapWidth: number,
 	mapHeight: number,
+	zoomLevel = 1.0,
 ): Position {
 	const viewport = getViewportPixelSize();
 	const map = getMapPixelSize(mapWidth, mapHeight);
 	const playerCenter = gridToCenterPixel(playerPos);
 
 	return {
-		x: calcAxis(viewport.width, map.width, playerCenter.x),
-		y: calcAxis(viewport.height, map.height, playerCenter.y),
+		x: calcAxis(
+			viewport.width,
+			map.width * zoomLevel,
+			playerCenter.x * zoomLevel,
+		),
+		y: calcAxis(
+			viewport.height,
+			map.height * zoomLevel,
+			playerCenter.y * zoomLevel,
+		),
 	};
 }
 
@@ -130,12 +139,39 @@ export function clampCameraOffset(
 	dragOffset: Position,
 	mapWidth: number,
 	mapHeight: number,
+	zoomLevel = 1.0,
 ): Position {
 	const viewport = getViewportPixelSize();
 	const map = getMapPixelSize(mapWidth, mapHeight);
 	return {
-		x: clampAxis(baseOffset.x + dragOffset.x, viewport.width, map.width),
-		y: clampAxis(baseOffset.y + dragOffset.y, viewport.height, map.height),
+		x: clampAxis(
+			baseOffset.x + dragOffset.x,
+			viewport.width,
+			map.width * zoomLevel,
+		),
+		y: clampAxis(
+			baseOffset.y + dragOffset.y,
+			viewport.height,
+			map.height * zoomLevel,
+		),
+	};
+}
+
+/**
+ * スクリーン座標からワールド座標（マップ内ピクセル座標）に変換
+ * @param screenPos ビューポート内のスクリーン座標
+ * @param cameraOffset 現在のカメラオフセット（mapContainer.x/y）
+ * @param zoomLevel 現在のズームレベル
+ * @returns ワールド座標
+ */
+export function screenToWorld(
+	screenPos: Position,
+	cameraOffset: Position,
+	zoomLevel: number,
+): Position {
+	return {
+		x: (screenPos.x - cameraOffset.x) / zoomLevel,
+		y: (screenPos.y - cameraOffset.y) / zoomLevel,
 	};
 }
 

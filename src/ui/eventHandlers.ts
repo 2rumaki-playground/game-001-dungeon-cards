@@ -8,6 +8,9 @@ import {
 	STATUS_BAR_HEIGHT,
 	TRAP_DAMAGE,
 	TREASURE_HEAL,
+	ZOOM_MAX,
+	ZOOM_MIN,
+	ZOOM_WHEEL_STEP,
 } from "../constants";
 import {
 	endPlayerTurn,
@@ -28,7 +31,12 @@ import type { Card, Direction, Position, SpecialTileType } from "../types";
 import { DIRECTION_DELTA } from "../types";
 import { deleteSaveData, hasSaveData, loadGame } from "../utils/storage";
 import { createJumpParticleConfig } from "./battleParticles";
-import { getViewportPixelSize, gridToCenterPixel } from "./coordinates";
+import {
+	calculateCameraOffset,
+	clampCameraOffset,
+	getViewportPixelSize,
+	gridToCenterPixel,
+} from "./coordinates";
 import { detectEnemyMoves } from "./enemyMoveDetector";
 import {
 	executeNextFloorTransition,
@@ -706,6 +714,185 @@ export function setupEventHandlers(ctx: GameContext): void {
 
 	canvas.addEventListener("pointerleave", () => {
 		cameraDrag.handlePointerUp();
+	});
+
+	// マウスホイールによるカメラズーム
+	canvas.addEventListener(
+		"wheel",
+		(e) => {
+			e.preventDefault();
+			const x = e.offsetX;
+			const y = e.offsetY;
+			if (
+				x < 0 ||
+				x > viewportSize.width ||
+				y < STATUS_BAR_HEIGHT ||
+				y > STATUS_BAR_HEIGHT + viewportSize.height
+			) {
+				return;
+			}
+
+			const oldZoom = cameraDrag.getZoomLevel();
+			const direction = e.deltaY > 0 ? -1 : 1;
+			const newZoom = Math.max(
+				ZOOM_MIN,
+				Math.min(ZOOM_MAX, oldZoom + direction * ZOOM_WHEEL_STEP),
+			);
+			if (newZoom === oldZoom) return;
+
+			// カーソル基点ズーム: ズーム前後でカーソル位置のワールド座標を保持
+			const cursorInViewport = { x, y: y - STATUS_BAR_HEIGHT };
+			const mapWidth = ctx.state.map[0]?.length ?? 0;
+			const mapHeight = ctx.state.map.length;
+			const oldBase = calculateCameraOffset(
+				ctx.state.player.position,
+				mapWidth,
+				mapHeight,
+				oldZoom,
+			);
+			const oldDrag = cameraDrag.getDragOffset();
+			const posBefore = clampCameraOffset(
+				oldBase,
+				oldDrag,
+				mapWidth,
+				mapHeight,
+				oldZoom,
+			);
+
+			cameraDrag.setZoomLevel(newZoom);
+
+			const ratio = newZoom / oldZoom;
+			const desiredTotal = {
+				x: cursorInViewport.x - (cursorInViewport.x - posBefore.x) * ratio,
+				y: cursorInViewport.y - (cursorInViewport.y - posBefore.y) * ratio,
+			};
+			const newBase = calculateCameraOffset(
+				ctx.state.player.position,
+				mapWidth,
+				mapHeight,
+				newZoom,
+			);
+			cameraDrag.setDragOffset({
+				x: desiredTotal.x - newBase.x,
+				y: desiredTotal.y - newBase.y,
+			});
+
+			applyCameraOffset(ctx);
+		},
+		{ passive: false },
+	);
+
+	// ピンチズーム（タッチデバイス対応）
+	let pinchStartDistance = 0;
+	let pinchStartZoom = 1.0;
+	const activeTouches = new Map<number, { x: number; y: number }>();
+
+	canvas.addEventListener(
+		"touchstart",
+		(e) => {
+			const rect = canvas.getBoundingClientRect();
+			for (const touch of e.changedTouches) {
+				activeTouches.set(touch.identifier, {
+					x: touch.clientX - rect.left,
+					y: touch.clientY - rect.top,
+				});
+			}
+			if (activeTouches.size === 2) {
+				e.preventDefault();
+				const touches = [...activeTouches.values()];
+				pinchStartDistance = Math.hypot(
+					touches[1].x - touches[0].x,
+					touches[1].y - touches[0].y,
+				);
+				pinchStartZoom = cameraDrag.getZoomLevel();
+			}
+		},
+		{ passive: false },
+	);
+
+	canvas.addEventListener(
+		"touchmove",
+		(e) => {
+			const rect = canvas.getBoundingClientRect();
+			for (const touch of e.changedTouches) {
+				activeTouches.set(touch.identifier, {
+					x: touch.clientX - rect.left,
+					y: touch.clientY - rect.top,
+				});
+			}
+			if (activeTouches.size === 2 && pinchStartDistance > 0) {
+				e.preventDefault();
+				const touches = [...activeTouches.values()];
+				const currentDistance = Math.hypot(
+					touches[1].x - touches[0].x,
+					touches[1].y - touches[0].y,
+				);
+				const targetZoom = Math.max(
+					ZOOM_MIN,
+					Math.min(
+						ZOOM_MAX,
+						pinchStartZoom * (currentDistance / pinchStartDistance),
+					),
+				);
+				const oldZoom = cameraDrag.getZoomLevel();
+				if (targetZoom === oldZoom) return;
+
+				const centerX = (touches[0].x + touches[1].x) / 2;
+				const centerY = (touches[0].y + touches[1].y) / 2 - STATUS_BAR_HEIGHT;
+
+				if (centerY >= 0 && centerY <= viewportSize.height) {
+					const mapWidth = ctx.state.map[0]?.length ?? 0;
+					const mapHeight = ctx.state.map.length;
+					const oldBase = calculateCameraOffset(
+						ctx.state.player.position,
+						mapWidth,
+						mapHeight,
+						oldZoom,
+					);
+					const oldDrag = cameraDrag.getDragOffset();
+					const posBefore = clampCameraOffset(
+						oldBase,
+						oldDrag,
+						mapWidth,
+						mapHeight,
+						oldZoom,
+					);
+
+					cameraDrag.setZoomLevel(targetZoom);
+
+					const ratio = targetZoom / oldZoom;
+					const desiredTotal = {
+						x: centerX - (centerX - posBefore.x) * ratio,
+						y: centerY - (centerY - posBefore.y) * ratio,
+					};
+					const newBase = calculateCameraOffset(
+						ctx.state.player.position,
+						mapWidth,
+						mapHeight,
+						targetZoom,
+					);
+					cameraDrag.setDragOffset({
+						x: desiredTotal.x - newBase.x,
+						y: desiredTotal.y - newBase.y,
+					});
+
+					applyCameraOffset(ctx);
+				}
+			}
+		},
+		{ passive: false },
+	);
+
+	canvas.addEventListener("touchend", (e) => {
+		for (const touch of e.changedTouches) {
+			activeTouches.delete(touch.identifier);
+		}
+	});
+
+	canvas.addEventListener("touchcancel", (e) => {
+		for (const touch of e.changedTouches) {
+			activeTouches.delete(touch.identifier);
+		}
 	});
 
 	// 「プレイヤーへ戻る」ボタンのコールバック設定
