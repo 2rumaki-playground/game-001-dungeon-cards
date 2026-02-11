@@ -840,10 +840,13 @@ export function setupEventHandlers(ctx: GameContext): void {
 				e.preventDefault();
 				// ドラッグ中だった場合はピンチに切り替えるため解除
 				cameraDrag.handlePointerUp();
-				if (capturedPointerId !== null) {
+				if (
+					capturedPointerId !== null &&
+					canvas.hasPointerCapture(capturedPointerId)
+				) {
 					canvas.releasePointerCapture(capturedPointerId);
-					capturedPointerId = null;
 				}
+				capturedPointerId = null;
 				const touches = [...activeTouches.values()];
 				pinchStartDistance = Math.hypot(
 					touches[1].x - touches[0].x,
