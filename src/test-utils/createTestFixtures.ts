@@ -56,7 +56,8 @@ export function createTestState(overrides?: Partial<GameState>): GameState {
 /**
  * テスト用Enemyを生成
  *
- * - overrides で type / position を上書きした場合も hp/maxHp/id が整合する
+ * - overrides で type / position を上書きした場合、その値に基づいて hp/maxHp を再計算する
+ *   （ただし overrides で hp/maxHp を個別指定すればそちらが優先される）
  * - 呼び出しごとに一意な id を自動採番する（overrides.id で明示指定も可）
  */
 let __testEnemySeq = 0;
