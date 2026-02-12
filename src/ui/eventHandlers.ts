@@ -571,9 +571,11 @@ export function setupEventHandlers(ctx: GameContext): void {
 		try {
 			let next = endPlayerTurn(ctx.state);
 
-			// 敵ターンバナー表示 + オーバーレイフェードイン
-			await ctx.ui.turnBanner.showBanner("enemy");
-			await ctx.ui.turnOverlay.fadeIn();
+			// 敵ターンバナー表示 + オーバーレイフェードイン（並列実行）
+			await Promise.all([
+				ctx.ui.turnBanner.showBanner("enemy"),
+				ctx.ui.turnOverlay.fadeIn(),
+			]);
 
 			const enemiesBefore = next.enemies;
 			const { state: enemyTurnState, totalDamage } = executeEnemyTurn(next);
