@@ -51,6 +51,7 @@ export class EnemyTooltip {
 	constructor() {
 		this.container = new Container();
 		this.container.visible = false;
+		this.container.eventMode = "none";
 
 		this.bg = new Graphics();
 		this.container.addChild(this.bg);
