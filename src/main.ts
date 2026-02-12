@@ -251,6 +251,7 @@ function setupDebugGlobals(): void {
 				// UI状態をリセット
 				ctx.pendingCard = null;
 				ctx.cardQueue = [];
+				ctx.ui.handRenderer.setQueuedCards(new Map());
 				ctx.ui.directionSelector.hide();
 
 				const { startNewGameWithDebugParams } = await import(
