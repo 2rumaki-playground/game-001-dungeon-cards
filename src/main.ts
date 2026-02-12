@@ -79,10 +79,6 @@ async function initializeUIComponents(
 	mapViewport.addChild(mapContainer);
 	app.stage.addChild(mapViewport);
 
-	// ターンオーバーレイ（マップの上、ステータスバーの下）
-	const turnOverlay = new TurnOverlay(viewportSize.width, totalHeight);
-	app.stage.addChild(turnOverlay.getContainer());
-
 	// statusBarはmapViewportの後に追加（前面に描画するため）
 	app.stage.addChild(statusBar.getContainer());
 
@@ -134,6 +130,13 @@ async function initializeUIComponents(
 	logContainer.x = viewportSize.width + LOG_AREA_GAP;
 	logContainer.y = 0;
 	app.stage.addChild(logContainer);
+
+	// ターンオーバーレイ（手札・ボタン・ログ等の上に描画するためここで追加）
+	const turnOverlay = new TurnOverlay(
+		viewportSize.width + LOG_AREA_GAP + actionLogRenderer.getWidth(),
+		totalHeight,
+	);
+	app.stage.addChild(turnOverlay.getContainer());
 
 	const turnBanner = new TurnBanner(
 		viewportSize.width + LOG_AREA_GAP + actionLogRenderer.getWidth(),
