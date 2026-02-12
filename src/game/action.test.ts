@@ -707,6 +707,9 @@ describe("executeJump", () => {
 		expect(jumped).toBe(false);
 		expect(result.deck.hand).toHaveLength(0);
 		expect(result.deck.discardPile).toHaveLength(1);
+		expect(result.deck.discardPile[0]).toEqual(
+			expect.objectContaining({ id: "jump-1", type: "jump" }),
+		);
 	});
 
 	it.each([
