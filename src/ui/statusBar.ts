@@ -57,7 +57,7 @@ const HP_FLASH_INTERVAL_NORMAL = 60;
 const HP_FLASH_INTERVAL_FAST = 40;
 
 /** HPフラッシュの回数 */
-const FLASH_COUNT = 2;
+const HP_FLASH_COUNT = 2;
 
 /** APフラッシュの回数 */
 const AP_FLASH_COUNT = 1;
@@ -282,7 +282,7 @@ export class StatusBar {
 	 */
 	private async flashHpBar(hpRatio: number): Promise<void> {
 		const interval = this.getFlashInterval(hpRatio);
-		for (let i = 0; i < FLASH_COUNT; i++) {
+		for (let i = 0; i < HP_FLASH_COUNT; i++) {
 			this.drawHpBar(this.currentHpRatio, HP_FLASH_COLOR);
 			await this.delay(interval);
 			this.drawHpBar(this.currentHpRatio);
