@@ -613,11 +613,20 @@ export function setupEventHandlers(ctx: GameContext): void {
 			if (next.screen !== "gameOver") {
 				next = startPlayerTurn(next);
 
+				// バナー表示前にターン状態を反映（StatusBar/TurnEndButtonに即座に反映）
+				applyState(ctx, next);
+				ctx.ui.statusBar.render(
+					ctx.state.player,
+					ctx.state.floor,
+					ctx.state.turn,
+					ctx.state.isCleared,
+				);
+				ctx.ui.turnEndButton.render(ctx.state.turn);
+
 				// オーバーレイフェードアウト + プレイヤーターンバナー表示
 				await ctx.ui.turnOverlay.fadeOut();
 				await ctx.ui.turnBanner.showBanner("player");
 
-				applyState(ctx, next);
 				render(ctx, true);
 
 				await ctx.ui.handRenderer.renderWithAnimation(
