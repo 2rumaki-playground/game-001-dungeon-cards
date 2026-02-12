@@ -333,13 +333,18 @@ async function processCardQueue(ctx: GameContext): Promise<void> {
 	}
 }
 
+let escKeyListenerRegistered = false;
+
 export function setupEventHandlers(ctx: GameContext): void {
-	// Escキーでカードキューをクリア
-	document.addEventListener("keydown", (e) => {
-		if (e.key === "Escape" && ctx.cardQueue.length > 0) {
-			clearCardQueue(ctx);
-		}
-	});
+	// Escキーでカードキューをクリア（重複登録を防止）
+	if (!escKeyListenerRegistered) {
+		document.addEventListener("keydown", (e) => {
+			if (e.key === "Escape" && ctx.cardQueue.length > 0) {
+				clearCardQueue(ctx);
+			}
+		});
+		escKeyListenerRegistered = true;
+	}
 
 	// 方向選択UIのコールバック設定
 	ctx.ui.directionSelector.setOnDirectionSelect(async (direction) => {
