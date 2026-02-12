@@ -240,6 +240,14 @@ export class StatusBar {
 
 		const fromRatio = maxHp > 0 ? fromHp / maxHp : 0;
 		const toRatio = maxHp > 0 ? toHp / maxHp : 0;
+
+		// 呼び出し前にrender()でtoHp側が描画済みの場合に備え、
+		// fromHp/fromRatioの状態を明示的に反映してからアニメーション開始
+		this.currentHpRatio = fromRatio;
+		this.hpText.text = `HP: ${fromHp}/${maxHp}`;
+		this.drawHpBar(fromRatio);
+		this.hpBarGhost.clear();
+
 		let ghostPromise: Promise<void> | undefined;
 
 		// ダメージ時は赤点滅（HP残量に応じて速度変化）
@@ -311,6 +319,14 @@ export class StatusBar {
 
 		const fromRatio = maxAp > 0 ? fromAp / maxAp : 0;
 		const toRatio = maxAp > 0 ? toAp / maxAp : 0;
+
+		// 呼び出し前にrender()でtoAp側が描画済みの場合に備え、
+		// fromAp/fromRatioの状態を明示的に反映してからアニメーション開始
+		this.currentApRatio = fromRatio;
+		this.apText.text = `AP: ${fromAp}/${maxAp}`;
+		this.drawApBar(fromRatio);
+		this.apBarGhost.clear();
+
 		let ghostPromise: Promise<void> | undefined;
 
 		// AP消費時はフラッシュ + ゴーストバー
