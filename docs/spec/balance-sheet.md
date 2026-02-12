@@ -142,8 +142,8 @@ flowchart LR
     end
 
     subgraph デッキ回転
-        DS[デッキ枚数] --> HL[手札上限]
-        HL --> DR[ドロー率]
+        DS[デッキ枚数] --> DR[ドロー率]
+        HL[手札上限] --> DR[ドロー率]
         DR --> CI[カード期待出現間隔]
     end
 
