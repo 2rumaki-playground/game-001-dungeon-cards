@@ -122,8 +122,10 @@ export class EnemyTooltip {
 			{ color: TOOLTIP_BORDER_COLOR, width: TOOLTIP_BORDER_WIDTH },
 		);
 
+		// 基本は敵の上側に出すが、画面上端にはみ出す場合は下側に出す
+		const targetYAbove = pixelY - bgHeight - TOOLTIP_GAP;
 		this.container.x = pixelX;
-		this.container.y = pixelY - bgHeight - TOOLTIP_GAP;
+		this.container.y = targetYAbove >= 0 ? targetYAbove : pixelY + TOOLTIP_GAP;
 		this.container.visible = true;
 	}
 
