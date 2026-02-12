@@ -67,8 +67,8 @@ pnpm exec playwright install --with-deps chromium  # E2Eテスト用
 `/ship`、`/issue-pr`、`/resolve-pr-review` はビルド・テスト工程で [antfu/skills](https://github.com/antfu/skills) のリファレンスドキュメントを参照します。スキルはフルエージェント権限で実行されるため、`.gitignore` でリポジトリから除外しています。各開発者が内容を確認のうえ手動でインストールしてください。
 
 ```bash
-npx skills add antfu/skills@vite -g -y    # Vite設定・プラグインAPIのリファレンス
-npx skills add antfu/skills@vitest -g -y  # VitestテストAPI・モック・カバレッジのリファレンス
+npx skills add antfu/skills@vite -y    # Vite設定・プラグインAPIのリファレンス
+npx skills add antfu/skills@vitest -y  # VitestテストAPI・モック・カバレッジのリファレンス
 ```
 
 インストール後、ビルドエラー発生時はvite skill、テスト失敗時はvitest skillのリファレンスが自動的に参照されます。スキルなしでもコマンドは動作しますが、エラー解決時のガイドが利用できなくなります。

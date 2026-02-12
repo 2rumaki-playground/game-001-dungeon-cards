@@ -20,8 +20,8 @@
 
 1. `pnpm format` — フォーマット適用
 2. `pnpm lint` — リントチェック
-3. `pnpm build` — TypeScriptビルド確認（ビルドエラー時は [vite skill](~/.claude/skills/vite/SKILL.md) を参照）
-4. `pnpm test:run` — ユニットテスト全通過を確認（テスト失敗時は [vitest skill](~/.claude/skills/vitest/SKILL.md) を参照）
+3. `pnpm build` — TypeScriptビルド確認（ビルドエラー時は [vite skill](.claude/skills/vite/SKILL.md) を参照）
+4. `pnpm test:run` — ユニットテスト全通過を確認（テスト失敗時は [vitest skill](.claude/skills/vitest/SKILL.md) を参照）
 
 問題が見つかった場合は修正してから次に進む。Vite設定やVitest設定に関する問題は、各スキルのreferencesディレクトリ内の詳細ドキュメントを参照すること。
 
