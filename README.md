@@ -50,6 +50,29 @@ pnpm exec playwright install --with-deps chromium  # E2Eテスト用
 | CI | PRのopen / ready_for_review | lint・ユニットテスト・E2Eテスト・ビルドを並列実行 |
 | Release | mainへのpush | Conventional Commitsに基づくバージョンタグの自動付与とGitHub Releaseの作成 |
 
+## Claude Code カスタムコマンド
+
+[Claude Code](https://claude.com/claude-code) のカスタムコマンドを `.claude/commands/` に定義しています。
+
+| コマンド | 説明 |
+|----------|------|
+| `/ship` | 現在の変更をcommit・push・PR作成まで一括実行 |
+| `/issue-pr` | 指定Issueの対応ブランチ作成からTDD実装・PR作成まで実行（複数Issue並列対応可） |
+| `/resolve-pr-review` | PRのレビューコメントを解決してpush（複数PR並列対応可） |
+| `/refactor-issues` | コードベースのリファクタリング候補を調査しIssue起票 |
+| `/playwright-cli` | Playwright CLIでブラウザを対話操作しE2Eテストを作成 |
+
+### 前提スキル
+
+以下のコマンドはビルド・テスト工程で [antfu/skills](https://github.com/antfu/skills) のスキルを参照します。事前にインストールが必要です。
+
+```bash
+npx skills add antfu/skills@vite -g -y    # Vite設定・プラグインAPIのリファレンス
+npx skills add antfu/skills@vitest -g -y  # VitestテストAPI・モック・カバレッジのリファレンス
+```
+
+ビルドエラー発生時はvite skill、テスト失敗時はvitest skillのリファレンスドキュメントが自動的に参照されます。
+
 ## ディレクトリ構造
 
 ```
