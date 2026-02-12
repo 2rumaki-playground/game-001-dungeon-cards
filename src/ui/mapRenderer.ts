@@ -23,6 +23,7 @@ import {
 } from "./assetLoader";
 import { gridToPixel } from "./coordinates";
 import type { EnemyMove } from "./enemyMoveDetector";
+import { SkillForecastEffectManager } from "./skillForecastEffect";
 import { SpecialTileEffectManager } from "./specialTileEffect";
 
 /** プレイヤー移動アニメーションの時間（ms） */
@@ -189,6 +190,7 @@ export class MapRenderer {
 	private enemyGridPosMap: Map<string, Position> = new Map();
 	private lastRenderedMap: GameMap | null = null;
 	private specialTileEffectManager: SpecialTileEffectManager;
+	private skillForecastEffectManager: SkillForecastEffectManager;
 
 	constructor() {
 		this.container = new Container();
@@ -198,11 +200,16 @@ export class MapRenderer {
 		this.enemiesContainer = new Container();
 		this.fogGraphics = new Graphics();
 		this.specialTileEffectManager = new SpecialTileEffectManager();
+		this.skillForecastEffectManager = new SkillForecastEffectManager();
 
 		this.container.addChild(this.tilesContainer);
 		this.container.addChild(this.specialTileEffectManager.getContainer());
 		this.container.addChild(this.remnantsGraphics);
+		this.container.addChild(
+			this.skillForecastEffectManager.getRangeContainer(),
+		);
 		this.container.addChild(this.enemiesContainer);
+		this.container.addChild(this.skillForecastEffectManager.getIconContainer());
 		this.container.addChild(this.fogGraphics);
 		this.container.addChild(this.playerSprite);
 	}
@@ -474,6 +481,17 @@ export class MapRenderer {
 			// HPバー描画（全敵タイプ）
 			this.renderHpBar(enemy);
 		}
+
+		// スキル予告エフェクト更新
+		const forecastEnemies = visibleEnemies.filter((e) => e.pendingSkill);
+		const mapWidth = this.lastRenderedMap?.[0]?.length ?? 0;
+		const mapHeight = this.lastRenderedMap?.length ?? 0;
+		this.skillForecastEffectManager.update(
+			forecastEnemies,
+			mapWidth,
+			mapHeight,
+			visitedTiles,
+		);
 	}
 
 	/**
@@ -791,5 +809,6 @@ export class MapRenderer {
 		this.enemyTypeMap.clear();
 		this.enemyGridPosMap.clear();
 		this.specialTileEffectManager.clear();
+		this.skillForecastEffectManager.clear();
 	}
 }
