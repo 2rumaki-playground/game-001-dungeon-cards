@@ -128,8 +128,8 @@ flowchart LR
     end
 
     subgraph 戦闘バランス
-        D1[攻撃ダメージ] --> EHP[敵HP]
-        EHP --> KT[キルターン]
+        D1[攻撃ダメージ] --> KT[キルターン]
+        EHP[敵HP] --> KT[キルターン]
         KT --> TD[被ダメ累計]
         TD --> PH[プレイヤーHP消耗]
     end
