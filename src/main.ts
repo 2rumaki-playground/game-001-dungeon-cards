@@ -230,6 +230,9 @@ function setupDebugGlobals(): void {
 		gameState: GameState;
 		updateState: typeof updateState;
 		debugLog: boolean;
+		debugStartGame?: (
+			params: import("./types/debug").DebugStartParams,
+		) => Promise<void>;
 	};
 	debugWindow.gameState = ctx.state;
 	debugWindow.updateState = updateState;
@@ -239,6 +242,34 @@ function setupDebugGlobals(): void {
 			ctx.debugLog = v;
 		},
 	});
+
+	if (import.meta.env.DEV) {
+		debugWindow.debugStartGame = async (params) => {
+			if (ctx.isAnimating) return;
+			ctx.isAnimating = true;
+			try {
+				const { startNewGameWithDebugParams } = await import(
+					"./game/debugStart"
+				);
+				const { applyState } = await import("./ui/gameRenderer");
+				const { relayoutUI } = await import("./ui/relayout");
+
+				const newState = startNewGameWithDebugParams(ctx.state, params);
+				await ctx.ui.screenTransition.fadeTransition(() => {
+					applyState(ctx, newState);
+					relayoutUI(ctx);
+					render(ctx, true);
+				});
+				await ctx.ui.handRenderer.renderWithAnimation(
+					ctx.state.deck.hand,
+					ctx.state.player.ap,
+					newState.deck.hand.length,
+				);
+			} finally {
+				ctx.isAnimating = false;
+			}
+		};
+	}
 }
 
 async function main() {
