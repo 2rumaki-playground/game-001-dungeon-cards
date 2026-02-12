@@ -6,8 +6,10 @@ import { describe, expect, it } from "vitest";
 import {
 	createAttackParticleConfig,
 	createDefeatParticleConfig,
+	createHealParticleConfig,
 	createJumpParticleConfig,
 	createStrongAttackParticleConfig,
+	createTrapDamageParticleConfig,
 	getAttackParticleConfig,
 } from "./battleParticles";
 
@@ -112,6 +114,60 @@ describe("createDefeatParticleConfig", () => {
 	it("パーティクル数が多め（15個以上）", () => {
 		const config = createDefeatParticleConfig({ x: 0, y: 0 });
 		expect(config.count).toBeGreaterThanOrEqual(15);
+	});
+});
+
+describe("createHealParticleConfig", () => {
+	it("originが設定される", () => {
+		const config = createHealParticleConfig({ x: 100, y: 200 });
+		expect(config.origin).toEqual({ x: 100, y: 200 });
+	});
+
+	it("緑系の色が使用される", () => {
+		const config = createHealParticleConfig({ x: 0, y: 0 });
+		const colors = Array.isArray(config.color) ? config.color : [config.color];
+		for (const c of colors) {
+			// 緑系: 緑成分が高い
+			const g = (c >> 8) & 0xff;
+			expect(g).toBeGreaterThan(0x80);
+		}
+	});
+
+	it("上向きのパーティクル設定になっている", () => {
+		const config = createHealParticleConfig({ x: 0, y: 0 });
+		// 負のgravityで上方向に浮かぶ
+		expect(config.gravity).toBeDefined();
+		expect(config.gravity).toBeLessThan(0);
+		// directionalパターンの場合、角度が上向き（-π/2付近）
+		if (config.pattern.type === "directional") {
+			expect(config.pattern.angle).toBeCloseTo(-Math.PI / 2);
+		}
+	});
+});
+
+describe("createTrapDamageParticleConfig", () => {
+	it("originが設定される", () => {
+		const config = createTrapDamageParticleConfig({ x: 100, y: 200 });
+		expect(config.origin).toEqual({ x: 100, y: 200 });
+	});
+
+	it("紫系の色が使用される", () => {
+		const config = createTrapDamageParticleConfig({ x: 0, y: 0 });
+		const colors = Array.isArray(config.color) ? config.color : [config.color];
+		for (const c of colors) {
+			// 紫系: 赤成分と青成分がそれぞれ一定以上、かつ緑成分が一定以下
+			const r = (c >> 16) & 0xff;
+			const g = (c >> 8) & 0xff;
+			const b = c & 0xff;
+			expect(r).toBeGreaterThanOrEqual(0x60);
+			expect(b).toBeGreaterThanOrEqual(0x60);
+			expect(g).toBeLessThanOrEqual(0x80);
+		}
+	});
+
+	it("radialパターンが使用される", () => {
+		const config = createTrapDamageParticleConfig({ x: 0, y: 0 });
+		expect(config.pattern.type).toBe("radial");
 	});
 });
 

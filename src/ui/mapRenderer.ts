@@ -24,6 +24,11 @@ import {
 import { getViewportPixelSize, gridToPixel } from "./coordinates";
 import type { EnemyMove } from "./enemyMoveDetector";
 import { EnemyTooltip } from "./enemyTooltip";
+import {
+	BASE_SHAKE_INTENSITY,
+	calcPopupFontSize,
+	calcScreenShakeIntensity,
+} from "./popupLogic";
 import { SkillForecastEffectManager } from "./skillForecastEffect";
 import { SpecialTileEffectManager } from "./specialTileEffect";
 
@@ -54,17 +59,11 @@ const FLASH_COLOR = 0xffffff;
 /** 画面シェイクの時間（ms） */
 const SCREEN_SHAKE_DURATION = 200;
 
-/** 画面シェイクの振幅（px） */
-const SCREEN_SHAKE_INTENSITY = 4;
-
 /** プレイヤー被ダメージ時の点滅回数 */
 const PLAYER_BLINK_COUNT = 3;
 
 /** プレイヤー被ダメージ時の1回の点滅時間（ms） */
 const PLAYER_BLINK_INTERVAL = 80;
-
-/** ダメージポップアップのフォントサイズ */
-const DAMAGE_POPUP_FONT_SIZE = 24;
 
 /** ダメージポップアップの上昇距離（px） */
 const DAMAGE_POPUP_RISE = 28;
@@ -537,8 +536,11 @@ export class MapRenderer {
 	/**
 	 * 画面全体のシェイクエフェクト
 	 * コンテナのx,yをランダムにオフセットして振動させる
+	 * @param baseIntensity シェイク振幅（省略時はデフォルト値）
 	 */
-	private animateScreenShake(): Promise<void> {
+	private animateScreenShake(
+		baseIntensity = BASE_SHAKE_INTENSITY,
+	): Promise<void> {
 		return new Promise((resolve) => {
 			const originX = this.container.x;
 			const originY = this.container.y;
@@ -557,7 +559,7 @@ export class MapRenderer {
 				}
 
 				const decay = 1 - elapsed / SCREEN_SHAKE_DURATION;
-				const intensity = SCREEN_SHAKE_INTENSITY * decay;
+				const intensity = baseIntensity * decay;
 				this.container.x = originX + (Math.random() * 2 - 1) * intensity;
 				this.container.y = originY + (Math.random() * 2 - 1) * intensity;
 			};
@@ -602,10 +604,11 @@ export class MapRenderer {
 		const prefix = popupType === "heal" ? "+" : "-";
 		const color = POPUP_COLORS[popupType];
 
+		const fontSize = calcPopupFontSize(amount);
 		const text = new Text({
 			text: `${prefix}${amount}`,
 			style: {
-				fontSize: DAMAGE_POPUP_FONT_SIZE,
+				fontSize,
 				fontWeight: "bold",
 				fill: color,
 				stroke: {
@@ -643,10 +646,11 @@ export class MapRenderer {
 		if (!enemyContainer) return;
 
 		const enemyGridPos = this.enemyGridPosMap.get(enemyId);
+		const shakeIntensity = calcScreenShakeIntensity(damage);
 
 		await Promise.all([
 			this.animateFlash(enemyContainer),
-			this.animateScreenShake(),
+			this.animateScreenShake(shakeIntensity),
 			...(enemyGridPos ? [this.animateDamagePopup(enemyGridPos, damage)] : []),
 		]);
 	}
@@ -681,9 +685,10 @@ export class MapRenderer {
 	 * @param damage ダメージ量
 	 */
 	async animateEnemyAttackHit(damage: number): Promise<void> {
+		const shakeIntensity = calcScreenShakeIntensity(damage);
 		await Promise.all([
 			this.animateFlash(this.playerSprite),
-			this.animateScreenShake(),
+			this.animateScreenShake(shakeIntensity),
 			this.animateDamagePopup(this.playerGridPos, damage),
 		]);
 		await this.animatePlayerBlink();

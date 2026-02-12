@@ -84,6 +84,39 @@ export function createDefeatParticleConfig(origin: Vec2): ParticleConfig {
 }
 
 /**
+ * 回復時パーティクル設定を生成
+ * 緑系のキラキラ上昇エフェクト
+ */
+export function createHealParticleConfig(origin: Vec2): ParticleConfig {
+	return {
+		count: 10,
+		origin,
+		color: [0x44cc66, 0x66ff88, 0xaaffcc],
+		speed: { min: 0.05, max: 0.15 },
+		life: { min: 300, max: 600 },
+		size: { min: 2, max: 5 },
+		pattern: { type: "directional", angle: -Math.PI / 2, spread: Math.PI / 6 },
+		gravity: -0.0002,
+	};
+}
+
+/**
+ * 罠ダメージ時パーティクル設定を生成
+ * 紫系の飛散エフェクト
+ */
+export function createTrapDamageParticleConfig(origin: Vec2): ParticleConfig {
+	return {
+		count: 15,
+		origin,
+		color: [0x9b59b6, 0xcc66ff, 0x7733aa],
+		speed: { min: 0.08, max: 0.2 },
+		life: { min: 200, max: 400 },
+		size: { min: 2, max: 5 },
+		pattern: { type: "radial" },
+	};
+}
+
+/**
  * カードタイプからヒット時パーティクル設定を取得
  */
 export function getAttackParticleConfig(

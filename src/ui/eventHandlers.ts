@@ -30,7 +30,11 @@ import type { GameContext } from "../gameContext";
 import type { Card, Direction, Position, SpecialTileType } from "../types";
 import { DIRECTION_DELTA } from "../types";
 import { deleteSaveData, hasSaveData, loadGame } from "../utils/storage";
-import { createJumpParticleConfig } from "./battleParticles";
+import {
+	createHealParticleConfig,
+	createJumpParticleConfig,
+	createTrapDamageParticleConfig,
+} from "./battleParticles";
 import {
 	calculateCameraOffset,
 	clampCameraOffset,
@@ -77,7 +81,21 @@ async function showTileEffectPopup(
 	}
 
 	if (amount <= 0) return;
-	await ctx.ui.mapRenderer.animateTileEffectPopup(tileType, amount, gridPos);
+
+	const mapCenter = gridToCenterPixel(gridPos);
+	const globalCenter = ctx.ui.mapRenderer.getContainer().toGlobal(mapCenter);
+	const particleOrigin = ctx.ui.particleSystem
+		.getContainer()
+		.toLocal(globalCenter);
+	const particleConfig =
+		tileType === "trap"
+			? createTrapDamageParticleConfig(particleOrigin)
+			: createHealParticleConfig(particleOrigin);
+
+	await Promise.all([
+		ctx.ui.mapRenderer.animateTileEffectPopup(tileType, amount, gridPos),
+		ctx.ui.particleSystem.emit(particleConfig),
+	]);
 }
 
 /**
