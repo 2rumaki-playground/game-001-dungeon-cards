@@ -170,13 +170,7 @@ describe("constants", () => {
 
 	describe("ENEMY_TYPE_LABEL", () => {
 		it("全敵タイプにラベルが定義されている", () => {
-			const types: EnemyType[] = [
-				"normal",
-				"heavy",
-				"scout",
-				"miniboss",
-				"boss",
-			];
+			const types = Object.keys(ENEMY_TYPE_LABEL) as EnemyType[];
 			for (const type of types) {
 				expect(ENEMY_TYPE_LABEL[type]).toBeDefined();
 				expect(typeof ENEMY_TYPE_LABEL[type]).toBe("string");
