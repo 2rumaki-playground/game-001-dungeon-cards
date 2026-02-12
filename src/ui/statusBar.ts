@@ -240,6 +240,7 @@ export class StatusBar {
 
 		const fromRatio = maxHp > 0 ? fromHp / maxHp : 0;
 		const toRatio = maxHp > 0 ? toHp / maxHp : 0;
+		let ghostPromise: Promise<void> | undefined;
 
 		// ダメージ時は赤点滅（HP残量に応じて速度変化）
 		if (toHp < fromHp) {
@@ -247,7 +248,7 @@ export class StatusBar {
 
 			// ゴーストバー（変化前の値を半透明で遅延表示）
 			this.drawHpGhost(fromRatio);
-			tweenValue({
+			ghostPromise = tweenValue({
 				duration: GHOST_BAR_DURATION,
 				delay: GHOST_BAR_DELAY,
 				easing: Easing.easeOut,
@@ -259,7 +260,7 @@ export class StatusBar {
 		}
 
 		// バー幅とテキストのtweenアニメーション
-		await tweenValue({
+		const barPromise = tweenValue({
 			duration: BAR_TWEEN_DURATION,
 			easing: Easing.easeOut,
 			onUpdate: (progress) => {
@@ -270,6 +271,7 @@ export class StatusBar {
 				this.drawHpBar(ratio);
 			},
 		});
+		await Promise.all([ghostPromise, barPromise]);
 
 		// ゴーストバークリア
 		this.hpBarGhost.clear();
@@ -309,13 +311,14 @@ export class StatusBar {
 
 		const fromRatio = maxAp > 0 ? fromAp / maxAp : 0;
 		const toRatio = maxAp > 0 ? toAp / maxAp : 0;
+		let ghostPromise: Promise<void> | undefined;
 
 		// AP消費時はフラッシュ + ゴーストバー
 		if (toAp < fromAp) {
 			await this.flashApBar();
 
 			this.drawApGhost(fromRatio);
-			tweenValue({
+			ghostPromise = tweenValue({
 				duration: GHOST_BAR_DURATION,
 				delay: GHOST_BAR_DELAY,
 				easing: Easing.easeOut,
@@ -326,7 +329,7 @@ export class StatusBar {
 			});
 		}
 
-		await tweenValue({
+		const barPromise = tweenValue({
 			duration: BAR_TWEEN_DURATION,
 			easing: Easing.easeOut,
 			onUpdate: (progress) => {
@@ -337,6 +340,7 @@ export class StatusBar {
 				this.drawApBar(ratio);
 			},
 		});
+		await Promise.all([ghostPromise, barPromise]);
 
 		// ゴーストバークリア
 		this.apBarGhost.clear();
