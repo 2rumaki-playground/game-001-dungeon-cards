@@ -1,6 +1,14 @@
-import { MAX_AP, PLAYER_INITIAL_HP } from "../constants";
+import { ENEMY_PARAMS, MAX_AP, PLAYER_INITIAL_HP } from "../constants";
 import { createFixedLayoutMap } from "../game/map";
-import type { GameMap, GameState } from "../types";
+import type {
+	Card,
+	CardType,
+	Enemy,
+	EnemyType,
+	GameMap,
+	GameState,
+	Position,
+} from "../types";
 import { RNG } from "../utils/rng";
 
 /**
@@ -43,4 +51,33 @@ export function createTestState(overrides?: Partial<GameState>): GameState {
 		visitedTiles: new Set<string>(),
 		...overrides,
 	};
+}
+
+/**
+ * テスト用Enemyを生成
+ */
+export function createTestEnemy(
+	type: EnemyType = "normal",
+	position: Position = { x: 4, y: 3 },
+	overrides?: Partial<Enemy>,
+): Enemy {
+	const { hp } = ENEMY_PARAMS[type];
+	return {
+		id: `enemy-${position.x}-${position.y}`,
+		type,
+		position,
+		hp,
+		maxHp: hp,
+		...overrides,
+	};
+}
+
+/**
+ * テスト用の手札を生成
+ */
+export function createTestHand(cards: CardType[]): Card[] {
+	return cards.map((type, i) => ({
+		id: `card-${i}`,
+		type,
+	}));
 }

@@ -8,6 +8,7 @@ import {
 	MAX_AP,
 	TOTAL_DECK_SIZE,
 } from "../constants";
+import { createTestEnemy } from "../test-utils/createTestFixtures";
 import type { GameMap, GameState, Tile } from "../types";
 import { RNG } from "../utils/rng";
 import * as storage from "../utils/storage"; // Import for mocking
@@ -58,15 +59,7 @@ function createTestState(overrides?: Partial<GameState>): GameState {
 			ap: 1,
 			maxAp: MAX_AP,
 		},
-		enemies: [
-			{
-				id: "enemy-1",
-				position: { x: 2, y: 2 },
-				hp: 3,
-				maxHp: 3,
-				type: "normal",
-			},
-		],
+		enemies: [createTestEnemy("normal", { x: 2, y: 2 })],
 		deck: createInitialDeckState(rng),
 		actionLog: [],
 		rng,
