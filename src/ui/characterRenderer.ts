@@ -4,7 +4,7 @@
 
 import { Container, Graphics, Sprite } from "pixi.js";
 import { CELL_SIZE, COLORS } from "../constants";
-import type { Direction, Enemy, Position } from "../types";
+import type { Direction, Enemy, Player, Position } from "../types";
 import { DIRECTION_DELTA } from "../types";
 import type { EnemyType } from "../types/character";
 import { Easing, tween } from "../utils/tween";
@@ -75,7 +75,7 @@ export class CharacterRenderer {
 	/**
 	 * プレイヤーを描画
 	 */
-	renderPlayer(player: { position: Position }): void {
+	renderPlayer(player: Player): void {
 		this.initPlayerSprite();
 
 		this.playerGridPos = player.position;
