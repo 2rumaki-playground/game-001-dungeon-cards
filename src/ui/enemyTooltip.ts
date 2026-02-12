@@ -122,9 +122,19 @@ export class EnemyTooltip {
 			{ color: TOOLTIP_BORDER_COLOR, width: TOOLTIP_BORDER_WIDTH },
 		);
 
-		// 基本は敵の上側に出すが、画面上端にはみ出す場合は下側に出す
+		// X方向: ビューポート右端にはみ出す場合は左側にオフセットする
+		let tooltipX = pixelX;
+		if (typeof window !== "undefined") {
+			const viewportWidth = window.innerWidth;
+			const overflowRight = tooltipX + bgWidth - viewportWidth;
+			if (overflowRight > 0) {
+				tooltipX = Math.max(0, viewportWidth - bgWidth);
+			}
+		}
+
+		// Y方向: 基本は敵の上側に出すが、画面上端にはみ出す場合は下側に出す
 		const targetYAbove = pixelY - bgHeight - TOOLTIP_GAP;
-		this.container.x = pixelX;
+		this.container.x = tooltipX;
 		this.container.y = targetYAbove >= 0 ? targetYAbove : pixelY + TOOLTIP_GAP;
 		this.container.visible = true;
 	}
