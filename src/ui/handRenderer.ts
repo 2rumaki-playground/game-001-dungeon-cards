@@ -623,8 +623,16 @@ export class HandRenderer {
 		});
 		descText.x = TOOLTIP_PADDING;
 		descText.y = yOffset;
-		const descLineCount = CARD_DESCRIPTION[cardType].split("\n").length;
-		yOffset += descLineCount * 14 + 8;
+		// wordWrap による実際の折り返しを反映したテキスト高さからオフセットを算出
+		let descHeight: number;
+		try {
+			descHeight = descText.height;
+		} catch {
+			// Canvas API が利用不可の場合のフォールバック
+			const descLineCount = CARD_DESCRIPTION[cardType].split("\n").length;
+			descHeight = descLineCount * 14;
+		}
+		yOffset += descHeight + 8;
 
 		// レアリティ
 		const rarityText = new Text({
