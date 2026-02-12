@@ -99,8 +99,8 @@ git worktree add /tmp/wt-pr-<番号>
 2. **コミット前チェック**（各コミットの前に必ず実行）:
    - `cd /tmp/wt-pr-<番号> && pnpm format`
    - `cd /tmp/wt-pr-<番号> && pnpm lint`
-   - `cd /tmp/wt-pr-<番号> && pnpm build`
-   - `cd /tmp/wt-pr-<番号> && pnpm test:run`
+   - `cd /tmp/wt-pr-<番号> && pnpm build`（ビルドエラー時は [vite skill](~/.claude/skills/vite/SKILL.md) を参照）
+   - `cd /tmp/wt-pr-<番号> && pnpm test:run`（テスト失敗時は [vitest skill](~/.claude/skills/vitest/SKILL.md) を参照）
 
 3. **コミット・push**:
    - Conventional Commits形式、日本語、50文字以内
@@ -220,8 +220,8 @@ gh pr checkout <番号>
 
 1. `pnpm format` — フォーマット適用
 2. `pnpm lint` — リントチェック
-3. `pnpm build` — TypeScriptビルド確認
-4. `pnpm test:run` — ユニットテスト全通過を確認
+3. `pnpm build` — TypeScriptビルド確認（ビルドエラー時は [vite skill](~/.claude/skills/vite/SKILL.md) を参照）
+4. `pnpm test:run` — ユニットテスト全通過を確認（テスト失敗時は [vitest skill](~/.claude/skills/vitest/SKILL.md) を参照）
 
 #### 5c. コミット・push
 
