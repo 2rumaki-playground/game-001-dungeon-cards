@@ -59,14 +59,21 @@ describe("SpecialTileEffectManager", () => {
 		expect(tickerCallbacks).toHaveLength(1);
 	});
 
-	it("update()で通常タイルのみのマップではTickerに登録されない", () => {
+	it("update()で通常タイル（floor/wall）のみのマップではTickerに登録されない", () => {
 		const manager = new SpecialTileEffectManager();
 		const map = createSimpleMap([
 			["floor", "wall"],
-			["floor", "stairs"],
+			["floor", "floor"],
 		]);
 		manager.update(map);
 		expect(tickerCallbacks).toHaveLength(0);
+	});
+
+	it("update()で階段タイルを含むマップでTickerに登録される", () => {
+		const manager = new SpecialTileEffectManager();
+		const map = createSimpleMap([["floor", "stairs"]]);
+		manager.update(map);
+		expect(tickerCallbacks).toHaveLength(1);
 	});
 
 	it("update()でvisitedTilesが指定された場合、未訪問の特殊タイルはスキップ", () => {
@@ -143,6 +150,34 @@ describe("SpecialTileEffectManager", () => {
 
 		// コンテナに描画用Graphicsがある
 		expect(manager.getContainer().children.length).toBeGreaterThanOrEqual(1);
+	});
+
+	it("update()で階段タイルのエフェクト数がカウントされる", () => {
+		const manager = new SpecialTileEffectManager();
+		const map = createSimpleMap([["trap", "stairs"]]);
+		manager.update(map);
+		expect(manager.getEffectCount()).toBe(2); // trap + stairs
+	});
+
+	it("setFloorCleared(true)で階段エフェクトの設定が変化する", () => {
+		const manager = new SpecialTileEffectManager();
+		const map = createSimpleMap([["stairs"]]);
+		manager.update(map);
+		expect(manager.getEffectCount()).toBe(1);
+
+		manager.setFloorCleared(true);
+		// setFloorCleared後もエフェクト数は維持
+		expect(manager.getEffectCount()).toBe(1);
+	});
+
+	it("clear()後に階段エフェクトもクリアされる", () => {
+		const manager = new SpecialTileEffectManager();
+		const map = createSimpleMap([["stairs", "trap"]]);
+		manager.update(map);
+		expect(manager.getEffectCount()).toBe(2);
+
+		manager.clear();
+		expect(manager.getEffectCount()).toBe(0);
 	});
 
 	it("update()でタイルが消えた場合エフェクトが減る", () => {

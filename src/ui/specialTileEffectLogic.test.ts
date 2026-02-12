@@ -4,6 +4,7 @@ import type { SpecialTileType } from "../types/map";
 import {
 	calcPulseAlpha,
 	getSpecialTileEffectConfig,
+	getStairsEffectConfig,
 } from "./specialTileEffectLogic";
 
 describe("getSpecialTileEffectConfig", () => {
@@ -38,6 +39,32 @@ describe("getSpecialTileEffectConfig", () => {
 			expect(config.glowRadius).toBeGreaterThan(0);
 			expect(config.glowRadius).toBeLessThanOrEqual(0.5);
 		}
+	});
+});
+
+describe("getStairsEffectConfig", () => {
+	it("通常時は階段色のグロー設定を返す", () => {
+		const config = getStairsEffectConfig(false);
+		expect(config.glowColor).toBe(COLORS.stairs);
+		expect(config.glowRadius).toBeGreaterThan(0);
+	});
+
+	it("フロアクリア時はパルスが速くなる", () => {
+		const normal = getStairsEffectConfig(false);
+		const cleared = getStairsEffectConfig(true);
+		expect(cleared.pulsePeriod).toBeLessThan(normal.pulsePeriod);
+	});
+
+	it("フロアクリア時はalphaが大きくなる", () => {
+		const normal = getStairsEffectConfig(false);
+		const cleared = getStairsEffectConfig(true);
+		expect(cleared.pulseAlphaMax).toBeGreaterThan(normal.pulseAlphaMax);
+	});
+
+	it("フロアクリア時はグロー半径が大きくなる", () => {
+		const normal = getStairsEffectConfig(false);
+		const cleared = getStairsEffectConfig(true);
+		expect(cleared.glowRadius).toBeGreaterThan(normal.glowRadius);
 	});
 });
 

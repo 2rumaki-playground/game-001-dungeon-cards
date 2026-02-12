@@ -38,6 +38,32 @@ const CONFIGS: Record<SpecialTileType, SpecialTileEffectConfig> = {
 	},
 };
 
+const STAIRS_NORMAL: SpecialTileEffectConfig = {
+	pulsePeriod: 3000,
+	pulseAlphaMin: 0.08,
+	pulseAlphaMax: 0.25,
+	glowColor: COLORS.stairs,
+	glowRadius: 0.35,
+};
+
+const STAIRS_CLEARED: SpecialTileEffectConfig = {
+	pulsePeriod: 1200,
+	pulseAlphaMin: 0.2,
+	pulseAlphaMax: 0.55,
+	glowColor: COLORS.stairs,
+	glowRadius: 0.45,
+};
+
+/**
+ * 階段タイルのエフェクト設定を取得
+ * @param floorCleared フロアクリア状態（全敵撃破済み）
+ */
+export function getStairsEffectConfig(
+	floorCleared: boolean,
+): SpecialTileEffectConfig {
+	return floorCleared ? STAIRS_CLEARED : STAIRS_NORMAL;
+}
+
 export function getSpecialTileEffectConfig(
 	tileType: SpecialTileType,
 ): SpecialTileEffectConfig {

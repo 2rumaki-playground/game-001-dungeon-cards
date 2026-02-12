@@ -790,6 +790,7 @@ export class MapRenderer {
 		visitedTiles?: Set<string>,
 	): void {
 		this.renderMap(map);
+		this.specialTileEffectManager.setFloorCleared(enemies.length === 0);
 		this.specialTileEffectManager.update(map, visitedTiles);
 		this.renderRemnants(remnants);
 		if (!skipPlayer) {
