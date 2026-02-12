@@ -116,10 +116,18 @@ export class EnemyTooltip {
 		this.hpText.text = `HP: ${enemy.hp}/${enemy.maxHp}`;
 		this.atkText.text = `ATK: ${attackDamage}`;
 
+		// Text.width が環境によって例外を投げるケースがあるため、
+		// より安全な bounds ベースの計測を行う。
+		// それでも失敗した場合は、開発時にのみ警告ログを出しつつ 0 を返す。
 		const safeWidth = (t: Text): number => {
 			try {
-				return t.width;
-			} catch {
+				const bounds = t.getBounds();
+				return bounds?.width ?? 0;
+			} catch (e) {
+				// 開発時に描画環境の不具合を検知できるよう、例外をサイレントに握りつぶさない。
+				if (import.meta.env.DEV) {
+					console.warn("[EnemyTooltip] Text width measurement failed", e);
+				}
 				return 0;
 			}
 		};
