@@ -1,24 +1,20 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { createTickerMock } from "../test-utils/mockPixi";
 import type { Enemy } from "../types";
 
-let tickerCallbacks: Array<(tick: { deltaMS: number }) => void> = [];
+const tickerMock = createTickerMock();
 vi.mock("pixi.js", async () => {
 	const actual = await vi.importActual<typeof import("pixi.js")>("pixi.js");
-
-	const MockTicker = {
-		shared: {
-			add: (fn: (tick: { deltaMS: number }) => void) => {
-				tickerCallbacks.push(fn);
-			},
-			remove: (fn: (tick: { deltaMS: number }) => void) => {
-				tickerCallbacks = tickerCallbacks.filter((cb) => cb !== fn);
-			},
-		},
-	};
-
 	return {
 		...actual,
-		Ticker: MockTicker,
+		Ticker: {
+			shared: {
+				add: (fn: (tick: { deltaMS: number }) => void) =>
+					tickerMock.shared.add(fn),
+				remove: (fn: (tick: { deltaMS: number }) => void) =>
+					tickerMock.shared.remove(fn),
+			},
+		},
 	};
 });
 
@@ -37,7 +33,7 @@ function createEnemy(
 
 describe("SkillForecastEffectManager", () => {
 	beforeEach(() => {
-		tickerCallbacks = [];
+		tickerMock.reset();
 	});
 
 	it("getRangeContainer()がContainerを返す", () => {
@@ -60,7 +56,7 @@ describe("SkillForecastEffectManager", () => {
 			}),
 		];
 		manager.update(enemies, 11, 11);
-		expect(tickerCallbacks).toHaveLength(1);
+		expect(tickerMock.callbacks).toHaveLength(1);
 	});
 
 	it("update()で空配列を渡すとTickerが解除される", () => {
@@ -73,10 +69,10 @@ describe("SkillForecastEffectManager", () => {
 			}),
 		];
 		manager.update(enemies, 11, 11);
-		expect(tickerCallbacks).toHaveLength(1);
+		expect(tickerMock.callbacks).toHaveLength(1);
 
 		manager.update([], 11, 11);
-		expect(tickerCallbacks).toHaveLength(0);
+		expect(tickerMock.callbacks).toHaveLength(0);
 	});
 
 	it("update()を複数回呼んでもTickerコールバックは1つだけ", () => {
@@ -90,7 +86,7 @@ describe("SkillForecastEffectManager", () => {
 		];
 		manager.update(enemies, 11, 11);
 		manager.update(enemies, 11, 11);
-		expect(tickerCallbacks).toHaveLength(1);
+		expect(tickerMock.callbacks).toHaveLength(1);
 	});
 
 	it("update()でvisitedTilesが指定された場合、未訪問タイルの範囲はスキップされる", () => {
@@ -107,7 +103,7 @@ describe("SkillForecastEffectManager", () => {
 		manager.update(enemies, 11, 11, visited);
 
 		// Tickerが登録されている（敵が見えているので）
-		expect(tickerCallbacks).toHaveLength(1);
+		expect(tickerMock.callbacks).toHaveLength(1);
 		expect(manager.getEffectCount()).toBe(1);
 	});
 
@@ -122,7 +118,7 @@ describe("SkillForecastEffectManager", () => {
 		];
 		const visited = new Set(["0,0"]);
 		manager.update(enemies, 11, 11, visited);
-		expect(tickerCallbacks).toHaveLength(0);
+		expect(tickerMock.callbacks).toHaveLength(0);
 		expect(manager.getEffectCount()).toBe(0);
 	});
 
@@ -130,7 +126,7 @@ describe("SkillForecastEffectManager", () => {
 		const manager = new SkillForecastEffectManager();
 		const enemies = [createEnemy({ id: "boss1", position: { x: 5, y: 5 } })];
 		manager.update(enemies, 11, 11);
-		expect(tickerCallbacks).toHaveLength(0);
+		expect(tickerMock.callbacks).toHaveLength(0);
 		expect(manager.getEffectCount()).toBe(0);
 	});
 
@@ -163,10 +159,10 @@ describe("SkillForecastEffectManager", () => {
 			}),
 		];
 		manager.update(enemies, 11, 11);
-		expect(tickerCallbacks).toHaveLength(1);
+		expect(tickerMock.callbacks).toHaveLength(1);
 
 		manager.clear();
-		expect(tickerCallbacks).toHaveLength(0);
+		expect(tickerMock.callbacks).toHaveLength(0);
 	});
 
 	it("clear()後にgetEffectCount()が0を返す", () => {
@@ -197,9 +193,7 @@ describe("SkillForecastEffectManager", () => {
 		manager.update(enemies, 11, 11);
 
 		// 1フレーム進める
-		for (const cb of [...tickerCallbacks]) {
-			cb({ deltaMS: 16 });
-		}
+		tickerMock.tick(16);
 
 		expect(manager.getRangeContainer().children.length).toBeGreaterThanOrEqual(
 			1,

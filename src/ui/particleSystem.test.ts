@@ -3,27 +3,22 @@
  */
 
 import { describe, expect, it, vi } from "vitest";
+import { createTickerMock } from "../test-utils/mockPixi";
 import type { ParticleConfig } from "./particleLogic";
 
-// Ticker をモック化
-let tickerCallbacks: Array<(tick: { deltaMS: number }) => void> = [];
+const tickerMock = createTickerMock();
 vi.mock("pixi.js", async () => {
 	const actual = await vi.importActual<typeof import("pixi.js")>("pixi.js");
-
-	const MockTicker = {
-		shared: {
-			add: (fn: (tick: { deltaMS: number }) => void) => {
-				tickerCallbacks.push(fn);
-			},
-			remove: (fn: (tick: { deltaMS: number }) => void) => {
-				tickerCallbacks = tickerCallbacks.filter((cb) => cb !== fn);
-			},
-		},
-	};
-
 	return {
 		...actual,
-		Ticker: MockTicker,
+		Ticker: {
+			shared: {
+				add: (fn: (tick: { deltaMS: number }) => void) =>
+					tickerMock.shared.add(fn),
+				remove: (fn: (tick: { deltaMS: number }) => void) =>
+					tickerMock.shared.remove(fn),
+			},
+		},
 	};
 });
 
@@ -48,66 +43,60 @@ describe("ParticleSystem", () => {
 	});
 
 	it("emit()がTickerにコールバックを登録する", () => {
-		tickerCallbacks = [];
+		tickerMock.reset();
 		const system = new ParticleSystem();
 		system.emit(baseConfig);
-		expect(tickerCallbacks).toHaveLength(1);
+		expect(tickerMock.callbacks).toHaveLength(1);
 	});
 
 	it("emit()がcontainerにGraphicsを追加する", () => {
-		tickerCallbacks = [];
+		tickerMock.reset();
 		const system = new ParticleSystem();
 		system.emit(baseConfig);
 		expect(system.getContainer().children).toHaveLength(1);
 	});
 
 	it("全パーティクル消滅後にPromiseがresolveする", async () => {
-		tickerCallbacks = [];
+		tickerMock.reset();
 		const system = new ParticleSystem();
 		const promise = system.emit(baseConfig);
 
 		// 寿命300msのパーティクルを一気に消滅させる
-		for (const cb of [...tickerCallbacks]) {
-			cb({ deltaMS: 400 });
-		}
+		tickerMock.tick(400);
 
 		await promise;
 		expect(system.getContainer().children).toHaveLength(0);
 	});
 
 	it("全パーティクル消滅後にTickerコールバックが解除される", async () => {
-		tickerCallbacks = [];
+		tickerMock.reset();
 		const system = new ParticleSystem();
 		const promise = system.emit(baseConfig);
 
-		for (const cb of [...tickerCallbacks]) {
-			cb({ deltaMS: 400 });
-		}
+		tickerMock.tick(400);
 
 		await promise;
-		expect(tickerCallbacks).toHaveLength(0);
+		expect(tickerMock.callbacks).toHaveLength(0);
 	});
 
 	it("複数のemit()を並列実行できる", async () => {
-		tickerCallbacks = [];
+		tickerMock.reset();
 		const system = new ParticleSystem();
 		const p1 = system.emit(baseConfig);
 		const p2 = system.emit(baseConfig);
 
-		expect(tickerCallbacks).toHaveLength(2);
+		expect(tickerMock.callbacks).toHaveLength(2);
 		expect(system.getContainer().children).toHaveLength(2);
 
-		for (const cb of [...tickerCallbacks]) {
-			cb({ deltaMS: 400 });
-		}
+		tickerMock.tick(400);
 
 		await Promise.all([p1, p2]);
 		expect(system.getContainer().children).toHaveLength(0);
-		expect(tickerCallbacks).toHaveLength(0);
+		expect(tickerMock.callbacks).toHaveLength(0);
 	});
 
 	it("clear()で全エフェクトが即時破棄される", () => {
-		tickerCallbacks = [];
+		tickerMock.reset();
 		const system = new ParticleSystem();
 		system.emit(baseConfig);
 		system.emit(baseConfig);
@@ -119,19 +108,19 @@ describe("ParticleSystem", () => {
 	});
 
 	it("clear()でTickerコールバックが解除される", () => {
-		tickerCallbacks = [];
+		tickerMock.reset();
 		const system = new ParticleSystem();
 		system.emit(baseConfig);
 		system.emit(baseConfig);
 
-		expect(tickerCallbacks).toHaveLength(2);
+		expect(tickerMock.callbacks).toHaveLength(2);
 
 		system.clear();
-		expect(tickerCallbacks).toHaveLength(0);
+		expect(tickerMock.callbacks).toHaveLength(0);
 	});
 
 	it("clear()で未完了のemit() Promiseがresolveされる", async () => {
-		tickerCallbacks = [];
+		tickerMock.reset();
 		const system = new ParticleSystem();
 		const p1 = system.emit(baseConfig);
 		const p2 = system.emit(baseConfig);
@@ -142,12 +131,12 @@ describe("ParticleSystem", () => {
 	});
 
 	it("count=0のemit()は即座にresolveする", async () => {
-		tickerCallbacks = [];
+		tickerMock.reset();
 		const system = new ParticleSystem();
 		const config: ParticleConfig = { ...baseConfig, count: 0 };
 		await system.emit(config);
 
-		expect(tickerCallbacks).toHaveLength(0);
+		expect(tickerMock.callbacks).toHaveLength(0);
 		expect(system.getContainer().children).toHaveLength(0);
 	});
 });
