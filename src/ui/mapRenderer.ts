@@ -14,7 +14,10 @@ import type {
 } from "../types";
 import { CharacterRenderer } from "./characterRenderer";
 import { getViewportPixelSize } from "./coordinates";
-import { animateDamagePopup, animateMissPopup } from "./damagePopup";
+import {
+	animateDamagePopup as animateDamagePopupImpl,
+	animateMissPopup as animateMissPopupImpl,
+} from "./damagePopup";
 import type { EnemyMove } from "./enemyMoveDetector";
 import { EnemyTooltip } from "./enemyTooltip";
 import type { PopupType } from "./mapAnimationConstants";
@@ -161,7 +164,7 @@ export class MapRenderer {
 		amount: number,
 		popupType: PopupType = "damage",
 	): Promise<void> {
-		await animateDamagePopup(this.container, gridPos, amount, popupType);
+		await animateDamagePopupImpl(this.container, gridPos, amount, popupType);
 	}
 
 	/**
@@ -181,7 +184,7 @@ export class MapRenderer {
 			animateFlash(enemyContainer),
 			animateScreenShake(this.container, shakeIntensity),
 			...(enemyGridPos
-				? [animateDamagePopup(this.container, enemyGridPos, damage)]
+				? [animateDamagePopupImpl(this.container, enemyGridPos, damage)]
 				: []),
 		]);
 	}
@@ -206,7 +209,7 @@ export class MapRenderer {
 		await Promise.all([
 			animateFlash(this.playerSprite),
 			animateScreenShake(this.container, shakeIntensity),
-			animateDamagePopup(this.container, playerGridPos, damage),
+			animateDamagePopupImpl(this.container, playerGridPos, damage),
 		]);
 		await animatePlayerBlink(this.playerSprite);
 	}
@@ -224,7 +227,7 @@ export class MapRenderer {
 	): Promise<void> {
 		const popupType: PopupType = tileType === "trap" ? "trap_damage" : "heal";
 		const popupPos = gridPos ?? this.characterRenderer.getPlayerGridPos();
-		await animateDamagePopup(this.container, popupPos, amount, popupType);
+		await animateDamagePopupImpl(this.container, popupPos, amount, popupType);
 	}
 
 	/**
@@ -232,7 +235,7 @@ export class MapRenderer {
 	 * @param gridPos 対象のグリッド座標
 	 */
 	async animateMissPopup(gridPos: Position): Promise<void> {
-		await animateMissPopup(this.container, gridPos);
+		await animateMissPopupImpl(this.container, gridPos);
 	}
 
 	/**
