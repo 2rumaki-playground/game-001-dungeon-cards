@@ -12,7 +12,7 @@ const MAX_FONT_SIZE = 36;
 const FONT_SIZE_PER_DAMAGE = 3;
 
 /** 画面シェイク強度の基本値 */
-const BASE_SHAKE_INTENSITY = 4;
+export const BASE_SHAKE_INTENSITY = 4;
 
 /** 画面シェイク強度の最大値 */
 const MAX_SHAKE_INTENSITY = 10;

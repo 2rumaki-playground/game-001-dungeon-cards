@@ -24,7 +24,11 @@ import {
 import { getViewportPixelSize, gridToPixel } from "./coordinates";
 import type { EnemyMove } from "./enemyMoveDetector";
 import { EnemyTooltip } from "./enemyTooltip";
-import { calcPopupFontSize, calcScreenShakeIntensity } from "./popupLogic";
+import {
+	BASE_SHAKE_INTENSITY,
+	calcPopupFontSize,
+	calcScreenShakeIntensity,
+} from "./popupLogic";
 import { SkillForecastEffectManager } from "./skillForecastEffect";
 import { SpecialTileEffectManager } from "./specialTileEffect";
 
@@ -54,9 +58,6 @@ const FLASH_COLOR = 0xffffff;
 
 /** 画面シェイクの時間（ms） */
 const SCREEN_SHAKE_DURATION = 200;
-
-/** 画面シェイクの振幅（px） */
-const SCREEN_SHAKE_INTENSITY = 4;
 
 /** プレイヤー被ダメージ時の点滅回数 */
 const PLAYER_BLINK_COUNT = 3;
@@ -538,7 +539,7 @@ export class MapRenderer {
 	 * @param baseIntensity シェイク振幅（省略時はデフォルト値）
 	 */
 	private animateScreenShake(
-		baseIntensity = SCREEN_SHAKE_INTENSITY,
+		baseIntensity = BASE_SHAKE_INTENSITY,
 	): Promise<void> {
 		return new Promise((resolve) => {
 			const originX = this.container.x;
