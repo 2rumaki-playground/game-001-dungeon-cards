@@ -245,9 +245,14 @@ function setupDebugGlobals(): void {
 
 	if (import.meta.env.DEV) {
 		debugWindow.debugStartGame = async (params) => {
-			if (ctx.isAnimating) return;
+			if (ctx.isAnimating || ctx.isCardActionAnimating) return;
 			ctx.isAnimating = true;
 			try {
+				// UI状態をリセット
+				ctx.pendingCard = null;
+				ctx.cardQueue = [];
+				ctx.ui.directionSelector.hide();
+
 				const { startNewGameWithDebugParams } = await import(
 					"./game/debugStart"
 				);
