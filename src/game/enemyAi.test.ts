@@ -11,7 +11,7 @@ import {
 	createTestMap,
 	createTestState,
 } from "../test-utils/createTestFixtures";
-import type { Enemy, EnemyType } from "../types";
+import type { Enemy, EnemyType, Screen } from "../types";
 import { RNG } from "../utils/rng";
 import { executeEnemyTurn, pickMoveDirection } from "./enemyAi";
 import { createFixedLayoutMap } from "./map";
@@ -455,7 +455,7 @@ describe("executeEnemyTurn", () => {
 		string,
 		number,
 		number,
-		string,
+		Screen,
 	][])("敵の攻撃: %s", (_, startHp, expectedHp, expectedScreen) => {
 		const enemies: Enemy[] = [
 			{
