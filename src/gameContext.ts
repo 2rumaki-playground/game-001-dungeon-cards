@@ -23,6 +23,7 @@ import type {
 	TitleScreen,
 	TurnBanner,
 	TurnEndButton,
+	TurnOverlay,
 	VictoryScreen,
 } from "./ui";
 import type { DebugCardRenderer } from "./ui/debugCardRenderer";
@@ -41,6 +42,7 @@ export interface UIComponents {
 	deckViewer: DeckViewer;
 	actionLogRenderer: ActionLogRenderer;
 	turnBanner: TurnBanner;
+	turnOverlay: TurnOverlay;
 	rewardScreen: RewardScreen;
 	screenTransition: ScreenTransition;
 	floorBanner: FloorBanner;

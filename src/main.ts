@@ -27,6 +27,7 @@ import {
 	TitleScreen,
 	TurnBanner,
 	TurnEndButton,
+	TurnOverlay,
 	VictoryScreen,
 } from "./ui";
 import { loadGameAssets } from "./ui/assetLoader";
@@ -77,6 +78,10 @@ async function initializeUIComponents(
 	const mapContainer = mapRenderer.getContainer();
 	mapViewport.addChild(mapContainer);
 	app.stage.addChild(mapViewport);
+
+	// ターンオーバーレイ（マップの上、ステータスバーの下）
+	const turnOverlay = new TurnOverlay(viewportSize.width, totalHeight);
+	app.stage.addChild(turnOverlay.getContainer());
 
 	// statusBarはmapViewportの後に追加（前面に描画するため）
 	app.stage.addChild(statusBar.getContainer());
@@ -200,6 +205,7 @@ async function initializeUIComponents(
 		deckViewer,
 		actionLogRenderer,
 		turnBanner,
+		turnOverlay,
 		rewardScreen,
 		screenTransition,
 		floorBanner,

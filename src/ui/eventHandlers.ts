@@ -571,8 +571,9 @@ export function setupEventHandlers(ctx: GameContext): void {
 		try {
 			let next = endPlayerTurn(ctx.state);
 
-			// 敵ターンバナー表示
+			// 敵ターンバナー表示 + オーバーレイフェードイン
 			await ctx.ui.turnBanner.showBanner("enemy");
+			await ctx.ui.turnOverlay.fadeIn();
 
 			const enemiesBefore = next.enemies;
 			const { state: enemyTurnState, totalDamage } = executeEnemyTurn(next);
@@ -612,7 +613,8 @@ export function setupEventHandlers(ctx: GameContext): void {
 			if (next.screen !== "gameOver") {
 				next = startPlayerTurn(next);
 
-				// プレイヤーターンバナー表示
+				// オーバーレイフェードアウト + プレイヤーターンバナー表示
+				await ctx.ui.turnOverlay.fadeOut();
 				await ctx.ui.turnBanner.showBanner("player");
 
 				applyState(ctx, next);
