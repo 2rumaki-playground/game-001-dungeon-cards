@@ -121,7 +121,7 @@ export class EnemyTooltip {
 		// それでも失敗した場合は、開発時にのみ警告ログを出しつつ 0 を返す。
 		const safeWidth = (t: Text): number => {
 			try {
-				const bounds = t.getBounds();
+				const bounds = t.getLocalBounds();
 				return bounds?.width ?? 0;
 			} catch (e) {
 				// 開発時に描画環境の不具合を検知できるよう、例外をサイレントに握りつぶさない。
