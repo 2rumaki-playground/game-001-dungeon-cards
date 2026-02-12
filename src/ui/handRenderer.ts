@@ -558,12 +558,9 @@ export class HandRenderer {
 		const cardCenterX =
 			startX + cardIndex * (CARD_WIDTH + CARD_GAP) + CARD_WIDTH / 2;
 
-		const tooltip = this.createTooltipView(hoveredCard.type);
+		const { container: tooltip, height: tooltipHeight } =
+			this.createTooltipView(hoveredCard.type);
 		tooltip.x = cardCenterX - TOOLTIP_WIDTH / 2;
-
-		// 背景Graphics（最初の子要素）の高さを使用
-		const tooltipBg = tooltip.children[0] as Graphics;
-		const tooltipHeight = tooltipBg.height;
 		tooltip.y = -HOVER_LIFT - tooltipHeight - TOOLTIP_MARGIN;
 
 		this.tooltipContainer.addChild(tooltip);
@@ -572,7 +569,10 @@ export class HandRenderer {
 	/**
 	 * ツールチップのビューを生成
 	 */
-	private createTooltipView(cardType: CardType): Container {
+	private createTooltipView(cardType: CardType): {
+		container: Container;
+		height: number;
+	} {
 		const tooltip = new Container();
 
 		const cost = CARD_COST[cardType];
@@ -672,7 +672,7 @@ export class HandRenderer {
 		tooltip.addChild(descText);
 		tooltip.addChild(rarityText);
 
-		return tooltip;
+		return { container: tooltip, height: tooltipHeight };
 	}
 
 	/**
