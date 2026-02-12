@@ -143,6 +143,46 @@ describe("debugStart", () => {
 			expect(enemies[1].id).toBe("enemy-2");
 			expect(enemies[2].id).toBe("enemy-3");
 		});
+
+		it("不正な敵タイプを指定するとエラーになる", () => {
+			expect(() =>
+				createDebugEnemies(positions, {
+					foo: 1,
+				} as any),
+			).toThrow();
+		});
+
+		it("count が負の値だとエラーになる", () => {
+			expect(() =>
+				createDebugEnemies(positions, {
+					normal: -1,
+				} as any),
+			).toThrow();
+		});
+
+		it("count が小数だとエラーになる", () => {
+			expect(() =>
+				createDebugEnemies(positions, {
+					normal: 1.5,
+				} as any),
+			).toThrow();
+		});
+
+		it("count が Infinity だとエラーになる", () => {
+			expect(() =>
+				createDebugEnemies(positions, {
+					normal: Infinity,
+				} as any),
+			).toThrow();
+		});
+
+		it("count が NaN だとエラーになる", () => {
+			expect(() =>
+				createDebugEnemies(positions, {
+					normal: NaN,
+				} as any),
+			).toThrow();
+		});
 	});
 
 	describe("startNewGameWithDebugParams", () => {
