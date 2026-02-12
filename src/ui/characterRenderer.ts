@@ -215,7 +215,7 @@ export class CharacterRenderer {
 	/**
 	 * 敵1体分のコンテナを破棄
 	 */
-	destroyEnemyEntry(id: string): void {
+	private destroyEnemyEntry(id: string): void {
 		this.callbacks.onBeforeEnemyDestroy(id);
 		const enemyContainer = this.enemyContainerMap.get(id);
 		if (enemyContainer) {
