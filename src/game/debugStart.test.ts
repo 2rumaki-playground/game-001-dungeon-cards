@@ -155,9 +155,23 @@ describe("debugStart", () => {
 
 		it("playerApが反映される", () => {
 			const state = createTestState();
+			const result = startNewGameWithDebugParams(state, { playerAp: 2 });
+
+			expect(result.player.ap).toBe(2);
+		});
+
+		it("playerApがmaxApでクランプされる", () => {
+			const state = createTestState();
 			const result = startNewGameWithDebugParams(state, { playerAp: 10 });
 
-			expect(result.player.ap).toBe(10);
+			expect(result.player.ap).toBe(result.player.maxAp);
+		});
+
+		it("playerHpがmaxHpでクランプされる", () => {
+			const state = createTestState();
+			const result = startNewGameWithDebugParams(state, { playerHp: 999 });
+
+			expect(result.player.hp).toBe(result.player.maxHp);
 		});
 
 		it("deckが反映される", () => {

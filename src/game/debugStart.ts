@@ -114,17 +114,18 @@ export function startNewGameWithDebugParams(
 			)
 		: base.enemies;
 
-	// プレイヤーパラメータの上書き
+	// プレイヤーパラメータの上書き（描画崩れ防止のためクランプ）
 	const maxHp = params.playerMaxHp ?? base.player.maxHp;
-	const hp = params.playerHp ?? maxHp;
-	const ap = params.playerAp ?? base.player.ap;
+	const hp = Math.max(0, Math.min(params.playerHp ?? maxHp, maxHp));
+	const maxAp = base.player.maxAp;
+	const ap = Math.max(0, Math.min(params.playerAp ?? base.player.ap, maxAp));
 
 	const player = {
 		...base.player,
 		hp,
 		maxHp,
 		ap,
-		maxAp: base.player.maxAp,
+		maxAp,
 	};
 
 	// 手札を補充
