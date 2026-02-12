@@ -4,13 +4,26 @@
  */
 
 import { Container, Graphics, Text } from "pixi.js";
-import type { Player } from "../types";
+import type { Player, Turn } from "../types";
 import { Easing, tweenValue } from "../utils/tween";
 
 /** テキスト配置のX座標 */
 const HP_TEXT_X = 16;
 const AP_TEXT_X = 160;
 const FLOOR_TEXT_X = 304;
+const TURN_TEXT_X = 424;
+
+/** ターン別の表示テキスト */
+const TURN_TEXT: Record<Turn, string> = {
+	player: "あなたのターン",
+	enemy: "敵のターン",
+};
+
+/** ターン別のテキスト色 */
+const TURN_TEXT_COLOR: Record<Turn, number> = {
+	player: 0x88bbff,
+	enemy: 0xff8888,
+};
 
 /** テキストのY座標 */
 const TEXT_Y = 12;
@@ -62,6 +75,7 @@ export class StatusBar {
 	private hpText: Text;
 	private apText: Text;
 	private floorText: Text;
+	private turnText: Text;
 	private hpBarBg: Graphics;
 	private hpBarFill: Graphics;
 	private apBarBg: Graphics;
@@ -109,6 +123,12 @@ export class StatusBar {
 		this.floorText.y = TEXT_Y;
 		this.floorText.anchor.set(0, 0.5);
 		this.container.addChild(this.floorText);
+
+		this.turnText = new Text({ text: "", style: textStyle });
+		this.turnText.x = TURN_TEXT_X;
+		this.turnText.y = TEXT_Y;
+		this.turnText.anchor.set(0, 0.5);
+		this.container.addChild(this.turnText);
 	}
 
 	/**
@@ -167,10 +187,13 @@ export class StatusBar {
 	/**
 	 * ステータスバーを描画（即座にスナップ更新）
 	 */
-	render(player: Player, floor: number, isCleared = false): void {
+	render(player: Player, floor: number, turn: Turn, isCleared = false): void {
 		this.hpText.text = `HP: ${player.hp}/${player.maxHp}`;
 		this.apText.text = `AP: ${player.ap}/${player.maxAp}`;
 		this.floorText.text = isCleared ? `階層: ${floor} ★` : `階層: ${floor}`;
+
+		this.turnText.text = TURN_TEXT[turn];
+		this.turnText.style.fill = TURN_TEXT_COLOR[turn];
 
 		this.currentHpRatio = player.maxHp > 0 ? player.hp / player.maxHp : 0;
 		this.currentApRatio = player.maxAp > 0 ? player.ap / player.maxAp : 0;
@@ -186,6 +209,7 @@ export class StatusBar {
 		this.hpText.text = "";
 		this.apText.text = "";
 		this.floorText.text = "";
+		this.turnText.text = "";
 
 		this.currentHpRatio = 0;
 		this.currentApRatio = 0;

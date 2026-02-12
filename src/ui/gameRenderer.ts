@@ -106,6 +106,7 @@ export function renderGameScreen(
 	ctx.ui.statusBar.render(
 		ctx.state.player,
 		ctx.state.floor,
+		ctx.state.turn,
 		ctx.state.isCleared,
 	);
 	ctx.ui.mapRenderer.render(
