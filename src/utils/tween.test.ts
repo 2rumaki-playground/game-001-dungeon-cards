@@ -2,16 +2,20 @@ import { describe, expect, it, vi } from "vitest";
 import { createTickerMock } from "../test-utils/mockPixi";
 
 const tickerMock = createTickerMock();
-vi.mock("pixi.js", () => ({
-	Ticker: {
-		shared: {
-			add: (fn: (tick: { deltaMS: number }) => void) =>
-				tickerMock.shared.add(fn),
-			remove: (fn: (tick: { deltaMS: number }) => void) =>
-				tickerMock.shared.remove(fn),
+vi.mock("pixi.js", async () => {
+	const actual = await vi.importActual<typeof import("pixi.js")>("pixi.js");
+	return {
+		...actual,
+		Ticker: {
+			shared: {
+				add: (fn: (tick: { deltaMS: number }) => void) =>
+					tickerMock.shared.add(fn),
+				remove: (fn: (tick: { deltaMS: number }) => void) =>
+					tickerMock.shared.remove(fn),
+			},
 		},
-	},
-}));
+	};
+});
 
 import { Easing, tween } from "./tween";
 
