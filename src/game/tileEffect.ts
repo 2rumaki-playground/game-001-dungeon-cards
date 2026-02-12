@@ -45,11 +45,12 @@ export function applyTileEffect(state: GameState): TileEffectResult {
 		case "trap": {
 			next = applyDamageToPlayer(next, TRAP_DAMAGE);
 			next = addActionLog(next, "罠を踏んだ！", "player");
-			const gameOver = isDefeated(next.player.hp);
-			if (gameOver) {
-				next = checkGameOver(next);
-			}
-			return { state: next, triggeredTile: "trap", gameOver };
+			next = checkGameOver(next);
+			return {
+				state: next,
+				triggeredTile: "trap",
+				gameOver: isDefeated(next.player.hp),
+			};
 		}
 		case "treasure": {
 			const healed = Math.min(

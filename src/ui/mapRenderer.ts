@@ -24,6 +24,7 @@ import {
 import { gridToPixel } from "./coordinates";
 import type { EnemyMove } from "./enemyMoveDetector";
 import { EnemyTooltip } from "./enemyTooltip";
+import { SpecialTileEffectManager } from "./specialTileEffect";
 
 /** プレイヤー移動アニメーションの時間（ms） */
 const PLAYER_MOVE_DURATION = 150;
@@ -191,6 +192,7 @@ export class MapRenderer {
 	private lastRenderedMap: GameMap | null = null;
 	private enemyTooltip: EnemyTooltip;
 	private tooltipEnemyId: string | null = null;
+	private specialTileEffectManager: SpecialTileEffectManager;
 
 	constructor() {
 		this.container = new Container();
@@ -200,8 +202,10 @@ export class MapRenderer {
 		this.enemiesContainer = new Container();
 		this.fogGraphics = new Graphics();
 		this.enemyTooltip = new EnemyTooltip();
+		this.specialTileEffectManager = new SpecialTileEffectManager();
 
 		this.container.addChild(this.tilesContainer);
+		this.container.addChild(this.specialTileEffectManager.getContainer());
 		this.container.addChild(this.remnantsGraphics);
 		this.container.addChild(this.enemiesContainer);
 		this.container.addChild(this.fogGraphics);
@@ -769,6 +773,7 @@ export class MapRenderer {
 		visitedTiles?: Set<string>,
 	): void {
 		this.renderMap(map);
+		this.specialTileEffectManager.update(map, visitedTiles);
 		this.renderRemnants(remnants);
 		if (!skipPlayer) {
 			this.renderPlayer(player);
@@ -807,6 +812,7 @@ export class MapRenderer {
 		this.enemyGridPosMap.clear();
 		this.enemyDataMap.clear();
 		this.hideEnemyTooltip();
+		this.specialTileEffectManager.clear();
 	}
 
 	/**
