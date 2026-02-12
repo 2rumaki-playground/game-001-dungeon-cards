@@ -87,7 +87,7 @@ export function createTestEnemy(
  */
 export function createTestHand(cards: CardType[]): Card[] {
 	return cards.map((type, i) => ({
-		id: `card-${i}`,
+		id: `test-card-${i}`,
 		type,
 	}));
 }

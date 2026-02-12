@@ -136,9 +136,9 @@ describe("createTestHand", () => {
 	it("CardType配列から手札を生成する", () => {
 		const hand = createTestHand(["move", "attack", "jump"]);
 		expect(hand).toHaveLength(3);
-		expect(hand[0]).toEqual({ id: "card-0", type: "move" });
-		expect(hand[1]).toEqual({ id: "card-1", type: "attack" });
-		expect(hand[2]).toEqual({ id: "card-2", type: "jump" });
+		expect(hand[0]).toEqual({ id: "test-card-0", type: "move" });
+		expect(hand[1]).toEqual({ id: "test-card-1", type: "attack" });
+		expect(hand[2]).toEqual({ id: "test-card-2", type: "jump" });
 	});
 
 	it("空配列で空の手札を返す", () => {
