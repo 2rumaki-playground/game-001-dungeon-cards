@@ -5,6 +5,7 @@
 
 ## 仕様の読み方
 - 全体像・思想：[vision.md](./vision.md)
+- デザイン目標：[gdd.md](./gdd.md)（体験目標・判断軸）
 - ルール本体：[rules.md](./rules.md)（最重要）
 - カード仕様：[cards.md](./cards.md)
 - 敵タイプ仕様：[enemies.md](./enemies.md)
