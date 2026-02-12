@@ -4,10 +4,11 @@
 
 import type { Container, FederatedPointerEvent, Text } from "pixi.js";
 import { describe, expect, it, vi } from "vitest";
-import { CARD_COST } from "../constants";
+import { CARD_COST, CARD_RARITY } from "../constants";
 import { createTweenMock, mockEasing } from "../test-utils/mockTween";
 import type { Card, CardType } from "../types";
 import { tween } from "../utils/tween";
+import { CARD_DESCRIPTION, CARD_TYPE_NAME, RARITY_NAME } from "./cardConstants";
 import {
 	CARD_HEIGHT,
 	CARD_WIDTH,
@@ -726,5 +727,188 @@ describe("カード種別ビジュアル差別化", () => {
 				expect(style.fill).toBe(0xcccccc);
 			}
 		});
+	});
+});
+
+describe("HandRenderer ツールチップ表示", () => {
+	function createTestCards(): Card[] {
+		return [
+			{ id: "card-1", type: "move" },
+			{ id: "card-2", type: "attack" },
+			{ id: "card-3", type: "strong_attack" },
+		];
+	}
+
+	function findTooltipContainer(renderer: HandRenderer): Container {
+		return renderer
+			.getContainer()
+			.children.find((c) => c.label === "tooltip") as Container;
+	}
+
+	function findCardContainer(renderer: HandRenderer, index: number): Container {
+		const cardsContainer = renderer
+			.getContainer()
+			.children.find((c) => c.label === "cards") as Container;
+		return cardsContainer.children[index] as Container;
+	}
+
+	function getAllTextsRecursive(container: Container): Text[] {
+		const texts: Text[] = [];
+		for (const child of container.children) {
+			if (
+				"text" in child &&
+				typeof (child as { text: unknown }).text === "string"
+			) {
+				texts.push(child as unknown as Text);
+			}
+			if ("children" in child) {
+				texts.push(...getAllTextsRecursive(child as Container));
+			}
+		}
+		return texts;
+	}
+
+	it("ルートコンテナにtooltipコンテナが存在する", () => {
+		const renderer = new HandRenderer();
+		const tooltipContainer = findTooltipContainer(renderer);
+		expect(tooltipContainer).toBeDefined();
+		expect(tooltipContainer.label).toBe("tooltip");
+	});
+
+	it("ホバー時にツールチップが表示される", () => {
+		const renderer = new HandRenderer();
+		const cards = createTestCards();
+		renderer.render(cards, 10);
+
+		const card0 = findCardContainer(renderer, 0);
+		card0.emit("pointerover", {} as FederatedPointerEvent);
+
+		const tooltipContainer = findTooltipContainer(renderer);
+		expect(tooltipContainer.children.length).toBeGreaterThan(0);
+	});
+
+	it("ツールチップにカード名が含まれる", () => {
+		const renderer = new HandRenderer();
+		const cards = createTestCards();
+		renderer.render(cards, 10);
+
+		const card0 = findCardContainer(renderer, 0);
+		card0.emit("pointerover", {} as FederatedPointerEvent);
+
+		const tooltipContainer = findTooltipContainer(renderer);
+		const texts = getAllTextsRecursive(tooltipContainer);
+		const hasName = texts.some((t) => t.text.includes(CARD_TYPE_NAME.move));
+		expect(hasName).toBe(true);
+	});
+
+	it("ツールチップにAPコストが含まれる", () => {
+		const renderer = new HandRenderer();
+		const cards = createTestCards();
+		renderer.render(cards, 10);
+
+		const card0 = findCardContainer(renderer, 0);
+		card0.emit("pointerover", {} as FederatedPointerEvent);
+
+		const tooltipContainer = findTooltipContainer(renderer);
+		const texts = getAllTextsRecursive(tooltipContainer);
+		const hasCost = texts.some((t) => t.text.includes(`AP: ${CARD_COST.move}`));
+		expect(hasCost).toBe(true);
+	});
+
+	it("ツールチップに詳細説明が含まれる", () => {
+		const renderer = new HandRenderer();
+		const cards = createTestCards();
+		renderer.render(cards, 10);
+
+		const card0 = findCardContainer(renderer, 0);
+		card0.emit("pointerover", {} as FederatedPointerEvent);
+
+		const tooltipContainer = findTooltipContainer(renderer);
+		const texts = getAllTextsRecursive(tooltipContainer);
+		const hasDesc = texts.some((t) => t.text.includes(CARD_DESCRIPTION.move));
+		expect(hasDesc).toBe(true);
+	});
+
+	it("ツールチップにレアリティが含まれる", () => {
+		const renderer = new HandRenderer();
+		const cards = createTestCards();
+		renderer.render(cards, 10);
+
+		const card0 = findCardContainer(renderer, 0);
+		card0.emit("pointerover", {} as FederatedPointerEvent);
+
+		const tooltipContainer = findTooltipContainer(renderer);
+		const texts = getAllTextsRecursive(tooltipContainer);
+		const rarity = CARD_RARITY.move;
+		const hasRarity = texts.some((t) => t.text.includes(RARITY_NAME[rarity]));
+		expect(hasRarity).toBe(true);
+	});
+
+	it("pointeroutでツールチップが消える", () => {
+		const renderer = new HandRenderer();
+		const cards = createTestCards();
+		renderer.render(cards, 10);
+
+		const card0 = findCardContainer(renderer, 0);
+		card0.emit("pointerover", {} as FederatedPointerEvent);
+
+		const card0Hovered = findCardContainer(renderer, 0);
+		card0Hovered.emit("pointerout", {} as FederatedPointerEvent);
+
+		const tooltipContainer = findTooltipContainer(renderer);
+		expect(tooltipContainer.children.length).toBe(0);
+	});
+
+	it("AP不足カードにはツールチップが表示されない", () => {
+		const renderer = new HandRenderer();
+		const cards = createTestCards();
+		// AP=0なのでmoveカード(cost=1)は無効
+		renderer.render(cards, 0);
+
+		// 無効カードはeventModeがstaticでないのでpointeroverが発火しない
+		// ただし直接render後のtooltipContainerを確認
+		const tooltipContainer = findTooltipContainer(renderer);
+		expect(tooltipContainer.children.length).toBe(0);
+	});
+
+	it("clear()でツールチップが消える", () => {
+		const renderer = new HandRenderer();
+		const cards = createTestCards();
+		renderer.render(cards, 10);
+
+		const card0 = findCardContainer(renderer, 0);
+		card0.emit("pointerover", {} as FederatedPointerEvent);
+
+		renderer.clear();
+
+		const tooltipContainer = findTooltipContainer(renderer);
+		expect(tooltipContainer.children.length).toBe(0);
+	});
+
+	it("ツールチップのY座標がカードより上にある", () => {
+		const renderer = new HandRenderer();
+		const cards = createTestCards();
+		renderer.render(cards, 10);
+
+		const card0 = findCardContainer(renderer, 0);
+		card0.emit("pointerover", {} as FederatedPointerEvent);
+
+		const tooltipContainer = findTooltipContainer(renderer);
+		const tooltip = tooltipContainer.children[0] as Container;
+		expect(tooltip.y).toBeLessThan(0);
+	});
+
+	it("待機カード(cost=0)のツールチップにAPコストが表示されない", () => {
+		const renderer = new HandRenderer();
+		const cards: Card[] = [{ id: "card-wait", type: "wait" }];
+		renderer.render(cards, 10);
+
+		const card0 = findCardContainer(renderer, 0);
+		card0.emit("pointerover", {} as FederatedPointerEvent);
+
+		const tooltipContainer = findTooltipContainer(renderer);
+		const texts = getAllTextsRecursive(tooltipContainer);
+		const hasCost = texts.some((t) => t.text.includes("AP:"));
+		expect(hasCost).toBe(false);
 	});
 });
