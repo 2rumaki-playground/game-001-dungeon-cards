@@ -12,7 +12,7 @@ import {
 /** アイコンのサイズ（px） */
 const ICON_SIZE = 10;
 
-/** アイコンのY方向オフセット（セル上端からの距離） */
+/** アイコンのY方向オフセット（セル上端からのオフセット。負で上方向） */
 const ICON_OFFSET_Y = -4;
 
 type ForecastEffect = {
