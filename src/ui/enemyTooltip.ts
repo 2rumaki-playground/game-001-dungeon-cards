@@ -26,7 +26,7 @@ const TOOLTIP_FONT_SIZE = 12;
 /** ツールチップの行間 */
 const TOOLTIP_LINE_HEIGHT = 16;
 
-/** ツールチップの最小幅 */
+/** ツールチップのテキスト領域の最小幅 */
 const TOOLTIP_MIN_WIDTH = 80;
 
 /** ツールチップの背景透明度 */
