@@ -64,10 +64,10 @@ export const RARITY_COLORS: Record<Rarity, number> = {
 
 /** カード詳細説明（ツールチップ用） */
 export const CARD_DESCRIPTION: Record<CardType, string> = {
-	move: "選択した方向に1マス移動する。\n壁・敵がいる場合は移動失敗。",
-	attack: `隣接1マス先の敵に${PLAYER_ATTACK_DAMAGE}ダメージ。\n敵がいない場合は空振り。`,
-	strong_attack: `隣接1マス先の敵に${PLAYER_STRONG_ATTACK_DAMAGE}ダメージ。\n敵がいない場合は空振り。`,
-	jump: `選択した方向の${JUMP_DISTANCE}マス先に着地。\n1マス先を飛び越える。`,
+	move: "選択した方向に1マス移動する。\nマップ外・壁・敵がいる場合は移動失敗。",
+	attack: `隣接1マス先の敵に${PLAYER_ATTACK_DAMAGE}ダメージ。\nマップ外・壁・敵不在の場合は空振り。`,
+	strong_attack: `隣接1マス先の敵に${PLAYER_STRONG_ATTACK_DAMAGE}ダメージ。\nマップ外・壁・敵不在の場合は空振り。`,
+	jump: `選択した方向の${JUMP_DISTANCE}マス先に着地し、1マス先を飛び越える。\nマップ外・壁・敵がいる場合は失敗。`,
 	wait: "何もせずターンを消費する。",
 };
 
