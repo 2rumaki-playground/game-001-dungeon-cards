@@ -6,8 +6,10 @@ import { describe, expect, it } from "vitest";
 import {
 	createAttackParticleConfig,
 	createDefeatParticleConfig,
+	createHealParticleConfig,
 	createJumpParticleConfig,
 	createStrongAttackParticleConfig,
+	createTrapDamageParticleConfig,
 	getAttackParticleConfig,
 } from "./battleParticles";
 
@@ -112,6 +114,57 @@ describe("createDefeatParticleConfig", () => {
 	it("パーティクル数が多め（15個以上）", () => {
 		const config = createDefeatParticleConfig({ x: 0, y: 0 });
 		expect(config.count).toBeGreaterThanOrEqual(15);
+	});
+});
+
+describe("createHealParticleConfig", () => {
+	it("originが設定される", () => {
+		const config = createHealParticleConfig({ x: 100, y: 200 });
+		expect(config.origin).toEqual({ x: 100, y: 200 });
+	});
+
+	it("緑系の色が使用される", () => {
+		const config = createHealParticleConfig({ x: 0, y: 0 });
+		const colors = Array.isArray(config.color) ? config.color : [config.color];
+		for (const c of colors) {
+			// 緑系: 緑成分が高い
+			const g = (c >> 8) & 0xff;
+			expect(g).toBeGreaterThan(0x80);
+		}
+	});
+
+	it("radialパターンが使用される", () => {
+		const config = createHealParticleConfig({ x: 0, y: 0 });
+		expect(config.pattern.type).toBe("radial");
+	});
+
+	it("上向きに浮かぶ（負のgravity）", () => {
+		const config = createHealParticleConfig({ x: 0, y: 0 });
+		expect(config.gravity).toBeDefined();
+		expect(config.gravity).toBeLessThan(0);
+	});
+});
+
+describe("createTrapDamageParticleConfig", () => {
+	it("originが設定される", () => {
+		const config = createTrapDamageParticleConfig({ x: 100, y: 200 });
+		expect(config.origin).toEqual({ x: 100, y: 200 });
+	});
+
+	it("紫系の色が使用される", () => {
+		const config = createTrapDamageParticleConfig({ x: 0, y: 0 });
+		const colors = Array.isArray(config.color) ? config.color : [config.color];
+		for (const c of colors) {
+			// 紫系: 赤成分と青成分が一定以上
+			const r = (c >> 16) & 0xff;
+			const b = c & 0xff;
+			expect(r + b).toBeGreaterThan(0x80);
+		}
+	});
+
+	it("radialパターンが使用される", () => {
+		const config = createTrapDamageParticleConfig({ x: 0, y: 0 });
+		expect(config.pattern.type).toBe("radial");
 	});
 });
 
