@@ -9,5 +9,15 @@ export default defineConfig({
 		globals: true,
 		environment: "node",
 		exclude: ["e2e/**", "node_modules/**"],
+		coverage: {
+			provider: "v8",
+			reporter: ["text", "html", "json-summary"],
+			include: ["src/**/*.ts"],
+			exclude: [
+				"src/**/*.test.ts",
+				"src/test-utils/**",
+				"src/vite-env.d.ts",
+			],
+		},
 	},
 });
