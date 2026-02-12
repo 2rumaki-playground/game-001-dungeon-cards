@@ -840,6 +840,16 @@ export class MapRenderer {
 	}
 
 	/**
+	 * 表示中の敵ツールチップを現在のコンテナ変換で再配置
+	 * カメラオフセット/ズーム変更後に呼び出す
+	 */
+	repositionEnemyTooltip(): void {
+		if (this.tooltipEnemyId) {
+			this.showEnemyTooltip(this.tooltipEnemyId);
+		}
+	}
+
+	/**
 	 * 敵ツールチップを非表示
 	 */
 	private hideEnemyTooltip(): void {
