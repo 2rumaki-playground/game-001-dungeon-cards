@@ -311,5 +311,25 @@ describe("debugStart", () => {
 			expect(result.deck.hand).toHaveLength(2);
 			expect(result.deck.drawPile).toHaveLength(0);
 		});
+
+		it("NaN の seed を指定した場合にエラーを投げる", () => {
+			const state = createTestState();
+
+			expect(() =>
+				startNewGameWithDebugParams(state, {
+					seed: NaN,
+				}),
+			).toThrow();
+		});
+
+		it("Infinity の seed を指定した場合にエラーを投げる", () => {
+			const state = createTestState();
+
+			expect(() =>
+				startNewGameWithDebugParams(state, {
+					seed: Infinity,
+				}),
+			).toThrow();
+		});
 	});
 });
