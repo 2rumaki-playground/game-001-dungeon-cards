@@ -36,12 +36,15 @@ export function createDebugDeckState(
 				`createDebugDeckState: 不正なカードタイプが指定されました: "${type}"`,
 			);
 		}
-		if (!Number.isInteger(count) || count < 0) {
+		const normalizedCount = Number(count);
+		if (!Number.isInteger(normalizedCount) || normalizedCount < 0) {
 			throw new Error(
-				`createDebugDeckState: countは非負整数である必要があります: "${type}" = ${count}`,
+				`createDebugDeckState: countは非負整数である必要があります: "${type}" = ${String(count)}`,
 			);
 		}
-		return Array.from({ length: count }, () => createCard(type as CardType));
+		return Array.from({ length: normalizedCount }, () =>
+			createCard(type as CardType),
+		);
 	});
 	return {
 		drawPile: rng.shuffle(cards),
