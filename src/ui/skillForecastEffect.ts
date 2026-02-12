@@ -165,10 +165,13 @@ export class SkillForecastEffectManager {
 
 	/** 二重円アイコン（area_attack用） */
 	private drawDoubleCircleIcon(cx: number, cy: number, color: number): void {
+		// 外側の円はリングとして描画
 		this.iconGraphics.circle(cx, cy, ICON_SIZE / 2);
-		this.iconGraphics.fill(color);
+		this.iconGraphics.stroke({ color, width: 1 });
+
+		// 内側の円は塗りつぶしで描画
 		this.iconGraphics.circle(cx, cy, ICON_SIZE / 4);
-		this.iconGraphics.fill(color);
+		this.iconGraphics.fill({ color });
 	}
 
 	clear(): void {
