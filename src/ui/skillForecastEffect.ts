@@ -16,7 +16,6 @@ const ICON_SIZE = 10;
 const ICON_OFFSET_Y = -4;
 
 type ForecastEffect = {
-	enemyId: string;
 	config: SkillForecastConfig;
 	enemyPx: number;
 	enemyPy: number;
@@ -88,7 +87,6 @@ export class SkillForecastEffectManager {
 			const enemyPixel = gridToPixel(enemy.position);
 
 			newEffects.set(enemy.id, {
-				enemyId: enemy.id,
 				config,
 				enemyPx: enemyPixel.x,
 				enemyPy: enemyPixel.y,
