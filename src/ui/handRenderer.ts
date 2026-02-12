@@ -557,5 +557,6 @@ export class HandRenderer {
 		this.cardsContainer.removeChildren();
 		this.selectedCardId = null;
 		this.hoveredCardId = null;
+		this.currentQueuedCardIndexMap = new Map();
 	}
 }
