@@ -23,6 +23,7 @@ vi.mock("pixi.js", async () => {
 });
 
 import { SpecialTileEffectManager } from "./specialTileEffect";
+import { getStairsEffectConfig } from "./specialTileEffectLogic";
 
 function createSimpleMap(tiles: string[][]): GameMap {
 	return tiles.map((row) =>
@@ -59,14 +60,21 @@ describe("SpecialTileEffectManager", () => {
 		expect(tickerCallbacks).toHaveLength(1);
 	});
 
-	it("update()で通常タイルのみのマップではTickerに登録されない", () => {
+	it("update()で通常タイル（floor/wall）のみのマップではTickerに登録されない", () => {
 		const manager = new SpecialTileEffectManager();
 		const map = createSimpleMap([
 			["floor", "wall"],
-			["floor", "stairs"],
+			["floor", "floor"],
 		]);
 		manager.update(map);
 		expect(tickerCallbacks).toHaveLength(0);
+	});
+
+	it("update()で階段タイルを含むマップでTickerに登録される", () => {
+		const manager = new SpecialTileEffectManager();
+		const map = createSimpleMap([["floor", "stairs"]]);
+		manager.update(map);
+		expect(tickerCallbacks).toHaveLength(1);
 	});
 
 	it("update()でvisitedTilesが指定された場合、未訪問の特殊タイルはスキップ", () => {
@@ -143,6 +151,65 @@ describe("SpecialTileEffectManager", () => {
 
 		// コンテナに描画用Graphicsがある
 		expect(manager.getContainer().children.length).toBeGreaterThanOrEqual(1);
+	});
+
+	it("update()で階段タイルのエフェクト数がカウントされる", () => {
+		const manager = new SpecialTileEffectManager();
+		const map = createSimpleMap([["trap", "stairs"]]);
+		manager.update(map);
+		expect(manager.getEffectCount()).toBe(2); // trap + stairs
+	});
+
+	it("setFloorCleared(true)で階段エフェクトの設定が変化する", () => {
+		const manager = new SpecialTileEffectManager();
+		const map = createSimpleMap([["stairs"]]);
+		manager.update(map);
+		expect(manager.getEffectCount()).toBe(1);
+
+		const normalConfig = getStairsEffectConfig(false);
+		const stairsEffect = manager.getStairsEffect("0,0");
+		expect(stairsEffect?.config.pulsePeriod).toBe(normalConfig.pulsePeriod);
+		expect(stairsEffect?.config.pulseAlphaMax).toBe(normalConfig.pulseAlphaMax);
+
+		manager.setFloorCleared(true);
+		// setFloorCleared後もエフェクト数は維持
+		expect(manager.getEffectCount()).toBe(1);
+
+		const clearedConfig = getStairsEffectConfig(true);
+		const updatedEffect = manager.getStairsEffect("0,0");
+		expect(updatedEffect?.config.pulsePeriod).toBe(clearedConfig.pulsePeriod);
+		expect(updatedEffect?.config.pulseAlphaMax).toBe(
+			clearedConfig.pulseAlphaMax,
+		);
+		expect(updatedEffect?.config.glowRadius).toBe(clearedConfig.glowRadius);
+	});
+
+	it("visitedTiles指定時に未訪問の階段はエフェクト/矢印が作られない", () => {
+		const manager = new SpecialTileEffectManager();
+		const map = createSimpleMap([["stairs", "trap"]]);
+		const visited = new Set(["1,0"]); // trapのみ訪問済み、階段は未訪問
+		manager.update(map, visited);
+
+		// 階段エフェクトは作られない（trapのみ）
+		expect(manager.getEffectCount()).toBe(1);
+		expect(manager.getStairsEffect("0,0")).toBeUndefined();
+
+		// 矢印も描画されない（arrowGraphicsの子要素で確認）
+		// Tickerを進めてもstairsエフェクトは増えない
+		for (const cb of [...tickerCallbacks]) {
+			cb({ deltaMS: 16 });
+		}
+		expect(manager.getStairsEffect("0,0")).toBeUndefined();
+	});
+
+	it("clear()後に階段エフェクトもクリアされる", () => {
+		const manager = new SpecialTileEffectManager();
+		const map = createSimpleMap([["stairs", "trap"]]);
+		manager.update(map);
+		expect(manager.getEffectCount()).toBe(2);
+
+		manager.clear();
+		expect(manager.getEffectCount()).toBe(0);
 	});
 
 	it("update()でタイルが消えた場合エフェクトが減る", () => {
