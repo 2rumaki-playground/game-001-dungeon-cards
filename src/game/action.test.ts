@@ -766,6 +766,7 @@ describe("executeJump", () => {
 		} = executeJump(state, "jump-1", "right");
 
 		expect(result.player.position).toEqual({ x: 5, y: 3 });
+		expect(result.floor).toBe(1);
 		expect(jumped).toBe(true);
 		expect(reachedStairs).toBe(false);
 	});
