@@ -108,7 +108,13 @@ export function startNewGameWithDebugParams(
 	state: GameState,
 	params: DebugStartParams,
 ): GameState {
-	const seed = params.seed ?? state.rng.seed;
+	const rawSeed = params.seed;
+	if (rawSeed != null && !Number.isFinite(rawSeed)) {
+		throw new Error(
+			`startNewGameWithDebugParams: seed が不正です。有限な数値を指定してください (実際の値: ${String(rawSeed)})`,
+		);
+	}
+	const seed = rawSeed != null ? Math.floor(rawSeed) : state.rng.seed;
 	const floor = params.floor;
 
 	// ベースとなるGameStateを生成（マップ・敵位置を含む）
