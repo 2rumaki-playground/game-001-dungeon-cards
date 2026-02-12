@@ -4,7 +4,12 @@
 
 import { describe, expect, it } from "vitest";
 import type { Card } from "../types";
-import { canEnqueueCard, getQueuedApCost, type QueuedCard } from "./cardQueue";
+import {
+	buildQueuedCardIndexMap,
+	canEnqueueCard,
+	getQueuedApCost,
+	type QueuedCard,
+} from "./cardQueue";
 
 describe("cardQueue", () => {
 	describe("getQueuedApCost", () => {
@@ -78,6 +83,34 @@ describe("cardQueue", () => {
 			const card: Card = { id: "c1", type: "jump" };
 			// AP=2, jump costs 2 → OK
 			expect(canEnqueueCard(2, [], card)).toBe(true);
+		});
+	});
+
+	describe("buildQueuedCardIndexMap", () => {
+		it("空キューは空Mapを返す", () => {
+			expect(buildQueuedCardIndexMap([])).toEqual(new Map());
+		});
+
+		it("1件のキューは1始まりのインデックスを返す", () => {
+			const queue: QueuedCard[] = [
+				{ card: { id: "c1", type: "move" }, direction: "up" },
+			];
+			expect(buildQueuedCardIndexMap(queue)).toEqual(new Map([["c1", 1]]));
+		});
+
+		it("複数件のキューは挿入順にインデックスを返す", () => {
+			const queue: QueuedCard[] = [
+				{ card: { id: "c1", type: "move" }, direction: "up" },
+				{ card: { id: "c2", type: "attack" }, direction: "down" },
+				{ card: { id: "c3", type: "jump" }, direction: "left" },
+			];
+			expect(buildQueuedCardIndexMap(queue)).toEqual(
+				new Map([
+					["c1", 1],
+					["c2", 2],
+					["c3", 3],
+				]),
+			);
 		});
 	});
 });

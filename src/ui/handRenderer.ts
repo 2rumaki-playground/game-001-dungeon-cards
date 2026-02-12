@@ -36,6 +36,9 @@ const DECK_OFFSET_Y = -50; // 山札の位置（手札コンテナからの相�
 /** ホバー時の浮き上がり距離（px） */
 const HOVER_LIFT = 8;
 
+/** キューバッジのサイズ（直径px） */
+const QUEUE_BADGE_SIZE = 20;
+
 /** 選択パルスの拡大率 */
 const PULSE_SCALE = 1.1;
 
@@ -108,6 +111,7 @@ export class HandRenderer {
 	private hoveredCardId: string | null = null;
 	private currentHand: Card[] = [];
 	private currentAp = 0;
+	private currentQueuedCardIndexMap: ReadonlyMap<string, number> = new Map();
 	private onCardSelect:
 		| ((
 				card: Card,
@@ -152,6 +156,14 @@ export class HandRenderer {
 	}
 
 	/**
+	 * キュー内カードの表示状態を設定
+	 * @param map カードID→実行順序番号(1始まり)のMap
+	 */
+	setQueuedCards(map: ReadonlyMap<string, number>): void {
+		this.currentQueuedCardIndexMap = map;
+	}
+
+	/**
 	 * 手札を描画
 	 */
 	render(hand: Card[], currentAp: number): void {
@@ -171,6 +183,7 @@ export class HandRenderer {
 			const hovered = enabled && card.id === this.hoveredCardId;
 			const y = hovered ? -HOVER_LIFT : 0;
 
+			const queueIndex = this.currentQueuedCardIndexMap.get(card.id);
 			const cardContainer = this.createCardView(
 				card,
 				x,
@@ -178,6 +191,7 @@ export class HandRenderer {
 				enabled,
 				selected,
 				hovered,
+				queueIndex,
 			);
 			this.cardsContainer.addChild(cardContainer);
 		}
@@ -279,6 +293,7 @@ export class HandRenderer {
 		enabled: boolean,
 		selected: boolean,
 		hovered: boolean,
+		queueIndex?: number,
 	): Container {
 		const cardContainer = new Container();
 		cardContainer.x = x;
@@ -287,12 +302,14 @@ export class HandRenderer {
 		// 背景
 		const bg = new Graphics();
 		const colors = enabled ? CARD_COLORS[card.type] : CARD_COLORS.disabled;
-		const borderColor = selected
-			? CARD_COLORS.selectedBorder
-			: hovered
-				? CARD_COLORS.hoveredBorder
-				: colors.border;
-		const borderWidth = selected ? 3 : 2;
+		const queued = queueIndex !== undefined;
+		const borderColor =
+			selected || queued
+				? CARD_COLORS.selectedBorder
+				: hovered
+					? CARD_COLORS.hoveredBorder
+					: colors.border;
+		const borderWidth = selected || queued ? 3 : 2;
 
 		drawRoundedRect(bg, CARD_WIDTH, CARD_HEIGHT, CARD_RADIUS, colors.bg, {
 			color: borderColor,
@@ -376,6 +393,30 @@ export class HandRenderer {
 		) {
 			const arrowColor = enabled ? 0x888888 : 0x444444;
 			this.addDirectionHints(cardContainer, arrowColor);
+		}
+
+		// キューバッジ
+		if (queued) {
+			const badge = new Graphics();
+			badge.circle(0, 0, QUEUE_BADGE_SIZE / 2);
+			badge.fill(CARD_COLORS.selectedBorder);
+			badge.x = CARD_WIDTH - 6;
+			badge.y = -4;
+			cardContainer.addChild(badge);
+
+			const badgeText = new Text({
+				text: `${queueIndex}`,
+				style: {
+					fontSize: 12,
+					fontFamily: "sans-serif",
+					fill: 0xffffff,
+					fontWeight: "bold",
+				},
+			});
+			badgeText.anchor.set(0.5);
+			badgeText.x = CARD_WIDTH - 6;
+			badgeText.y = -4;
+			cardContainer.addChild(badgeText);
 		}
 
 		// インタラクション
@@ -516,5 +557,6 @@ export class HandRenderer {
 		this.cardsContainer.removeChildren();
 		this.selectedCardId = null;
 		this.hoveredCardId = null;
+		this.currentQueuedCardIndexMap = new Map();
 	}
 }

@@ -526,6 +526,109 @@ describe("HandRenderer ホバー・選択演出", () => {
 	});
 });
 
+describe("HandRenderer キュー表示", () => {
+	function createTestCards(): Card[] {
+		return [
+			{ id: "card-1", type: "move" },
+			{ id: "card-2", type: "attack" },
+			{ id: "card-3", type: "wait" },
+		];
+	}
+
+	function findCardContainer(renderer: HandRenderer, index: number): Container {
+		const cardsContainer = renderer
+			.getContainer()
+			.children.find((c) => c.label === "cards") as Container;
+		return cardsContainer.children[index] as Container;
+	}
+
+	function getTextChildren(container: Container): Text[] {
+		return container.children.filter(
+			(child) =>
+				"text" in child &&
+				typeof (child as { text: unknown }).text === "string",
+		) as unknown as Text[];
+	}
+
+	it("キュー内のカードにバッジが表示される", () => {
+		const renderer = new HandRenderer();
+		const cards = createTestCards();
+		renderer.setQueuedCards(new Map([["card-1", 1]]));
+		renderer.render(cards, 10);
+
+		const card0 = findCardContainer(renderer, 0);
+		const texts = getTextChildren(card0);
+		const badgeText = texts.find((t) => t.text === "1");
+		expect(badgeText).toBeDefined();
+	});
+
+	it("キュー外のカードにバッジが表示されない", () => {
+		const renderer = new HandRenderer();
+		const cards = createTestCards();
+		renderer.setQueuedCards(new Map([["card-1", 1]]));
+		renderer.render(cards, 10);
+
+		const card1 = findCardContainer(renderer, 1);
+		const texts = getTextChildren(card1);
+		// 番号テキスト("1", "2", "3"等)がバッジとして存在しないこと
+		const badgeText = texts.find(
+			(t) => /^[0-9]+$/.test(t.text) && t.style.fontSize === 12,
+		);
+		expect(badgeText).toBeUndefined();
+	});
+
+	it("キュークリア後にバッジが消える", () => {
+		const renderer = new HandRenderer();
+		const cards = createTestCards();
+		renderer.setQueuedCards(new Map([["card-1", 1]]));
+		renderer.render(cards, 10);
+
+		// クリア
+		renderer.setQueuedCards(new Map());
+		renderer.render(cards, 10);
+
+		const card0 = findCardContainer(renderer, 0);
+		const texts = getTextChildren(card0);
+		const badgeText = texts.find(
+			(t) => /^[0-9]+$/.test(t.text) && t.style.fontSize === 12,
+		);
+		expect(badgeText).toBeUndefined();
+	});
+
+	it("複数カードの実行順序番号が正しい", () => {
+		const renderer = new HandRenderer();
+		const cards = createTestCards();
+		renderer.setQueuedCards(
+			new Map([
+				["card-1", 1],
+				["card-2", 2],
+			]),
+		);
+		renderer.render(cards, 10);
+
+		const card0 = findCardContainer(renderer, 0);
+		const card1 = findCardContainer(renderer, 1);
+		const texts0 = getTextChildren(card0);
+		const texts1 = getTextChildren(card1);
+
+		expect(texts0.find((t) => t.text === "1")).toBeDefined();
+		expect(texts1.find((t) => t.text === "2")).toBeDefined();
+	});
+
+	it("キュー内カードにバッジが追加される", () => {
+		const renderer = new HandRenderer();
+		const cards = createTestCards();
+		renderer.setQueuedCards(new Map([["card-1", 1]]));
+		renderer.render(cards, 10);
+
+		const card0 = findCardContainer(renderer, 0);
+		const card1 = findCardContainer(renderer, 1);
+
+		// キュー内カードはバッジ分だけ子要素が多い
+		expect(card0.children.length).toBeGreaterThan(card1.children.length);
+	});
+});
+
 describe("カード種別ビジュアル差別化", () => {
 	const allCardTypes: CardType[] = [
 		"move",

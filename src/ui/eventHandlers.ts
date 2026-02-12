@@ -25,7 +25,7 @@ import {
 	startNewGameAtFloor,
 	startPlayerTurn,
 } from "../game";
-import { canEnqueueCard } from "../game/cardQueue";
+import { buildQueuedCardIndexMap, canEnqueueCard } from "../game/cardQueue";
 import type { GameContext } from "../gameContext";
 import type { Card, Direction, Position, SpecialTileType } from "../types";
 import { DIRECTION_DELTA } from "../types";
@@ -85,6 +85,8 @@ async function showTileEffectPopup(
  */
 function clearCardQueue(ctx: GameContext): void {
 	ctx.cardQueue = [];
+	ctx.ui.handRenderer.setQueuedCards(new Map());
+	ctx.ui.handRenderer.render(ctx.state.deck.hand, ctx.state.player.ap);
 }
 
 /**
@@ -313,6 +315,7 @@ async function processCardQueue(ctx: GameContext): Promise<void> {
 
 		const entry = ctx.cardQueue.shift();
 		if (!entry) break;
+		ctx.ui.handRenderer.setQueuedCards(buildQueuedCardIndexMap(ctx.cardQueue));
 
 		// 予約時点と状態が変わっている可能性があるため、AP再検証
 		if (ctx.state.player.ap < CARD_COST[entry.card.type]) {
@@ -330,7 +333,19 @@ async function processCardQueue(ctx: GameContext): Promise<void> {
 	}
 }
 
+let escKeyListenerRegistered = false;
+
 export function setupEventHandlers(ctx: GameContext): void {
+	// Escキーでカードキューをクリア（重複登録を防止）
+	if (!escKeyListenerRegistered) {
+		document.addEventListener("keydown", (e) => {
+			if (e.key === "Escape" && ctx.cardQueue.length > 0) {
+				clearCardQueue(ctx);
+			}
+		});
+		escKeyListenerRegistered = true;
+	}
+
 	// 方向選択UIのコールバック設定
 	ctx.ui.directionSelector.setOnDirectionSelect(async (direction) => {
 		if (ctx.isAnimating) return; // アニメーション中は無効
@@ -373,6 +388,9 @@ export function setupEventHandlers(ctx: GameContext): void {
 			}
 			// キューに追加
 			ctx.cardQueue.push({ card, direction });
+			ctx.ui.handRenderer.setQueuedCards(
+				buildQueuedCardIndexMap(ctx.cardQueue),
+			);
 			return false; // 消費アニメーションはスキップ（予約のみ）
 		}
 
