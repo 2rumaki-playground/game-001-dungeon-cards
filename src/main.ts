@@ -27,6 +27,7 @@ import {
 	TitleScreen,
 	TurnBanner,
 	TurnEndButton,
+	TurnOverlay,
 	VictoryScreen,
 } from "./ui";
 import { loadGameAssets } from "./ui/assetLoader";
@@ -130,11 +131,15 @@ async function initializeUIComponents(
 	logContainer.y = 0;
 	app.stage.addChild(logContainer);
 
+	const turnOverlay = new TurnOverlay(
+		viewportSize.width + LOG_AREA_GAP + actionLogRenderer.getWidth(),
+		totalHeight,
+	);
+
 	const turnBanner = new TurnBanner(
 		viewportSize.width + LOG_AREA_GAP + actionLogRenderer.getWidth(),
 		totalHeight,
 	);
-	app.stage.addChild(turnBanner.getContainer());
 
 	const directionSelector = new DirectionSelector();
 	const directionContainer = directionSelector.getContainer();
@@ -151,6 +156,10 @@ async function initializeUIComponents(
 
 	const victoryScreen = new VictoryScreen();
 	app.stage.addChild(victoryScreen.getContainer());
+
+	// ターンオーバーレイ/バナー（directionSelector・deckViewer・rewardScreen等の上に描画）
+	app.stage.addChild(turnOverlay.getContainer());
+	app.stage.addChild(turnBanner.getContainer());
 
 	const totalWidth =
 		viewportSize.width + LOG_AREA_GAP + actionLogRenderer.getWidth();
@@ -200,6 +209,7 @@ async function initializeUIComponents(
 		deckViewer,
 		actionLogRenderer,
 		turnBanner,
+		turnOverlay,
 		rewardScreen,
 		screenTransition,
 		floorBanner,

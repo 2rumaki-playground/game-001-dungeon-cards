@@ -4,15 +4,18 @@
  */
 
 import { Container, Graphics, Text } from "pixi.js";
-import { CARD_COST } from "../constants";
+import { CARD_COST, CARD_RARITY } from "../constants";
 import type { Card, CardType, Direction } from "../types";
 import { Easing, tween } from "../utils/tween";
 import {
 	CARD_COLORS as BASE_CARD_COLORS,
+	CARD_DESCRIPTION,
 	CARD_EFFECT_TEXT,
 	CARD_GLOW_COLORS,
 	CARD_TYPE_NAME,
 	CARD_TYPE_SYMBOL,
+	RARITY_COLORS,
+	RARITY_NAME,
 } from "./cardConstants";
 import { drawRoundedRect, makeInteractive } from "./graphicsHelpers";
 import type { ParticleSystem } from "./particleSystem";
@@ -53,6 +56,24 @@ const CONSUME_FLY_TARGET_Y = -70;
 
 /** 消費アニメーション：パーティクル数 */
 const CONSUME_PARTICLE_COUNT = 12;
+
+/** ツールチップの幅 */
+const TOOLTIP_WIDTH = 180;
+
+/** ツールチップとカードの間隔 */
+const TOOLTIP_MARGIN = 4;
+
+/** ツールチップ背景色 */
+const TOOLTIP_BG = 0x1a1a2e;
+
+/** ツールチップボーダー色 */
+const TOOLTIP_BORDER = 0x555577;
+
+/** ツールチップ角丸半径 */
+const TOOLTIP_RADIUS = 6;
+
+/** ツールチップ内パディング */
+const TOOLTIP_PADDING = 10;
 
 /**
  * カード内のクリック位置から方向を判定
@@ -106,6 +127,7 @@ const CARD_COLORS = {
 export class HandRenderer {
 	private container: Container;
 	private cardsContainer: Container;
+	private tooltipContainer: Container;
 	private particleSystem: ParticleSystem | null;
 	private selectedCardId: string | null = null;
 	private hoveredCardId: string | null = null;
@@ -124,7 +146,10 @@ export class HandRenderer {
 		this.container = new Container();
 		this.cardsContainer = new Container();
 		this.cardsContainer.label = "cards";
+		this.tooltipContainer = new Container();
+		this.tooltipContainer.label = "tooltip";
 		this.container.addChild(this.cardsContainer);
+		this.container.addChild(this.tooltipContainer);
 		this.particleSystem = particleSystem ?? null;
 	}
 
@@ -195,6 +220,8 @@ export class HandRenderer {
 			);
 			this.cardsContainer.addChild(cardContainer);
 		}
+
+		this.updateTooltip(hand);
 	}
 
 	/**
@@ -213,6 +240,8 @@ export class HandRenderer {
 		this.currentHand = hand;
 		this.currentAp = currentAp;
 		this.cardsContainer.removeChildren();
+		this.tooltipContainer.removeChildren();
+		this.hoveredCardId = null;
 
 		const totalWidth = hand.length * CARD_WIDTH + (hand.length - 1) * CARD_GAP;
 		const startX = -totalWidth / 2;
@@ -551,10 +580,148 @@ export class HandRenderer {
 	}
 
 	/**
+	 * ホバー中カードのツールチップを更新
+	 */
+	private updateTooltip(hand: Card[]): void {
+		this.tooltipContainer.removeChildren();
+
+		if (!this.hoveredCardId) return;
+
+		const hoveredCard = hand.find((c) => c.id === this.hoveredCardId);
+		if (!hoveredCard) return;
+
+		const cost = CARD_COST[hoveredCard.type];
+		if (this.currentAp < cost) return;
+
+		const cardIndex = hand.findIndex((c) => c.id === this.hoveredCardId);
+		const totalWidth = hand.length * CARD_WIDTH + (hand.length - 1) * CARD_GAP;
+		const startX = -totalWidth / 2;
+		const cardCenterX =
+			startX + cardIndex * (CARD_WIDTH + CARD_GAP) + CARD_WIDTH / 2;
+
+		const { container: tooltip, height: tooltipHeight } =
+			this.createTooltipView(hoveredCard.type);
+		tooltip.x = cardCenterX - TOOLTIP_WIDTH / 2;
+		tooltip.y = -HOVER_LIFT - tooltipHeight - TOOLTIP_MARGIN;
+
+		this.tooltipContainer.addChild(tooltip);
+	}
+
+	/**
+	 * ツールチップのビューを生成
+	 */
+	private createTooltipView(cardType: CardType): {
+		container: Container;
+		height: number;
+	} {
+		const tooltip = new Container();
+
+		const cost = CARD_COST[cardType];
+		const rarity = CARD_RARITY[cardType];
+
+		// テキスト要素を先に生成してから高さを計算
+		let yOffset = TOOLTIP_PADDING;
+
+		// カード名 + シンボル
+		const nameText = new Text({
+			text: `${CARD_TYPE_SYMBOL[cardType]} ${CARD_TYPE_NAME[cardType]}`,
+			style: {
+				fontSize: 14,
+				fontFamily: "sans-serif",
+				fill: 0xffffff,
+				fontWeight: "bold",
+			},
+		});
+		nameText.x = TOOLTIP_PADDING;
+		nameText.y = yOffset;
+		yOffset += 20;
+
+		// APコスト（cost > 0 の場合のみ）
+		let costText: Text | null = null;
+		if (cost > 0) {
+			costText = new Text({
+				text: `AP: ${cost}`,
+				style: {
+					fontSize: 12,
+					fontFamily: "sans-serif",
+					fill: cost >= 2 ? 0xffaa44 : 0xcccccc,
+					fontWeight: cost >= 2 ? "bold" : "normal",
+				},
+			});
+			costText.x = TOOLTIP_PADDING;
+			costText.y = yOffset;
+			yOffset += 18;
+		}
+
+		// 詳細説明
+		const descText = new Text({
+			text: CARD_DESCRIPTION[cardType],
+			style: {
+				fontSize: 11,
+				fontFamily: "sans-serif",
+				fill: 0xaaaaaa,
+				wordWrap: true,
+				wordWrapWidth: TOOLTIP_WIDTH - TOOLTIP_PADDING * 2,
+			},
+		});
+		descText.x = TOOLTIP_PADDING;
+		descText.y = yOffset;
+		// wordWrap による実際の折り返しを反映したテキスト高さからオフセットを算出
+		let descHeight: number;
+		try {
+			descHeight = descText.height;
+		} catch {
+			// Canvas API が利用不可の場合のフォールバック
+			const descLineCount = CARD_DESCRIPTION[cardType].split("\n").length;
+			descHeight = descLineCount * 14;
+		}
+		yOffset += descHeight + 8;
+
+		// レアリティ
+		const rarityText = new Text({
+			text: RARITY_NAME[rarity],
+			style: {
+				fontSize: 11,
+				fontFamily: "sans-serif",
+				fill: RARITY_COLORS[rarity],
+			},
+		});
+		rarityText.x = TOOLTIP_PADDING;
+		rarityText.y = yOffset;
+		yOffset += 16;
+
+		const tooltipHeight = yOffset + TOOLTIP_PADDING;
+
+		// 背景
+		const bg = new Graphics();
+		drawRoundedRect(
+			bg,
+			TOOLTIP_WIDTH,
+			tooltipHeight,
+			TOOLTIP_RADIUS,
+			TOOLTIP_BG,
+			{
+				color: TOOLTIP_BORDER,
+				width: 1,
+			},
+		);
+		tooltip.addChild(bg);
+
+		// テキスト要素を追加
+		tooltip.addChild(nameText);
+		if (costText) tooltip.addChild(costText);
+		tooltip.addChild(descText);
+		tooltip.addChild(rarityText);
+
+		return { container: tooltip, height: tooltipHeight };
+	}
+
+	/**
 	 * クリア
 	 */
 	clear(): void {
 		this.cardsContainer.removeChildren();
+		this.tooltipContainer.removeChildren();
 		this.selectedCardId = null;
 		this.hoveredCardId = null;
 		this.currentQueuedCardIndexMap = new Map();

@@ -21,8 +21,8 @@ describe("StatusBar", () => {
 		const statusBar = new StatusBar();
 		const container = statusBar.getContainer();
 		expect(container).toBeDefined();
-		// 3テキスト + 6バーGraphics（bg + ghost + fill × 2） = 9
-		expect(container.children.length).toBe(9);
+		// 4テキスト + 6バーGraphics（bg + ghost + fill × 2） = 10
+		expect(container.children.length).toBe(10);
 	});
 
 	it("renderでHP・AP・階層が正しく表示される", () => {
@@ -34,7 +34,7 @@ describe("StatusBar", () => {
 			ap: 2,
 			maxAp: 3,
 		};
-		statusBar.render(player, 5);
+		statusBar.render(player, 5, "player");
 
 		const container = statusBar.getContainer();
 
@@ -52,11 +52,43 @@ describe("StatusBar", () => {
 			ap: 2,
 			maxAp: 3,
 		};
-		statusBar.render(player, 20, true);
+		statusBar.render(player, 20, "player", true);
 
 		const container = statusBar.getContainer();
 
 		expect(findTextByPrefix(container, "階層:").text).toBe("階層: 20 ★");
+	});
+
+	it("renderでプレイヤーターン表示が正しい", () => {
+		const statusBar = new StatusBar();
+		const player = {
+			position: { x: 0, y: 0 },
+			hp: 10,
+			maxHp: 10,
+			ap: 3,
+			maxAp: 3,
+		};
+		statusBar.render(player, 1, "player");
+
+		const container = statusBar.getContainer();
+		const turnText = findTextByPrefix(container, "あなた");
+		expect(turnText.text).toBe("あなたのターン");
+	});
+
+	it("renderで敵ターン表示が正しい", () => {
+		const statusBar = new StatusBar();
+		const player = {
+			position: { x: 0, y: 0 },
+			hp: 10,
+			maxHp: 10,
+			ap: 3,
+			maxAp: 3,
+		};
+		statusBar.render(player, 1, "enemy");
+
+		const container = statusBar.getContainer();
+		const turnText = findTextByPrefix(container, "敵");
+		expect(turnText.text).toBe("敵のターン");
 	});
 
 	it("renderでHPバーが正しい比率で描画される", () => {
@@ -68,7 +100,7 @@ describe("StatusBar", () => {
 			ap: 2,
 			maxAp: 3,
 		};
-		statusBar.render(player, 5);
+		statusBar.render(player, 5, "player");
 
 		expect(statusBar.getCurrentHpRatio()).toBeCloseTo(0.7);
 	});
@@ -82,7 +114,7 @@ describe("StatusBar", () => {
 			ap: 2,
 			maxAp: 3,
 		};
-		statusBar.render(player, 5);
+		statusBar.render(player, 5, "player");
 
 		expect(statusBar.getCurrentApRatio()).toBeCloseTo(2 / 3);
 	});
@@ -96,7 +128,7 @@ describe("StatusBar", () => {
 			ap: 2,
 			maxAp: 3,
 		};
-		statusBar.render(player, 5);
+		statusBar.render(player, 5, "player");
 		statusBar.clear();
 
 		const container = statusBar.getContainer();
@@ -128,6 +160,7 @@ describe("StatusBar", () => {
 			statusBar.render(
 				{ position: { x: 0, y: 0 }, hp: 10, maxHp: 10, ap: 3, maxAp: 3 },
 				1,
+				"player",
 			);
 
 			const promise = statusBar.animateHpChange(10, 7, 10);
@@ -144,6 +177,7 @@ describe("StatusBar", () => {
 			statusBar.render(
 				{ position: { x: 0, y: 0 }, hp: 10, maxHp: 10, ap: 3, maxAp: 3 },
 				1,
+				"player",
 			);
 
 			const drawHpBarSpy = vi.spyOn(statusBar, "drawHpBar");
@@ -169,6 +203,7 @@ describe("StatusBar", () => {
 			statusBar.render(
 				{ position: { x: 0, y: 0 }, hp: 10, maxHp: 10, ap: 3, maxAp: 3 },
 				1,
+				"player",
 			);
 
 			const drawHpBarSpy = vi.spyOn(statusBar, "drawHpBar");
@@ -193,6 +228,7 @@ describe("StatusBar", () => {
 			statusBar.render(
 				{ position: { x: 0, y: 0 }, hp: 5, maxHp: 10, ap: 3, maxAp: 3 },
 				1,
+				"player",
 			);
 
 			const promise = statusBar.animateHpChange(5, 8, 10);
@@ -209,6 +245,7 @@ describe("StatusBar", () => {
 			statusBar.render(
 				{ position: { x: 0, y: 0 }, hp: 10, maxHp: 10, ap: 3, maxAp: 3 },
 				1,
+				"player",
 			);
 
 			const promise = statusBar.animateHpChange(10, 7, 10);
@@ -226,6 +263,7 @@ describe("StatusBar", () => {
 			statusBar.render(
 				{ position: { x: 0, y: 0 }, hp: 10, maxHp: 10, ap: 3, maxAp: 3 },
 				1,
+				"player",
 			);
 
 			await statusBar.animateHpChange(10, 10, 10);
@@ -239,6 +277,7 @@ describe("StatusBar", () => {
 			statusBar.render(
 				{ position: { x: 0, y: 0 }, hp: 10, maxHp: 10, ap: 3, maxAp: 3 },
 				1,
+				"player",
 			);
 
 			mockTweenValue.mockClear();
@@ -258,6 +297,7 @@ describe("StatusBar", () => {
 			statusBar.render(
 				{ position: { x: 0, y: 0 }, hp: 5, maxHp: 10, ap: 3, maxAp: 3 },
 				1,
+				"player",
 			);
 
 			mockTweenValue.mockClear();
@@ -274,15 +314,20 @@ describe("StatusBar", () => {
 
 	describe("animateApChange", () => {
 		it("アニメーション完了後にAP比率が最終値に一致する", async () => {
+			vi.useFakeTimers();
 			const statusBar = new StatusBar();
 			statusBar.render(
 				{ position: { x: 0, y: 0 }, hp: 10, maxHp: 10, ap: 3, maxAp: 3 },
 				1,
+				"player",
 			);
 
-			await statusBar.animateApChange(3, 1, 3);
+			const promise = statusBar.animateApChange(3, 1, 3);
+			await vi.advanceTimersByTimeAsync(1000);
+			await promise;
 
 			expect(statusBar.getCurrentApRatio()).toBeCloseTo(1 / 3);
+			vi.useRealTimers();
 		});
 
 		it("AP減少時にフラッシュが発生する", async () => {
@@ -291,6 +336,7 @@ describe("StatusBar", () => {
 			statusBar.render(
 				{ position: { x: 0, y: 0 }, hp: 10, maxHp: 10, ap: 3, maxAp: 3 },
 				1,
+				"player",
 			);
 
 			const drawApBarSpy = vi.spyOn(statusBar, "drawApBar");
@@ -314,6 +360,7 @@ describe("StatusBar", () => {
 			statusBar.render(
 				{ position: { x: 0, y: 0 }, hp: 10, maxHp: 10, ap: 1, maxAp: 3 },
 				1,
+				"player",
 			);
 
 			const drawApBarSpy = vi.spyOn(statusBar, "drawApBar");
@@ -336,6 +383,7 @@ describe("StatusBar", () => {
 			statusBar.render(
 				{ position: { x: 0, y: 0 }, hp: 10, maxHp: 10, ap: 1, maxAp: 3 },
 				1,
+				"player",
 			);
 
 			await statusBar.animateApChange(1, 3, 3);
@@ -344,17 +392,22 @@ describe("StatusBar", () => {
 		});
 
 		it("アニメーション中にAPテキストも補間更新される", async () => {
+			vi.useFakeTimers();
 			const statusBar = new StatusBar();
 			statusBar.render(
 				{ position: { x: 0, y: 0 }, hp: 10, maxHp: 10, ap: 3, maxAp: 3 },
 				1,
+				"player",
 			);
 
-			await statusBar.animateApChange(3, 1, 3);
+			const promise = statusBar.animateApChange(3, 1, 3);
+			await vi.advanceTimersByTimeAsync(1000);
+			await promise;
 
 			const container = statusBar.getContainer();
 
 			expect(findTextByPrefix(container, "AP:").text).toBe("AP: 1/3");
+			vi.useRealTimers();
 		});
 
 		it("値が変化しない場合は即座に完了する", async () => {
@@ -362,6 +415,7 @@ describe("StatusBar", () => {
 			statusBar.render(
 				{ position: { x: 0, y: 0 }, hp: 10, maxHp: 10, ap: 3, maxAp: 3 },
 				1,
+				"player",
 			);
 
 			await statusBar.animateApChange(3, 3, 3);
@@ -375,6 +429,7 @@ describe("StatusBar", () => {
 			statusBar.render(
 				{ position: { x: 0, y: 0 }, hp: 10, maxHp: 10, ap: 3, maxAp: 3 },
 				1,
+				"player",
 			);
 
 			mockTweenValue.mockClear();
@@ -393,6 +448,7 @@ describe("StatusBar", () => {
 			statusBar.render(
 				{ position: { x: 0, y: 0 }, hp: 10, maxHp: 10, ap: 1, maxAp: 3 },
 				1,
+				"player",
 			);
 
 			mockTweenValue.mockClear();
