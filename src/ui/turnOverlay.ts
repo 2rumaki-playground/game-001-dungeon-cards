@@ -74,6 +74,7 @@ export class TurnOverlay {
 				{ duration: FADE_DURATION, easing: Easing.easeOut },
 			);
 		} finally {
+			this.overlay.alpha = OVERLAY_ALPHA;
 			this.isAnimating = false;
 		}
 	}
