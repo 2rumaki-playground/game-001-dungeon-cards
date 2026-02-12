@@ -1,8 +1,9 @@
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { BOSS_SKILL, ENEMY_PARAMS } from "../constants";
 import {
 	createTestEnemy,
 	createTestState,
+	resetTestEnemySeq,
 } from "../test-utils/createTestFixtures";
 import type { RNG } from "../utils/rng";
 import {
@@ -16,6 +17,8 @@ import {
 function createStubRng(value: number): RNG {
 	return { random: () => value } as unknown as RNG;
 }
+
+beforeEach(() => resetTestEnemySeq());
 
 describe("checkEnrage", () => {
 	it("HP50%以下のボスに激昂を付与する", () => {
