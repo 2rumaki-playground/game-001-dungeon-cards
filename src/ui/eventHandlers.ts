@@ -589,8 +589,21 @@ export function setupEventHandlers(ctx: GameContext): void {
 		try {
 			let next = endPlayerTurn(ctx.state);
 
-			// 敵ターンバナー表示
-			await ctx.ui.turnBanner.showBanner("enemy");
+			// 敵ターン状態を即座に反映（StatusBar/TurnEndButtonに反映）
+			applyState(ctx, next);
+			ctx.ui.statusBar.render(
+				ctx.state.player,
+				ctx.state.floor,
+				ctx.state.turn,
+				ctx.state.isCleared,
+			);
+			ctx.ui.turnEndButton.render(ctx.state.turn);
+
+			// 敵ターンバナー表示 + オーバーレイフェードイン（並列実行）
+			await Promise.all([
+				ctx.ui.turnBanner.showBanner("enemy"),
+				ctx.ui.turnOverlay.fadeIn(),
+			]);
 
 			const enemiesBefore = next.enemies;
 			const { state: enemyTurnState, totalDamage } = executeEnemyTurn(next);
@@ -630,10 +643,22 @@ export function setupEventHandlers(ctx: GameContext): void {
 			if (next.screen !== "gameOver") {
 				next = startPlayerTurn(next);
 
-				// プレイヤーターンバナー表示
-				await ctx.ui.turnBanner.showBanner("player");
-
+				// バナー表示前にターン状態を反映（StatusBar/TurnEndButtonに即座に反映）
 				applyState(ctx, next);
+				ctx.ui.statusBar.render(
+					ctx.state.player,
+					ctx.state.floor,
+					ctx.state.turn,
+					ctx.state.isCleared,
+				);
+				ctx.ui.turnEndButton.render(ctx.state.turn);
+
+				// オーバーレイフェードアウト + プレイヤーターンバナー表示（並列実行）
+				await Promise.all([
+					ctx.ui.turnOverlay.fadeOut(),
+					ctx.ui.turnBanner.showBanner("player"),
+				]);
+
 				render(ctx, true);
 
 				await ctx.ui.handRenderer.renderWithAnimation(

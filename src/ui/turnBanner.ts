@@ -6,6 +6,7 @@
 import { Container, Graphics, Text } from "pixi.js";
 import type { Turn } from "../types";
 import { Easing, tween } from "../utils/tween";
+import { TURN_BG_COLORS, TURN_TEXT_COLORS } from "./turnColors";
 
 /** バナーの高さ（px） */
 const BANNER_HEIGHT = 60;
@@ -31,10 +32,10 @@ const HOLD_DURATION = 400;
 /** フェードアウトアニメーションの時間（ms） */
 const FADE_OUT_DURATION = 300;
 
-/** ターン別の色設定 */
+/** ターン別の色設定（共通定数から参照） */
 const BANNER_COLORS: Record<Turn, { bg: number; text: number }> = {
-	player: { bg: 0x1a3a6a, text: 0x88bbff },
-	enemy: { bg: 0x6a1a1a, text: 0xff8888 },
+	player: { bg: TURN_BG_COLORS.player, text: TURN_TEXT_COLORS.player },
+	enemy: { bg: TURN_BG_COLORS.enemy, text: TURN_TEXT_COLORS.enemy },
 };
 
 /** ターン別の表示テキスト */
