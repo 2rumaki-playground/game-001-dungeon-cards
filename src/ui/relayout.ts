@@ -67,7 +67,7 @@ export function relayoutUI(ctx: GameContext): void {
 	ctx.ui.turnBanner.resize(totalWidth, totalHeight);
 
 	// ターンオーバーレイ
-	ctx.ui.turnOverlay.resize(viewportSize.width, totalHeight);
+	ctx.ui.turnOverlay.resize(totalWidth, totalHeight);
 
 	// 画面遷移オーバーレイ
 	ctx.ui.screenTransition.resize(totalWidth, totalHeight);
