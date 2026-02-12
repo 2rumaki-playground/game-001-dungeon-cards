@@ -159,6 +159,10 @@ pnpm-debug.log*
 # Playwright CLI
 .playwright-cli/
 
+# Claude Code skills (各開発者が手動インストール)
+.claude/skills/
+.agents/
+
 # claude-mem auto-generated files
 .claude/commands/CLAUDE.md
 src/ui/CLAUDE.md
