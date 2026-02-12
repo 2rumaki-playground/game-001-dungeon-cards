@@ -12,6 +12,7 @@
 - デッキ構築仕様：[deckbuilding.md](./deckbuilding.md)（v1.2）
 - 用語定義：[glossary.md](./glossary.md)
 - 定数・前提：[constants.md](./constants.md)（**数値の正典**）
+- バランスシート：[balance-sheet.md](./balance-sheet.md)（パラメータ間の影響関係）
 
 ## 数値定数の管理ルール
 - **すべての数値定数は [constants.md](./constants.md) を正典 (Single Source of Truth) とする**
