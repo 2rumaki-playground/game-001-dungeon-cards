@@ -82,6 +82,23 @@ describe("EnemyTooltip", () => {
 		expect(tooltip.isVisible()).toBe(true);
 	});
 
+	it("激昂状態の敵は攻撃力にボーナスが加算される", () => {
+		const tooltip = new EnemyTooltip();
+		const enemy = {
+			id: "e-boss",
+			type: "boss" as const,
+			position: { x: 2, y: 2 },
+			hp: 10,
+			maxHp: 15,
+			enraged: true,
+		};
+		tooltip.show(enemy, 200, 200);
+		// boss attackDamage(3) + enrageBonusDamage(2) = 5
+		const container = tooltip.getContainer();
+		const atkText = container.children[3] as import("pixi.js").Text;
+		expect(atkText.text).toBe("ATK: 5");
+	});
+
 	describe("ビューポートクランプ", () => {
 		// bgWidth = max(80, 0...) + 6*2 = 92（テスト環境ではText.widthは0）
 		// bgHeight = 16*3 + 6*2 = 60
