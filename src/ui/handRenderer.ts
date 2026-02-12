@@ -226,6 +226,8 @@ export class HandRenderer {
 		this.currentHand = hand;
 		this.currentAp = currentAp;
 		this.cardsContainer.removeChildren();
+		this.tooltipContainer.removeChildren();
+		this.hoveredCardId = null;
 
 		const totalWidth = hand.length * CARD_WIDTH + (hand.length - 1) * CARD_GAP;
 		const startX = -totalWidth / 2;
