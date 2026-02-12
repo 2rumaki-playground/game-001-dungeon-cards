@@ -56,14 +56,34 @@ const AP_BAR_COLOR = 0x4488cc;
 /** HPダメージ時のフラッシュ色 */
 const HP_FLASH_COLOR = 0xff4444;
 
+/** AP消費時のフラッシュ色（明るい青） */
+const AP_FLASH_COLOR = 0x88ccff;
+
 /** バーアニメーション時間（ms） */
 const BAR_TWEEN_DURATION = 300;
 
-/** フラッシュの間隔（ms） */
-const FLASH_INTERVAL = 75;
+/** HPフラッシュの間隔（ms）— HP残量に応じて変化 */
+const HP_FLASH_INTERVAL_SLOW = 100;
+const HP_FLASH_INTERVAL_NORMAL = 60;
+const HP_FLASH_INTERVAL_FAST = 40;
 
-/** フラッシュの回数 */
-const FLASH_COUNT = 2;
+/** HPフラッシュの回数 */
+const HP_FLASH_COUNT = 2;
+
+/** APフラッシュの回数 */
+const AP_FLASH_COUNT = 1;
+
+/** APフラッシュの間隔（ms） */
+const AP_FLASH_INTERVAL = 60;
+
+/** ゴーストバーのアルファ値 */
+const GHOST_BAR_ALPHA = 0.4;
+
+/** ゴーストバーの遅延時間（ms） */
+const GHOST_BAR_DELAY = 100;
+
+/** ゴーストバーのtween時間（ms） */
+const GHOST_BAR_DURATION = 200;
 
 /**
  * ステータスバーレンダラー
@@ -75,8 +95,10 @@ export class StatusBar {
 	private floorText: Text;
 	private turnText: Text;
 	private hpBarBg: Graphics;
+	private hpBarGhost: Graphics;
 	private hpBarFill: Graphics;
 	private apBarBg: Graphics;
+	private apBarGhost: Graphics;
 	private apBarFill: Graphics;
 	private currentHpRatio = 0;
 	private currentApRatio = 0;
@@ -94,11 +116,17 @@ export class StatusBar {
 		this.hpBarBg = new Graphics();
 		this.container.addChild(this.hpBarBg);
 
+		this.hpBarGhost = new Graphics();
+		this.container.addChild(this.hpBarGhost);
+
 		this.hpBarFill = new Graphics();
 		this.container.addChild(this.hpBarFill);
 
 		this.apBarBg = new Graphics();
 		this.container.addChild(this.apBarBg);
+
+		this.apBarGhost = new Graphics();
+		this.container.addChild(this.apBarGhost);
 
 		this.apBarFill = new Graphics();
 		this.container.addChild(this.apBarFill);
@@ -170,7 +198,8 @@ export class StatusBar {
 	/**
 	 * APバーを描画
 	 */
-	drawApBar(ratio: number): void {
+	drawApBar(ratio: number, color?: number): void {
+		const fillColor = color ?? AP_BAR_COLOR;
 		this.apBarBg.clear();
 		this.apBarBg.rect(AP_TEXT_X, BAR_Y, AP_BAR_WIDTH, BAR_HEIGHT);
 		this.apBarBg.fill(BAR_BG_COLOR);
@@ -178,7 +207,7 @@ export class StatusBar {
 		this.apBarFill.clear();
 		if (ratio > 0) {
 			this.apBarFill.rect(AP_TEXT_X, BAR_Y, AP_BAR_WIDTH * ratio, BAR_HEIGHT);
-			this.apBarFill.fill(AP_BAR_COLOR);
+			this.apBarFill.fill(fillColor);
 		}
 	}
 
@@ -213,14 +242,16 @@ export class StatusBar {
 		this.currentApRatio = 0;
 
 		this.hpBarBg.clear();
+		this.hpBarGhost.clear();
 		this.hpBarFill.clear();
 		this.apBarBg.clear();
+		this.apBarGhost.clear();
 		this.apBarFill.clear();
 	}
 
 	/**
 	 * HP変化アニメーション
-	 * ダメージ時は赤点滅→バー減少、回復時はバー増加
+	 * ダメージ時は赤点滅→ゴーストバー→バー減少、回復時はバー増加
 	 */
 	async animateHpChange(
 		fromHp: number,
@@ -232,13 +263,34 @@ export class StatusBar {
 		const fromRatio = maxHp > 0 ? fromHp / maxHp : 0;
 		const toRatio = maxHp > 0 ? toHp / maxHp : 0;
 
-		// ダメージ時は赤点滅
+		// 呼び出し前にrender()でtoHp側が描画済みの場合に備え、
+		// fromHp/fromRatioの状態を明示的に反映してからアニメーション開始
+		this.currentHpRatio = fromRatio;
+		this.hpText.text = `HP: ${fromHp}/${maxHp}`;
+		this.drawHpBar(fromRatio);
+		this.hpBarGhost.clear();
+
+		let ghostPromise: Promise<void> | undefined;
+
+		// ダメージ時は赤点滅（HP残量に応じて速度変化）
 		if (toHp < fromHp) {
-			await this.flashHpBar();
+			await this.flashHpBar(toRatio);
+
+			// ゴーストバー（変化前の値を半透明で遅延表示）
+			this.drawHpGhost(fromRatio);
+			ghostPromise = tweenValue({
+				duration: GHOST_BAR_DURATION,
+				delay: GHOST_BAR_DELAY,
+				easing: Easing.easeOut,
+				onUpdate: (progress) => {
+					const ghostRatio = fromRatio + (toRatio - fromRatio) * progress;
+					this.drawHpGhost(ghostRatio);
+				},
+			});
 		}
 
 		// バー幅とテキストのtweenアニメーション
-		await tweenValue({
+		const barPromise = tweenValue({
 			duration: BAR_TWEEN_DURATION,
 			easing: Easing.easeOut,
 			onUpdate: (progress) => {
@@ -249,18 +301,32 @@ export class StatusBar {
 				this.drawHpBar(ratio);
 			},
 		});
+		await Promise.all([ghostPromise, barPromise]);
+
+		// ゴーストバークリア
+		this.hpBarGhost.clear();
 	}
 
 	/**
-	 * HPバーの赤点滅
+	 * HPバーの赤点滅（HP残量に応じて速度変化）
 	 */
-	private async flashHpBar(): Promise<void> {
-		for (let i = 0; i < FLASH_COUNT; i++) {
+	private async flashHpBar(hpRatio: number): Promise<void> {
+		const interval = this.getFlashInterval(hpRatio);
+		for (let i = 0; i < HP_FLASH_COUNT; i++) {
 			this.drawHpBar(this.currentHpRatio, HP_FLASH_COLOR);
-			await this.delay(FLASH_INTERVAL);
+			await this.delay(interval);
 			this.drawHpBar(this.currentHpRatio);
-			await this.delay(FLASH_INTERVAL);
+			await this.delay(interval);
 		}
+	}
+
+	/**
+	 * HP残量に応じたフラッシュ間隔を取得
+	 */
+	private getFlashInterval(hpRatio: number): number {
+		if (hpRatio > 0.5) return HP_FLASH_INTERVAL_SLOW;
+		if (hpRatio > HP_LOW_THRESHOLD) return HP_FLASH_INTERVAL_NORMAL;
+		return HP_FLASH_INTERVAL_FAST;
 	}
 
 	/**
@@ -276,7 +342,32 @@ export class StatusBar {
 		const fromRatio = maxAp > 0 ? fromAp / maxAp : 0;
 		const toRatio = maxAp > 0 ? toAp / maxAp : 0;
 
-		await tweenValue({
+		// 呼び出し前にrender()でtoAp側が描画済みの場合に備え、
+		// fromAp/fromRatioの状態を明示的に反映してからアニメーション開始
+		this.currentApRatio = fromRatio;
+		this.apText.text = `AP: ${fromAp}/${maxAp}`;
+		this.drawApBar(fromRatio);
+		this.apBarGhost.clear();
+
+		let ghostPromise: Promise<void> | undefined;
+
+		// AP消費時はフラッシュ + ゴーストバー
+		if (toAp < fromAp) {
+			await this.flashApBar();
+
+			this.drawApGhost(fromRatio);
+			ghostPromise = tweenValue({
+				duration: GHOST_BAR_DURATION,
+				delay: GHOST_BAR_DELAY,
+				easing: Easing.easeOut,
+				onUpdate: (progress) => {
+					const ghostRatio = fromRatio + (toRatio - fromRatio) * progress;
+					this.drawApGhost(ghostRatio);
+				},
+			});
+		}
+
+		const barPromise = tweenValue({
 			duration: BAR_TWEEN_DURATION,
 			easing: Easing.easeOut,
 			onUpdate: (progress) => {
@@ -287,6 +378,45 @@ export class StatusBar {
 				this.drawApBar(ratio);
 			},
 		});
+		await Promise.all([ghostPromise, barPromise]);
+
+		// ゴーストバークリア
+		this.apBarGhost.clear();
+	}
+
+	/**
+	 * APバーのフラッシュ
+	 */
+	private async flashApBar(): Promise<void> {
+		for (let i = 0; i < AP_FLASH_COUNT; i++) {
+			this.drawApBar(this.currentApRatio, AP_FLASH_COLOR);
+			await this.delay(AP_FLASH_INTERVAL);
+			this.drawApBar(this.currentApRatio);
+			await this.delay(AP_FLASH_INTERVAL);
+		}
+	}
+
+	/**
+	 * HPゴーストバーを描画（半透明）
+	 */
+	private drawHpGhost(ratio: number): void {
+		this.hpBarGhost.clear();
+		if (ratio > 0) {
+			const color = ratio <= HP_LOW_THRESHOLD ? HP_BAR_LOW_COLOR : HP_BAR_COLOR;
+			this.hpBarGhost.rect(HP_TEXT_X, BAR_Y, HP_BAR_WIDTH * ratio, BAR_HEIGHT);
+			this.hpBarGhost.fill({ color, alpha: GHOST_BAR_ALPHA });
+		}
+	}
+
+	/**
+	 * APゴーストバーを描画（半透明）
+	 */
+	private drawApGhost(ratio: number): void {
+		this.apBarGhost.clear();
+		if (ratio > 0) {
+			this.apBarGhost.rect(AP_TEXT_X, BAR_Y, AP_BAR_WIDTH * ratio, BAR_HEIGHT);
+			this.apBarGhost.fill({ color: AP_BAR_COLOR, alpha: GHOST_BAR_ALPHA });
+		}
 	}
 
 	private delay(ms: number): Promise<void> {

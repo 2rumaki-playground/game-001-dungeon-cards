@@ -1,10 +1,11 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it, type Mock, vi } from "vitest";
 import {
 	createTweenMock,
 	createTweenValueMock,
 	mockEasing,
 } from "../test-utils/mockTween";
 import { findTextByPrefix, getTexts } from "../test-utils/pixiTestHelper";
+import { tweenValue } from "../utils/tween";
 import { StatusBar } from "./statusBar";
 
 vi.mock("../utils/tween", () => ({
@@ -13,13 +14,15 @@ vi.mock("../utils/tween", () => ({
 	tweenValue: createTweenValueMock(),
 }));
 
+const mockTweenValue = tweenValue as Mock;
+
 describe("StatusBar", () => {
 	it("getContainerでContainerを返す", () => {
 		const statusBar = new StatusBar();
 		const container = statusBar.getContainer();
 		expect(container).toBeDefined();
-		// 4テキスト + 4バーGraphics = 8
-		expect(container.children.length).toBe(8);
+		// 4テキスト + 6バーGraphics（bg + ghost + fill × 2） = 10
+		expect(container.children.length).toBe(10);
 	});
 
 	it("renderでHP・AP・階層が正しく表示される", () => {
@@ -168,6 +171,57 @@ describe("StatusBar", () => {
 			vi.useRealTimers();
 		});
 
+		it("HP50%超への減少で遅い点滅間隔になる", async () => {
+			vi.useFakeTimers();
+			const statusBar = new StatusBar();
+			statusBar.render(
+				{ position: { x: 0, y: 0 }, hp: 10, maxHp: 10, ap: 3, maxAp: 3 },
+				1,
+				"player",
+			);
+
+			const drawHpBarSpy = vi.spyOn(statusBar, "drawHpBar");
+
+			const promise = statusBar.animateHpChange(10, 8, 10);
+
+			// 100ms間隔（SLOW）で点滅するので、50msではまだフラッシュ1回目の途中
+			await vi.advanceTimersByTimeAsync(50);
+			const callsAt50 = drawHpBarSpy.mock.calls.filter(
+				(call) => call[1] === 0xff4444,
+			);
+			// 50ms < 100msなのでフラッシュ色で描画は1回だけ（最初の描画）
+			expect(callsAt50.length).toBe(1);
+
+			await vi.advanceTimersByTimeAsync(1000);
+			await promise;
+			vi.useRealTimers();
+		});
+
+		it("HP30%以下への減少で速い点滅間隔になる", async () => {
+			vi.useFakeTimers();
+			const statusBar = new StatusBar();
+			statusBar.render(
+				{ position: { x: 0, y: 0 }, hp: 10, maxHp: 10, ap: 3, maxAp: 3 },
+				1,
+				"player",
+			);
+
+			const drawHpBarSpy = vi.spyOn(statusBar, "drawHpBar");
+
+			const promise = statusBar.animateHpChange(10, 2, 10);
+
+			// 40ms間隔（FAST）で点滅するので、80ms後には2回描画済み
+			await vi.advanceTimersByTimeAsync(80);
+			const flashCalls = drawHpBarSpy.mock.calls.filter(
+				(call) => call[1] === 0xff4444,
+			);
+			expect(flashCalls.length).toBe(2);
+
+			await vi.advanceTimersByTimeAsync(1000);
+			await promise;
+			vi.useRealTimers();
+		});
+
 		it("HP増加時はフラッシュなしでバーが変化する", async () => {
 			vi.useFakeTimers();
 			const statusBar = new StatusBar();
@@ -216,10 +270,9 @@ describe("StatusBar", () => {
 
 			expect(statusBar.getCurrentHpRatio()).toBeCloseTo(1.0);
 		});
-	});
 
-	describe("animateApChange", () => {
-		it("アニメーション完了後にAP比率が最終値に一致する", async () => {
+		it("HP減少時にゴーストバーのtweenが追加で呼ばれる", async () => {
+			vi.useFakeTimers();
 			const statusBar = new StatusBar();
 			statusBar.render(
 				{ position: { x: 0, y: 0 }, hp: 10, maxHp: 10, ap: 3, maxAp: 3 },
@@ -227,9 +280,102 @@ describe("StatusBar", () => {
 				"player",
 			);
 
-			await statusBar.animateApChange(3, 1, 3);
+			mockTweenValue.mockClear();
+
+			const promise = statusBar.animateHpChange(10, 7, 10);
+			await vi.advanceTimersByTimeAsync(1000);
+			await promise;
+
+			// ゴーストバー + メインバー = 2回呼ばれる
+			expect(mockTweenValue).toHaveBeenCalledTimes(2);
+			vi.useRealTimers();
+		});
+
+		it("HP増加時にゴーストバーのtweenは呼ばれない", async () => {
+			vi.useFakeTimers();
+			const statusBar = new StatusBar();
+			statusBar.render(
+				{ position: { x: 0, y: 0 }, hp: 5, maxHp: 10, ap: 3, maxAp: 3 },
+				1,
+				"player",
+			);
+
+			mockTweenValue.mockClear();
+
+			const promise = statusBar.animateHpChange(5, 8, 10);
+			await vi.advanceTimersByTimeAsync(1000);
+			await promise;
+
+			// メインバーのみ = 1回
+			expect(mockTweenValue).toHaveBeenCalledTimes(1);
+			vi.useRealTimers();
+		});
+	});
+
+	describe("animateApChange", () => {
+		it("アニメーション完了後にAP比率が最終値に一致する", async () => {
+			vi.useFakeTimers();
+			const statusBar = new StatusBar();
+			statusBar.render(
+				{ position: { x: 0, y: 0 }, hp: 10, maxHp: 10, ap: 3, maxAp: 3 },
+				1,
+				"player",
+			);
+
+			const promise = statusBar.animateApChange(3, 1, 3);
+			await vi.advanceTimersByTimeAsync(1000);
+			await promise;
 
 			expect(statusBar.getCurrentApRatio()).toBeCloseTo(1 / 3);
+			vi.useRealTimers();
+		});
+
+		it("AP減少時にフラッシュが発生する", async () => {
+			vi.useFakeTimers();
+			const statusBar = new StatusBar();
+			statusBar.render(
+				{ position: { x: 0, y: 0 }, hp: 10, maxHp: 10, ap: 3, maxAp: 3 },
+				1,
+				"player",
+			);
+
+			const drawApBarSpy = vi.spyOn(statusBar, "drawApBar");
+
+			const promise = statusBar.animateApChange(3, 1, 3);
+			await vi.advanceTimersByTimeAsync(1000);
+			await promise;
+
+			// フラッシュ色(0x88ccff)で呼ばれたことを確認
+			const flashCalls = drawApBarSpy.mock.calls.filter(
+				(call) => call[1] === 0x88ccff,
+			);
+			expect(flashCalls.length).toBeGreaterThan(0);
+
+			vi.useRealTimers();
+		});
+
+		it("AP増加時にはフラッシュが発生しない", async () => {
+			vi.useFakeTimers();
+			const statusBar = new StatusBar();
+			statusBar.render(
+				{ position: { x: 0, y: 0 }, hp: 10, maxHp: 10, ap: 1, maxAp: 3 },
+				1,
+				"player",
+			);
+
+			const drawApBarSpy = vi.spyOn(statusBar, "drawApBar");
+
+			const promise = statusBar.animateApChange(1, 3, 3);
+			await vi.advanceTimersByTimeAsync(1000);
+			await promise;
+
+			// フラッシュ色で呼ばれていないことを確認
+			const flashCalls = drawApBarSpy.mock.calls.filter(
+				(call) => call[1] !== undefined,
+			);
+			expect(flashCalls.length).toBe(0);
+
+			vi.useRealTimers();
 		});
 
 		it("AP増加時もバーが変化する", async () => {
@@ -246,6 +392,7 @@ describe("StatusBar", () => {
 		});
 
 		it("アニメーション中にAPテキストも補間更新される", async () => {
+			vi.useFakeTimers();
 			const statusBar = new StatusBar();
 			statusBar.render(
 				{ position: { x: 0, y: 0 }, hp: 10, maxHp: 10, ap: 3, maxAp: 3 },
@@ -253,11 +400,14 @@ describe("StatusBar", () => {
 				"player",
 			);
 
-			await statusBar.animateApChange(3, 1, 3);
+			const promise = statusBar.animateApChange(3, 1, 3);
+			await vi.advanceTimersByTimeAsync(1000);
+			await promise;
 
 			const container = statusBar.getContainer();
 
 			expect(findTextByPrefix(container, "AP:").text).toBe("AP: 1/3");
+			vi.useRealTimers();
 		});
 
 		it("値が変化しない場合は即座に完了する", async () => {
@@ -271,6 +421,42 @@ describe("StatusBar", () => {
 			await statusBar.animateApChange(3, 3, 3);
 
 			expect(statusBar.getCurrentApRatio()).toBeCloseTo(1.0);
+		});
+
+		it("AP減少時にゴーストバーのtweenが追加で呼ばれる", async () => {
+			vi.useFakeTimers();
+			const statusBar = new StatusBar();
+			statusBar.render(
+				{ position: { x: 0, y: 0 }, hp: 10, maxHp: 10, ap: 3, maxAp: 3 },
+				1,
+				"player",
+			);
+
+			mockTweenValue.mockClear();
+
+			const promise = statusBar.animateApChange(3, 1, 3);
+			await vi.advanceTimersByTimeAsync(1000);
+			await promise;
+
+			// ゴーストバー + メインバー = 2回呼ばれる
+			expect(mockTweenValue).toHaveBeenCalledTimes(2);
+			vi.useRealTimers();
+		});
+
+		it("AP増加時にゴーストバーのtweenは呼ばれない", async () => {
+			const statusBar = new StatusBar();
+			statusBar.render(
+				{ position: { x: 0, y: 0 }, hp: 10, maxHp: 10, ap: 1, maxAp: 3 },
+				1,
+				"player",
+			);
+
+			mockTweenValue.mockClear();
+
+			await statusBar.animateApChange(1, 3, 3);
+
+			// メインバーのみ = 1回
+			expect(mockTweenValue).toHaveBeenCalledTimes(1);
 		});
 	});
 });
