@@ -3,7 +3,7 @@
  * @see docs/spec/constants.md
  */
 
-import type { CardType, Rarity } from "./types";
+import type { CardType, EnemyType, Rarity } from "./types";
 
 // 行動関連
 export const MAX_AP = 3;
@@ -50,6 +50,15 @@ export const ENEMY_PARAMS = {
 	scout: { hp: 2, attackDamage: 1, moveDistance: 2, senseRange: 8 },
 	miniboss: { hp: 8, attackDamage: 2, moveDistance: 1, senseRange: 7 },
 	boss: { hp: 15, attackDamage: 3, moveDistance: 1, senseRange: 10 },
+} as const;
+
+// 敵タイプ表示名
+export const ENEMY_TYPE_LABEL: Record<EnemyType, string> = {
+	normal: "通常敵",
+	heavy: "重装敵",
+	scout: "俊敏敵",
+	miniboss: "ミニボス",
+	boss: "ボス",
 } as const;
 
 // 後方互換（通常敵のパラメータ）
