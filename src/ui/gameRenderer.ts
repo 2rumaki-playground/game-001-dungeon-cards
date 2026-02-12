@@ -46,6 +46,7 @@ function renderTitleScreen(ctx: GameContext): void {
 	ctx.ui.gameOverScreen.hide();
 	ctx.ui.victoryScreen.hide();
 	ctx.ui.statusBar.hide();
+	ctx.ui.turnOverlay.hide();
 	ctx.ui.turnEndButton.hide();
 	ctx.ui.nextFloorButton.hide();
 	ctx.ui.returnToPlayerButton.hide();
@@ -107,8 +108,10 @@ export function renderGameScreen(
 	ctx.ui.statusBar.render(
 		ctx.state.player,
 		ctx.state.floor,
+		ctx.state.turn,
 		ctx.state.isCleared,
 	);
+	ctx.ui.turnOverlay.render(ctx.state.turn);
 	ctx.ui.mapRenderer.render(
 		ctx.state.map,
 		ctx.state.player,
@@ -145,6 +148,7 @@ function renderGameOverScreen(ctx: GameContext): void {
 	ctx.ui.titleScreen.hide();
 	ctx.ui.victoryScreen.hide();
 	ctx.ui.statusBar.hide();
+	ctx.ui.turnOverlay.hide();
 	ctx.ui.turnEndButton.hide();
 	ctx.ui.nextFloorButton.hide();
 	ctx.ui.returnToPlayerButton.hide();
@@ -169,6 +173,7 @@ function renderVictoryScreen(ctx: GameContext): void {
 	ctx.ui.titleScreen.hide();
 	ctx.ui.gameOverScreen.hide();
 	ctx.ui.statusBar.hide();
+	ctx.ui.turnOverlay.hide();
 	ctx.ui.turnEndButton.hide();
 	ctx.ui.nextFloorButton.hide();
 	ctx.ui.returnToPlayerButton.hide();
