@@ -184,6 +184,24 @@ describe("SpecialTileEffectManager", () => {
 		expect(updatedEffect?.config.glowRadius).toBe(clearedConfig.glowRadius);
 	});
 
+	it("visitedTiles指定時に未訪問の階段はエフェクト/矢印が作られない", () => {
+		const manager = new SpecialTileEffectManager();
+		const map = createSimpleMap([["stairs", "trap"]]);
+		const visited = new Set(["1,0"]); // trapのみ訪問済み、階段は未訪問
+		manager.update(map, visited);
+
+		// 階段エフェクトは作られない（trapのみ）
+		expect(manager.getEffectCount()).toBe(1);
+		expect(manager.getStairsEffect("0,0")).toBeUndefined();
+
+		// 矢印も描画されない（arrowGraphicsの子要素で確認）
+		// Tickerを進めてもstairsエフェクトは増えない
+		for (const cb of [...tickerCallbacks]) {
+			cb({ deltaMS: 16 });
+		}
+		expect(manager.getStairsEffect("0,0")).toBeUndefined();
+	});
+
 	it("clear()後に階段エフェクトもクリアされる", () => {
 		const manager = new SpecialTileEffectManager();
 		const map = createSimpleMap([["stairs", "trap"]]);
