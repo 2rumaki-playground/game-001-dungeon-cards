@@ -653,19 +653,13 @@ describe("executeJump", () => {
 			},
 			"right" as Direction,
 			{ x: 3, y: 3 },
+			{ x: 3, y: 3 },
 		],
 		[
 			"着地先がマップ外",
-			() => ({
-				player: {
-					position: { x: 0, y: 0 },
-					hp: PLAYER_INITIAL_HP,
-					maxHp: PLAYER_INITIAL_HP,
-					ap: MAX_AP,
-					maxAp: MAX_AP,
-				},
-			}),
+			() => ({}),
 			"up" as Direction,
+			{ x: 0, y: 0 },
 			{ x: 0, y: 0 },
 		],
 		[
@@ -683,11 +677,12 @@ describe("executeJump", () => {
 			}),
 			"right" as Direction,
 			{ x: 3, y: 3 },
+			{ x: 3, y: 3 },
 		],
-	])("%s: 移動なし・AP消費", (_, createOverrides, direction, expectedPos) => {
+	])("%s: 移動なし・AP消費", (_, createOverrides, direction, startPos, expectedPos) => {
 		const state = createTestState({
 			player: {
-				position: expectedPos,
+				position: startPos,
 				hp: PLAYER_INITIAL_HP,
 				maxHp: PLAYER_INITIAL_HP,
 				ap: MAX_AP,
