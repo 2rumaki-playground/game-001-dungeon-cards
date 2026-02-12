@@ -54,6 +54,34 @@ describe("debugStart", () => {
 			expect(deck.hand).toHaveLength(0);
 			expect(deck.discardPile).toHaveLength(0);
 		});
+
+		it("不正なカードタイプを指定した場合はエラーになる", () => {
+			const rng = new RNG(42);
+			expect(() => {
+				createDebugDeckState({ foo: 1 } as any, rng);
+			}).toThrow();
+		});
+
+		it("負の count を指定した場合はエラーになる", () => {
+			const rng = new RNG(42);
+			expect(() => {
+				createDebugDeckState({ attack: -1 } as any, rng);
+			}).toThrow();
+		});
+
+		it("小数の count を指定した場合はエラーになる", () => {
+			const rng = new RNG(42);
+			expect(() => {
+				createDebugDeckState({ attack: 1.5 } as any, rng);
+			}).toThrow();
+		});
+
+		it("NaN の count を指定した場合はエラーになる", () => {
+			const rng = new RNG(42);
+			expect(() => {
+				createDebugDeckState({ attack: Number.NaN } as any, rng);
+			}).toThrow();
+		});
 	});
 
 	describe("createDebugEnemies", () => {
