@@ -2,7 +2,7 @@
  * マップレンダラーのテスト（攻撃エフェクト）
  */
 
-import { Graphics } from "pixi.js";
+import { type FederatedPointerEvent, Graphics } from "pixi.js";
 import { describe, expect, it, vi } from "vitest";
 import { createTweenMock, mockEasing } from "../test-utils/mockTween";
 import { MapRenderer } from "./mapRenderer";
@@ -1189,6 +1189,68 @@ describe("MapRenderer 敵ホバーツールチップ", () => {
 		const enemiesContainer = container.children[3];
 		const enemyContainer = enemiesContainer.children[0];
 		expect(enemyContainer.eventMode).toBe("static");
+	});
+
+	it("敵コンテナにpointerover/pointeroutリスナーが登録される", () => {
+		const renderer = new MapRenderer();
+		const map = createTestMap();
+		const enemies = [
+			{
+				id: "e1",
+				position: { x: 1, y: 1 },
+				hp: 3,
+				maxHp: 3,
+				type: "normal" as const,
+			},
+		];
+		const player = {
+			position: { x: 0, y: 0 },
+			hp: 10,
+			maxHp: 10,
+			ap: 3,
+			maxAp: 3,
+		};
+		renderer.render(map, player, enemies);
+
+		const container = renderer.getContainer();
+		const enemiesContainer = container.children[3];
+		const enemyContainer = enemiesContainer.children[0];
+		expect(enemyContainer.listenerCount("pointerover")).toBe(1);
+		expect(enemyContainer.listenerCount("pointerout")).toBe(1);
+	});
+
+	it("pointeroverでツールチップが表示されpointeroutで非表示になる", () => {
+		const renderer = new MapRenderer();
+		const map = createTestMap();
+		const enemies = [
+			{
+				id: "e1",
+				position: { x: 1, y: 1 },
+				hp: 3,
+				maxHp: 3,
+				type: "normal" as const,
+			},
+		];
+		const player = {
+			position: { x: 0, y: 0 },
+			hp: 10,
+			maxHp: 10,
+			ap: 3,
+			maxAp: 3,
+		};
+		renderer.render(map, player, enemies);
+
+		const container = renderer.getContainer();
+		const enemiesContainer = container.children[3];
+		const enemyContainer = enemiesContainer.children[0];
+		// tooltip[6]
+		const tooltipContainer = container.children[6];
+
+		expect(tooltipContainer.visible).toBe(false);
+		enemyContainer.emit("pointerover", {} as FederatedPointerEvent);
+		expect(tooltipContainer.visible).toBe(true);
+		enemyContainer.emit("pointerout", {} as FederatedPointerEvent);
+		expect(tooltipContainer.visible).toBe(false);
 	});
 
 	it("ツールチップコンテナがルートコンテナの最上位に追加される", () => {
