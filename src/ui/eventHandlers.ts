@@ -571,6 +571,16 @@ export function setupEventHandlers(ctx: GameContext): void {
 		try {
 			let next = endPlayerTurn(ctx.state);
 
+			// 敵ターン状態を即座に反映（StatusBar/TurnEndButtonに反映）
+			applyState(ctx, next);
+			ctx.ui.statusBar.render(
+				ctx.state.player,
+				ctx.state.floor,
+				ctx.state.turn,
+				ctx.state.isCleared,
+			);
+			ctx.ui.turnEndButton.render(ctx.state.turn);
+
 			// 敵ターンバナー表示 + オーバーレイフェードイン（並列実行）
 			await Promise.all([
 				ctx.ui.turnBanner.showBanner("enemy"),
