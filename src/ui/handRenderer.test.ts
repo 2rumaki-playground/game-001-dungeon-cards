@@ -615,7 +615,7 @@ describe("HandRenderer キュー表示", () => {
 		expect(texts1.find((t) => t.text === "2")).toBeDefined();
 	});
 
-	it("キュー内カードのボーダーがゴールド色になる", () => {
+	it("キュー内カードにバッジが追加される", () => {
 		const renderer = new HandRenderer();
 		const cards = createTestCards();
 		renderer.setQueuedCards(new Map([["card-1", 1]]));
@@ -624,10 +624,7 @@ describe("HandRenderer キュー表示", () => {
 		const card0 = findCardContainer(renderer, 0);
 		const card1 = findCardContainer(renderer, 1);
 
-		// card-0（キュー内）のボーダーはゴールド色
-		// card-1（キュー外）のボーダーはゴールド色でない
-		// Graphics子要素の描画内容を直接検査するのは困難なため、
-		// コンテナの子要素数の差でバッジ存在を確認
+		// キュー内カードはバッジ分だけ子要素が多い
 		expect(card0.children.length).toBeGreaterThan(card1.children.length);
 	});
 });
