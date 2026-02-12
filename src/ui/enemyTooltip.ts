@@ -89,8 +89,23 @@ export class EnemyTooltip {
 
 	/**
 	 * ツールチップを表示
+	 * @param viewport ビューポートのピクセルサイズ
+	 * @param containerTransform 親コンテナの変換情報（カメラオフセット・ズーム）
 	 */
-	show(enemy: Enemy, pixelX: number, pixelY: number): void {
+	show(
+		enemy: Enemy,
+		pixelX: number,
+		pixelY: number,
+		viewport: { width: number; height: number } = {
+			width: Number.POSITIVE_INFINITY,
+			height: Number.POSITIVE_INFINITY,
+		},
+		containerTransform: { x: number; y: number; scale: number } = {
+			x: 0,
+			y: 0,
+			scale: 1,
+		},
+	): void {
 		const label = ENEMY_TYPE_LABEL[enemy.type];
 		const params = ENEMY_PARAMS[enemy.type];
 		const attackDamage = enemy.enraged
@@ -127,21 +142,31 @@ export class EnemyTooltip {
 			{ color: TOOLTIP_BORDER_COLOR, width: TOOLTIP_BORDER_WIDTH },
 		);
 
-		// X方向: ビューポート右端にはみ出す場合は左側にオフセットする
-		let tooltipX = pixelX;
-		if (typeof window !== "undefined") {
-			const viewportWidth = window.innerWidth;
-			const overflowRight = tooltipX + bgWidth - viewportWidth;
-			if (overflowRight > 0) {
-				tooltipX = Math.max(0, viewportWidth - bgWidth);
-			}
-		}
+		const { x: cx, y: cy, scale } = containerTransform;
 
-		// Y方向: 基本は敵の上側に出すが、画面上端にはみ出す場合は下側に出す
-		const targetYAbove = pixelY - bgHeight - TOOLTIP_GAP;
+		// X方向: スクリーン座標でビューポート右端にはみ出す場合は左側にオフセット
+		const screenX = pixelX * scale + cx;
+		const screenBgWidth = bgWidth * scale;
+		let clampedScreenX = screenX;
+		if (clampedScreenX + screenBgWidth > viewport.width) {
+			clampedScreenX = Math.max(0, viewport.width - screenBgWidth);
+		}
+		const tooltipX = (clampedScreenX - cx) / scale;
+
+		// Y方向: スクリーン座標で判定し、基本は敵の上側、はみ出す場合は下側に出す
+		const screenY = pixelY * scale + cy;
+		const screenBgHeight = bgHeight * scale;
+		const screenCellSize = CELL_SIZE * scale;
+		const screenGap = TOOLTIP_GAP * scale;
+		const targetScreenYAbove = screenY - screenBgHeight - screenGap;
+		const tooltipScreenY =
+			targetScreenYAbove >= 0
+				? targetScreenYAbove
+				: screenY + screenCellSize + screenGap;
+		const tooltipY = (tooltipScreenY - cy) / scale;
+
 		this.container.x = tooltipX;
-		this.container.y =
-			targetYAbove >= 0 ? targetYAbove : pixelY + CELL_SIZE + TOOLTIP_GAP;
+		this.container.y = tooltipY;
 		this.container.visible = true;
 	}
 

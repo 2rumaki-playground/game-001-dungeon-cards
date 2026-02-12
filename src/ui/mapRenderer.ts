@@ -21,7 +21,7 @@ import {
 	getPlayerTexture,
 	getTileTexture,
 } from "./assetLoader";
-import { gridToPixel } from "./coordinates";
+import { getViewportPixelSize, gridToPixel } from "./coordinates";
 import type { EnemyMove } from "./enemyMoveDetector";
 import { EnemyTooltip } from "./enemyTooltip";
 import { SpecialTileEffectManager } from "./specialTileEffect";
@@ -824,7 +824,19 @@ export class MapRenderer {
 		if (!enemy || !enemyContainer) return;
 
 		this.tooltipEnemyId = enemyId;
-		this.enemyTooltip.show(enemy, enemyContainer.x, enemyContainer.y);
+		const viewport = getViewportPixelSize();
+		const containerTransform = {
+			x: this.container.x,
+			y: this.container.y,
+			scale: this.container.scale.x,
+		};
+		this.enemyTooltip.show(
+			enemy,
+			enemyContainer.x,
+			enemyContainer.y,
+			viewport,
+			containerTransform,
+		);
 	}
 
 	/**
