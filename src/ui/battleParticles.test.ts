@@ -133,15 +133,15 @@ describe("createHealParticleConfig", () => {
 		}
 	});
 
-	it("radialパターンが使用される", () => {
+	it("上向きのパーティクル設定になっている", () => {
 		const config = createHealParticleConfig({ x: 0, y: 0 });
-		expect(config.pattern.type).toBe("radial");
-	});
-
-	it("上向きに浮かぶ（負のgravity）", () => {
-		const config = createHealParticleConfig({ x: 0, y: 0 });
+		// 負のgravityで上方向に浮かぶ
 		expect(config.gravity).toBeDefined();
 		expect(config.gravity).toBeLessThan(0);
+		// directionalパターンの場合、角度が上向き（-π/2付近）
+		if (config.pattern.type === "directional") {
+			expect(config.pattern.angle).toBeCloseTo(-Math.PI / 2);
+		}
 	});
 });
 

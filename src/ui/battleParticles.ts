@@ -95,7 +95,7 @@ export function createHealParticleConfig(origin: Vec2): ParticleConfig {
 		speed: { min: 0.05, max: 0.15 },
 		life: { min: 300, max: 600 },
 		size: { min: 2, max: 5 },
-		pattern: { type: "radial" },
+		pattern: { type: "directional", angle: -Math.PI / 2, spread: Math.PI / 6 },
 		gravity: -0.0002,
 	};
 }
