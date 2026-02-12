@@ -169,12 +169,18 @@ describe("constants", () => {
 	});
 
 	describe("ENEMY_TYPE_LABEL", () => {
-		it("全敵タイプにラベルが定義されている", () => {
-			const types = Object.keys(ENEMY_TYPE_LABEL) as EnemyType[];
+		it("ENEMY_PARAMSの全敵タイプにラベルが定義されている", () => {
+			const types = Object.keys(ENEMY_PARAMS) as EnemyType[];
 			for (const type of types) {
 				expect(ENEMY_TYPE_LABEL[type]).toBeDefined();
 				expect(typeof ENEMY_TYPE_LABEL[type]).toBe("string");
 			}
+		});
+
+		it("ENEMY_TYPE_LABELとENEMY_PARAMSのキー集合が一致する", () => {
+			const labelKeys = Object.keys(ENEMY_TYPE_LABEL).sort();
+			const paramKeys = Object.keys(ENEMY_PARAMS).sort();
+			expect(labelKeys).toEqual(paramKeys);
 		});
 	});
 
