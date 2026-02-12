@@ -1243,14 +1243,14 @@ describe("MapRenderer 敵ホバーツールチップ", () => {
 		const container = renderer.getContainer();
 		const enemiesContainer = container.children[3];
 		const enemyContainer = enemiesContainer.children[0];
-		// tooltip[6]
-		const tooltipContainer = container.children[6];
+		// ルートコンテナの最上位に追加されたツールチップ
+		const tooltipContainer = container.children.at(-1);
 
-		expect(tooltipContainer.visible).toBe(false);
+		expect(tooltipContainer?.visible).toBe(false);
 		enemyContainer.emit("pointerover", {} as FederatedPointerEvent);
-		expect(tooltipContainer.visible).toBe(true);
+		expect(tooltipContainer?.visible).toBe(true);
 		enemyContainer.emit("pointerout", {} as FederatedPointerEvent);
-		expect(tooltipContainer.visible).toBe(false);
+		expect(tooltipContainer?.visible).toBe(false);
 	});
 
 	it("ツールチップコンテナがルートコンテナの最上位に追加される", () => {
