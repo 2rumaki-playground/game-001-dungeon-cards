@@ -155,10 +155,13 @@ describe("createTrapDamageParticleConfig", () => {
 		const config = createTrapDamageParticleConfig({ x: 0, y: 0 });
 		const colors = Array.isArray(config.color) ? config.color : [config.color];
 		for (const c of colors) {
-			// 紫系: 赤成分と青成分が一定以上
+			// 紫系: 赤成分と青成分がそれぞれ一定以上、かつ緑成分が一定以下
 			const r = (c >> 16) & 0xff;
+			const g = (c >> 8) & 0xff;
 			const b = c & 0xff;
-			expect(r + b).toBeGreaterThan(0x80);
+			expect(r).toBeGreaterThanOrEqual(0x60);
+			expect(b).toBeGreaterThanOrEqual(0x60);
+			expect(g).toBeLessThanOrEqual(0x80);
 		}
 	});
 
