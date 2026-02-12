@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import {
 	CLEAR_FLOOR,
 	ENEMY_ATTACK_DAMAGE,
@@ -10,6 +10,7 @@ import {
 import {
 	createTestEnemy,
 	createTestState,
+	resetTestEnemySeq,
 } from "../test-utils/createTestFixtures";
 import {
 	applyDamageToEnemy,
@@ -17,6 +18,8 @@ import {
 	checkGameOver,
 	isDefeated,
 } from "./combat";
+
+beforeEach(() => resetTestEnemySeq());
 
 describe("isDefeated", () => {
 	it("HP0の場合trueを返す", () => {
