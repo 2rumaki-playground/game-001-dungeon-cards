@@ -483,11 +483,10 @@ export class MapRenderer {
 		}
 
 		// スキル予告エフェクト更新
-		const forecastEnemies = visibleEnemies.filter((e) => e.pendingSkill);
 		const mapWidth = this.lastRenderedMap?.[0]?.length ?? 0;
 		const mapHeight = this.lastRenderedMap?.length ?? 0;
 		this.skillForecastEffectManager.update(
-			forecastEnemies,
+			visibleEnemies,
 			mapWidth,
 			mapHeight,
 			visitedTiles,
