@@ -124,13 +124,6 @@ export class CharacterRenderer {
 	}
 
 	/**
-	 * プレイヤーのスプライトを取得
-	 */
-	getPlayerSprite(): Sprite {
-		return this.playerSprite;
-	}
-
-	/**
 	 * プレイヤーのグリッド座標を取得
 	 */
 	getPlayerGridPos(): Position {
