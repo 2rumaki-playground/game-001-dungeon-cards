@@ -144,13 +144,11 @@ export class EnemyTooltip {
 
 		const { x: cx, y: cy, scale } = containerTransform;
 
-		// X方向: スクリーン座標でビューポート右端にはみ出す場合は左側にオフセット
+		// X方向: スクリーン座標でビューポート左右にはみ出さないようにクランプ
 		const screenX = pixelX * scale + cx;
 		const screenBgWidth = bgWidth * scale;
-		let clampedScreenX = screenX;
-		if (clampedScreenX + screenBgWidth > viewport.width) {
-			clampedScreenX = Math.max(0, viewport.width - screenBgWidth);
-		}
+		const maxScreenX = viewport.width - screenBgWidth;
+		const clampedScreenX = Math.max(0, Math.min(screenX, maxScreenX));
 		const tooltipX = (clampedScreenX - cx) / scale;
 
 		// Y方向: スクリーン座標で判定し、基本は敵の上側、はみ出す場合は下側に出す
