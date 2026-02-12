@@ -11,16 +11,24 @@ import {
 	createTestMap,
 	createTestState,
 } from "../test-utils/createTestFixtures";
-import type { Enemy } from "../types";
+import type { Enemy, EnemyType } from "../types";
 import { RNG } from "../utils/rng";
 import { executeEnemyTurn, pickMoveDirection } from "./enemyAi";
 import { createFixedLayoutMap } from "./map";
 
 describe("pickMoveDirection", () => {
-	it("プレイヤーが上にいる場合、上方向を返す", () => {
+	it.each([
+		["上", { x: 3, y: 1 }, "up"],
+		["下", { x: 3, y: 5 }, "down"],
+		["左", { x: 1, y: 3 }, "left"],
+	] as [
+		string,
+		{ x: number; y: number },
+		string,
+	][])("プレイヤーが%sにいる場合、対応する方向を返す", (_, playerPos, expected) => {
 		const state = createTestState({
 			player: {
-				position: { x: 3, y: 1 },
+				position: playerPos,
 				hp: PLAYER_INITIAL_HP,
 				maxHp: PLAYER_INITIAL_HP,
 				ap: MAX_AP,
@@ -34,47 +42,7 @@ describe("pickMoveDirection", () => {
 			hp: ENEMY_HP,
 			maxHp: ENEMY_HP,
 		};
-		expect(pickMoveDirection(state, enemy)).toBe("up");
-	});
-
-	it("プレイヤーが下にいる場合、下方向を返す", () => {
-		const state = createTestState({
-			player: {
-				position: { x: 3, y: 5 },
-				hp: PLAYER_INITIAL_HP,
-				maxHp: PLAYER_INITIAL_HP,
-				ap: MAX_AP,
-				maxAp: MAX_AP,
-			},
-		});
-		const enemy: Enemy = {
-			id: "enemy-1",
-			type: "normal",
-			position: { x: 3, y: 3 },
-			hp: ENEMY_HP,
-			maxHp: ENEMY_HP,
-		};
-		expect(pickMoveDirection(state, enemy)).toBe("down");
-	});
-
-	it("プレイヤーが左にいる場合、左方向を返す", () => {
-		const state = createTestState({
-			player: {
-				position: { x: 1, y: 3 },
-				hp: PLAYER_INITIAL_HP,
-				maxHp: PLAYER_INITIAL_HP,
-				ap: MAX_AP,
-				maxAp: MAX_AP,
-			},
-		});
-		const enemy: Enemy = {
-			id: "enemy-1",
-			type: "normal",
-			position: { x: 3, y: 3 },
-			hp: ENEMY_HP,
-			maxHp: ENEMY_HP,
-		};
-		expect(pickMoveDirection(state, enemy)).toBe("left");
+		expect(pickMoveDirection(state, enemy)).toBe(expected);
 	});
 
 	it("同距離の方向がある場合、固定順序（上→下→左→右）で選択する", () => {
@@ -597,23 +565,29 @@ describe("executeEnemyTurn", () => {
 		expect(totalDamage).toBe(ENEMY_PARAMS.normal.attackDamage);
 	});
 
-	it("heavy敵が隣接時にattackDamage分のダメージを与える", () => {
+	it.each([
+		"heavy",
+		"scout",
+		"miniboss",
+		"boss",
+	] as EnemyType[])("%s敵が隣接時にattackDamage分のダメージを与える", (type) => {
 		const enemies: Enemy[] = [
 			{
 				id: "enemy-1",
-				type: "heavy",
+				type,
 				position: { x: 4, y: 3 },
-				hp: ENEMY_PARAMS.heavy.hp,
-				maxHp: ENEMY_PARAMS.heavy.hp,
+				hp: ENEMY_PARAMS[type].hp,
+				maxHp: ENEMY_PARAMS[type].hp,
 			},
 		];
 		const state = createTestState({ turn: "enemy", enemies });
 		const { state: result, totalDamage } = executeEnemyTurn(state);
 
 		expect(result.player.hp).toBe(
-			PLAYER_INITIAL_HP - ENEMY_PARAMS.heavy.attackDamage,
+			PLAYER_INITIAL_HP - ENEMY_PARAMS[type].attackDamage,
 		);
-		expect(totalDamage).toBe(ENEMY_PARAMS.heavy.attackDamage);
+		expect(totalDamage).toBe(ENEMY_PARAMS[type].attackDamage);
+		expect(result.enemies[0].position).toEqual({ x: 4, y: 3 });
 	});
 
 	it("heavy敵は隣接していなくても移動しない", () => {
@@ -714,49 +688,13 @@ describe("executeEnemyTurn", () => {
 		expect(result.enemies[0].position).toEqual({ x: 3, y: 5 });
 	});
 
-	it("scout敵が隣接時に攻撃する（移動しない）", () => {
-		const enemies: Enemy[] = [
-			{
-				id: "enemy-1",
-				type: "scout",
-				position: { x: 4, y: 3 },
-				hp: ENEMY_PARAMS.scout.hp,
-				maxHp: ENEMY_PARAMS.scout.hp,
-			},
-		];
-		const state = createTestState({ turn: "enemy", enemies });
-		const { state: result, totalDamage } = executeEnemyTurn(state);
-
-		expect(result.player.hp).toBe(
-			PLAYER_INITIAL_HP - ENEMY_PARAMS.scout.attackDamage,
-		);
-		expect(totalDamage).toBe(ENEMY_PARAMS.scout.attackDamage);
-		// 移動していない
-		expect(result.enemies[0].position).toEqual({ x: 4, y: 3 });
-	});
-
-	it("敵が罠タイル上に移動できる", () => {
+	it.each([
+		"trap",
+		"treasure",
+		"rest_area",
+	] as const)("敵が%sタイル上に移動できる", (tileType) => {
 		const map = createTestMap();
-		map[4][3] = { type: "trap" };
-		const enemies: Enemy[] = [
-			{
-				id: "enemy-1",
-				type: "normal",
-				position: { x: 3, y: 5 },
-				hp: ENEMY_HP,
-				maxHp: ENEMY_HP,
-			},
-		];
-		const state = createTestState({ turn: "enemy", map, enemies });
-		const { state: result } = executeEnemyTurn(state);
-
-		// 罠タイルの上に移動できる
-		expect(result.enemies[0].position).toEqual({ x: 3, y: 4 });
-	});
-
-	it("敵が宝箱タイル上に移動できる", () => {
-		const map = createTestMap();
-		map[4][3] = { type: "treasure" };
+		map[4][3] = { type: tileType };
 		const enemies: Enemy[] = [
 			{
 				id: "enemy-1",
@@ -772,86 +710,17 @@ describe("executeEnemyTurn", () => {
 		expect(result.enemies[0].position).toEqual({ x: 3, y: 4 });
 	});
 
-	it("敵が休憩所タイル上に移動できる", () => {
-		const map = createTestMap();
-		map[4][3] = { type: "rest_area" };
+	it.each([
+		"miniboss",
+		"boss",
+	] as EnemyType[])("%s敵がプレイヤーに近づく（moveDistance=1）", (type) => {
 		const enemies: Enemy[] = [
 			{
 				id: "enemy-1",
-				type: "normal",
-				position: { x: 3, y: 5 },
-				hp: ENEMY_HP,
-				maxHp: ENEMY_HP,
-			},
-		];
-		const state = createTestState({ turn: "enemy", map, enemies });
-		const { state: result } = executeEnemyTurn(state);
-
-		expect(result.enemies[0].position).toEqual({ x: 3, y: 4 });
-	});
-
-	it("miniboss敵が隣接時にattackDamage分のダメージを与える", () => {
-		const enemies: Enemy[] = [
-			{
-				id: "enemy-1",
-				type: "miniboss",
-				position: { x: 4, y: 3 },
-				hp: ENEMY_PARAMS.miniboss.hp,
-				maxHp: ENEMY_PARAMS.miniboss.hp,
-			},
-		];
-		const state = createTestState({ turn: "enemy", enemies });
-		const { state: result, totalDamage } = executeEnemyTurn(state);
-
-		expect(result.player.hp).toBe(
-			PLAYER_INITIAL_HP - ENEMY_PARAMS.miniboss.attackDamage,
-		);
-		expect(totalDamage).toBe(ENEMY_PARAMS.miniboss.attackDamage);
-	});
-
-	it("miniboss敵がプレイヤーに近づく（moveDistance=1）", () => {
-		const enemies: Enemy[] = [
-			{
-				id: "enemy-1",
-				type: "miniboss",
+				type,
 				position: { x: 5, y: 3 },
-				hp: ENEMY_PARAMS.miniboss.hp,
-				maxHp: ENEMY_PARAMS.miniboss.hp,
-			},
-		];
-		const state = createTestState({ turn: "enemy", enemies });
-		const { state: result } = executeEnemyTurn(state);
-
-		expect(result.enemies[0].position).toEqual({ x: 4, y: 3 });
-	});
-
-	it("boss敵が隣接時にattackDamage分のダメージを与える", () => {
-		const enemies: Enemy[] = [
-			{
-				id: "enemy-1",
-				type: "boss",
-				position: { x: 4, y: 3 },
-				hp: ENEMY_PARAMS.boss.hp,
-				maxHp: ENEMY_PARAMS.boss.hp,
-			},
-		];
-		const state = createTestState({ turn: "enemy", enemies });
-		const { state: result, totalDamage } = executeEnemyTurn(state);
-
-		expect(result.player.hp).toBe(
-			PLAYER_INITIAL_HP - ENEMY_PARAMS.boss.attackDamage,
-		);
-		expect(totalDamage).toBe(ENEMY_PARAMS.boss.attackDamage);
-	});
-
-	it("boss敵がプレイヤーに近づく（moveDistance=1）", () => {
-		const enemies: Enemy[] = [
-			{
-				id: "enemy-1",
-				type: "boss",
-				position: { x: 5, y: 3 },
-				hp: ENEMY_PARAMS.boss.hp,
-				maxHp: ENEMY_PARAMS.boss.hp,
+				hp: ENEMY_PARAMS[type].hp,
+				maxHp: ENEMY_PARAMS[type].hp,
 			},
 		];
 		const state = createTestState({ turn: "enemy", enemies });
@@ -1084,10 +953,23 @@ describe("executeEnemyTurn", () => {
 			expect(normalResult.enemies[0].position).toEqual({ x: 5, y: 5 });
 		});
 
-		it("ミニボスの索敵範囲境界で追従/待機が切り替わる", () => {
-			// miniboss senseRange=7
-			// プレイヤー(1,1)、敵(5,4) → 距離7 → 範囲内 → 移動する
-			// プレイヤー(1,1)、敵(5,5) → 距離8 → 範囲外 → 移動しない
+		it.each([
+			[
+				"ミニボス",
+				"miniboss" as EnemyType,
+				undefined,
+				{ x: 5, y: 4 },
+				{ x: 5, y: 5 },
+			],
+			[
+				"ボス",
+				"boss" as EnemyType,
+				createFixedLayoutMap(15, 15),
+				{ x: 8, y: 4 },
+				{ x: 8, y: 5 },
+			],
+		])("%sの索敵範囲境界で追従/待機が切り替わる", (_, type, map, inRangePos, outOfRangePos) => {
+			const hp = ENEMY_PARAMS[type].hp;
 			const playerOverride = {
 				position: { x: 1, y: 1 },
 				hp: PLAYER_INITIAL_HP,
@@ -1098,27 +980,15 @@ describe("executeEnemyTurn", () => {
 
 			const inRangeState = createTestState({
 				turn: "enemy",
-				enemies: [
-					{
-						id: "enemy-1",
-						type: "miniboss",
-						position: { x: 5, y: 4 },
-						hp: ENEMY_PARAMS.miniboss.hp,
-						maxHp: ENEMY_PARAMS.miniboss.hp,
-					},
-				],
+				...(map ? { map } : {}),
+				enemies: [{ id: "enemy-1", type, position: inRangePos, hp, maxHp: hp }],
 				player: playerOverride,
 			});
 			const outOfRangeState = createTestState({
 				turn: "enemy",
+				...(map ? { map } : {}),
 				enemies: [
-					{
-						id: "enemy-1",
-						type: "miniboss",
-						position: { x: 5, y: 5 },
-						hp: ENEMY_PARAMS.miniboss.hp,
-						maxHp: ENEMY_PARAMS.miniboss.hp,
-					},
+					{ id: "enemy-1", type, position: outOfRangePos, hp, maxHp: hp },
 				],
 				player: playerOverride,
 			});
@@ -1126,58 +996,8 @@ describe("executeEnemyTurn", () => {
 			const { state: inRangeResult } = executeEnemyTurn(inRangeState);
 			const { state: outOfRangeResult } = executeEnemyTurn(outOfRangeState);
 
-			expect(inRangeResult.enemies[0].position).not.toEqual({ x: 5, y: 4 });
-			expect(outOfRangeResult.enemies[0].position).toEqual({ x: 5, y: 5 });
-		});
-
-		it("ボスの索敵範囲境界で追従/待機が切り替わる", () => {
-			// boss senseRange=10
-			// 15x15マップを使用して距離10以上を実現
-			// プレイヤー(1,1)、敵(8,4) → 距離10 → 範囲内 → 移動する
-			// プレイヤー(1,1)、敵(8,5) → 距離11 → 範囲外 → 移動しない
-			const largeMap = createFixedLayoutMap(15, 15);
-			const playerOverride = {
-				position: { x: 1, y: 1 },
-				hp: PLAYER_INITIAL_HP,
-				maxHp: PLAYER_INITIAL_HP,
-				ap: MAX_AP,
-				maxAp: MAX_AP,
-			};
-
-			const inRangeState = createTestState({
-				turn: "enemy",
-				map: largeMap,
-				enemies: [
-					{
-						id: "enemy-1",
-						type: "boss",
-						position: { x: 8, y: 4 },
-						hp: ENEMY_PARAMS.boss.hp,
-						maxHp: ENEMY_PARAMS.boss.hp,
-					},
-				],
-				player: playerOverride,
-			});
-			const outOfRangeState = createTestState({
-				turn: "enemy",
-				map: largeMap,
-				enemies: [
-					{
-						id: "enemy-1",
-						type: "boss",
-						position: { x: 8, y: 5 },
-						hp: ENEMY_PARAMS.boss.hp,
-						maxHp: ENEMY_PARAMS.boss.hp,
-					},
-				],
-				player: playerOverride,
-			});
-
-			const { state: inRangeResult } = executeEnemyTurn(inRangeState);
-			const { state: outOfRangeResult } = executeEnemyTurn(outOfRangeState);
-
-			expect(inRangeResult.enemies[0].position).not.toEqual({ x: 8, y: 4 });
-			expect(outOfRangeResult.enemies[0].position).toEqual({ x: 8, y: 5 });
+			expect(inRangeResult.enemies[0].position).not.toEqual(inRangePos);
+			expect(outOfRangeResult.enemies[0].position).toEqual(outOfRangePos);
 		});
 	});
 
