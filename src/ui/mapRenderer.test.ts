@@ -3,7 +3,7 @@
  */
 
 import { type FederatedPointerEvent, Graphics } from "pixi.js";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createTickerMock } from "../test-utils/mockPixi";
 import { createTweenMock, mockEasing } from "../test-utils/mockTween";
 import { MapRenderer } from "./mapRenderer";
@@ -38,6 +38,10 @@ vi.mock("./assetLoader", async () => {
 		getPlayerTexture: () => dummyTexture,
 		getEnemyTexture: () => dummyTexture,
 	};
+});
+
+beforeEach(() => {
+	tickerMock.reset();
 });
 
 /**
