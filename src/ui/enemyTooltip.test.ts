@@ -99,6 +99,37 @@ describe("EnemyTooltip", () => {
 		expect(atkText.text).toBe("ATK: 5");
 	});
 
+	describe("updatePosition", () => {
+		const enemy = {
+			id: "e1",
+			type: "normal" as const,
+			position: { x: 1, y: 1 },
+			hp: 3,
+			maxHp: 3,
+		};
+
+		it("表示中は座標のみ更新される", () => {
+			const tooltip = new EnemyTooltip();
+			const viewport = { width: 400, height: 400 };
+			const transform = { x: 0, y: 0, scale: 1 };
+			tooltip.show(enemy, 100, 200, viewport, transform);
+			const container = tooltip.getContainer();
+			const initialX = container.x;
+
+			tooltip.updatePosition(200, 200, viewport, transform);
+			expect(container.x).not.toBe(initialX);
+			expect(tooltip.isVisible()).toBe(true);
+		});
+
+		it("非表示時は何もしない", () => {
+			const tooltip = new EnemyTooltip();
+			const viewport = { width: 400, height: 400 };
+			const transform = { x: 0, y: 0, scale: 1 };
+			tooltip.updatePosition(200, 200, viewport, transform);
+			expect(tooltip.isVisible()).toBe(false);
+		});
+	});
+
 	describe("ビューポートクランプ", () => {
 		// bgWidth = max(80, 0...) + 6*2 = 92（テスト環境ではText.widthは0）
 		// bgHeight = 16*3 + 6*2 = 60

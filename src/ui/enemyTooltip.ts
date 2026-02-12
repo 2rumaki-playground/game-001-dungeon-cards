@@ -52,6 +52,8 @@ export class EnemyTooltip {
 	private typeText: Text;
 	private hpText: Text;
 	private atkText: Text;
+	private cachedBgWidth = 0;
+	private cachedBgHeight = 0;
 
 	constructor() {
 		this.container = new Container();
@@ -137,31 +139,55 @@ export class EnemyTooltip {
 			safeWidth(this.hpText),
 			safeWidth(this.atkText),
 		);
-		const bgWidth = maxTextWidth + TOOLTIP_PADDING * 2;
-		const bgHeight = TOOLTIP_LINE_HEIGHT * 3 + TOOLTIP_PADDING * 2;
+		this.cachedBgWidth = maxTextWidth + TOOLTIP_PADDING * 2;
+		this.cachedBgHeight = TOOLTIP_LINE_HEIGHT * 3 + TOOLTIP_PADDING * 2;
 
 		this.bg.clear();
 		drawRoundedRect(
 			this.bg,
-			bgWidth,
-			bgHeight,
+			this.cachedBgWidth,
+			this.cachedBgHeight,
 			TOOLTIP_RADIUS,
 			{ color: TOOLTIP_BG_COLOR, alpha: TOOLTIP_BG_ALPHA },
 			{ color: TOOLTIP_BORDER_COLOR, width: TOOLTIP_BORDER_WIDTH },
 		);
 
+		this.applyPosition(pixelX, pixelY, viewport, containerTransform);
+		this.container.visible = true;
+	}
+
+	/**
+	 * 内容は据え置きで座標だけ再計算
+	 * カメラドラッグ/ズーム中の高頻度呼び出し向け
+	 */
+	updatePosition(
+		pixelX: number,
+		pixelY: number,
+		viewport: { width: number; height: number },
+		containerTransform: { x: number; y: number; scale: number },
+	): void {
+		if (!this.container.visible) return;
+		this.applyPosition(pixelX, pixelY, viewport, containerTransform);
+	}
+
+	private applyPosition(
+		pixelX: number,
+		pixelY: number,
+		viewport: { width: number; height: number },
+		containerTransform: { x: number; y: number; scale: number },
+	): void {
 		const { x: cx, y: cy, scale } = containerTransform;
 
 		// X方向: スクリーン座標でビューポート左右にはみ出さないようにクランプ
 		const screenX = pixelX * scale + cx;
-		const screenBgWidth = bgWidth * scale;
+		const screenBgWidth = this.cachedBgWidth * scale;
 		const maxScreenX = viewport.width - screenBgWidth;
 		const clampedScreenX = Math.max(0, Math.min(screenX, maxScreenX));
 		const tooltipX = (clampedScreenX - cx) / scale;
 
 		// Y方向: スクリーン座標で判定し、基本は敵の上側、はみ出す場合は下側に出す
 		const screenY = pixelY * scale + cy;
-		const screenBgHeight = bgHeight * scale;
+		const screenBgHeight = this.cachedBgHeight * scale;
 		const screenCellSize = CELL_SIZE * scale;
 		const screenGap = TOOLTIP_GAP * scale;
 		const targetScreenYAbove = screenY - screenBgHeight - screenGap;
@@ -181,7 +207,6 @@ export class EnemyTooltip {
 
 		this.container.x = tooltipX;
 		this.container.y = tooltipY;
-		this.container.visible = true;
 	}
 
 	/**

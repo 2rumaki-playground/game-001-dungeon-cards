@@ -862,9 +862,24 @@ export class MapRenderer {
 	 * カメラオフセット/ズーム変更後に呼び出す
 	 */
 	repositionEnemyTooltip(): void {
-		if (this.tooltipEnemyId) {
-			this.showEnemyTooltip(this.tooltipEnemyId);
-		}
+		if (!this.tooltipEnemyId) return;
+
+		const enemyContainer = this.enemyContainerMap.get(this.tooltipEnemyId);
+		if (!enemyContainer) return;
+
+		const viewport = getViewportPixelSize();
+		const containerTransform = {
+			x: this.container.x,
+			y: this.container.y,
+			scale: this.container.scale.x,
+		};
+
+		this.enemyTooltip.updatePosition(
+			enemyContainer.x,
+			enemyContainer.y,
+			viewport,
+			containerTransform,
+		);
 	}
 
 	/**
