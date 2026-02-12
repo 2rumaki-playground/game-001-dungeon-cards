@@ -113,20 +113,19 @@ describe("applyDamageToEnemy", () => {
 		expect(result.defeatedEnemyCount).toBe(1);
 	});
 
-	it("20Fでボス撃破時にisClearedがtrueになる", () => {
+	it.each([
+		["20F", CLEAR_FLOOR, true],
+		["20F以外", 10, false],
+	] as [
+		string,
+		number,
+		boolean,
+	][])("%sでボス撃破時のisCleared", (_, floor, expected) => {
 		const enemy = createTestEnemy("boss", { x: 4, y: 3 }, { hp: 1 });
-		const state = createTestState({ enemies: [enemy], floor: CLEAR_FLOOR });
+		const state = createTestState({ enemies: [enemy], floor });
 		const result = applyDamageToEnemy(state, enemy.id, PLAYER_ATTACK_DAMAGE);
 
-		expect(result.isCleared).toBe(true);
-	});
-
-	it("20F以外でボス撃破してもisClearedはfalseのまま", () => {
-		const enemy = createTestEnemy("boss", { x: 4, y: 3 }, { hp: 1 });
-		const state = createTestState({ enemies: [enemy], floor: 10 });
-		const result = applyDamageToEnemy(state, enemy.id, PLAYER_ATTACK_DAMAGE);
-
-		expect(result.isCleared).toBe(false);
+		expect(result.isCleared).toBe(expected);
 	});
 
 	it("敵撃破時にremnantsに撃破座標が記録される", () => {

@@ -443,7 +443,20 @@ describe("executeEnemyTurn", () => {
 		expect(state.enemies[0].position).toEqual(originalEnemyPos);
 	});
 
-	it("敵の攻撃でプレイヤーHP0以下になるとゲームオーバーに遷移する", () => {
+	it.each([
+		["HP0以下でゲームオーバーに遷移", 1, 1 - ENEMY_ATTACK_DAMAGE, "gameOver"],
+		[
+			"HPが残っていればゲーム続行",
+			PLAYER_INITIAL_HP,
+			PLAYER_INITIAL_HP - ENEMY_ATTACK_DAMAGE,
+			"game",
+		],
+	] as [
+		string,
+		number,
+		number,
+		string,
+	][])("敵の攻撃: %s", (_, startHp, expectedHp, expectedScreen) => {
 		const enemies: Enemy[] = [
 			{
 				id: "enemy-1",
@@ -458,7 +471,7 @@ describe("executeEnemyTurn", () => {
 			enemies,
 			player: {
 				position: { x: 3, y: 3 },
-				hp: 1,
+				hp: startHp,
 				maxHp: PLAYER_INITIAL_HP,
 				ap: MAX_AP,
 				maxAp: MAX_AP,
@@ -466,8 +479,8 @@ describe("executeEnemyTurn", () => {
 		});
 		const { state: result } = executeEnemyTurn(state);
 
-		expect(result.player.hp).toBe(1 - ENEMY_ATTACK_DAMAGE);
-		expect(result.screen).toBe("gameOver");
+		expect(result.player.hp).toBe(expectedHp);
+		expect(result.screen).toBe(expectedScreen);
 	});
 
 	it("プレイヤー死亡後は残りの敵が行動しない", () => {
@@ -509,23 +522,6 @@ describe("executeEnemyTurn", () => {
 			(log) => log.message === "敵が攻撃した",
 		);
 		expect(attackLogs).toHaveLength(1);
-	});
-
-	it("敵の攻撃でプレイヤーHPが残っていればゲームは続行する", () => {
-		const enemies: Enemy[] = [
-			{
-				id: "enemy-1",
-				type: "normal",
-				position: { x: 4, y: 3 },
-				hp: ENEMY_HP,
-				maxHp: ENEMY_HP,
-			},
-		];
-		const state = createTestState({ turn: "enemy", enemies });
-		const { state: result } = executeEnemyTurn(state);
-
-		expect(result.player.hp).toBe(PLAYER_INITIAL_HP - ENEMY_ATTACK_DAMAGE);
-		expect(result.screen).toBe("game");
 	});
 
 	it("入力stateのRNGが変更されない", () => {
