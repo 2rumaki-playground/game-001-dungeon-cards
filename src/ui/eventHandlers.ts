@@ -44,13 +44,15 @@ import {
 import { detectEnemyMoves } from "./enemyMoveDetector";
 import {
 	executeNextFloorTransition,
+	updateStateWithStairsAnimation,
+} from "./floorTransition";
+import {
 	getGameAreaSize,
 	getScreenSize,
 	updateStateWithAttackAnimation,
 	updateStateWithBumpAnimation,
 	updateStateWithMissAnimation,
 	updateStateWithMoveAnimation,
-	updateStateWithStairsAnimation,
 } from "./gameAnimations";
 import {
 	applyCameraOffset,
