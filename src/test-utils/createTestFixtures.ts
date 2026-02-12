@@ -55,19 +55,29 @@ export function createTestState(overrides?: Partial<GameState>): GameState {
 
 /**
  * テスト用Enemyを生成
+ *
+ * - overrides で type / position を上書きした場合も hp/maxHp/id が整合する
+ * - 呼び出しごとに一意な id を自動採番する（overrides.id で明示指定も可）
  */
+let __testEnemySeq = 0;
+export function resetTestEnemySeq(): void {
+	__testEnemySeq = 0;
+}
 export function createTestEnemy(
 	type: EnemyType = "normal",
 	position: Position = { x: 4, y: 3 },
 	overrides?: Partial<Enemy>,
 ): Enemy {
-	const { hp } = ENEMY_PARAMS[type];
+	__testEnemySeq++;
+	const finalType = overrides?.type ?? type;
+	const finalPosition = overrides?.position ?? position;
+	const { hp: typeHp } = ENEMY_PARAMS[finalType];
 	return {
-		id: `enemy-${position.x}-${position.y}`,
-		type,
-		position,
-		hp,
-		maxHp: hp,
+		id: `enemy-${__testEnemySeq}`,
+		type: finalType,
+		position: finalPosition,
+		hp: typeHp,
+		maxHp: typeHp,
 		...overrides,
 	};
 }

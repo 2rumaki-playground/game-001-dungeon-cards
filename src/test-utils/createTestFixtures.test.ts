@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import {
 	ENEMY_PARAMS,
 	MAP_HEIGHT,
@@ -11,6 +11,7 @@ import {
 	createTestHand,
 	createTestMap,
 	createTestState,
+	resetTestEnemySeq,
 } from "./createTestFixtures";
 
 describe("createTestMap", () => {
@@ -71,13 +72,17 @@ describe("createTestState", () => {
 });
 
 describe("createTestEnemy", () => {
+	beforeEach(() => {
+		resetTestEnemySeq();
+	});
+
 	it("デフォルト値で通常敵を生成する", () => {
 		const enemy = createTestEnemy();
 		expect(enemy.type).toBe("normal");
 		expect(enemy.position).toEqual({ x: 4, y: 3 });
 		expect(enemy.hp).toBe(ENEMY_PARAMS.normal.hp);
 		expect(enemy.maxHp).toBe(ENEMY_PARAMS.normal.hp);
-		expect(enemy.id).toBe("enemy-4-3");
+		expect(enemy.id).toBe("enemy-1");
 	});
 
 	it("タイプ指定でHPが自動設定される", () => {
@@ -93,7 +98,6 @@ describe("createTestEnemy", () => {
 	it("位置を指定できる", () => {
 		const enemy = createTestEnemy("normal", { x: 1, y: 2 });
 		expect(enemy.position).toEqual({ x: 1, y: 2 });
-		expect(enemy.id).toBe("enemy-1-2");
 	});
 
 	it("overridesで任意のフィールドを上書きできる", () => {
@@ -112,6 +116,19 @@ describe("createTestEnemy", () => {
 		expect(enemy.maxHp).toBe(ENEMY_PARAMS.boss.hp);
 		expect(enemy.pendingSkill).toEqual({ type: "area_attack" });
 		expect(enemy.enraged).toBe(true);
+	});
+
+	it("複数回呼んでもIDが一意になる", () => {
+		const e1 = createTestEnemy();
+		const e2 = createTestEnemy();
+		expect(e1.id).not.toBe(e2.id);
+	});
+
+	it("overridesでtypeを上書きするとhp/maxHpが再計算される", () => {
+		const enemy = createTestEnemy("normal", { x: 4, y: 3 }, { type: "boss" });
+		expect(enemy.type).toBe("boss");
+		expect(enemy.hp).toBe(ENEMY_PARAMS.boss.hp);
+		expect(enemy.maxHp).toBe(ENEMY_PARAMS.boss.hp);
 	});
 });
 
