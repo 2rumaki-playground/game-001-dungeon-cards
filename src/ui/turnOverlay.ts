@@ -7,9 +7,10 @@
 import { Container, Graphics } from "pixi.js";
 import type { Turn } from "../types";
 import { Easing, tween } from "../utils/tween";
+import { TURN_BG_COLORS } from "./turnColors";
 
-/** オーバーレイ色（TurnBannerの敵背景色と統一） */
-const OVERLAY_COLOR = 0x6a1a1a;
+/** オーバーレイ色（共通定数から参照） */
+const OVERLAY_COLOR = TURN_BG_COLORS.enemy;
 
 /** オーバーレイの不透明度 */
 const OVERLAY_ALPHA = 0.15;

@@ -6,6 +6,7 @@
 import { Container, Graphics, Text } from "pixi.js";
 import type { Player, Turn } from "../types";
 import { Easing, tweenValue } from "../utils/tween";
+import { TURN_TEXT_COLORS } from "./turnColors";
 
 /** テキスト配置のX座標 */
 const HP_TEXT_X = 16;
@@ -19,11 +20,8 @@ const TURN_TEXT: Record<Turn, string> = {
 	enemy: "敵のターン",
 };
 
-/** ターン別のテキスト色 */
-const TURN_TEXT_COLOR: Record<Turn, number> = {
-	player: 0x88bbff,
-	enemy: 0xff8888,
-};
+/** ターン別のテキスト色（共通定数から参照） */
+const TURN_TEXT_COLOR = TURN_TEXT_COLORS;
 
 /** テキストのY座標 */
 const TEXT_Y = 12;
