@@ -82,11 +82,15 @@ async function showTileEffectPopup(
 
 	if (amount <= 0) return;
 
-	const center = gridToCenterPixel(gridPos);
+	const mapCenter = gridToCenterPixel(gridPos);
+	const globalCenter = ctx.ui.mapRenderer.getContainer().toGlobal(mapCenter);
+	const particleOrigin = ctx.ui.particleSystem
+		.getContainer()
+		.toLocal(globalCenter);
 	const particleConfig =
 		tileType === "trap"
-			? createTrapDamageParticleConfig(center)
-			: createHealParticleConfig(center);
+			? createTrapDamageParticleConfig(particleOrigin)
+			: createHealParticleConfig(particleOrigin);
 
 	await Promise.all([
 		ctx.ui.mapRenderer.animateTileEffectPopup(tileType, amount, gridPos),
