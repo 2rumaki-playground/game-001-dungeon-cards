@@ -1256,7 +1256,10 @@ describe("MapRenderer 敵ホバーツールチップ", () => {
 	it("ツールチップコンテナがルートコンテナの最上位に追加される", () => {
 		const renderer = new MapRenderer();
 		const container = renderer.getContainer();
-		// tiles[0], specialTileEffect[1], remnants[2], enemies[3], fog[4], player[5], tooltip[6]
-		expect(container.children.length).toBe(7);
+		const lastChild = container.children.at(-1);
+		// ツールチップは初期状態で非表示
+		expect(lastChild?.visible).toBe(false);
+		// ツールチップコンテナはイベントを受け取らない
+		expect(lastChild?.eventMode).toBe("none");
 	});
 });
