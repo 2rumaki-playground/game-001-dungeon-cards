@@ -309,7 +309,7 @@ export class HandRenderer {
 				: hovered
 					? CARD_COLORS.hoveredBorder
 					: colors.border;
-		const borderWidth = selected ? 3 : 2;
+		const borderWidth = selected || queued ? 3 : 2;
 
 		drawRoundedRect(bg, CARD_WIDTH, CARD_HEIGHT, CARD_RADIUS, colors.bg, {
 			color: borderColor,
