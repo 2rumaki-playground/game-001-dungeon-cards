@@ -20,6 +20,7 @@ const FADE_DURATION = 200;
 export class TurnOverlay {
 	private container: Container;
 	private overlay: Graphics;
+	private isAnimating = false;
 
 	constructor(screenWidth: number, screenHeight: number) {
 		this.container = new Container();
@@ -54,6 +55,7 @@ export class TurnOverlay {
 	 * ターンに応じてオーバーレイの表示/非表示を切り替え
 	 */
 	render(turn: Turn): void {
+		if (this.isAnimating) return;
 		this.container.visible = turn === "enemy";
 	}
 
@@ -61,6 +63,7 @@ export class TurnOverlay {
 	 * フェードインで表示
 	 */
 	async fadeIn(): Promise<void> {
+		this.isAnimating = true;
 		this.overlay.alpha = 0;
 		this.container.visible = true;
 		await tween(
@@ -68,24 +71,28 @@ export class TurnOverlay {
 			{ alpha: OVERLAY_ALPHA },
 			{ duration: FADE_DURATION, easing: Easing.easeOut },
 		);
+		this.isAnimating = false;
 	}
 
 	/**
 	 * フェードアウトで非表示
 	 */
 	async fadeOut(): Promise<void> {
+		this.isAnimating = true;
 		await tween(
 			this.overlay,
 			{ alpha: 0 },
 			{ duration: FADE_DURATION, easing: Easing.easeOut },
 		);
 		this.container.visible = false;
+		this.isAnimating = false;
 	}
 
 	/**
 	 * 表示
 	 */
 	show(): void {
+		this.overlay.alpha = OVERLAY_ALPHA;
 		this.container.visible = true;
 	}
 
@@ -94,5 +101,6 @@ export class TurnOverlay {
 	 */
 	hide(): void {
 		this.container.visible = false;
+		this.overlay.alpha = OVERLAY_ALPHA;
 	}
 }
