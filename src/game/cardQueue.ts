@@ -20,13 +20,6 @@ export function getQueuedApCost(queue: QueuedCard[]): number {
 }
 
 /**
- * カードを予約キューに追加可能か判定
- * @param currentAp 現在のAP（先行カード消費分は反映済みの状態AP）
- * @param queue 現在のキュー
- * @param card 予約したいカード
- * @returns 予約可能ならtrue
- */
-/**
  * キューからカードID→実行順序番号(1始まり)のMapを構築
  */
 export function buildQueuedCardIndexMap(
@@ -39,6 +32,13 @@ export function buildQueuedCardIndexMap(
 	return map;
 }
 
+/**
+ * カードを予約キューに追加可能か判定
+ * @param currentAp 現在のAP（先行カード消費分は反映済みの状態AP）
+ * @param queue 現在のキュー
+ * @param card 予約したいカード
+ * @returns 予約可能ならtrue
+ */
 export function canEnqueueCard(
 	currentAp: number,
 	queue: QueuedCard[],
