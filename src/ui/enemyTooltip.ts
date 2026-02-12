@@ -157,10 +157,18 @@ export class EnemyTooltip {
 		const screenCellSize = CELL_SIZE * scale;
 		const screenGap = TOOLTIP_GAP * scale;
 		const targetScreenYAbove = screenY - screenBgHeight - screenGap;
-		const tooltipScreenY =
+		let tooltipScreenY =
 			targetScreenYAbove >= 0
 				? targetScreenYAbove
 				: screenY + screenCellSize + screenGap;
+
+		// Y方向: ツールチップ全体がビューポート外にはみ出さないようにクランプ
+		const maxTooltipScreenY = Math.max(0, viewport.height - screenBgHeight);
+		if (tooltipScreenY < 0) {
+			tooltipScreenY = 0;
+		} else if (tooltipScreenY > maxTooltipScreenY) {
+			tooltipScreenY = maxTooltipScreenY;
+		}
 		const tooltipY = (tooltipScreenY - cy) / scale;
 
 		this.container.x = tooltipX;
