@@ -133,11 +133,20 @@ export function startNewGameWithDebugParams(
 			)
 		: base.enemies;
 
-	// プレイヤーパラメータの上書き（描画崩れ防止のためクランプ）
-	const maxHp = params.playerMaxHp ?? base.player.maxHp;
-	const hp = Math.max(0, Math.min(params.playerHp ?? maxHp, maxHp));
+	// プレイヤーパラメータの上書き（NaN防止のためNumber.isFinite検証 + 整数化 + クランプ）
+	const rawMaxHp = params.playerMaxHp;
+	const maxHp = Number.isFinite(rawMaxHp)
+		? Math.max(1, Math.trunc(rawMaxHp as number))
+		: base.player.maxHp;
+	const rawHp = params.playerHp;
+	const hpBase = Number.isFinite(rawHp) ? Math.trunc(rawHp as number) : maxHp;
+	const hp = Math.max(0, Math.min(hpBase, maxHp));
 	const maxAp = base.player.maxAp;
-	const ap = Math.max(0, Math.min(params.playerAp ?? base.player.ap, maxAp));
+	const rawAp = params.playerAp;
+	const apBase = Number.isFinite(rawAp)
+		? Math.trunc(rawAp as number)
+		: base.player.ap;
+	const ap = Math.max(0, Math.min(apBase, maxAp));
 
 	const player = {
 		...base.player,
