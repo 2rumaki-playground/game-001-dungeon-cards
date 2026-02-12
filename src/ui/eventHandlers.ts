@@ -625,9 +625,11 @@ export function setupEventHandlers(ctx: GameContext): void {
 				);
 				ctx.ui.turnEndButton.render(ctx.state.turn);
 
-				// オーバーレイフェードアウト + プレイヤーターンバナー表示
-				await ctx.ui.turnOverlay.fadeOut();
-				await ctx.ui.turnBanner.showBanner("player");
+				// オーバーレイフェードアウト + プレイヤーターンバナー表示（並列実行）
+				await Promise.all([
+					ctx.ui.turnOverlay.fadeOut(),
+					ctx.ui.turnBanner.showBanner("player"),
+				]);
 
 				render(ctx, true);
 
