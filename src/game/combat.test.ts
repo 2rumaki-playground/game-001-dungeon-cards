@@ -22,20 +22,17 @@ import {
 beforeEach(() => resetTestEnemySeq());
 
 describe("isDefeated", () => {
-	it("HP0の場合trueを返す", () => {
-		expect(isDefeated(0)).toBe(true);
-	});
-
-	it("HP負の場合trueを返す", () => {
-		expect(isDefeated(-1)).toBe(true);
-	});
-
-	it("HP1以上の場合falseを返す", () => {
-		expect(isDefeated(1)).toBe(false);
-	});
-
-	it("最大HPの場合falseを返す", () => {
-		expect(isDefeated(PLAYER_INITIAL_HP)).toBe(false);
+	it.each([
+		["HP0", 0, true],
+		["HP負", -1, true],
+		["HP1以上", 1, false],
+		["最大HP", PLAYER_INITIAL_HP, false],
+	] as [
+		string,
+		number,
+		boolean,
+	][])("%sの場合を正しく判定する", (_, hp, expected) => {
+		expect(isDefeated(hp)).toBe(expected);
 	});
 });
 
@@ -217,26 +214,17 @@ describe("applyDamageToPlayer", () => {
 });
 
 describe("checkGameOver", () => {
-	it("プレイヤーHP0以下でゲームオーバー画面に遷移する", () => {
+	it.each([
+		["HP0", 0],
+		["HP負", -2],
+	] as [
+		string,
+		number,
+	][])("プレイヤー%sでゲームオーバー画面に遷移する", (_, hp) => {
 		const state = createTestState({
 			player: {
 				position: { x: 3, y: 3 },
-				hp: 0,
-				maxHp: PLAYER_INITIAL_HP,
-				ap: MAX_AP,
-				maxAp: MAX_AP,
-			},
-		});
-		const result = checkGameOver(state);
-
-		expect(result.screen).toBe("gameOver");
-	});
-
-	it("プレイヤーHP負でもゲームオーバー画面に遷移する", () => {
-		const state = createTestState({
-			player: {
-				position: { x: 3, y: 3 },
-				hp: -2,
+				hp,
 				maxHp: PLAYER_INITIAL_HP,
 				ap: MAX_AP,
 				maxAp: MAX_AP,

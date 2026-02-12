@@ -1,25 +1,27 @@
 import { describe, expect, it, vi } from "vitest";
+import { createTickerMock } from "../test-utils/mockPixi";
 
-// Ticker.sharedをモック化（vi.hoistedでvi.mock内から参照可能にする）
-const { mockTickerAdd, mockTickerRemove } = vi.hoisted(() => ({
-	mockTickerAdd: vi.fn(),
-	mockTickerRemove: vi.fn(),
-}));
-vi.mock("pixi.js", () => ({
-	Ticker: {
-		shared: {
-			add: mockTickerAdd,
-			remove: mockTickerRemove,
+const tickerMock = createTickerMock();
+vi.mock("pixi.js", async () => {
+	const actual = await vi.importActual<typeof import("pixi.js")>("pixi.js");
+	return {
+		...actual,
+		Ticker: {
+			shared: {
+				add: (fn: (tick: { deltaMS: number }) => void) =>
+					tickerMock.shared.add(fn),
+				remove: (fn: (tick: { deltaMS: number }) => void) =>
+					tickerMock.shared.remove(fn),
+			},
 		},
-	},
-}));
+	};
+});
 
 import { Easing, tween } from "./tween";
 
 describe("tween", () => {
 	it("onUpdateにeased progressが渡される", async () => {
-		mockTickerAdd.mockClear();
-		mockTickerRemove.mockClear();
+		tickerMock.reset();
 
 		const target = {
 			x: 0,
@@ -46,8 +48,8 @@ describe("tween", () => {
 		);
 
 		// Tickerに登録されたupdate関数を取得
-		expect(mockTickerAdd).toHaveBeenCalledTimes(1);
-		const updateFn = mockTickerAdd.mock.calls[0][0];
+		expect(tickerMock.shared.add).toHaveBeenCalledTimes(1);
+		const updateFn = tickerMock.callbacks[0];
 
 		// 50ms経過をシミュレート（progress=0.5, eased=0.25）
 		updateFn({ deltaMS: 50 });
@@ -89,8 +91,7 @@ describe("tween", () => {
 	});
 
 	it("signal abort済みの場合、Tickerに登録されずresolveする", async () => {
-		mockTickerAdd.mockClear();
-		mockTickerRemove.mockClear();
+		tickerMock.reset();
 
 		const target = {
 			x: 0,
@@ -110,14 +111,13 @@ describe("tween", () => {
 			{ duration: 100, signal: controller.signal, onComplete },
 		);
 
-		expect(mockTickerAdd).not.toHaveBeenCalled();
+		expect(tickerMock.shared.add).not.toHaveBeenCalled();
 		expect(onComplete).not.toHaveBeenCalled();
 		expect(target.x).toBe(0);
 	});
 
 	it("実行中にsignal abortでTickerからremoveされonCompleteが呼ばれない", async () => {
-		mockTickerAdd.mockClear();
-		mockTickerRemove.mockClear();
+		tickerMock.reset();
 
 		const target = {
 			x: 0,
@@ -136,8 +136,8 @@ describe("tween", () => {
 			{ duration: 100, signal: controller.signal, onComplete },
 		);
 
-		expect(mockTickerAdd).toHaveBeenCalledTimes(1);
-		const updateFn = mockTickerAdd.mock.calls[0][0];
+		expect(tickerMock.shared.add).toHaveBeenCalledTimes(1);
+		const updateFn = tickerMock.callbacks[0];
 
 		// 50ms経過（途中）
 		updateFn({ deltaMS: 50 });
@@ -150,13 +150,12 @@ describe("tween", () => {
 
 		await promise;
 
-		expect(mockTickerRemove).toHaveBeenCalledWith(updateFn);
+		expect(tickerMock.shared.remove).toHaveBeenCalledWith(updateFn);
 		expect(onComplete).not.toHaveBeenCalled();
 	});
 
 	it("onUpdate内でabortした場合、同フレームでonCompleteが呼ばれない", async () => {
-		mockTickerAdd.mockClear();
-		mockTickerRemove.mockClear();
+		tickerMock.reset();
 
 		const target = {
 			x: 0,
@@ -185,7 +184,7 @@ describe("tween", () => {
 			},
 		);
 
-		const updateFn = mockTickerAdd.mock.calls[0][0];
+		const updateFn = tickerMock.callbacks[0];
 
 		// 100ms一気に経過（progress=1.0到達フレーム）
 		updateFn({ deltaMS: 100 });
@@ -194,12 +193,11 @@ describe("tween", () => {
 
 		// onUpdate内でabortしたため、onCompleteは呼ばれない
 		expect(onComplete).not.toHaveBeenCalled();
-		expect(mockTickerRemove).toHaveBeenCalled();
+		expect(tickerMock.shared.remove).toHaveBeenCalled();
 	});
 
 	it("デフォルトのイージングでもeased progressが渡される", async () => {
-		mockTickerAdd.mockClear();
-		mockTickerRemove.mockClear();
+		tickerMock.reset();
 
 		const target = {
 			x: 0,
@@ -223,7 +221,7 @@ describe("tween", () => {
 			},
 		);
 
-		const updateFn = mockTickerAdd.mock.calls[0][0];
+		const updateFn = tickerMock.callbacks[0];
 		// 50ms経過（progress=0.5, easeOut(0.5)=0.75）
 		updateFn({ deltaMS: 50 });
 		// 残り50ms

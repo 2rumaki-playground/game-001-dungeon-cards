@@ -3,7 +3,8 @@
  */
 
 import { type FederatedPointerEvent, Graphics } from "pixi.js";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { createTickerMock } from "../test-utils/mockPixi";
 import { createTweenMock, mockEasing } from "../test-utils/mockTween";
 import { MapRenderer } from "./mapRenderer";
 
@@ -12,23 +13,19 @@ vi.mock("../utils/tween", () => ({
 	tween: createTweenMock(),
 }));
 
-// Ticker をモック化（addされたコールバックを即座に実行して完了）
+const tickerMock = createTickerMock();
 vi.mock("pixi.js", async () => {
 	const actual = await vi.importActual<typeof import("pixi.js")>("pixi.js");
-
-	const MockTicker = {
-		shared: {
-			add: (fn: (tick: { deltaMS: number }) => void) => {
-				// シェイクを即完了させるため、duration分の時間を一気に進める
-				fn({ deltaMS: 300 });
-			},
-			remove: () => {},
-		},
-	};
-
 	return {
 		...actual,
-		Ticker: MockTicker,
+		Ticker: {
+			shared: {
+				add: (fn: (tick: { deltaMS: number }) => void) =>
+					tickerMock.shared.add(fn),
+				remove: (fn: (tick: { deltaMS: number }) => void) =>
+					tickerMock.shared.remove(fn),
+			},
+		},
 	};
 });
 
@@ -41,6 +38,10 @@ vi.mock("./assetLoader", async () => {
 		getPlayerTexture: () => dummyTexture,
 		getEnemyTexture: () => dummyTexture,
 	};
+});
+
+beforeEach(() => {
+	tickerMock.reset();
 });
 
 /**
@@ -204,7 +205,9 @@ describe("MapRenderer ダメージ/タイル効果ポップアップ", () => {
 		renderer.render(map, player, enemies);
 
 		// ダメージ値付きで呼び出しても正常に完了すること
-		await expect(renderer.animateAttackHit("e1", 1)).resolves.toBeUndefined();
+		const promise = renderer.animateAttackHit("e1", 1);
+		tickerMock.tick(300);
+		await expect(promise).resolves.toBeUndefined();
 	});
 
 	it("animateEnemyAttackHitでダメージポップアップも表示される", async () => {
@@ -220,7 +223,9 @@ describe("MapRenderer ダメージ/タイル効果ポップアップ", () => {
 		renderer.render(map, player, []);
 
 		// ダメージ値付きで呼び出しても正常に完了すること
-		await expect(renderer.animateEnemyAttackHit(1)).resolves.toBeUndefined();
+		const promise = renderer.animateEnemyAttackHit(1);
+		tickerMock.tick(300);
+		await expect(promise).resolves.toBeUndefined();
 	});
 });
 
@@ -247,7 +252,9 @@ describe("MapRenderer 攻撃エフェクト", () => {
 		renderer.render(map, player, enemies);
 
 		// 敵e1に対する攻撃エフェクトが正常に完了すること
-		await expect(renderer.animateAttackHit("e1", 1)).resolves.toBeUndefined();
+		const promise = renderer.animateAttackHit("e1", 1);
+		tickerMock.tick(300);
+		await expect(promise).resolves.toBeUndefined();
 	});
 
 	it("存在しない敵IDでanimateAttackHitを呼んでも正常に完了する", async () => {
@@ -280,7 +287,9 @@ describe("MapRenderer 攻撃エフェクト", () => {
 		renderer.render(map, player, []);
 
 		// 敵攻撃エフェクトが正常に完了すること
-		await expect(renderer.animateEnemyAttackHit(1)).resolves.toBeUndefined();
+		const promise = renderer.animateEnemyAttackHit(1);
+		tickerMock.tick(300);
+		await expect(promise).resolves.toBeUndefined();
 	});
 
 	it("animateEnemyAttackHit完了後にプレイヤーのalphaが1に戻る", async () => {
@@ -295,7 +304,9 @@ describe("MapRenderer 攻撃エフェクト", () => {
 		};
 		renderer.render(map, player, []);
 
-		await renderer.animateEnemyAttackHit(1);
+		const promise = renderer.animateEnemyAttackHit(1);
+		tickerMock.tick(300);
+		await promise;
 
 		// コンテナ内のプレイヤースプライト（5番目の子要素）のalphaが1であること
 		const container = renderer.getContainer();
@@ -328,7 +339,9 @@ describe("MapRenderer 攻撃エフェクト", () => {
 		const originalX = container.x;
 		const originalY = container.y;
 
-		await renderer.animateAttackHit("e1", 1);
+		const promise = renderer.animateAttackHit("e1", 1);
+		tickerMock.tick(300);
+		await promise;
 
 		// シェイク完了後にコンテナ座標が元に戻ること
 		expect(container.x).toBe(originalX);
@@ -571,9 +584,9 @@ describe("MapRenderer タイプ別敵描画", () => {
 		};
 		renderer.render(map, player, enemies);
 
-		await expect(
-			renderer.animateAttackHit("e-scout", 1),
-		).resolves.toBeUndefined();
+		const promise = renderer.animateAttackHit("e-scout", 1);
+		tickerMock.tick(300);
+		await expect(promise).resolves.toBeUndefined();
 	});
 });
 
