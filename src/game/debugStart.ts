@@ -61,12 +61,27 @@ export function createDebugEnemies(
 	composition: DebugEnemyComposition,
 ): Enemy[] {
 	const types: EnemyType[] = Object.entries(composition).flatMap(
-		([type, count]) => Array.from({ length: count }, () => type as EnemyType),
+		([type, count]) => {
+			const enemyType = type as EnemyType;
+			const params = ENEMY_PARAMS[enemyType];
+			if (!params) {
+				throw new Error(
+					`createDebugEnemies: 不正な敵タイプが指定されました: "${type}"`,
+				);
+			}
+			return Array.from({ length: count }, () => enemyType);
+		},
 	);
 
 	return positions.slice(0, types.length).map((position, index) => {
 		const type = types[index];
-		const { hp } = ENEMY_PARAMS[type];
+		const params = ENEMY_PARAMS[type];
+		if (!params) {
+			throw new Error(
+				`createDebugEnemies: ENEMY_PARAMSに存在しない敵タイプが参照されました: "${type}"`,
+			);
+		}
+		const { hp } = params;
 		return { id: `enemy-${index + 1}`, type, position, hp, maxHp: hp };
 	});
 }
