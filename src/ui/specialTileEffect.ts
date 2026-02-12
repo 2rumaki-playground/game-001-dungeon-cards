@@ -52,6 +52,10 @@ export class SpecialTileEffectManager {
 		return this.effects.size + this.stairsEffects.size;
 	}
 
+	getStairsEffect(key: string): TileEffect | undefined {
+		return this.stairsEffects.get(key);
+	}
+
 	/**
 	 * フロアクリア状態を設定
 	 * 全敵撃破時に呼ばれ、階段のパルスを強調する

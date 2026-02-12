@@ -23,6 +23,7 @@ vi.mock("pixi.js", async () => {
 });
 
 import { SpecialTileEffectManager } from "./specialTileEffect";
+import { getStairsEffectConfig } from "./specialTileEffectLogic";
 
 function createSimpleMap(tiles: string[][]): GameMap {
 	return tiles.map((row) =>
@@ -165,9 +166,22 @@ describe("SpecialTileEffectManager", () => {
 		manager.update(map);
 		expect(manager.getEffectCount()).toBe(1);
 
+		const normalConfig = getStairsEffectConfig(false);
+		const stairsEffect = manager.getStairsEffect("0,0");
+		expect(stairsEffect?.config.pulsePeriod).toBe(normalConfig.pulsePeriod);
+		expect(stairsEffect?.config.pulseAlphaMax).toBe(normalConfig.pulseAlphaMax);
+
 		manager.setFloorCleared(true);
 		// setFloorCleared後もエフェクト数は維持
 		expect(manager.getEffectCount()).toBe(1);
+
+		const clearedConfig = getStairsEffectConfig(true);
+		const updatedEffect = manager.getStairsEffect("0,0");
+		expect(updatedEffect?.config.pulsePeriod).toBe(clearedConfig.pulsePeriod);
+		expect(updatedEffect?.config.pulseAlphaMax).toBe(
+			clearedConfig.pulseAlphaMax,
+		);
+		expect(updatedEffect?.config.glowRadius).toBe(clearedConfig.glowRadius);
 	});
 
 	it("clear()後に階段エフェクトもクリアされる", () => {
