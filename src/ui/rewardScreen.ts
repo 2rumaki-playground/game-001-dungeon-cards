@@ -13,6 +13,7 @@ import {
 	CARD_TYPE_NAME,
 	CARD_TYPE_SYMBOL,
 	RARITY_COLORS,
+	RARITY_NAME,
 } from "./cardConstants";
 import {
 	CARD_ROW_GAP,
@@ -42,13 +43,6 @@ const REWARD_CARD_GAP = 20;
 const BUTTON_WIDTH = 100;
 const BUTTON_HEIGHT = 32;
 const BUTTON_RADIUS = 6;
-
-/** レアリティ日本語名 */
-const RARITY_NAME: Record<Rarity, string> = {
-	common: "コモン",
-	uncommon: "アンコモン",
-	rare: "レア",
-};
 
 /** カード取得アニメーション定数 */
 const ACQUIRE_SCALE_DURATION = 200;

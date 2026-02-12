@@ -61,3 +61,19 @@ export const RARITY_COLORS: Record<Rarity, number> = {
 	uncommon: 0x44aa44,
 	rare: 0xddaa22,
 };
+
+/** カード詳細説明（ツールチップ用） */
+export const CARD_DESCRIPTION: Record<CardType, string> = {
+	move: "選択した方向に1マス移動する。\n壁・敵がいる場合は移動失敗。",
+	attack: `隣接1マス先の敵に${PLAYER_ATTACK_DAMAGE}ダメージ。\n敵がいない場合は空振り。`,
+	strong_attack: `隣接1マス先の敵に${PLAYER_STRONG_ATTACK_DAMAGE}ダメージ。\n敵がいない場合は空振り。`,
+	jump: `選択した方向の${JUMP_DISTANCE}マス先に着地。\n1マス先を飛び越える。`,
+	wait: "何もせずターンを消費する。",
+};
+
+/** レアリティ日本語名 */
+export const RARITY_NAME: Record<Rarity, string> = {
+	common: "コモン",
+	uncommon: "アンコモン",
+	rare: "レア",
+};
