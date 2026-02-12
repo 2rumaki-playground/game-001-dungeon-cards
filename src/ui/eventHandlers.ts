@@ -338,7 +338,6 @@ export function setupEventHandlers(ctx: GameContext): void {
 	document.addEventListener("keydown", (e) => {
 		if (e.key === "Escape" && ctx.cardQueue.length > 0) {
 			clearCardQueue(ctx);
-			ctx.ui.handRenderer.render(ctx.state.deck.hand, ctx.state.player.ap);
 		}
 	});
 
