@@ -69,7 +69,20 @@ export function createDebugEnemies(
 					`createDebugEnemies: 不正な敵タイプが指定されました: "${type}"`,
 				);
 			}
-			return Array.from({ length: count }, () => enemyType);
+			const normalizedCount = Number(count);
+			if (
+				!Number.isFinite(normalizedCount) ||
+				!Number.isInteger(normalizedCount) ||
+				normalizedCount < 0
+			) {
+				throw new Error(
+					`createDebugEnemies: "${type}" の count が不正です。0 以上の整数を指定してください (実際の値: ${String(count)})`,
+				);
+			}
+			if (normalizedCount === 0) {
+				return [];
+			}
+			return Array.from({ length: normalizedCount }, () => enemyType);
 		},
 	);
 
