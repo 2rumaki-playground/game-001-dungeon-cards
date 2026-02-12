@@ -109,7 +109,7 @@ const REMNANT_MAX_RADIUS = 4;
 /**
  * 決定的な疑似乱数を生成（座標ベース）
  */
-export function seededRandom(seed: number): number {
+function seededRandom(seed: number): number {
 	const x = Math.sin(seed * 9301 + 49297) * 233280;
 	return x - Math.floor(x);
 }
