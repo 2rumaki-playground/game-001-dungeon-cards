@@ -26,6 +26,19 @@ export function getQueuedApCost(queue: QueuedCard[]): number {
  * @param card 予約したいカード
  * @returns 予約可能ならtrue
  */
+/**
+ * キューからカードID→実行順序番号(1始まり)のMapを構築
+ */
+export function buildQueuedCardIndexMap(
+	queue: QueuedCard[],
+): Map<string, number> {
+	const map = new Map<string, number>();
+	for (let i = 0; i < queue.length; i++) {
+		map.set(queue[i]!.card.id, i + 1);
+	}
+	return map;
+}
+
 export function canEnqueueCard(
 	currentAp: number,
 	queue: QueuedCard[],
