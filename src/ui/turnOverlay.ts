@@ -66,12 +66,15 @@ export class TurnOverlay {
 		this.isAnimating = true;
 		this.overlay.alpha = 0;
 		this.container.visible = true;
-		await tween(
-			this.overlay,
-			{ alpha: OVERLAY_ALPHA },
-			{ duration: FADE_DURATION, easing: Easing.easeOut },
-		);
-		this.isAnimating = false;
+		try {
+			await tween(
+				this.overlay,
+				{ alpha: OVERLAY_ALPHA },
+				{ duration: FADE_DURATION, easing: Easing.easeOut },
+			);
+		} finally {
+			this.isAnimating = false;
+		}
 	}
 
 	/**
@@ -79,13 +82,17 @@ export class TurnOverlay {
 	 */
 	async fadeOut(): Promise<void> {
 		this.isAnimating = true;
-		await tween(
-			this.overlay,
-			{ alpha: 0 },
-			{ duration: FADE_DURATION, easing: Easing.easeOut },
-		);
-		this.container.visible = false;
-		this.isAnimating = false;
+		try {
+			await tween(
+				this.overlay,
+				{ alpha: 0 },
+				{ duration: FADE_DURATION, easing: Easing.easeOut },
+			);
+		} finally {
+			this.container.visible = false;
+			this.overlay.alpha = OVERLAY_ALPHA;
+			this.isAnimating = false;
+		}
 	}
 
 	/**
