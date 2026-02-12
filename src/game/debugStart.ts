@@ -2,7 +2,7 @@
  * デバッグ用のカスタムゲーム開始機能
  */
 
-import { ENEMY_PARAMS } from "../constants";
+import { CARD_COST, ENEMY_PARAMS } from "../constants";
 import type {
 	CardType,
 	DeckState,
@@ -29,9 +29,20 @@ export function createDebugDeckState(
 	composition: DebugDeckComposition,
 	rng: RNG,
 ): DeckState {
-	const cards = Object.entries(composition).flatMap(([type, count]) =>
-		Array.from({ length: count }, () => createCard(type as CardType)),
-	);
+	const validCardTypes = Object.keys(CARD_COST);
+	const cards = Object.entries(composition).flatMap(([type, count]) => {
+		if (!validCardTypes.includes(type)) {
+			throw new Error(
+				`createDebugDeckState: 不正なカードタイプが指定されました: "${type}"`,
+			);
+		}
+		if (!Number.isInteger(count) || count < 0) {
+			throw new Error(
+				`createDebugDeckState: countは非負整数である必要があります: "${type}" = ${count}`,
+			);
+		}
+		return Array.from({ length: count }, () => createCard(type as CardType));
+	});
 	return {
 		drawPile: rng.shuffle(cards),
 		hand: [],
