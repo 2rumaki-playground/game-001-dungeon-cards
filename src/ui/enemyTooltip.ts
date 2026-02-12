@@ -4,7 +4,12 @@
  */
 
 import { Container, Graphics, Text } from "pixi.js";
-import { BOSS_SKILL, ENEMY_PARAMS, ENEMY_TYPE_LABEL } from "../constants";
+import {
+	BOSS_SKILL,
+	CELL_SIZE,
+	ENEMY_PARAMS,
+	ENEMY_TYPE_LABEL,
+} from "../constants";
 import type { Enemy } from "../types";
 import { drawRoundedRect } from "./graphicsHelpers";
 
@@ -135,7 +140,8 @@ export class EnemyTooltip {
 		// Y方向: 基本は敵の上側に出すが、画面上端にはみ出す場合は下側に出す
 		const targetYAbove = pixelY - bgHeight - TOOLTIP_GAP;
 		this.container.x = tooltipX;
-		this.container.y = targetYAbove >= 0 ? targetYAbove : pixelY + TOOLTIP_GAP;
+		this.container.y =
+			targetYAbove >= 0 ? targetYAbove : pixelY + CELL_SIZE + TOOLTIP_GAP;
 		this.container.visible = true;
 	}
 
