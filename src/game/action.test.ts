@@ -13,7 +13,7 @@ import {
 	createTestMap,
 	createTestState,
 } from "../test-utils/createTestFixtures";
-import type { Enemy } from "../types";
+import type { Direction, Enemy } from "../types";
 import {
 	consumeApAndPlayCard,
 	executeAttack,
@@ -371,77 +371,40 @@ describe("executeAttack", () => {
 		expect(result.actionLog[0].message).toBe("敵を倒した");
 	});
 
-	it("攻撃不成立（敵がいない方向）: AP消費・カード捨て札移動・失敗ログ", () => {
+	it.each([
+		["敵がいない方向", undefined, "right"],
+		["壁方向", { x: 1, y: 1 }, "up"],
+		["マップ外方向", { x: 0, y: 0 }, "up"],
+	] as [
+		string,
+		{ x: number; y: number } | undefined,
+		Direction,
+	][])("攻撃不成立（%s）: AP消費・カード捨て札移動・失敗ログ", (_, playerPos, direction) => {
 		const state = createTestState({
 			enemies: [],
+			...(playerPos
+				? {
+						player: {
+							position: playerPos,
+							hp: PLAYER_INITIAL_HP,
+							maxHp: PLAYER_INITIAL_HP,
+							ap: MAX_AP,
+							maxAp: MAX_AP,
+						},
+					}
+				: {}),
 			deck: {
 				drawPile: [],
 				hand: [{ id: "attack-1", type: "attack" }],
 				discardPile: [],
 			},
 		});
-		const { state: result, hit } = executeAttack(state, "attack-1", "right");
+		const { state: result, hit } = executeAttack(state, "attack-1", direction);
 
-		// 攻撃ミス
 		expect(hit).toBe(false);
-		// AP消費
 		expect(result.player.ap).toBe(MAX_AP - CARD_COST.attack);
-		// カードが捨て札に移動
 		expect(result.deck.hand).toHaveLength(0);
 		expect(result.deck.discardPile).toHaveLength(1);
-		// 失敗ログ
-		expect(result.actionLog[0].message).toBe("攻撃できなかった");
-	});
-
-	it("攻撃不成立（壁方向）: AP消費・カード捨て札移動", () => {
-		const state = createTestState({
-			player: {
-				position: { x: 1, y: 1 },
-				hp: PLAYER_INITIAL_HP,
-				maxHp: PLAYER_INITIAL_HP,
-				ap: MAX_AP,
-				maxAp: MAX_AP,
-			},
-			deck: {
-				drawPile: [],
-				hand: [{ id: "attack-1", type: "attack" }],
-				discardPile: [],
-			},
-		});
-		const { state: result } = executeAttack(state, "attack-1", "up");
-
-		// AP消費
-		expect(result.player.ap).toBe(MAX_AP - CARD_COST.attack);
-		// カードが捨て札に移動
-		expect(result.deck.hand).toHaveLength(0);
-		expect(result.deck.discardPile).toHaveLength(1);
-		// 失敗ログ
-		expect(result.actionLog[0].message).toBe("攻撃できなかった");
-	});
-
-	it("攻撃不成立（マップ外方向）: AP消費・カード捨て札移動", () => {
-		const state = createTestState({
-			player: {
-				position: { x: 0, y: 0 },
-				hp: PLAYER_INITIAL_HP,
-				maxHp: PLAYER_INITIAL_HP,
-				ap: MAX_AP,
-				maxAp: MAX_AP,
-			},
-			deck: {
-				drawPile: [],
-				hand: [{ id: "attack-1", type: "attack" }],
-				discardPile: [],
-			},
-		});
-		const { state: result } = executeAttack(state, "attack-1", "up");
-
-		// AP消費
-		expect(result.player.ap).toBe(MAX_AP - CARD_COST.attack);
-		// カードが捨て札に移動
-		expect(result.deck.hand).toHaveLength(0);
-		expect(result.deck.discardPile).toHaveLength(1);
-		// 失敗ログ
 		expect(result.actionLog[0].message).toBe("攻撃できなかった");
 	});
 
@@ -580,9 +543,27 @@ describe("executeStrongAttack", () => {
 		expect(result.player.ap).toBe(MAX_AP - CARD_COST.strong_attack);
 	});
 
-	it("攻撃不成立（敵がいない方向）: AP2消費・カード捨て札移動・失敗ログ", () => {
+	it.each([
+		["敵がいない方向", undefined, "right"],
+		["壁方向", { x: 1, y: 1 }, "up"],
+	] as [
+		string,
+		{ x: number; y: number } | undefined,
+		Direction,
+	][])("攻撃不成立（%s）: AP2消費・カード捨て札移動・失敗ログ", (_, playerPos, direction) => {
 		const state = createTestState({
 			enemies: [],
+			...(playerPos
+				? {
+						player: {
+							position: playerPos,
+							hp: PLAYER_INITIAL_HP,
+							maxHp: PLAYER_INITIAL_HP,
+							ap: MAX_AP,
+							maxAp: MAX_AP,
+						},
+					}
+				: {}),
 			deck: {
 				drawPile: [],
 				hand: [{ id: "strong-1", type: "strong_attack" }],
@@ -592,34 +573,13 @@ describe("executeStrongAttack", () => {
 		const { state: result, hit } = executeStrongAttack(
 			state,
 			"strong-1",
-			"right",
+			direction,
 		);
 
 		expect(hit).toBe(false);
 		expect(result.player.ap).toBe(MAX_AP - CARD_COST.strong_attack);
 		expect(result.deck.hand).toHaveLength(0);
 		expect(result.deck.discardPile).toHaveLength(1);
-		expect(result.actionLog[0].message).toBe("強攻撃できなかった");
-	});
-
-	it("攻撃不成立（壁方向）: AP2消費・失敗ログ", () => {
-		const state = createTestState({
-			player: {
-				position: { x: 1, y: 1 },
-				hp: PLAYER_INITIAL_HP,
-				maxHp: PLAYER_INITIAL_HP,
-				ap: MAX_AP,
-				maxAp: MAX_AP,
-			},
-			deck: {
-				drawPile: [],
-				hand: [{ id: "strong-1", type: "strong_attack" }],
-				discardPile: [],
-			},
-		});
-		const { state: result } = executeStrongAttack(state, "strong-1", "up");
-
-		expect(result.player.ap).toBe(MAX_AP - CARD_COST.strong_attack);
 		expect(result.actionLog[0].message).toBe("強攻撃できなかった");
 	});
 
@@ -683,155 +643,106 @@ describe("executeJump", () => {
 		expect(reachedStairs).toBe(false);
 	});
 
-	it("着地先が壁: 移動なし・AP消費・カード捨て札移動", () => {
-		const map = createTestMap();
-		map[3][5] = { type: "wall" };
-
+	it.each([
+		[
+			"着地先が壁",
+			() => {
+				const map = createTestMap();
+				map[3][5] = { type: "wall" as const };
+				return { map };
+			},
+			"right" as Direction,
+			{ x: 3, y: 3 },
+		],
+		[
+			"着地先がマップ外",
+			() => ({
+				player: {
+					position: { x: 0, y: 0 },
+					hp: PLAYER_INITIAL_HP,
+					maxHp: PLAYER_INITIAL_HP,
+					ap: MAX_AP,
+					maxAp: MAX_AP,
+				},
+			}),
+			"up" as Direction,
+			{ x: 0, y: 0 },
+		],
+		[
+			"着地先に敵",
+			() => ({
+				enemies: [
+					{
+						id: "enemy-1",
+						type: "normal" as const,
+						position: { x: 5, y: 3 },
+						hp: ENEMY_HP,
+						maxHp: ENEMY_HP,
+					},
+				],
+			}),
+			"right" as Direction,
+			{ x: 3, y: 3 },
+		],
+	])("%s: 移動なし・AP消費", (_, createOverrides, direction, expectedPos) => {
 		const state = createTestState({
-			map,
 			player: {
-				position: { x: 3, y: 3 },
+				position: expectedPos,
 				hp: PLAYER_INITIAL_HP,
 				maxHp: PLAYER_INITIAL_HP,
 				ap: MAX_AP,
 				maxAp: MAX_AP,
 			},
+			...createOverrides(),
 			deck: {
 				drawPile: [],
 				hand: [{ id: "jump-1", type: "jump" }],
 				discardPile: [],
 			},
 		});
-		const { state: result, jumped } = executeJump(state, "jump-1", "right");
+		const { state: result, jumped } = executeJump(state, "jump-1", direction);
 
-		expect(result.player.position).toEqual({ x: 3, y: 3 });
+		expect(result.player.position).toEqual(expectedPos);
 		expect(result.player.ap).toBe(MAX_AP - CARD_COST.jump);
+		expect(jumped).toBe(false);
 		expect(result.deck.hand).toHaveLength(0);
 		expect(result.deck.discardPile).toHaveLength(1);
-		expect(jumped).toBe(false);
 	});
 
-	it("着地先がマップ外: 移動なし・AP消費", () => {
+	it.each([
+		[
+			"敵",
+			() => ({
+				enemies: [
+					{
+						id: "enemy-1",
+						type: "normal" as const,
+						position: { x: 4, y: 3 },
+						hp: ENEMY_HP,
+						maxHp: ENEMY_HP,
+					},
+				],
+			}),
+		],
+		[
+			"壁",
+			() => {
+				const map = createTestMap();
+				map[3][4] = { type: "wall" as const };
+				return { map };
+			},
+		],
+		[
+			"階段",
+			() => {
+				const map = createTestMap();
+				map[3][4] = { type: "stairs" as const };
+				return { map };
+			},
+		],
+	])("1マス先に%sがあっても飛び越えて2マス先に着地", (_, createOverrides) => {
 		const state = createTestState({
-			player: {
-				position: { x: 0, y: 0 },
-				hp: PLAYER_INITIAL_HP,
-				maxHp: PLAYER_INITIAL_HP,
-				ap: MAX_AP,
-				maxAp: MAX_AP,
-			},
-			deck: {
-				drawPile: [],
-				hand: [{ id: "jump-1", type: "jump" }],
-				discardPile: [],
-			},
-		});
-		const { state: result, jumped } = executeJump(state, "jump-1", "up");
-
-		expect(result.player.position).toEqual({ x: 0, y: 0 });
-		expect(result.player.ap).toBe(MAX_AP - CARD_COST.jump);
-		expect(jumped).toBe(false);
-		expect(result.deck.hand).toHaveLength(0);
-		expect(result.deck.discardPile).toEqual([{ id: "jump-1", type: "jump" }]);
-	});
-
-	it("着地先に敵: 移動なし・AP消費", () => {
-		const enemies: Enemy[] = [
-			{
-				id: "enemy-1",
-				type: "normal",
-				position: { x: 5, y: 3 },
-				hp: ENEMY_HP,
-				maxHp: ENEMY_HP,
-			},
-		];
-		const state = createTestState({
-			enemies,
-			player: {
-				position: { x: 3, y: 3 },
-				hp: PLAYER_INITIAL_HP,
-				maxHp: PLAYER_INITIAL_HP,
-				ap: MAX_AP,
-				maxAp: MAX_AP,
-			},
-			deck: {
-				drawPile: [],
-				hand: [{ id: "jump-1", type: "jump" }],
-				discardPile: [],
-			},
-		});
-		const { state: result, jumped } = executeJump(state, "jump-1", "right");
-
-		expect(result.player.position).toEqual({ x: 3, y: 3 });
-		expect(result.player.ap).toBe(MAX_AP - CARD_COST.jump);
-		expect(jumped).toBe(false);
-		expect(result.deck.hand).toHaveLength(0);
-		expect(result.deck.discardPile).toEqual([{ id: "jump-1", type: "jump" }]);
-	});
-
-	it("1マス先に敵がいても飛び越えて2マス先に着地", () => {
-		const enemies: Enemy[] = [
-			{
-				id: "enemy-1",
-				type: "normal",
-				position: { x: 4, y: 3 },
-				hp: ENEMY_HP,
-				maxHp: ENEMY_HP,
-			},
-		];
-		const state = createTestState({
-			enemies,
-			player: {
-				position: { x: 3, y: 3 },
-				hp: PLAYER_INITIAL_HP,
-				maxHp: PLAYER_INITIAL_HP,
-				ap: MAX_AP,
-				maxAp: MAX_AP,
-			},
-			deck: {
-				drawPile: [],
-				hand: [{ id: "jump-1", type: "jump" }],
-				discardPile: [],
-			},
-		});
-		const { state: result, jumped } = executeJump(state, "jump-1", "right");
-
-		expect(result.player.position).toEqual({ x: 5, y: 3 });
-		expect(jumped).toBe(true);
-	});
-
-	it("1マス先が壁でも飛び越えて2マス先に着地", () => {
-		const map = createTestMap();
-		map[3][4] = { type: "wall" };
-
-		const state = createTestState({
-			map,
-			player: {
-				position: { x: 3, y: 3 },
-				hp: PLAYER_INITIAL_HP,
-				maxHp: PLAYER_INITIAL_HP,
-				ap: MAX_AP,
-				maxAp: MAX_AP,
-			},
-			deck: {
-				drawPile: [],
-				hand: [{ id: "jump-1", type: "jump" }],
-				discardPile: [],
-			},
-		});
-		const { state: result, jumped } = executeJump(state, "jump-1", "right");
-
-		expect(result.player.position).toEqual({ x: 5, y: 3 });
-		expect(jumped).toBe(true);
-	});
-
-	it("1マス先に階段があっても飛び越えて2マス先に着地", () => {
-		const map = createTestMap();
-		map[3][4] = { type: "stairs" };
-
-		const state = createTestState({
-			map,
-			floor: 1,
+			...createOverrides(),
 			player: {
 				position: { x: 3, y: 3 },
 				hp: PLAYER_INITIAL_HP,
@@ -854,7 +765,6 @@ describe("executeJump", () => {
 		expect(result.player.position).toEqual({ x: 5, y: 3 });
 		expect(jumped).toBe(true);
 		expect(reachedStairs).toBe(false);
-		expect(result.floor).toBe(1);
 	});
 
 	it("着地先が階段: reachedStairsがtrueで階層遷移は行わない", () => {
