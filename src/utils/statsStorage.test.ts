@@ -28,7 +28,7 @@ Object.defineProperty(globalThis, "localStorage", {
 	value: localStorageMock,
 });
 
-function createTestSession(overrides?: Partial<PlaySession>): PlaySession {
+function createTestSession(overrides?: Record<string, unknown>): PlaySession {
 	return {
 		id: "test-id",
 		startedAt: 1000,
@@ -41,7 +41,7 @@ function createTestSession(overrides?: Partial<PlaySession>): PlaySession {
 		totalDamageTaken: 10,
 		playerTurnCount: 15,
 		...overrides,
-	};
+	} as PlaySession;
 }
 
 describe("statsStorage", () => {

@@ -15,9 +15,9 @@ export type PlayResult = "clear" | "death";
 export type DeathCause = "enemy_attack" | "trap" | "unknown";
 
 /**
- * 1ランのプレイセッション統計
+ * 1ランのプレイセッション共通フィールド
  */
-export type PlaySession = {
+type PlaySessionBase = {
 	/** セッションID */
 	id: string;
 	/** 開始時刻（Unix ms） */
@@ -26,10 +26,6 @@ export type PlaySession = {
 	endedAt: number;
 	/** 到達最大階層 */
 	maxFloor: number;
-	/** プレイ結果 */
-	result: PlayResult;
-	/** 死因（クリア時はnull） */
-	deathCause: DeathCause | null;
 	/** カード使用回数（CardType別） */
 	cardUsage: Record<CardType, number>;
 	/** 与ダメージ合計 */
@@ -39,3 +35,10 @@ export type PlaySession = {
 	/** ターン数 */
 	playerTurnCount: number;
 };
+
+/**
+ * 1ランのプレイセッション統計（discriminated union）
+ */
+export type PlaySession =
+	| (PlaySessionBase & { result: "clear"; deathCause: null })
+	| (PlaySessionBase & { result: "death"; deathCause: DeathCause });

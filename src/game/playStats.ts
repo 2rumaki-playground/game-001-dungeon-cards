@@ -88,17 +88,25 @@ export function recordTurnEnd(): void {
  * セッション未開始時はnullを返す
  */
 export function endSession(
+	result: "clear",
+	deathCause: null,
+): PlaySession | null;
+export function endSession(
+	result: "death",
+	deathCause: DeathCause,
+): PlaySession | null;
+export function endSession(
 	result: PlayResult,
 	deathCause: DeathCause | null,
 ): PlaySession | null {
 	if (!currentSession) return null;
 
-	const session: PlaySession = {
+	const session = {
 		...currentSession,
 		endedAt: Date.now(),
 		result,
 		deathCause,
-	};
+	} as PlaySession;
 
 	currentSession = null;
 	return session;
