@@ -25,7 +25,7 @@ import {
 	startPlayerTurn,
 } from "../game";
 import { buildQueuedCardIndexMap, canEnqueueCard } from "../game/cardQueue";
-import { getEffectiveCardCost } from "../game/debugCheats";
+import { getEffectiveCardCost, resetDebugCheats } from "../game/debugCheats";
 import type { GameContext } from "../gameContext";
 import type { Card, Direction, Position, SpecialTileType } from "../types";
 import { DIRECTION_DELTA } from "../types";
@@ -530,6 +530,9 @@ export function setupEventHandlers(ctx: GameContext): void {
 	// デバッグモードトグルのコールバック設定
 	ctx.ui.titleScreen.setOnDebugModeChange((enabled) => {
 		ctx.debugMode = enabled;
+		if (!enabled) {
+			resetDebugCheats();
+		}
 	});
 
 	// デバッグカードのコールバック設定（DEV環境限定）
