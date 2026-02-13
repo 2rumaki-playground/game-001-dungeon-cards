@@ -48,7 +48,7 @@ function formatTimeDiff(diff, pct) {
 // --- Bundle comparison ---
 
 function normalizeChunkName(name) {
-	return name.replace(/-[A-Za-z0-9_-]+\.js$/, "");
+	return name.replace(/-[A-Za-z0-9]{8}\.js$/, "");
 }
 
 function normalizeChunks(chunks) {
