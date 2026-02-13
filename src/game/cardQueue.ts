@@ -1,6 +1,6 @@
 /**
  * カード予約キュー管理
- * @see https://github.com/2rumaki-playground/game-001-dungeon-cards/issues/263
+ * @see https://github.com/2rumaki-playground/game-001-dungeon-cards-02/issues/263
  */
 
 import type { Card, Direction } from "../types";
