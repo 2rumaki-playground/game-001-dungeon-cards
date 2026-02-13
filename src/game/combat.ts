@@ -77,7 +77,8 @@ export function applyDamageToPlayer(
 ): GameState {
 	if (import.meta.env.DEV && getDebugCheats().invincible) return state;
 
-	recordDamageTaken(damage);
+	const actualDamage = Math.min(damage, state.player.hp);
+	recordDamageTaken(actualDamage);
 
 	let next = updatePlayer(state, (p) => ({
 		...p,
