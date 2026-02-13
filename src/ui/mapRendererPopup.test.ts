@@ -2,6 +2,7 @@
  * マップレンダラーのテスト（ポップアップ・エフェクト）
  */
 
+import "../test-utils/mapRendererTestSetup";
 import { describe, expect, it } from "vitest";
 import {
 	createRendererTestMap,

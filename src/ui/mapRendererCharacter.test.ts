@@ -2,6 +2,7 @@
  * マップレンダラーのテスト（キャラクター描画・撃破アニメーション）
  */
 
+import "../test-utils/mapRendererTestSetup";
 import { describe, expect, it } from "vitest";
 import {
 	createRendererTestMap,
