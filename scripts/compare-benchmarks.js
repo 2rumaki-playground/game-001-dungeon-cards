@@ -37,11 +37,17 @@ function formatBytes(bytes) {
 
 function formatByteDiff(diff, pct) {
 	const sign = diff > 0 ? "+" : "";
+	if (pct === "new") {
+		return `${sign}${formatBytes(Math.abs(diff))} (new)`;
+	}
 	return `${sign}${formatBytes(Math.abs(diff))} (${sign}${pct}%)`;
 }
 
 function formatTimeDiff(diff, pct) {
 	const sign = diff > 0 ? "+" : "";
+	if (pct === "new") {
+		return `${sign}${diff.toFixed(4)}ms (new)`;
+	}
 	return `${sign}${diff.toFixed(4)}ms (${sign}${pct}%)`;
 }
 
