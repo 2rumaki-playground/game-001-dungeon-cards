@@ -30,7 +30,7 @@ import { addActionLog, setEnemies, updateEnemy } from "./state";
  * - プレイヤーがいるマス
  * - 階段タイル
  */
-function canEnemyMoveTo(
+export function canEnemyMoveTo(
 	state: GameState,
 	enemy: Enemy,
 	nx: number,
