@@ -12,6 +12,7 @@ import {
 	getMapPixelSize,
 	getViewportPixelSize,
 	gridToCenterPixel,
+	gridToParticlePosition,
 	gridToPixel,
 	pixelToGrid,
 } from "./coordinates";
@@ -298,6 +299,84 @@ describe("calculateCameraOffset（ズーム対応）", () => {
 		const centered = (viewportPx - scaledMapPx) / 2;
 		const result = calculateCameraOffset({ x: 5, y: 5 }, 11, 11, 0.5);
 		expect(result).toEqual({ x: centered, y: centered });
+	});
+});
+
+describe("gridToParticlePosition", () => {
+	it("マップ空間の座標をパーティクルコンテナ空間に変換する", () => {
+		// mapContainerがオフセット(100, 50)を持つ場合
+		const mapContainer = {
+			toGlobal: (pos: { x: number; y: number }) => ({
+				x: pos.x + 100,
+				y: pos.y + 50,
+			}),
+			toLocal: (pos: { x: number; y: number }) => pos,
+		};
+		// particleContainerがオフセット(20, 30)を持つ場合
+		const particleContainer = {
+			toGlobal: (pos: { x: number; y: number }) => pos,
+			toLocal: (pos: { x: number; y: number }) => ({
+				x: pos.x - 20,
+				y: pos.y - 30,
+			}),
+		};
+
+		const result = gridToParticlePosition(
+			{ x: 0, y: 0 },
+			mapContainer,
+			particleContainer,
+		);
+
+		// gridToCenterPixel({x:0,y:0}) → {x: CELL_GAP + CELL_SIZE/2, y: CELL_GAP + CELL_SIZE/2}
+		const expectedMapCenter = gridToCenterPixel({ x: 0, y: 0 });
+		// toGlobal: + (100, 50)
+		const expectedGlobal = {
+			x: expectedMapCenter.x + 100,
+			y: expectedMapCenter.y + 50,
+		};
+		// toLocal: - (20, 30)
+		expect(result).toEqual({
+			x: expectedGlobal.x - 20,
+			y: expectedGlobal.y - 30,
+		});
+	});
+
+	it("変換なし（単位変換）の場合はgridToCenterPixelと同じ結果を返す", () => {
+		const identity = {
+			toGlobal: (pos: { x: number; y: number }) => ({ ...pos }),
+			toLocal: (pos: { x: number; y: number }) => ({ ...pos }),
+		};
+
+		const result = gridToParticlePosition({ x: 3, y: 5 }, identity, identity);
+		expect(result).toEqual(gridToCenterPixel({ x: 3, y: 5 }));
+	});
+
+	it("ズーム適用時の座標変換が正しく行われる", () => {
+		// mapContainerが2倍ズームのスケール
+		const mapContainer = {
+			toGlobal: (pos: { x: number; y: number }) => ({
+				x: pos.x * 2,
+				y: pos.y * 2,
+			}),
+			toLocal: (pos: { x: number; y: number }) => pos,
+		};
+		const particleContainer = {
+			toGlobal: (pos: { x: number; y: number }) => pos,
+			toLocal: (pos: { x: number; y: number }) => ({ ...pos }),
+		};
+
+		const gridPos = { x: 2, y: 3 };
+		const result = gridToParticlePosition(
+			gridPos,
+			mapContainer,
+			particleContainer,
+		);
+
+		const mapCenter = gridToCenterPixel(gridPos);
+		expect(result).toEqual({
+			x: mapCenter.x * 2,
+			y: mapCenter.y * 2,
+		});
 	});
 });
 
