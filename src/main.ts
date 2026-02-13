@@ -23,6 +23,7 @@ import {
 	ReturnToPlayerButton,
 	RewardScreen,
 	ScreenTransition,
+	StatsScreen,
 	StatusBar,
 	TitleScreen,
 	TurnBanner,
@@ -151,6 +152,10 @@ async function initializeUIComponents(
 	const victoryScreen = new VictoryScreen();
 	app.stage.addChild(victoryScreen.getContainer());
 
+	// 統計画面（オーバーレイ）
+	const statsScreen = new StatsScreen();
+	app.stage.addChild(statsScreen.getContainer());
+
 	// ターンバナー（directionSelector・deckViewer・rewardScreen等の上に描画）
 	app.stage.addChild(turnBanner.getContainer());
 
@@ -166,12 +171,15 @@ async function initializeUIComponents(
 	let debugCardRenderer:
 		| import("./ui/debugCardRenderer").DebugCardRenderer
 		| null = null;
+	let debugCheatPanel: import("./ui/debugCheatPanel").DebugCheatPanel | null =
+		null;
 	let debugTargetSelector:
 		| import("./ui/debugTargetSelector").DebugTargetSelector
 		| null = null;
 
 	if (import.meta.env.DEV) {
 		const { DebugCardRenderer } = await import("./ui/debugCardRenderer");
+		const { DebugCheatPanel } = await import("./ui/debugCheatPanel");
 		const { DebugTargetSelector } = await import("./ui/debugTargetSelector");
 
 		debugCardRenderer = new DebugCardRenderer();
@@ -185,9 +193,18 @@ async function initializeUIComponents(
 		const deckViewerIndex = app.stage.getChildIndex(deckViewer.getContainer());
 		app.stage.addChildAt(debugCardContainer, deckViewerIndex);
 
+		debugCheatPanel = new DebugCheatPanel();
+		const cheatPanelContainer = debugCheatPanel.getContainer();
+		cheatPanelContainer.x = 8;
+		cheatPanelContainer.y = STATUS_BAR_HEIGHT + 8;
+		app.stage.addChild(cheatPanelContainer);
+
 		debugTargetSelector = new DebugTargetSelector();
 		const targetSelectorContainer = debugTargetSelector.getContainer();
 		mapRenderer.getContainer().addChild(targetSelectorContainer);
+
+		const { EnemyAiOverlayManager } = await import("./ui/enemyAiOverlay");
+		mapRenderer.setEnemyAiOverlayManager(new EnemyAiOverlayManager());
 	}
 
 	return {
@@ -207,9 +224,11 @@ async function initializeUIComponents(
 		floorBanner,
 		particleSystem,
 		victoryScreen,
+		statsScreen,
 		cameraDragController,
 		returnToPlayerButton,
 		debugCardRenderer,
+		debugCheatPanel,
 		debugTargetSelector,
 	};
 }
@@ -222,6 +241,9 @@ function setupDebugGlobals(): void {
 		gameState: GameState;
 		updateState: typeof updateState;
 		debugLog: boolean;
+		debugStartGame?: (
+			params: import("./types/debug").DebugStartParams,
+		) => Promise<void>;
 	};
 	debugWindow.gameState = ctx.state;
 	debugWindow.updateState = updateState;
@@ -231,6 +253,40 @@ function setupDebugGlobals(): void {
 			ctx.debugLog = v;
 		},
 	});
+
+	if (import.meta.env.DEV) {
+		debugWindow.debugStartGame = async (params) => {
+			if (ctx.isAnimating || ctx.isCardActionAnimating) return;
+			ctx.isAnimating = true;
+			try {
+				// UI状態をリセット
+				ctx.pendingCard = null;
+				ctx.cardQueue = [];
+				ctx.ui.handRenderer.setQueuedCards(new Map());
+				ctx.ui.directionSelector.hide();
+
+				const { startNewGameWithDebugParams } = await import(
+					"./game/debugStart"
+				);
+				const { applyState } = await import("./ui/gameRenderer");
+				const { relayoutUI } = await import("./ui/relayout");
+
+				const newState = startNewGameWithDebugParams(ctx.state, params);
+				await ctx.ui.screenTransition.fadeTransition(() => {
+					applyState(ctx, newState);
+					relayoutUI(ctx);
+					render(ctx, true);
+				});
+				await ctx.ui.handRenderer.renderWithAnimation(
+					ctx.state.deck.hand,
+					ctx.state.player.ap,
+					newState.deck.hand.length,
+				);
+			} finally {
+				ctx.isAnimating = false;
+			}
+		};
+	}
 }
 
 async function main() {

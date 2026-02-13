@@ -3,6 +3,8 @@
  */
 
 import { LOG_AREA_GAP, STATUS_BAR_HEIGHT } from "../constants";
+import { getDebugCheats } from "../game/debugCheats";
+import { analyzeAllEnemies } from "../game/enemyAiAnalysis";
 import type { GameContext } from "../gameContext";
 import type { GameState } from "../types";
 import {
@@ -38,6 +40,7 @@ export function updateState(ctx: GameContext, newState: GameState): void {
  */
 function hideDebugUI(ctx: GameContext): void {
 	ctx.ui.debugCardRenderer?.hide();
+	ctx.ui.debugCheatPanel?.hide();
 	ctx.ui.debugTargetSelector?.hide();
 }
 
@@ -45,6 +48,7 @@ function renderTitleScreen(ctx: GameContext): void {
 	ctx.ui.titleScreen.show();
 	ctx.ui.gameOverScreen.hide();
 	ctx.ui.victoryScreen.hide();
+	ctx.ui.statsScreen.hide();
 	ctx.ui.statusBar.hide();
 	ctx.ui.turnEndButton.hide();
 	ctx.ui.nextFloorButton.hide();
@@ -110,6 +114,10 @@ export function renderGameScreen(
 		ctx.state.turn,
 		ctx.state.isCleared,
 	);
+	const visitedTiles =
+		import.meta.env.DEV && getDebugCheats().fullMapVisible
+			? undefined
+			: ctx.state.visitedTiles;
 	ctx.ui.mapRenderer.render(
 		ctx.state.map,
 		ctx.state.player,
@@ -117,7 +125,7 @@ export function renderGameScreen(
 		skipPlayer,
 		skipEnemies,
 		ctx.state.remnants,
-		ctx.state.visitedTiles,
+		visitedTiles,
 	);
 	applyCameraOffset(ctx);
 	if (!skipHand) {
@@ -136,6 +144,22 @@ export function renderGameScreen(
 		ctx.ui.debugCardRenderer.show();
 	} else {
 		ctx.ui.debugCardRenderer?.hide();
+	}
+
+	// デバッグチートパネル表示（DEV環境 + デバッグモードON時のみ）
+	if (ctx.debugMode && ctx.ui.debugCheatPanel) {
+		ctx.ui.debugCheatPanel.render();
+		ctx.ui.debugCheatPanel.show();
+	} else {
+		ctx.ui.debugCheatPanel?.hide();
+	}
+
+	// 敵AI可視化オーバーレイ（DEV環境 + デバッグモードON + showEnemyAiチートON時のみ）
+	if (import.meta.env.DEV && ctx.debugMode && getDebugCheats().showEnemyAi) {
+		const analyses = analyzeAllEnemies(ctx.state);
+		ctx.ui.mapRenderer.updateEnemyAiOverlay(analyses, visitedTiles);
+	} else {
+		ctx.ui.mapRenderer.clearEnemyAiOverlay();
 	}
 }
 
@@ -213,6 +237,7 @@ export function render(
 	ctx.ui.rewardScreen.hide();
 	ctx.ui.deckViewer.hide();
 	ctx.ui.victoryScreen.hide();
+	ctx.ui.statsScreen.hide();
 	switch (ctx.state.screen) {
 		case "title":
 			renderTitleScreen(ctx);

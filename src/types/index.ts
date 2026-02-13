@@ -14,3 +14,4 @@ export type {
 	Turn,
 } from "./game";
 export type { GameMap, Room, SpecialTileType, Tile, TileType } from "./map";
+export type { DeathCause, PlayResult, PlaySession } from "./stats";

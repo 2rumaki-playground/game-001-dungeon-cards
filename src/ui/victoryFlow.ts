@@ -4,8 +4,10 @@
 
 import { STATUS_BAR_HEIGHT } from "../constants";
 import { returnToTitle } from "../game";
+import { endSession } from "../game/playStats";
 import type { GameContext } from "../gameContext";
 import type { GameState } from "../types";
+import { savePlaySession } from "../utils/statsStorage";
 import { deleteSaveData, hasSaveData } from "../utils/storage";
 import { getScreenSize } from "./gameAnimations";
 import { applyState, render, updateState } from "./gameRenderer";
@@ -61,6 +63,8 @@ export function showVictoryScreen(
 
 		ctx.ui.victoryScreen.setOnReturnToTitle(async () => {
 			cleanup();
+			const session = endSession("clear", null);
+			if (session) savePlaySession(session);
 			deleteSaveData();
 			await ctx.ui.screenTransition.fadeTransition(() => {
 				updateState(ctx, returnToTitle(ctx.state));

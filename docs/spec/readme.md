@@ -5,12 +5,14 @@
 
 ## 仕様の読み方
 - 全体像・思想：[vision.md](./vision.md)
+- デザイン目標：[gdd.md](./gdd.md)（体験目標・判断軸）
 - ルール本体：[rules.md](./rules.md)（最重要）
 - カード仕様：[cards.md](./cards.md)
 - 敵タイプ仕様：[enemies.md](./enemies.md)
 - デッキ構築仕様：[deckbuilding.md](./deckbuilding.md)（v1.2）
 - 用語定義：[glossary.md](./glossary.md)
 - 定数・前提：[constants.md](./constants.md)（**数値の正典**）
+- バランスシート：[balance-sheet.md](./balance-sheet.md)（パラメータ間の影響関係）
 
 ## 数値定数の管理ルール
 - **すべての数値定数は [constants.md](./constants.md) を正典 (Single Source of Truth) とする**

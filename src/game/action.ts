@@ -4,7 +4,6 @@
  */
 
 import {
-	CARD_COST,
 	JUMP_DISTANCE,
 	PLAYER_ATTACK_DAMAGE,
 	PLAYER_STRONG_ATTACK_DAMAGE,
@@ -12,9 +11,11 @@ import {
 import type { Direction, GameState, Position, SpecialTileType } from "../types";
 import { DIRECTION_DELTA } from "../types";
 import { applyDamageToEnemy } from "./combat";
+import { getEffectiveCardCost } from "./debugCheats";
 import { playCard } from "./deck";
 import { revealAtPosition } from "./fogOfWar";
 import { isInBounds } from "./map";
+import { recordCardUsage } from "./playStats";
 import { addActionLog, setDeck, setVisitedTiles, updatePlayer } from "./state";
 import { applyTileEffect } from "./tileEffect";
 
@@ -84,7 +85,8 @@ export function executeMove(
 	direction: Direction,
 ): MoveResult {
 	// AP消費 + カードを捨て札へ
-	let next = consumeApAndPlayCard(state, cardId, CARD_COST.move);
+	let next = consumeApAndPlayCard(state, cardId, getEffectiveCardCost("move"));
+	recordCardUsage("move");
 
 	// 移動判定
 	if (!canMove(state, direction)) {
@@ -219,11 +221,12 @@ export function executeAttack(
 	cardId: string,
 	direction: Direction,
 ): AttackResult {
+	recordCardUsage("attack");
 	return executeAttackBase(
 		state,
 		cardId,
 		direction,
-		CARD_COST.attack,
+		getEffectiveCardCost("attack"),
 		PLAYER_ATTACK_DAMAGE,
 		"攻撃できなかった",
 	);
@@ -241,11 +244,12 @@ export function executeStrongAttack(
 	cardId: string,
 	direction: Direction,
 ): AttackResult {
+	recordCardUsage("strong_attack");
 	return executeAttackBase(
 		state,
 		cardId,
 		direction,
-		CARD_COST.strong_attack,
+		getEffectiveCardCost("strong_attack"),
 		PLAYER_STRONG_ATTACK_DAMAGE,
 		"強攻撃できなかった",
 	);
@@ -282,7 +286,8 @@ export function executeJump(
 	const delta = DIRECTION_DELTA[direction];
 
 	// AP消費 + カードを捨て札へ
-	let next = consumeApAndPlayCard(state, cardId, CARD_COST.jump);
+	let next = consumeApAndPlayCard(state, cardId, getEffectiveCardCost("jump"));
+	recordCardUsage("jump");
 
 	// 着地先（2マス先）の座標を計算
 	const landX = next.player.position.x + delta.x * JUMP_DISTANCE;
@@ -387,7 +392,12 @@ export function executeJump(
  */
 export function executeWait(state: GameState, cardId: string): GameState {
 	// AP消費 + カードを捨て札へ
-	const next = consumeApAndPlayCard(state, cardId, CARD_COST.wait);
+	const next = consumeApAndPlayCard(
+		state,
+		cardId,
+		getEffectiveCardCost("wait"),
+	);
+	recordCardUsage("wait");
 
 	return addActionLog(next, "待機した", "player");
 }
