@@ -42,6 +42,7 @@ pnpm exec playwright install --with-deps chromium  # E2Eテスト用
 | `pnpm test` | ユニットテスト（watchモード） |
 | `pnpm test:run` | ユニットテスト（1回のみ） |
 | `pnpm test:e2e` | E2Eテスト |
+| `ANALYZE=1 pnpm build` | バンドル分析レポート付きビルド |
 
 ## CI/CD
 
