@@ -1,6 +1,9 @@
 import { afterEach, describe, expect, it } from "vitest";
+import { CARD_COST } from "../constants";
+import type { CardType } from "../types";
 import {
 	getDebugCheats,
+	getEffectiveCardCost,
 	resetDebugCheats,
 	toggleDebugCheat,
 } from "./debugCheats";
@@ -41,6 +44,29 @@ describe("toggleDebugCheat", () => {
 		expect(cheats.infiniteAp).toBe(false);
 		expect(cheats.fullMapVisible).toBe(true);
 		expect(cheats.skipEnemyTurn).toBe(false);
+	});
+});
+
+const allCardTypes: CardType[] = [
+	"move",
+	"attack",
+	"strong_attack",
+	"jump",
+	"wait",
+];
+
+describe("getEffectiveCardCost", () => {
+	it("AP無限OFF時はCARD_COSTの値を返す", () => {
+		for (const cardType of allCardTypes) {
+			expect(getEffectiveCardCost(cardType)).toBe(CARD_COST[cardType]);
+		}
+	});
+
+	it("AP無限ON時は全カードタイプで0を返す", () => {
+		toggleDebugCheat("infiniteAp");
+		for (const cardType of allCardTypes) {
+			expect(getEffectiveCardCost(cardType)).toBe(0);
+		}
 	});
 });
 
