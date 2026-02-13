@@ -156,9 +156,11 @@ describe("DeckViewer", () => {
 			const firstRow = container.children.find(
 				(child) => child.label === "card-row",
 			);
-			expect(firstRow).toBeDefined();
+			if (!firstRow) {
+				throw new Error("card-row element not found");
+			}
 			const expectedListX = (gameAreaWidth - CARD_ROW_LIST_WIDTH) / 2;
-			expect(firstRow?.x).toBe(expectedListX);
+			expect(firstRow.x).toBe(expectedListX);
 		});
 
 		it("コンテンツがgameAreaHeightの中央に配置される", () => {
