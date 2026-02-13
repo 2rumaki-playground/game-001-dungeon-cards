@@ -139,6 +139,7 @@ export class EnemyTooltip {
 
 		// デバッグ情報を追加
 		let debugLineCount = 0;
+		const separatorY = TOOLTIP_PADDING + TOOLTIP_LINE_HEIGHT * 3 + 2;
 		if (debugInfo) {
 			const debugLines = [
 				`移動:${params.moveDistance} 索敵:${params.senseRange}`,
@@ -149,19 +150,6 @@ export class EnemyTooltip {
 				fontFamily: "sans-serif",
 				fill: DEBUG_TEXT_COLOR,
 			};
-
-			// 区切り線
-			const separatorY = TOOLTIP_PADDING + TOOLTIP_LINE_HEIGHT * 3 + 2;
-			this.debugSeparator.clear();
-			this.debugSeparator.moveTo(TOOLTIP_PADDING, separatorY);
-			this.debugSeparator.lineTo(
-				TOOLTIP_MIN_WIDTH + TOOLTIP_PADDING,
-				separatorY,
-			);
-			this.debugSeparator.stroke({
-				color: DEBUG_SEPARATOR_COLOR,
-				width: 1,
-			});
 
 			for (let i = 0; i < debugLines.length; i++) {
 				const text = new Text({
@@ -204,6 +192,20 @@ export class EnemyTooltip {
 			...allTexts.map(safeWidth),
 		);
 		this.cachedBgWidth = maxTextWidth + TOOLTIP_PADDING * 2;
+
+		// 区切り線を背景幅に合わせて描画（幅確定後）
+		if (debugInfo) {
+			this.debugSeparator.clear();
+			this.debugSeparator.moveTo(TOOLTIP_PADDING, separatorY);
+			this.debugSeparator.lineTo(
+				this.cachedBgWidth - TOOLTIP_PADDING,
+				separatorY,
+			);
+			this.debugSeparator.stroke({
+				color: DEBUG_SEPARATOR_COLOR,
+				width: 1,
+			});
+		}
 
 		const baseLines = 3;
 		const debugExtraHeight =
