@@ -20,5 +20,4 @@ export { StatusBar } from "./statusBar";
 export { TitleScreen } from "./titleScreen";
 export { TurnBanner } from "./turnBanner";
 export { TurnEndButton } from "./turnEndButton";
-export { TurnOverlay } from "./turnOverlay";
 export { VictoryScreen } from "./victoryScreen";
