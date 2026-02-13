@@ -2,7 +2,7 @@
  * ダメージ/回復/MISSポップアップのアニメーション関数
  */
 
-import { Container, Text } from "pixi.js";
+import { type Container, Text } from "pixi.js";
 import { CELL_SIZE } from "../constants";
 import type { Position } from "../types";
 import { tween } from "../utils/tween";
