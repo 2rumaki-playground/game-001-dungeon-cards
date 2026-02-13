@@ -4,9 +4,17 @@
  */
 
 import { MAX_PLAY_SESSIONS } from "../constants";
-import type { PlaySession } from "../types";
+import type { CardType, PlaySession } from "../types";
 
 const STATS_KEY = "dungeon-cards-stats";
+
+const REQUIRED_CARD_TYPES: CardType[] = [
+	"move",
+	"attack",
+	"strong_attack",
+	"jump",
+	"wait",
+];
 
 /**
  * セッションデータのバリデーション
@@ -48,9 +56,9 @@ function isValidSession(value: unknown): value is PlaySession {
 	) {
 		return false;
 	}
-	for (const key of Object.keys(cardUsage as Record<string, unknown>)) {
-		const v = (cardUsage as Record<string, unknown>)[key];
-		if (typeof v !== "number") {
+	const cu = cardUsage as Record<string, unknown>;
+	for (const key of REQUIRED_CARD_TYPES) {
+		if (typeof cu[key] !== "number") {
 			return false;
 		}
 	}

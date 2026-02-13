@@ -116,7 +116,23 @@ describe("statsStorage", () => {
 
 		it("cardUsageの値が数値でない場合はフィルタリングされる", () => {
 			const session = createTestSession();
-			const raw = { ...session, cardUsage: { move: "not a number" } };
+			const raw = {
+				...session,
+				cardUsage: {
+					move: "not a number",
+					attack: 0,
+					strong_attack: 0,
+					jump: 0,
+					wait: 0,
+				},
+			};
+			localStorageMock.setItem("dungeon-cards-stats", JSON.stringify([raw]));
+			expect(loadPlaySessions()).toHaveLength(0);
+		});
+
+		it("cardUsageに必須キーが欠落している場合はフィルタリングされる", () => {
+			const session = createTestSession();
+			const raw = { ...session, cardUsage: { move: 1 } };
 			localStorageMock.setItem("dungeon-cards-stats", JSON.stringify([raw]));
 			expect(loadPlaySessions()).toHaveLength(0);
 		});
