@@ -107,6 +107,30 @@ describe("statsStorage", () => {
 			expect(loadPlaySessions()).toHaveLength(0);
 		});
 
+		it("clearなのにdeathCauseがnullでない場合はフィルタリングされる", () => {
+			const invalid = createTestSession({
+				result: "clear",
+				deathCause: "enemy_attack",
+			});
+			localStorageMock.setItem(
+				"dungeon-cards-stats",
+				JSON.stringify([invalid]),
+			);
+			expect(loadPlaySessions()).toHaveLength(0);
+		});
+
+		it("deathなのにdeathCauseがnullの場合はフィルタリングされる", () => {
+			const invalid = createTestSession({
+				result: "death",
+				deathCause: null,
+			});
+			localStorageMock.setItem(
+				"dungeon-cards-stats",
+				JSON.stringify([invalid]),
+			);
+			expect(loadPlaySessions()).toHaveLength(0);
+		});
+
 		it("cardUsageが欠落している場合はフィルタリングされる", () => {
 			const session = createTestSession();
 			const raw = { ...session, cardUsage: null };

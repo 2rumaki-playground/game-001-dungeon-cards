@@ -39,13 +39,18 @@ function isValidSession(value: unknown): value is PlaySession {
 	}
 
 	const deathCause = s.deathCause;
-	if (
-		deathCause !== null &&
-		deathCause !== "enemy_attack" &&
-		deathCause !== "trap" &&
-		deathCause !== "unknown"
-	) {
-		return false;
+	if (s.result === "clear") {
+		if (deathCause !== null) {
+			return false;
+		}
+	} else if (s.result === "death") {
+		if (
+			deathCause !== "enemy_attack" &&
+			deathCause !== "trap" &&
+			deathCause !== "unknown"
+		) {
+			return false;
+		}
 	}
 
 	const cardUsage = s.cardUsage as unknown;
