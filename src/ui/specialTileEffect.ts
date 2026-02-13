@@ -70,12 +70,8 @@ export class SpecialTileEffectManager {
 		const newEffects = new Map<string, TileEffect>();
 		const newStairsEffects = new Map<string, TileEffect>();
 
-		for (let y = 0; y < map.length; y++) {
-			const row = map[y];
-			if (!row) continue;
-			for (let x = 0; x < row.length; x++) {
-				const tile = row[x];
-				if (!tile) continue;
+		for (const [y, row] of map.entries()) {
+			for (const [x, tile] of row.entries()) {
 				const key = `${x},${y}`;
 
 				if (tile.type === "stairs") {
