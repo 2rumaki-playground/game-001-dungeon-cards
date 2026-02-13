@@ -1,5 +1,15 @@
 # 現在の作業をcommit・push・PR作成
 
+## コンテキスト
+
+### 対象リポジトリ（origin）
+
+```
+$![git remote get-url origin | sed 's|.*github.com[:/]||;s|\.git$||']
+```
+
+> **重要**: フォーク構成のリポジトリでは `gh` がフォーク元を参照するため、以降の `gh pr` コマンドには必ず `--repo {owner}/{repo}` を付与すること。以降のコマンドで `{owner}/{repo}` と表記している箇所を上記の値で置き換えること。
+
 ## 指示
 
 現在のブランチの変更をコミットし、リモートにpushし、PRを作成してください。
@@ -38,12 +48,12 @@
 
 ### 5. PR作成
 
-- 既にこのブランチのPRが存在するか `gh pr list --head <ブランチ名>` で確認
+- 既にこのブランチのPRが存在するか `gh pr list --repo {owner}/{repo} --head <ブランチ名>` で確認
 - PRが既に存在する場合はpushのみで完了（PRのURLを表示する）
 - PRが存在しない場合は以下の形式で新規作成:
 
 ```
-gh pr create --base main --title "<type>: <日本語の説明>" --body "$(cat <<'EOF'
+gh pr create --repo {owner}/{repo} --base main --title "<type>: <日本語の説明>" --body "$(cat <<'EOF'
 ## 概要
 <mainからの全変更内容を分析した箇条書き>
 
