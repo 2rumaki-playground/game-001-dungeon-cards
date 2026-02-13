@@ -18,6 +18,8 @@ export interface DebugCheats {
 	fullMapVisible: boolean;
 	/** 敵行動スキップ（敵ターンをスキップ） */
 	skipEnemyTurn: boolean;
+	/** 敵AI可視化（移動候補・攻撃範囲・判断理由を表示） */
+	showEnemyAi: boolean;
 }
 
 const debugCheats: DebugCheats = {
@@ -25,6 +27,7 @@ const debugCheats: DebugCheats = {
 	infiniteAp: false,
 	fullMapVisible: false,
 	skipEnemyTurn: false,
+	showEnemyAi: false,
 };
 
 /**
@@ -62,4 +65,5 @@ export function resetDebugCheats(): void {
 	debugCheats.infiniteAp = false;
 	debugCheats.fullMapVisible = false;
 	debugCheats.skipEnemyTurn = false;
+	debugCheats.showEnemyAi = false;
 }
