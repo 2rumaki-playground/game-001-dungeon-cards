@@ -31,7 +31,12 @@ export function buildQueuedCardIndexMap(
 	const map = new Map<string, number>();
 	for (let i = 0; i < queue.length; i++) {
 		const item = queue[i];
-		if (item) map.set(item.card.id, i + 1);
+		if (!item) {
+			throw new Error(
+				`Card queue is inconsistent: missing entry at index ${i}`,
+			);
+		}
+		map.set(item.card.id, i + 1);
 	}
 	return map;
 }
