@@ -199,6 +199,9 @@ export const RARITY_WEIGHTS: Record<Rarity, number> = {
 // 行動ログ
 export const ACTION_LOG_LIMIT = 50;
 
+// プレイ統計
+export const MAX_PLAY_SESSIONS = 50;
+
 // マップレイアウト（内側の床タイル）
 export const FLOOR_AREA_SIZE = 5; // 5x5
 export const FLOOR_TILE_COUNT = FLOOR_AREA_SIZE * FLOOR_AREA_SIZE; // 25

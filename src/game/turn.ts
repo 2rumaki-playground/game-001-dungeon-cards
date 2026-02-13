@@ -6,6 +6,7 @@
 import { TURN_START_AP } from "../constants";
 import type { GameState } from "../types";
 import { discardHand, drawCards } from "./deck";
+import { recordTurnEnd } from "./playStats";
 import { changeTurn, setDeck, updatePlayer } from "./state";
 
 /**
@@ -38,6 +39,8 @@ export function startPlayerTurn(state: GameState): GameState {
  * 2. 敵ターンへ遷移
  */
 export function endPlayerTurn(state: GameState): GameState {
+	recordTurnEnd();
+
 	// 手札を捨て札へ
 	let next = setDeck(state, discardHand(state.deck));
 

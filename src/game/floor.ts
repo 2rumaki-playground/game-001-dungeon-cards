@@ -8,6 +8,7 @@ import { saveGame } from "../utils/storage";
 import { reshuffleDeck } from "./deck";
 import { createEmptyVisitedTiles, revealAtPosition } from "./fogOfWar";
 import { generateMapPlacement } from "./map";
+import { recordFloorReached } from "./playStats";
 import {
 	addActionLog,
 	createEnemiesForFloor,
@@ -36,6 +37,7 @@ import { startPlayerTurn } from "./turn";
 export function transitionFloor(state: GameState): GameState {
 	// 1. 階層番号を +1
 	let next = setFloor(state, state.floor + 1);
+	recordFloorReached(next.floor);
 
 	// 2. 新マップを生成
 	const { map, rooms, player, enemies } = generateMapPlacement(

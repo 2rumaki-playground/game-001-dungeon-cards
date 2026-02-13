@@ -5,6 +5,7 @@
 
 import type { GameState } from "../types";
 import { getDebugCheats } from "./debugCheats";
+import { recordDamageDealt, recordDamageTaken } from "./playStats";
 import {
 	addActionLog,
 	addRemnant,
@@ -35,9 +36,12 @@ export function applyDamageToEnemy(
 	damage: number,
 ): GameState {
 	// 対象の敵が存在しない場合は何もしない
-	if (!state.enemies.some((e) => e.id === enemyId)) {
+	const enemy = state.enemies.find((e) => e.id === enemyId);
+	if (!enemy) {
 		return state;
 	}
+
+	recordDamageDealt(Math.min(damage, enemy.hp));
 
 	let next = updateEnemy(state, enemyId, (e) => ({
 		...e,
@@ -72,6 +76,9 @@ export function applyDamageToPlayer(
 	damage: number,
 ): GameState {
 	if (import.meta.env.DEV && getDebugCheats().invincible) return state;
+
+	const actualDamage = Math.min(damage, state.player.hp);
+	recordDamageTaken(actualDamage);
 
 	let next = updatePlayer(state, (p) => ({
 		...p,
