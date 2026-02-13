@@ -15,7 +15,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-        if: github.event.action != 'closed'
 
       - uses: pnpm/action-setup@v4
         if: github.event.action != 'closed'
