@@ -120,6 +120,17 @@ describe("statsStorage", () => {
 			localStorageMock.setItem("dungeon-cards-stats", JSON.stringify([raw]));
 			expect(loadPlaySessions()).toHaveLength(0);
 		});
+
+		it("上限超過データは最新側を優先して切り詰められる", () => {
+			const sessions = Array.from({ length: MAX_PLAY_SESSIONS + 5 }, (_, i) =>
+				createTestSession({ id: `s${i}` }),
+			);
+			localStorageMock.setItem("dungeon-cards-stats", JSON.stringify(sessions));
+			const loaded = loadPlaySessions();
+			expect(loaded).toHaveLength(MAX_PLAY_SESSIONS);
+			expect(loaded[0].id).toBe("s5");
+			expect(loaded[loaded.length - 1].id).toBe(`s${MAX_PLAY_SESSIONS + 4}`);
+		});
 	});
 
 	describe("savePlaySession", () => {

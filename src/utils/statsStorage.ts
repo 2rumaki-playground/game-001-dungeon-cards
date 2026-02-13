@@ -70,7 +70,11 @@ export function loadPlaySessions(): PlaySession[] {
 	try {
 		const data = JSON.parse(json);
 		if (!Array.isArray(data)) return [];
-		return data.filter(isValidSession);
+		const sessions = data.filter(isValidSession);
+		if (sessions.length > MAX_PLAY_SESSIONS) {
+			return sessions.slice(-MAX_PLAY_SESSIONS);
+		}
+		return sessions;
 	} catch (e) {
 		console.error("Failed to load play sessions", e);
 		return [];
