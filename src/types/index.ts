@@ -2,8 +2,15 @@
  * 型定義のエクスポート
  */
 
-export * from "./card";
-export * from "./character";
-export * from "./direction";
-export * from "./game";
-export * from "./map";
+export type { Card, CardType, DeckState, Rarity } from "./card";
+export type { Enemy, EnemyType, PendingSkillType, Player } from "./character";
+export { DIRECTION_DELTA, type Direction, type Position } from "./direction";
+export type {
+	ActionLogEntry,
+	GameState,
+	LogActor,
+	RewardState,
+	Screen,
+	Turn,
+} from "./game";
+export type { GameMap, Room, SpecialTileType, Tile, TileType } from "./map";
