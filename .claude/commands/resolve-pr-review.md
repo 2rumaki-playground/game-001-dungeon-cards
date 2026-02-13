@@ -17,6 +17,8 @@ git remote get-url origin | sed -E 's/\.git$//; s#.+github\.com[:/]##'
 
 この出力（例: `2rumaki-playground/game-001-dungeon-cards-02`）をもとに、`/` で分割して以降のコマンドで `{owner}` `{repo}` と表記している箇所を置き換えること。
 
+> **重要**: フォーク構成のリポジトリでは `gh` がフォーク元を参照するため、以降の `gh pr` コマンドにも必ず `--repo {owner}/{repo}` を付与すること。
+
 ## 指示
 
 以下の手順でPRのレビューコメントを確認・解決し、pushまで行ってください。
@@ -54,13 +56,13 @@ TeamCreateでチームを作成する:
 
 ```bash
 # PRをドラフトに変換
-gh pr ready --undo <番号>
+gh pr ready --repo {owner}/{repo} --undo <番号>
 
 # worktreeを作成（/tmp配下に作成し、メインリポジトリを汚さない）
 git worktree add /tmp/wt-pr-<番号>
 
 # worktree側でPRブランチをcheckoutし、依存関係をインストール
-(cd /tmp/wt-pr-<番号> && gh pr checkout <番号> && pnpm install)
+(cd /tmp/wt-pr-<番号> && gh pr checkout --repo {owner}/{repo} <番号> && pnpm install)
 ```
 
 ### P-5. エージェントの並列起動
@@ -145,7 +147,7 @@ git worktree add /tmp/wt-pr-<番号>
 
 6. **ドラフトを解除**:
    ```
-   cd /tmp/wt-pr-<番号> && gh pr ready <番号>
+   cd /tmp/wt-pr-<番号> && gh pr ready --repo {owner}/{repo} <番号>
    ```
 
 完了したら、対応したコメント数とPRのURLを報告してください。
@@ -156,7 +158,7 @@ git worktree add /tmp/wt-pr-<番号>
 全エージェントの完了を待ち、以下を行う:
 
 1. 各エージェントの結果（対応コメント数、PRのURL等）をまとめてユーザーに報告する
-2. 各PRのドラフトが解除されているか確認し、ドラフトのまま残っている場合は `gh pr ready <番号>` で解除する
+2. 各PRのドラフトが解除されているか確認し、ドラフトのまま残っている場合は `gh pr ready --repo {owner}/{repo} <番号>` で解除する
 3. git worktreeを削除する:
    ```bash
    git worktree remove /tmp/wt-pr-<番号>
@@ -172,7 +174,7 @@ git worktree add /tmp/wt-pr-<番号>
 引数が空の場合は、現在のブランチに紐づくPR番号を取得する:
 
 ```
-gh pr view --json number -q .number
+gh pr view --repo {owner}/{repo} --json number -q .number
 ```
 
 [未解決スレッドの取得](#ref-未解決のレビュースレッドを取得) の手順でレビュースレッドを取得し、必要に応じて [コメントの詳細を取得](#ref-コメントの詳細を取得) で全文を取得する。
@@ -200,8 +202,8 @@ gh pr view --json number -q .number
 ### 4. PRをドラフトに変換・ブランチ切り替え
 
 ```
-gh pr ready --undo <番号>
-gh pr checkout <番号>
+gh pr ready --repo {owner}/{repo} --undo <番号>
+gh pr checkout --repo {owner}/{repo} <番号>
 ```
 
 ### 5. 実装・コミット・push（1コメントずつ）
@@ -277,7 +279,7 @@ gh api repos/{owner}/{repo}/pulls/<番号>/requested_reviewers \
 ### 7. PRをOPENに戻す
 
 ```
-gh pr ready <番号>
+gh pr ready --repo {owner}/{repo} <番号>
 ```
 
 これにより、CIが `ready_for_review` イベントで起動する。
