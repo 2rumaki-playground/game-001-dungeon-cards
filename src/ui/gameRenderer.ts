@@ -48,6 +48,7 @@ function renderTitleScreen(ctx: GameContext): void {
 	ctx.ui.titleScreen.show();
 	ctx.ui.gameOverScreen.hide();
 	ctx.ui.victoryScreen.hide();
+	ctx.ui.statsScreen.hide();
 	ctx.ui.statusBar.hide();
 	ctx.ui.turnOverlay.hide();
 	ctx.ui.turnEndButton.hide();
@@ -240,6 +241,7 @@ export function render(
 	ctx.ui.rewardScreen.hide();
 	ctx.ui.deckViewer.hide();
 	ctx.ui.victoryScreen.hide();
+	ctx.ui.statsScreen.hide();
 	switch (ctx.state.screen) {
 		case "title":
 			renderTitleScreen(ctx);

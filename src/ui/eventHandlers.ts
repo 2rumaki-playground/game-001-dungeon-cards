@@ -30,7 +30,11 @@ import { endSession, startSession } from "../game/playStats";
 import type { GameContext } from "../gameContext";
 import type { Card, Direction, Position, SpecialTileType } from "../types";
 import { DIRECTION_DELTA } from "../types";
-import { savePlaySession } from "../utils/statsStorage";
+import {
+	clearPlaySessions,
+	loadPlaySessions,
+	savePlaySession,
+} from "../utils/statsStorage";
 import { deleteSaveData, hasSaveData, loadGame } from "../utils/storage";
 import {
 	createHealParticleConfig,
@@ -534,6 +538,31 @@ export function setupEventHandlers(ctx: GameContext): void {
 
 	ctx.ui.deckViewer.setOnClose(() => {
 		ctx.ui.deckViewer.hide();
+	});
+
+	// 統計画面のコールバック設定
+	ctx.ui.titleScreen.setOnStats(() => {
+		if (ctx.isAnimating) return;
+		const sessions = loadPlaySessions();
+		const screen = getScreenSize(ctx);
+		ctx.ui.statsScreen.render(sessions, screen.width, screen.height);
+		ctx.ui.statsScreen.show();
+	});
+
+	ctx.ui.statsScreen.setOnClose(() => {
+		ctx.ui.statsScreen.hide();
+	});
+
+	ctx.ui.statsScreen.setOnReset(() => {
+		const confirmed = window.confirm(
+			"プレイ統計データをすべてリセットしますか？",
+		);
+		if (confirmed) {
+			clearPlaySessions();
+			const sessions = loadPlaySessions();
+			const screen = getScreenSize(ctx);
+			ctx.ui.statsScreen.render(sessions, screen.width, screen.height);
+		}
 	});
 
 	// デバッグモードトグルのコールバック設定

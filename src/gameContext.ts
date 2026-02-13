@@ -19,6 +19,7 @@ import type {
 	ReturnToPlayerButton,
 	RewardScreen,
 	ScreenTransition,
+	StatsScreen,
 	StatusBar,
 	TitleScreen,
 	TurnBanner,
@@ -49,6 +50,7 @@ export interface UIComponents {
 	floorBanner: FloorBanner;
 	particleSystem: ParticleSystem;
 	victoryScreen: VictoryScreen;
+	statsScreen: StatsScreen;
 	cameraDragController: CameraDragController;
 	returnToPlayerButton: ReturnToPlayerButton;
 	debugCardRenderer: DebugCardRenderer | null;

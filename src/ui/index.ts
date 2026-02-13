@@ -20,6 +20,7 @@ export * from "./particleSystem";
 export * from "./returnToPlayerButton";
 export * from "./rewardScreen";
 export * from "./screenTransition";
+export * from "./statsScreen";
 export * from "./statusBar";
 export * from "./titleAnimation";
 export * from "./titleScreen";

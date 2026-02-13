@@ -23,6 +23,7 @@ import {
 	ReturnToPlayerButton,
 	RewardScreen,
 	ScreenTransition,
+	StatsScreen,
 	StatusBar,
 	TitleScreen,
 	TurnBanner,
@@ -157,6 +158,10 @@ async function initializeUIComponents(
 	const victoryScreen = new VictoryScreen();
 	app.stage.addChild(victoryScreen.getContainer());
 
+	// 統計画面（オーバーレイ）
+	const statsScreen = new StatsScreen();
+	app.stage.addChild(statsScreen.getContainer());
+
 	// ターンオーバーレイ/バナー（directionSelector・deckViewer・rewardScreen等の上に描画）
 	app.stage.addChild(turnOverlay.getContainer());
 	app.stage.addChild(turnBanner.getContainer());
@@ -227,6 +232,7 @@ async function initializeUIComponents(
 		floorBanner,
 		particleSystem,
 		victoryScreen,
+		statsScreen,
 		cameraDragController,
 		returnToPlayerButton,
 		debugCardRenderer,
