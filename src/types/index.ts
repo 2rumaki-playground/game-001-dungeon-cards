@@ -4,8 +4,7 @@
 
 export type { Card, CardType, DeckState, Rarity } from "./card";
 export type { Enemy, EnemyType, PendingSkillType, Player } from "./character";
-export type { Direction, Position } from "./direction";
-export { DIRECTION_DELTA } from "./direction";
+export { DIRECTION_DELTA, type Direction, type Position } from "./direction";
 export type {
 	ActionLogEntry,
 	GameState,
