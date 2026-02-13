@@ -619,11 +619,8 @@ export function setupEventHandlers(ctx: GameContext): void {
 			);
 			ctx.ui.turnEndButton.render(ctx.state.turn);
 
-			// 敵ターンバナー表示 + オーバーレイフェードイン（並列実行）
-			await Promise.all([
-				ctx.ui.turnBanner.showBanner("enemy"),
-				ctx.ui.turnOverlay.fadeIn(),
-			]);
+			// 敵ターンバナー表示
+			await ctx.ui.turnBanner.showBanner("enemy");
 
 			const enemiesBefore = next.enemies;
 			const { state: enemyTurnState, totalDamage } = executeEnemyTurn(next);
@@ -673,11 +670,8 @@ export function setupEventHandlers(ctx: GameContext): void {
 				);
 				ctx.ui.turnEndButton.render(ctx.state.turn);
 
-				// オーバーレイフェードアウト + プレイヤーターンバナー表示（並列実行）
-				await Promise.all([
-					ctx.ui.turnOverlay.fadeOut(),
-					ctx.ui.turnBanner.showBanner("player"),
-				]);
+				// プレイヤーターンバナー表示
+				await ctx.ui.turnBanner.showBanner("player");
 
 				render(ctx, true);
 
