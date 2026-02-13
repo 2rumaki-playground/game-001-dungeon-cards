@@ -14,6 +14,7 @@ import {
 } from "./bossSkill";
 import { applyDamageToPlayer, checkGameOver, isDefeated } from "./combat";
 import { getDebugCheats } from "./debugCheats";
+import { DIRECTION_LABEL } from "./enemyAiAnalysis";
 import { isInBounds } from "./map";
 import { bfsFirstStep } from "./pathfinding";
 import { isAdjacent, manhattanDistance } from "./positionUtils";
@@ -150,13 +151,6 @@ function moveEnemyByType(
 
 	return next;
 }
-
-const DIRECTION_LABEL: Record<Direction, string> = {
-	up: "上",
-	down: "下",
-	left: "左",
-	right: "右",
-};
 
 /** 敵ターン実行結果 */
 export type EnemyTurnResult = {

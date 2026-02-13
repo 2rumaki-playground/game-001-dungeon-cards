@@ -38,7 +38,7 @@ export type EnemyAiAnalysis = {
 
 const DIRECTIONS: Direction[] = ["up", "down", "left", "right"];
 
-const DIRECTION_LABEL: Record<Direction, string> = {
+export const DIRECTION_LABEL: Record<Direction, string> = {
 	up: "上",
 	down: "下",
 	left: "左",
