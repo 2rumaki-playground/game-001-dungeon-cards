@@ -168,12 +168,25 @@ function showRemoveCardSelection(
 		);
 		ctx.ui.rewardScreen.show();
 
+		let settled = false;
+		const cleanup = () => {
+			ctx.ui.rewardScreen.setOnRemoveCard(() => {});
+			ctx.ui.rewardScreen.setOnSkip(() => {});
+			ctx.ui.rewardScreen.hide();
+		};
+
 		ctx.ui.rewardScreen.setOnRemoveCard((cardId) => {
+			if (settled) return;
+			settled = true;
 			resolve(cardId);
+			cleanup();
 		});
 
 		ctx.ui.rewardScreen.setOnSkip(() => {
+			if (settled) return;
+			settled = true;
 			resolve(null);
+			cleanup();
 		});
 	});
 }
