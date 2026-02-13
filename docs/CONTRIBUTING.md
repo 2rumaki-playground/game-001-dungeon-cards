@@ -54,7 +54,9 @@ pnpm exec playwright install --with-deps chromium  # E2Eテスト用
 
 PR作成時にGitHub Pagesへプレビューサイトが自動デプロイされます。PRがクローズされると自動的に削除されます。
 
-**プレビューURL**: `https://2rumaki-playground.github.io/game-001-dungeon-cards-02/pr-preview/pr-<PR番号>/`
+**プレビューURL形式**: `https://<owner>.github.io/<repo>/pr-preview/pr-<PR番号>/`
+
+各PRの実際のプレビューURLはPRページに記載されます。
 
 #### 事前準備（リポジトリ設定）
 
