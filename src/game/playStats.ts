@@ -5,6 +5,7 @@
  * GameStateとは独立して統計を蓄積し、セッション終了時にPlaySessionとして返却する。
  */
 
+import { INITIAL_FLOOR } from "../constants";
 import type { CardType, DeathCause, PlayResult, PlaySession } from "../types";
 
 /** 進行中のセッションデータ（内部用） */
@@ -29,7 +30,7 @@ function generateId(): string {
  * セッション開始
  * @param initialFloor 開始時点の階層（デバッグ開始・途中再開時に指定）
  */
-export function startSession(initialFloor = 1): void {
+export function startSession(initialFloor = INITIAL_FLOOR): void {
 	currentSession = {
 		id: generateId(),
 		startedAt: Date.now(),
