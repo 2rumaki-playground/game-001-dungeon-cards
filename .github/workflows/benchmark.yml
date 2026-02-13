@@ -56,6 +56,9 @@ jobs:
           mv base-bench.json /tmp/base-bench.json
 
       # --- Head branch ---
+      - name: Clean build artifacts
+        run: rm -rf dist
+
       - name: Checkout head branch
         run: git checkout ${{ github.event.pull_request.head.sha }}
 
