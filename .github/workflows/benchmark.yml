@@ -47,7 +47,7 @@ jobs:
         run: bash scripts/measure-bundle.sh dist base-bundle.json
 
       - name: Run benchmarks (base)
-        run: pnpm bench:json 2>/dev/null || true
+        run: pnpm bench:json 2>bench-stderr.log || true
 
       - name: Save base results
         run: |
@@ -69,7 +69,7 @@ jobs:
         run: bash scripts/measure-bundle.sh dist head-bundle.json
 
       - name: Run benchmarks (head)
-        run: pnpm bench:json 2>/dev/null || true
+        run: pnpm bench:json 2>bench-stderr.log || true
 
       - name: Save head results
         run: cp bench-results.json head-bench.json 2>/dev/null || echo '{"files":[]}' > head-bench.json
