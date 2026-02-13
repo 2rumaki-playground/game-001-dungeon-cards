@@ -15,6 +15,7 @@ import { getEffectiveCardCost } from "./debugCheats";
 import { playCard } from "./deck";
 import { revealAtPosition } from "./fogOfWar";
 import { isInBounds } from "./map";
+import { recordCardUsage } from "./playStats";
 import { addActionLog, setDeck, setVisitedTiles, updatePlayer } from "./state";
 import { applyTileEffect } from "./tileEffect";
 
@@ -85,6 +86,7 @@ export function executeMove(
 ): MoveResult {
 	// AP消費 + カードを捨て札へ
 	let next = consumeApAndPlayCard(state, cardId, getEffectiveCardCost("move"));
+	recordCardUsage("move");
 
 	// 移動判定
 	if (!canMove(state, direction)) {
@@ -219,6 +221,7 @@ export function executeAttack(
 	cardId: string,
 	direction: Direction,
 ): AttackResult {
+	recordCardUsage("attack");
 	return executeAttackBase(
 		state,
 		cardId,
@@ -241,6 +244,7 @@ export function executeStrongAttack(
 	cardId: string,
 	direction: Direction,
 ): AttackResult {
+	recordCardUsage("strong_attack");
 	return executeAttackBase(
 		state,
 		cardId,
@@ -283,6 +287,7 @@ export function executeJump(
 
 	// AP消費 + カードを捨て札へ
 	let next = consumeApAndPlayCard(state, cardId, getEffectiveCardCost("jump"));
+	recordCardUsage("jump");
 
 	// 着地先（2マス先）の座標を計算
 	const landX = next.player.position.x + delta.x * JUMP_DISTANCE;
@@ -392,6 +397,7 @@ export function executeWait(state: GameState, cardId: string): GameState {
 		cardId,
 		getEffectiveCardCost("wait"),
 	);
+	recordCardUsage("wait");
 
 	return addActionLog(next, "待機した", "player");
 }

@@ -5,6 +5,7 @@
 
 import type { GameState } from "../types";
 import { getDebugCheats } from "./debugCheats";
+import { recordDamageDealt, recordDamageTaken } from "./playStats";
 import {
 	addActionLog,
 	addRemnant,
@@ -39,6 +40,8 @@ export function applyDamageToEnemy(
 		return state;
 	}
 
+	recordDamageDealt(damage);
+
 	let next = updateEnemy(state, enemyId, (e) => ({
 		...e,
 		hp: e.hp - damage,
@@ -72,6 +75,8 @@ export function applyDamageToPlayer(
 	damage: number,
 ): GameState {
 	if (import.meta.env.DEV && getDebugCheats().invincible) return state;
+
+	recordDamageTaken(damage);
 
 	let next = updatePlayer(state, (p) => ({
 		...p,

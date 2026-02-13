@@ -26,9 +26,11 @@ import {
 } from "../game";
 import { buildQueuedCardIndexMap, canEnqueueCard } from "../game/cardQueue";
 import { getEffectiveCardCost, resetDebugCheats } from "../game/debugCheats";
+import { endSession, startSession } from "../game/playStats";
 import type { GameContext } from "../gameContext";
 import type { Card, Direction, Position, SpecialTileType } from "../types";
 import { DIRECTION_DELTA } from "../types";
+import { savePlaySession } from "../utils/statsStorage";
 import { deleteSaveData, hasSaveData, loadGame } from "../utils/storage";
 import {
 	createHealParticleConfig,
@@ -163,6 +165,8 @@ async function handleMoveCardExecution(
 		}
 		if (gameOver) {
 			shouldContinueQueue(ctx, false, true);
+			const session = endSession("death", "trap");
+			if (session) savePlaySession(session);
 			deleteSaveData();
 			await ctx.ui.screenTransition.fadeTransition(() => {
 				updateState(ctx, next);
@@ -283,6 +287,8 @@ async function handleJumpCardExecution(
 		}
 		if (result.gameOver) {
 			shouldContinueQueue(ctx, false, true);
+			const session = endSession("death", "trap");
+			if (session) savePlaySession(session);
 			deleteSaveData();
 			await ctx.ui.screenTransition.fadeTransition(() => {
 				updateState(ctx, result.state);
@@ -433,6 +439,7 @@ export function setupEventHandlers(ctx: GameContext): void {
 	ctx.ui.titleScreen.setOnNewGame(async () => {
 		if (ctx.isAnimating) return;
 		ctx.isAnimating = true;
+		startSession();
 		try {
 			const newState = startNewGame(ctx.state);
 			await ctx.ui.screenTransition.fadeTransition(() => {
@@ -477,6 +484,7 @@ export function setupEventHandlers(ctx: GameContext): void {
 		const savedState = loadGame();
 		if (savedState) {
 			ctx.isAnimating = true;
+			startSession();
 			try {
 				await ctx.ui.screenTransition.fadeTransition(() => {
 					updateState(ctx, savedState);
@@ -572,6 +580,8 @@ export function setupEventHandlers(ctx: GameContext): void {
 								stairsPos,
 							);
 						} else if (result.gameOver) {
+							const session = endSession("death", "unknown");
+							if (session) savePlaySession(session);
 							deleteSaveData();
 							await ctx.ui.screenTransition.fadeTransition(() => {
 								updateState(ctx, result.state);
@@ -695,6 +705,8 @@ export function setupEventHandlers(ctx: GameContext): void {
 					next.deck.hand.length,
 				);
 			} else {
+				const session = endSession("death", "enemy_attack");
+				if (session) savePlaySession(session);
 				deleteSaveData();
 				await ctx.ui.screenTransition.fadeTransition(() => {
 					updateState(ctx, next);

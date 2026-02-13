@@ -19,9 +19,11 @@ import {
 	shouldTriggerCardRemoval,
 	transitionFloor,
 } from "../game";
+import { endSession } from "../game/playStats";
 import type { GameContext } from "../gameContext";
 import type { CardType, Direction, GameState, Position } from "../types";
 import { DIRECTION_DELTA } from "../types";
+import { savePlaySession } from "../utils/statsStorage";
 import { deleteSaveData, hasSaveData } from "../utils/storage";
 import { Easing, tweenValue } from "../utils/tween";
 import {
@@ -648,6 +650,8 @@ function showVictoryScreen(
 
 		ctx.ui.victoryScreen.setOnReturnToTitle(async () => {
 			cleanup();
+			const session = endSession("clear", null);
+			if (session) savePlaySession(session);
 			deleteSaveData();
 			await ctx.ui.screenTransition.fadeTransition(() => {
 				updateState(ctx, returnToTitle(ctx.state));
