@@ -95,6 +95,31 @@ describe("statsStorage", () => {
 			expect(loaded).toHaveLength(1);
 			expect(loaded[0].id).toBe("test-id");
 		});
+
+		it("deathCauseが不正な値の場合はフィルタリングされる", () => {
+			const invalid = createTestSession({
+				deathCause: "invalid" as never,
+			});
+			localStorageMock.setItem(
+				"dungeon-cards-stats",
+				JSON.stringify([invalid]),
+			);
+			expect(loadPlaySessions()).toHaveLength(0);
+		});
+
+		it("cardUsageが欠落している場合はフィルタリングされる", () => {
+			const session = createTestSession();
+			const raw = { ...session, cardUsage: null };
+			localStorageMock.setItem("dungeon-cards-stats", JSON.stringify([raw]));
+			expect(loadPlaySessions()).toHaveLength(0);
+		});
+
+		it("cardUsageの値が数値でない場合はフィルタリングされる", () => {
+			const session = createTestSession();
+			const raw = { ...session, cardUsage: { move: "not a number" } };
+			localStorageMock.setItem("dungeon-cards-stats", JSON.stringify([raw]));
+			expect(loadPlaySessions()).toHaveLength(0);
+		});
 	});
 
 	describe("savePlaySession", () => {

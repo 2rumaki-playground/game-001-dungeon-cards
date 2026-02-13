@@ -16,16 +16,46 @@ function isValidSession(value: unknown): value is PlaySession {
 		return false;
 	}
 	const s = value as Record<string, unknown>;
-	return (
-		typeof s.id === "string" &&
-		typeof s.startedAt === "number" &&
-		typeof s.endedAt === "number" &&
-		typeof s.maxFloor === "number" &&
-		(s.result === "clear" || s.result === "death") &&
-		typeof s.totalDamageDealt === "number" &&
-		typeof s.totalDamageTaken === "number" &&
-		typeof s.turnCount === "number"
-	);
+
+	if (
+		typeof s.id !== "string" ||
+		typeof s.startedAt !== "number" ||
+		typeof s.endedAt !== "number" ||
+		typeof s.maxFloor !== "number" ||
+		!(s.result === "clear" || s.result === "death") ||
+		typeof s.totalDamageDealt !== "number" ||
+		typeof s.totalDamageTaken !== "number" ||
+		typeof s.turnCount !== "number"
+	) {
+		return false;
+	}
+
+	const deathCause = s.deathCause;
+	if (
+		deathCause !== null &&
+		deathCause !== "enemy_attack" &&
+		deathCause !== "trap" &&
+		deathCause !== "unknown"
+	) {
+		return false;
+	}
+
+	const cardUsage = s.cardUsage as unknown;
+	if (
+		cardUsage == null ||
+		typeof cardUsage !== "object" ||
+		Array.isArray(cardUsage)
+	) {
+		return false;
+	}
+	for (const key of Object.keys(cardUsage as Record<string, unknown>)) {
+		const v = (cardUsage as Record<string, unknown>)[key];
+		if (typeof v !== "number") {
+			return false;
+		}
+	}
+
+	return true;
 }
 
 /**
