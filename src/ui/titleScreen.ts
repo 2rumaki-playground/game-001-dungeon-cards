@@ -40,6 +40,7 @@ export class TitleScreen {
 	private onNewGame: (() => void) | null = null;
 	private onContinue: (() => void) | null = null;
 	private onDebugStartFloor: ((floor: number) => void) | null = null;
+	private onStats: (() => void) | null = null;
 	private onDebugModeChange: ((enabled: boolean) => void) | null = null;
 	private debugModeEnabled = false;
 
@@ -76,6 +77,13 @@ export class TitleScreen {
 	 */
 	setOnContinue(callback: () => void): void {
 		this.onContinue = callback;
+	}
+
+	/**
+	 * 統計画面コールバックを設定
+	 */
+	setOnStats(callback: () => void): void {
+		this.onStats = callback;
 	}
 
 	/**
@@ -178,6 +186,28 @@ export class TitleScreen {
 			},
 		);
 
+		// 統計ボタン
+		const statsButton = this.createButton(
+			"統計",
+			screenWidth / 2,
+			centerY + (BUTTON_HEIGHT + BUTTON_GAP) * 2,
+			true,
+			() => this.onStats?.(),
+		);
+		statsButton.alpha = 0;
+		this.container.addChild(statsButton);
+
+		// 統計ボタン フェードイン
+		tween(
+			statsButton,
+			{ alpha: 1 },
+			{
+				duration: INTRO_TIMING.buttonDuration,
+				delay: getButtonDelay(2),
+				easing: Easing.easeOut,
+			},
+		);
+
 		// DEV環境限定: 階層指定開始UI
 		if (import.meta.env.DEV && this.onDebugStartFloor) {
 			const currentVersion = this.renderVersion;
@@ -186,7 +216,7 @@ export class TitleScreen {
 					if (this.renderVersion !== currentVersion) return;
 					const debugContainer = createDebugFloorUI(
 						screenWidth / 2,
-						centerY + (BUTTON_HEIGHT + BUTTON_GAP) * 2,
+						centerY + (BUTTON_HEIGHT + BUTTON_GAP) * 3,
 						(floor: number) => this.onDebugStartFloor?.(floor),
 					);
 					debugContainer.alpha = 0;
@@ -197,7 +227,7 @@ export class TitleScreen {
 						{ alpha: 1 },
 						{
 							duration: INTRO_TIMING.buttonDuration,
-							delay: getButtonDelay(2),
+							delay: getButtonDelay(3),
 							easing: Easing.easeOut,
 						},
 					);
@@ -215,7 +245,7 @@ export class TitleScreen {
 					if (this.renderVersion !== currentVersionForToggle) return;
 					const toggleContainer = createDebugModeToggle(
 						screenWidth / 2,
-						centerY + (BUTTON_HEIGHT + BUTTON_GAP) * 3 + 16,
+						centerY + (BUTTON_HEIGHT + BUTTON_GAP) * 4 + 16,
 						this.debugModeEnabled,
 						(enabled: boolean) => {
 							this.debugModeEnabled = enabled;
@@ -230,7 +260,7 @@ export class TitleScreen {
 						{ alpha: 1 },
 						{
 							duration: INTRO_TIMING.buttonDuration,
-							delay: getButtonDelay(3),
+							delay: getButtonDelay(4),
 							easing: Easing.easeOut,
 						},
 					);
