@@ -8,7 +8,7 @@
 $![git remote get-url origin | sed 's|.*github.com[:/]||;s|\.git$||']
 ```
 
-> **重要**: フォーク構成のリポジトリでは `gh` がフォーク元を参照するため、以降の `gh issue` / `gh pr` コマンドには必ず `--repo <上記のリポジトリ>` を付与すること。
+> **重要**: フォーク構成のリポジトリでは `gh` がフォーク元を参照するため、以降の `gh issue` / `gh pr` コマンドには必ず `--repo {owner}/{repo}` を付与すること。以降のコマンドで `{owner}/{repo}` と表記している箇所を上記の値で置き換えること。
 
 ### オープンIssue一覧
 
@@ -37,7 +37,7 @@ $![gh issue list --repo "$(git remote get-url origin | sed 's|.*github.com[:/]||
 
 ### P-1. 事前準備
 
-1. 各Issueの詳細を `gh issue view <番号> --repo <対象リポジトリ>` で取得し、内容を把握する
+1. 各Issueの詳細を `gh issue view <番号> --repo {owner}/{repo}` で取得し、内容を把握する
 2. 対応方針の一覧をユーザーに提示し、承認を得る
 
 ### P-2. チームの作成
@@ -113,7 +113,7 @@ git worktree add /tmp/wt-issue-<番号> <ブランチ名>
 5. **push**: `git -C /tmp/wt-issue-<番号> push -u origin <ブランチ名>`
 6. **PR作成**（worktreeディレクトリで実行すること）:
    ```
-   cd /tmp/wt-issue-<番号> && gh pr create --repo <対象リポジトリ> --base main --head <ブランチ名> --title "<type>: <日本語の説明>" --body "$(cat <<'EOF'
+   cd /tmp/wt-issue-<番号> && gh pr create --repo {owner}/{repo} --base main --head <ブランチ名> --title "<type>: <日本語の説明>" --body "$(cat <<'EOF'
    ## 概要
    <変更内容の箇条書き>
 
@@ -159,7 +159,7 @@ git worktree add /tmp/wt-issue-<番号> <ブランチ名>
 
 ### 2. Issue詳細の取得
 
-`gh issue view <番号> --repo <対象リポジトリ>` を実行し、Issueの内容を把握してください。
+`gh issue view <番号> --repo {owner}/{repo}` を実行し、Issueの内容を把握してください。
 
 ### 3. ブランチの作成
 
@@ -212,7 +212,7 @@ Issue の内容に従い、TDD（テスト駆動開発）で実装を行って�
 以下の形式でPRを作成してください:
 
 ```
-gh pr create --repo <対象リポジトリ> --base main --title "<type>: <日本語の説明>" --body "$(cat <<'EOF'
+gh pr create --repo {owner}/{repo} --base main --title "<type>: <日本語の説明>" --body "$(cat <<'EOF'
 ## 概要
 <変更内容の箇条書き>
 
