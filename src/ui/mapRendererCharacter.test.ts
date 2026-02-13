@@ -2,66 +2,17 @@
  * マップレンダラーのテスト（キャラクター描画・撃破アニメーション）
  */
 
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import { createTickerMock } from "../test-utils/mockPixi";
-import { createTweenMock, mockEasing } from "../test-utils/mockTween";
+import { describe, expect, it } from "vitest";
+import {
+	createRendererTestMap,
+	tickerMock,
+} from "../test-utils/mapRendererTestSetup";
 import { MapRenderer } from "./mapRenderer";
-
-vi.mock("../utils/tween", () => ({
-	Easing: mockEasing,
-	tween: createTweenMock(),
-}));
-
-const tickerMock = createTickerMock();
-vi.mock("pixi.js", async () => {
-	const actual = await vi.importActual<typeof import("pixi.js")>("pixi.js");
-	return {
-		...actual,
-		Ticker: {
-			shared: {
-				add: (fn: (tick: { deltaMS: number }) => void) =>
-					tickerMock.shared.add(fn),
-				remove: (fn: (tick: { deltaMS: number }) => void) =>
-					tickerMock.shared.remove(fn),
-			},
-		},
-	};
-});
-
-// assetLoader をモック化（ダミーテクスチャを返す）
-vi.mock("./assetLoader", async () => {
-	const pixi = await vi.importActual<typeof import("pixi.js")>("pixi.js");
-	const dummyTexture = pixi.Texture.WHITE;
-	return {
-		getTileTexture: () => dummyTexture,
-		getPlayerTexture: () => dummyTexture,
-		getEnemyTexture: () => dummyTexture,
-	};
-});
-
-beforeEach(() => {
-	tickerMock.reset();
-});
-
-/**
- * テスト用のマップ状態を作成
- */
-function createTestMap() {
-	const map = [];
-	for (let y = 0; y < 5; y++) {
-		const row = [];
-		for (let x = 0; x < 5; x++) {
-			row.push({ type: "floor" as const });
-		}
-		map.push(row);
-	}
-	return map;
-}
 
 describe("MapRenderer タイプ別敵描画", () => {
 	it("Normal敵が描画できる", async () => {
 		const renderer = new MapRenderer();
-		const map = createTestMap();
+		const map = createRendererTestMap();
 		const enemies = [
 			{
 				id: "e-normal",
@@ -87,7 +38,7 @@ describe("MapRenderer タイプ別敵描画", () => {
 
 	it("Heavy敵が描画できる", async () => {
 		const renderer = new MapRenderer();
-		const map = createTestMap();
+		const map = createRendererTestMap();
 		const enemies = [
 			{
 				id: "e-heavy",
@@ -113,7 +64,7 @@ describe("MapRenderer タイプ別敵描画", () => {
 
 	it("Scout敵が描画できる", async () => {
 		const renderer = new MapRenderer();
-		const map = createTestMap();
+		const map = createRendererTestMap();
 		const enemies = [
 			{
 				id: "e-scout",
@@ -139,7 +90,7 @@ describe("MapRenderer タイプ別敵描画", () => {
 
 	it("Miniboss敵が描画できる", async () => {
 		const renderer = new MapRenderer();
-		const map = createTestMap();
+		const map = createRendererTestMap();
 		const enemies = [
 			{
 				id: "e-miniboss",
@@ -166,7 +117,7 @@ describe("MapRenderer タイプ別敵描画", () => {
 
 	it("Boss敵が描画できる", async () => {
 		const renderer = new MapRenderer();
-		const map = createTestMap();
+		const map = createRendererTestMap();
 		const enemies = [
 			{
 				id: "e-boss",
@@ -193,7 +144,7 @@ describe("MapRenderer タイプ別敵描画", () => {
 
 	it("全タイプの敵が同時に描画できる", async () => {
 		const renderer = new MapRenderer();
-		const map = createTestMap();
+		const map = createRendererTestMap();
 		const enemies = [
 			{
 				id: "e-normal",
@@ -248,7 +199,7 @@ describe("MapRenderer タイプ別敵描画", () => {
 
 	it("Heavy敵の撃破アニメーションが正常に完了する", async () => {
 		const renderer = new MapRenderer();
-		const map = createTestMap();
+		const map = createRendererTestMap();
 		const enemies = [
 			{
 				id: "e-heavy",
@@ -274,7 +225,7 @@ describe("MapRenderer タイプ別敵描画", () => {
 
 	it("Scout敵の攻撃ヒットアニメーションが正常に完了する", async () => {
 		const renderer = new MapRenderer();
-		const map = createTestMap();
+		const map = createRendererTestMap();
 		const enemies = [
 			{
 				id: "e-scout",
@@ -302,7 +253,7 @@ describe("MapRenderer タイプ別敵描画", () => {
 describe("MapRenderer 敵撃破アニメーション", () => {
 	it("animateEnemyDefeatが正常に完了する", async () => {
 		const renderer = new MapRenderer();
-		const map = createTestMap();
+		const map = createRendererTestMap();
 		const enemies = [
 			{
 				id: "e1",
@@ -326,7 +277,7 @@ describe("MapRenderer 敵撃破アニメーション", () => {
 
 	it("撃破アニメーション完了後に敵コンテナが削除される", async () => {
 		const renderer = new MapRenderer();
-		const map = createTestMap();
+		const map = createRendererTestMap();
 		const enemies = [
 			{
 				id: "e1",
@@ -358,7 +309,7 @@ describe("MapRenderer 敵撃破アニメーション", () => {
 
 	it("Miniboss敵の撃破アニメーション完了後にコンテナごと削除される", async () => {
 		const renderer = new MapRenderer();
-		const map = createTestMap();
+		const map = createRendererTestMap();
 		const enemies = [
 			{
 				id: "e-miniboss",
@@ -389,7 +340,7 @@ describe("MapRenderer 敵撃破アニメーション", () => {
 
 	it("存在しない敵IDでanimateEnemyDefeatを呼んでもエラーにならない", async () => {
 		const renderer = new MapRenderer();
-		const map = createTestMap();
+		const map = createRendererTestMap();
 		const player = {
 			position: { x: 0, y: 0 },
 			hp: 10,

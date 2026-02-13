@@ -3,66 +3,14 @@
  */
 
 import { type FederatedPointerEvent, Graphics } from "pixi.js";
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import { createTickerMock } from "../test-utils/mockPixi";
-import { createTweenMock, mockEasing } from "../test-utils/mockTween";
+import { describe, expect, it, vi } from "vitest";
+import { createRendererTestMap } from "../test-utils/mapRendererTestSetup";
 import { MapRenderer } from "./mapRenderer";
-
-vi.mock("../utils/tween", () => ({
-	Easing: mockEasing,
-	tween: createTweenMock(),
-}));
-
-const tickerMock = createTickerMock();
-vi.mock("pixi.js", async () => {
-	const actual = await vi.importActual<typeof import("pixi.js")>("pixi.js");
-	return {
-		...actual,
-		Ticker: {
-			shared: {
-				add: (fn: (tick: { deltaMS: number }) => void) =>
-					tickerMock.shared.add(fn),
-				remove: (fn: (tick: { deltaMS: number }) => void) =>
-					tickerMock.shared.remove(fn),
-			},
-		},
-	};
-});
-
-// assetLoader をモック化（ダミーテクスチャを返す）
-vi.mock("./assetLoader", async () => {
-	const pixi = await vi.importActual<typeof import("pixi.js")>("pixi.js");
-	const dummyTexture = pixi.Texture.WHITE;
-	return {
-		getTileTexture: () => dummyTexture,
-		getPlayerTexture: () => dummyTexture,
-		getEnemyTexture: () => dummyTexture,
-	};
-});
-
-beforeEach(() => {
-	tickerMock.reset();
-});
-
-/**
- * テスト用のマップ状態を作成
- */
-function createTestMap() {
-	const map = [];
-	for (let y = 0; y < 5; y++) {
-		const row = [];
-		for (let x = 0; x < 5; x++) {
-			row.push({ type: "floor" as const });
-		}
-		map.push(row);
-	}
-	return map;
-}
 
 describe("MapRenderer HPバー", () => {
 	it("miniboss敵のコンテナにHPバーが含まれる", () => {
 		const renderer = new MapRenderer();
-		const map = createTestMap();
+		const map = createRendererTestMap();
 		const enemies = [
 			{
 				id: "e-miniboss",
@@ -92,7 +40,7 @@ describe("MapRenderer HPバー", () => {
 
 	it("boss敵のコンテナにHPバーが含まれる", () => {
 		const renderer = new MapRenderer();
-		const map = createTestMap();
+		const map = createRendererTestMap();
 		const enemies = [
 			{
 				id: "e-boss",
@@ -121,7 +69,7 @@ describe("MapRenderer HPバー", () => {
 
 	it("normal敵のコンテナにもHPバーが含まれる", () => {
 		const renderer = new MapRenderer();
-		const map = createTestMap();
+		const map = createRendererTestMap();
 		const enemies = [
 			{
 				id: "e-normal",
@@ -150,7 +98,7 @@ describe("MapRenderer HPバー", () => {
 
 	it("heavy敵のコンテナにもHPバーが含まれる", () => {
 		const renderer = new MapRenderer();
-		const map = createTestMap();
+		const map = createRendererTestMap();
 		const enemies = [
 			{
 				id: "e-heavy",
@@ -179,7 +127,7 @@ describe("MapRenderer HPバー", () => {
 
 	it("scout敵のコンテナにもHPバーが含まれる", () => {
 		const renderer = new MapRenderer();
-		const map = createTestMap();
+		const map = createRendererTestMap();
 		const enemies = [
 			{
 				id: "e-scout",
@@ -208,7 +156,7 @@ describe("MapRenderer HPバー", () => {
 
 	it("HP減少が通常敵のHPバーに反映される", () => {
 		const renderer = new MapRenderer();
-		const map = createTestMap();
+		const map = createRendererTestMap();
 		const player = {
 			position: { x: 0, y: 0 },
 			hp: 10,
@@ -266,7 +214,7 @@ describe("MapRenderer HPバー", () => {
 
 	it("clear後にコンテナがクリアされる", () => {
 		const renderer = new MapRenderer();
-		const map = createTestMap();
+		const map = createRendererTestMap();
 		const enemies = [
 			{
 				id: "e-boss",
@@ -295,7 +243,7 @@ describe("MapRenderer HPバー", () => {
 describe("MapRenderer 敵ホバーツールチップ", () => {
 	it("敵コンテナのeventModeがstaticに設定される", () => {
 		const renderer = new MapRenderer();
-		const map = createTestMap();
+		const map = createRendererTestMap();
 		const enemies = [
 			{
 				id: "e1",
@@ -322,7 +270,7 @@ describe("MapRenderer 敵ホバーツールチップ", () => {
 
 	it("敵コンテナにpointerover/pointeroutリスナーが登録される", () => {
 		const renderer = new MapRenderer();
-		const map = createTestMap();
+		const map = createRendererTestMap();
 		const enemies = [
 			{
 				id: "e1",
@@ -350,7 +298,7 @@ describe("MapRenderer 敵ホバーツールチップ", () => {
 
 	it("pointeroverでツールチップが表示されpointeroutで非表示になる", () => {
 		const renderer = new MapRenderer();
-		const map = createTestMap();
+		const map = createRendererTestMap();
 		const enemies = [
 			{
 				id: "e1",

@@ -2,66 +2,17 @@
  * マップレンダラーのテスト（ポップアップ・エフェクト）
  */
 
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import { createTickerMock } from "../test-utils/mockPixi";
-import { createTweenMock, mockEasing } from "../test-utils/mockTween";
+import { describe, expect, it } from "vitest";
+import {
+	createRendererTestMap,
+	tickerMock,
+} from "../test-utils/mapRendererTestSetup";
 import { MapRenderer } from "./mapRenderer";
-
-vi.mock("../utils/tween", () => ({
-	Easing: mockEasing,
-	tween: createTweenMock(),
-}));
-
-const tickerMock = createTickerMock();
-vi.mock("pixi.js", async () => {
-	const actual = await vi.importActual<typeof import("pixi.js")>("pixi.js");
-	return {
-		...actual,
-		Ticker: {
-			shared: {
-				add: (fn: (tick: { deltaMS: number }) => void) =>
-					tickerMock.shared.add(fn),
-				remove: (fn: (tick: { deltaMS: number }) => void) =>
-					tickerMock.shared.remove(fn),
-			},
-		},
-	};
-});
-
-// assetLoader をモック化（ダミーテクスチャを返す）
-vi.mock("./assetLoader", async () => {
-	const pixi = await vi.importActual<typeof import("pixi.js")>("pixi.js");
-	const dummyTexture = pixi.Texture.WHITE;
-	return {
-		getTileTexture: () => dummyTexture,
-		getPlayerTexture: () => dummyTexture,
-		getEnemyTexture: () => dummyTexture,
-	};
-});
-
-beforeEach(() => {
-	tickerMock.reset();
-});
-
-/**
- * テスト用のマップ状態を作成
- */
-function createTestMap() {
-	const map = [];
-	for (let y = 0; y < 5; y++) {
-		const row = [];
-		for (let x = 0; x < 5; x++) {
-			row.push({ type: "floor" as const });
-		}
-		map.push(row);
-	}
-	return map;
-}
 
 describe("MapRenderer ダメージ/タイル効果ポップアップ", () => {
 	it("animateDamagePopupが正常に完了する", async () => {
 		const renderer = new MapRenderer();
-		const map = createTestMap();
+		const map = createRendererTestMap();
 		const player = {
 			position: { x: 0, y: 0 },
 			hp: 10,
@@ -78,7 +29,7 @@ describe("MapRenderer ダメージ/タイル効果ポップアップ", () => {
 
 	it("回復ポップアップが正常に完了する", async () => {
 		const renderer = new MapRenderer();
-		const map = createTestMap();
+		const map = createRendererTestMap();
 		const player = {
 			position: { x: 0, y: 0 },
 			hp: 10,
@@ -95,7 +46,7 @@ describe("MapRenderer ダメージ/タイル効果ポップアップ", () => {
 
 	it("トラップダメージポップアップが正常に完了する", async () => {
 		const renderer = new MapRenderer();
-		const map = createTestMap();
+		const map = createRendererTestMap();
 		const player = {
 			position: { x: 0, y: 0 },
 			hp: 10,
@@ -112,7 +63,7 @@ describe("MapRenderer ダメージ/タイル効果ポップアップ", () => {
 
 	it("animateTileEffectPopupが罠タイプで正常に完了する", async () => {
 		const renderer = new MapRenderer();
-		const map = createTestMap();
+		const map = createRendererTestMap();
 		const player = {
 			position: { x: 2, y: 2 },
 			hp: 10,
@@ -129,7 +80,7 @@ describe("MapRenderer ダメージ/タイル効果ポップアップ", () => {
 
 	it("animateTileEffectPopupが宝箱タイプで正常に完了する", async () => {
 		const renderer = new MapRenderer();
-		const map = createTestMap();
+		const map = createRendererTestMap();
 		const player = {
 			position: { x: 2, y: 2 },
 			hp: 10,
@@ -146,7 +97,7 @@ describe("MapRenderer ダメージ/タイル効果ポップアップ", () => {
 
 	it("animateTileEffectPopupが休憩所タイプで正常に完了する", async () => {
 		const renderer = new MapRenderer();
-		const map = createTestMap();
+		const map = createRendererTestMap();
 		const player = {
 			position: { x: 2, y: 2 },
 			hp: 10,
@@ -163,7 +114,7 @@ describe("MapRenderer ダメージ/タイル効果ポップアップ", () => {
 
 	it("ポップアップ完了後にTextが破棄されている", async () => {
 		const renderer = new MapRenderer();
-		const map = createTestMap();
+		const map = createRendererTestMap();
 		const player = {
 			position: { x: 0, y: 0 },
 			hp: 10,
@@ -184,7 +135,7 @@ describe("MapRenderer ダメージ/タイル効果ポップアップ", () => {
 
 	it("animateAttackHitでダメージポップアップも表示される", async () => {
 		const renderer = new MapRenderer();
-		const map = createTestMap();
+		const map = createRendererTestMap();
 		const enemies = [
 			{
 				id: "e1",
@@ -211,7 +162,7 @@ describe("MapRenderer ダメージ/タイル効果ポップアップ", () => {
 
 	it("animateEnemyAttackHitでダメージポップアップも表示される", async () => {
 		const renderer = new MapRenderer();
-		const map = createTestMap();
+		const map = createRendererTestMap();
 		const player = {
 			position: { x: 0, y: 0 },
 			hp: 10,
@@ -231,7 +182,7 @@ describe("MapRenderer ダメージ/タイル効果ポップアップ", () => {
 describe("MapRenderer 攻撃エフェクト", () => {
 	it("animateAttackHitが正常に完了する", async () => {
 		const renderer = new MapRenderer();
-		const map = createTestMap();
+		const map = createRendererTestMap();
 		const enemies = [
 			{
 				id: "e1",
@@ -258,7 +209,7 @@ describe("MapRenderer 攻撃エフェクト", () => {
 
 	it("存在しない敵IDでanimateAttackHitを呼んでも正常に完了する", async () => {
 		const renderer = new MapRenderer();
-		const map = createTestMap();
+		const map = createRendererTestMap();
 		const player = {
 			position: { x: 0, y: 0 },
 			hp: 10,
@@ -275,7 +226,7 @@ describe("MapRenderer 攻撃エフェクト", () => {
 
 	it("animateEnemyAttackHitが正常に完了する", async () => {
 		const renderer = new MapRenderer();
-		const map = createTestMap();
+		const map = createRendererTestMap();
 		const player = {
 			position: { x: 0, y: 0 },
 			hp: 10,
@@ -293,7 +244,7 @@ describe("MapRenderer 攻撃エフェクト", () => {
 
 	it("animateEnemyAttackHit完了後にプレイヤーのalphaが1に戻る", async () => {
 		const renderer = new MapRenderer();
-		const map = createTestMap();
+		const map = createRendererTestMap();
 		const player = {
 			position: { x: 0, y: 0 },
 			hp: 10,
@@ -315,7 +266,7 @@ describe("MapRenderer 攻撃エフェクト", () => {
 
 	it("animateAttackHit完了後にコンテナの座標が元に戻る", async () => {
 		const renderer = new MapRenderer();
-		const map = createTestMap();
+		const map = createRendererTestMap();
 		const enemies = [
 			{
 				id: "e1",
@@ -351,7 +302,7 @@ describe("MapRenderer 攻撃エフェクト", () => {
 describe("MapRenderer MISSポップアップ", () => {
 	it("animateMissPopupが正常に完了する", async () => {
 		const renderer = new MapRenderer();
-		const map = createTestMap();
+		const map = createRendererTestMap();
 		const player = {
 			position: { x: 0, y: 0 },
 			hp: 10,
@@ -368,7 +319,7 @@ describe("MapRenderer MISSポップアップ", () => {
 
 	it("ポップアップ完了後にTextがcontainerから除去・破棄されている", async () => {
 		const renderer = new MapRenderer();
-		const map = createTestMap();
+		const map = createRendererTestMap();
 		const player = {
 			position: { x: 0, y: 0 },
 			hp: 10,

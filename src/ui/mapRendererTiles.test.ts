@@ -3,66 +3,14 @@
  */
 
 import { Graphics } from "pixi.js";
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import { createTickerMock } from "../test-utils/mockPixi";
-import { createTweenMock, mockEasing } from "../test-utils/mockTween";
+import { describe, expect, it, vi } from "vitest";
+import { createRendererTestMap } from "../test-utils/mapRendererTestSetup";
 import { MapRenderer } from "./mapRenderer";
-
-vi.mock("../utils/tween", () => ({
-	Easing: mockEasing,
-	tween: createTweenMock(),
-}));
-
-const tickerMock = createTickerMock();
-vi.mock("pixi.js", async () => {
-	const actual = await vi.importActual<typeof import("pixi.js")>("pixi.js");
-	return {
-		...actual,
-		Ticker: {
-			shared: {
-				add: (fn: (tick: { deltaMS: number }) => void) =>
-					tickerMock.shared.add(fn),
-				remove: (fn: (tick: { deltaMS: number }) => void) =>
-					tickerMock.shared.remove(fn),
-			},
-		},
-	};
-});
-
-// assetLoader をモック化（ダミーテクスチャを返す）
-vi.mock("./assetLoader", async () => {
-	const pixi = await vi.importActual<typeof import("pixi.js")>("pixi.js");
-	const dummyTexture = pixi.Texture.WHITE;
-	return {
-		getTileTexture: () => dummyTexture,
-		getPlayerTexture: () => dummyTexture,
-		getEnemyTexture: () => dummyTexture,
-	};
-});
-
-beforeEach(() => {
-	tickerMock.reset();
-});
-
-/**
- * テスト用のマップ状態を作成
- */
-function createTestMap() {
-	const map = [];
-	for (let y = 0; y < 5; y++) {
-		const row = [];
-		for (let x = 0; x < 5; x++) {
-			row.push({ type: "floor" as const });
-		}
-		map.push(row);
-	}
-	return map;
-}
 
 describe("MapRenderer タイルスプライト描画", () => {
 	it("マップのタイル数と同じスプライトが生成される", () => {
 		const renderer = new MapRenderer();
-		const map = createTestMap(); // 5x5
+		const map = createRendererTestMap(); // 5x5
 		renderer.renderMap(map);
 
 		const container = renderer.getContainer();
@@ -95,7 +43,7 @@ describe("MapRenderer タイルスプライト描画", () => {
 
 	it("同一map参照で再呼び出しするとSprite再生成がスキップされる", () => {
 		const renderer = new MapRenderer();
-		const map = createTestMap();
+		const map = createRendererTestMap();
 		renderer.renderMap(map);
 
 		const container = renderer.getContainer();
@@ -115,7 +63,7 @@ describe("MapRenderer タイルスプライト描画", () => {
 	it("renderMapを再呼び出しすると前のスプライトがクリアされる", () => {
 		const renderer = new MapRenderer();
 		const map1 = [[{ type: "floor" as const }]]; // 1x1
-		const map2 = createTestMap(); // 5x5
+		const map2 = createRendererTestMap(); // 5x5
 
 		renderer.renderMap(map1);
 		const container = renderer.getContainer();
@@ -139,7 +87,7 @@ describe("MapRenderer Fog of War", () => {
 	describe("renderEnemies with visitedTiles", () => {
 		it("訪問済みタイル上の敵は表示される", () => {
 			const renderer = new MapRenderer();
-			const map = createTestMap();
+			const map = createRendererTestMap();
 			const enemies = [
 				{
 					id: "e1",
@@ -159,7 +107,7 @@ describe("MapRenderer Fog of War", () => {
 
 		it("未訪問タイル上の敵は描画されない", () => {
 			const renderer = new MapRenderer();
-			const map = createTestMap();
+			const map = createRendererTestMap();
 			const enemies = [
 				{
 					id: "e1",
@@ -180,7 +128,7 @@ describe("MapRenderer Fog of War", () => {
 
 		it("visitedTiles未指定時は全敵が表示される（後方互換）", () => {
 			const renderer = new MapRenderer();
-			const map = createTestMap();
+			const map = createRendererTestMap();
 			const enemies = [
 				{
 					id: "e1",
@@ -250,7 +198,7 @@ describe("MapRenderer Fog of War", () => {
 
 		it("visitedTiles未指定時はfogGraphicsがクリアされる", () => {
 			const renderer = new MapRenderer();
-			const map = createTestMap();
+			const map = createRendererTestMap();
 
 			const fillSpy = vi.spyOn(Graphics.prototype, "fill");
 
