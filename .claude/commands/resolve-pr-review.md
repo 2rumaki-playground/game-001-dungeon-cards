@@ -12,7 +12,7 @@
 owner/repo名は **`origin` リモートのURL** から取得する（`gh repo view` は fork 構成で `upstream` を返す場合があるため）:
 
 ```
-git remote get-url origin | sed -E 's#.+github\.com[:/]([^/]+/[^/.]+)(\.git)?$#\1#'
+git remote get-url origin | sed -E 's/\.git$//; s#.+github\.com[:/]##'
 ```
 
 この出力（例: `2rumaki-playground/game-001-dungeon-cards-02`）をもとに、`/` で分割して以降のコマンドで `{owner}` `{repo}` と表記している箇所を置き換えること。
