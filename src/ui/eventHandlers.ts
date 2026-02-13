@@ -39,7 +39,7 @@ import {
 	calculateCameraOffset,
 	clampCameraOffset,
 	getViewportPixelSize,
-	gridToCenterPixel,
+	gridToParticlePosition,
 } from "./coordinates";
 import { detectEnemyMoves } from "./enemyMoveDetector";
 import {
@@ -84,11 +84,11 @@ async function showTileEffectPopup(
 
 	if (amount <= 0) return;
 
-	const mapCenter = gridToCenterPixel(gridPos);
-	const globalCenter = ctx.ui.mapRenderer.getContainer().toGlobal(mapCenter);
-	const particleOrigin = ctx.ui.particleSystem
-		.getContainer()
-		.toLocal(globalCenter);
+	const particleOrigin = gridToParticlePosition(
+		gridPos,
+		ctx.ui.mapRenderer.getContainer(),
+		ctx.ui.particleSystem.getContainer(),
+	);
 	const particleConfig =
 		tileType === "trap"
 			? createTrapDamageParticleConfig(particleOrigin)
@@ -227,7 +227,11 @@ function emitJumpParticles(
 	originPos: Position,
 	moveAngle: number,
 ): void {
-	const center = gridToCenterPixel(originPos);
+	const center = gridToParticlePosition(
+		originPos,
+		ctx.ui.mapRenderer.getContainer(),
+		ctx.ui.particleSystem.getContainer(),
+	);
 	ctx.ui.particleSystem.emit(createJumpParticleConfig(center, moveAngle));
 }
 

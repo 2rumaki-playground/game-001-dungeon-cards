@@ -17,7 +17,7 @@ import {
 	createDefeatParticleConfig,
 	getAttackParticleConfig,
 } from "./battleParticles";
-import { getViewportPixelSize, gridToCenterPixel } from "./coordinates";
+import { getViewportPixelSize, gridToParticlePosition } from "./coordinates";
 import { applyState, render } from "./gameRenderer";
 import { HAND_AREA_HEIGHT } from "./layout";
 
@@ -209,7 +209,11 @@ export async function updateStateWithAttackAnimation(
 
 		// カードタイプ別パーティクル
 		if (hitEnemy) {
-			const center = gridToCenterPixel(hitEnemy.position);
+			const center = gridToParticlePosition(
+				hitEnemy.position,
+				ctx.ui.mapRenderer.getContainer(),
+				ctx.ui.particleSystem.getContainer(),
+			);
 			hitAnimations.push(
 				ctx.ui.particleSystem.emit(getAttackParticleConfig(cardType, center)),
 			);
@@ -223,7 +227,11 @@ export async function updateStateWithAttackAnimation(
 				ctx.ui.mapRenderer.animateEnemyDefeat(hitEnemyId),
 			];
 			if (hitEnemy) {
-				const center = gridToCenterPixel(hitEnemy.position);
+				const center = gridToParticlePosition(
+					hitEnemy.position,
+					ctx.ui.mapRenderer.getContainer(),
+					ctx.ui.particleSystem.getContainer(),
+				);
 				defeatAnimations.push(
 					ctx.ui.particleSystem.emit(createDefeatParticleConfig(center)),
 				);
