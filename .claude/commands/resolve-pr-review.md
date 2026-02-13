@@ -7,17 +7,13 @@
 - 引数にPR番号が指定されていればそのPRを対象とする（スペース区切りで複数指定可能）
 - 引数が空の場合は、現在のブランチに紐づく最新のPRを対象とする
 
-### リポジトリ情報の取得
-
-owner/repo名は **`origin` リモートのURL** から取得する（`gh repo view` は fork 構成で `upstream` を返す場合があるため）:
+### 対象リポジトリ（origin）
 
 ```
-git remote get-url origin | sed -E 's/\.git$//; s#.+github\.com[:/]##'
+$![git remote get-url origin | sed 's|.*github.com[:/]||;s|\.git$||']
 ```
 
-この出力（例: `2rumaki-playground/game-001-dungeon-cards-02`）をもとに、`/` で分割して以降のコマンドで `{owner}` `{repo}` と表記している箇所を置き換えること。
-
-> **重要**: フォーク構成のリポジトリでは `gh` がフォーク元を参照するため、以降の `gh pr` コマンドにも必ず `--repo {owner}/{repo}` を付与すること。
+> **重要**: フォーク構成のリポジトリでは `gh` がフォーク元を参照するため、以降の `gh pr` コマンドにも必ず `--repo {owner}/{repo}` を付与すること。以降のコマンドで `{owner}/{repo}` と表記している箇所を上記の値で置き換えること。GraphQL APIの `owner` `repo` にはそれぞれ `/` で分割した値を使用すること。
 
 ## 指示
 
