@@ -3,13 +3,16 @@ import { visualizer } from "rollup-plugin-visualizer";
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
-	plugins: [
-		visualizer({
-			filename: "dist/stats.html",
-			gzipSize: true,
-			brotliSize: true,
-		}),
-	],
+	plugins: process.env.ANALYZE
+		? [
+				visualizer({
+					filename: "stats.html",
+					emitFile: true,
+					gzipSize: true,
+					brotliSize: true,
+				}),
+			]
+		: [],
 	server: {
 		port: 3000,
 	},
