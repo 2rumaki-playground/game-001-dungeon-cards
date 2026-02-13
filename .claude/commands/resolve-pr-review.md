@@ -15,7 +15,7 @@ owner/repo名は以下で取得する:
 gh repo view --json owner,name -q '(.owner.login) + "/" + .name'
 ```
 
-この出力（例: `2rumaki-playground/game-001-dungeon-cards`）をもとに、以降のコマンドで `{owner}` `{repo}` と表記している箇所を置き換えること。
+この出力（例: `2rumaki-playground/game-001-dungeon-cards-02`）をもとに、以降のコマンドで `{owner}` `{repo}` と表記している箇所を置き換えること。
 
 ## 指示
 
