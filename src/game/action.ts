@@ -12,6 +12,7 @@ import {
 import type { Direction, GameState, Position, SpecialTileType } from "../types";
 import { DIRECTION_DELTA } from "../types";
 import { applyDamageToEnemy } from "./combat";
+import { getDebugCheats } from "./debugCheats";
 import { playCard } from "./deck";
 import { revealAtPosition } from "./fogOfWar";
 import { isInBounds } from "./map";
@@ -26,9 +27,11 @@ export function consumeApAndPlayCard(
 	cardId: string,
 	apCost: number,
 ): GameState {
+	const actualCost =
+		import.meta.env.DEV && getDebugCheats().infiniteAp ? 0 : apCost;
 	let next = updatePlayer(state, (p) => ({
 		...p,
-		ap: p.ap - apCost,
+		ap: p.ap - actualCost,
 	}));
 	next = setDeck(next, playCard(next.deck, cardId));
 	return next;

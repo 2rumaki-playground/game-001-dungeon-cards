@@ -3,6 +3,7 @@
  */
 
 import { LOG_AREA_GAP, STATUS_BAR_HEIGHT } from "../constants";
+import { getDebugCheats } from "../game/debugCheats";
 import type { GameContext } from "../gameContext";
 import type { GameState } from "../types";
 import {
@@ -38,6 +39,7 @@ export function updateState(ctx: GameContext, newState: GameState): void {
  */
 function hideDebugUI(ctx: GameContext): void {
 	ctx.ui.debugCardRenderer?.hide();
+	ctx.ui.debugCheatPanel?.hide();
 	ctx.ui.debugTargetSelector?.hide();
 }
 
@@ -112,6 +114,10 @@ export function renderGameScreen(
 		ctx.state.isCleared,
 	);
 	ctx.ui.turnOverlay.render(ctx.state.turn);
+	const visitedTiles =
+		import.meta.env.DEV && getDebugCheats().fullMapVisible
+			? undefined
+			: ctx.state.visitedTiles;
 	ctx.ui.mapRenderer.render(
 		ctx.state.map,
 		ctx.state.player,
@@ -119,7 +125,7 @@ export function renderGameScreen(
 		skipPlayer,
 		skipEnemies,
 		ctx.state.remnants,
-		ctx.state.visitedTiles,
+		visitedTiles,
 	);
 	applyCameraOffset(ctx);
 	if (!skipHand) {
@@ -138,6 +144,14 @@ export function renderGameScreen(
 		ctx.ui.debugCardRenderer.show();
 	} else {
 		ctx.ui.debugCardRenderer?.hide();
+	}
+
+	// デバッグチートパネル表示（DEV環境 + デバッグモードON時のみ）
+	if (ctx.debugMode && ctx.ui.debugCheatPanel) {
+		ctx.ui.debugCheatPanel.render();
+		ctx.ui.debugCheatPanel.show();
+	} else {
+		ctx.ui.debugCheatPanel?.hide();
 	}
 }
 

@@ -4,6 +4,7 @@
  */
 
 import type { GameState } from "../types";
+import { getDebugCheats } from "./debugCheats";
 import {
 	addActionLog,
 	addRemnant,
@@ -70,6 +71,8 @@ export function applyDamageToPlayer(
 	state: GameState,
 	damage: number,
 ): GameState {
+	if (import.meta.env.DEV && getDebugCheats().invincible) return state;
+
 	let next = updatePlayer(state, (p) => ({
 		...p,
 		hp: p.hp - damage,

@@ -583,6 +583,13 @@ export function setupEventHandlers(ctx: GameContext): void {
 		});
 	}
 
+	// デバッグチートパネルのコールバック設定（DEV環境限定）
+	if (import.meta.env.DEV && ctx.ui.debugCheatPanel) {
+		ctx.ui.debugCheatPanel.setOnToggle(() => {
+			render(ctx);
+		});
+	}
+
 	// 次の階層へボタンのコールバック設定
 	ctx.ui.nextFloorButton.setOnNextFloor(() => {
 		if (ctx.isAnimating) return;

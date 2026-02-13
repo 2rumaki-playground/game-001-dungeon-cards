@@ -27,6 +27,7 @@ import type {
 	VictoryScreen,
 } from "./ui";
 import type { DebugCardRenderer } from "./ui/debugCardRenderer";
+import type { DebugCheatPanel } from "./ui/debugCheatPanel";
 import type { DebugTargetSelector } from "./ui/debugTargetSelector";
 
 /** UIコンポーネント参照 */
@@ -51,6 +52,7 @@ export interface UIComponents {
 	cameraDragController: CameraDragController;
 	returnToPlayerButton: ReturnToPlayerButton;
 	debugCardRenderer: DebugCardRenderer | null;
+	debugCheatPanel: DebugCheatPanel | null;
 	debugTargetSelector: DebugTargetSelector | null;
 }
 

@@ -13,6 +13,7 @@ import {
 	executePendingSkill,
 } from "./bossSkill";
 import { applyDamageToPlayer, checkGameOver, isDefeated } from "./combat";
+import { getDebugCheats } from "./debugCheats";
 import { isInBounds } from "./map";
 import { bfsFirstStep } from "./pathfinding";
 import { isAdjacent, manhattanDistance } from "./positionUtils";
@@ -159,6 +160,10 @@ export type EnemyTurnResult = {
  *    - 索敵範囲外 → 待機（何もしない）
  */
 export function executeEnemyTurn(state: GameState): EnemyTurnResult {
+	if (import.meta.env.DEV && getDebugCheats().skipEnemyTurn) {
+		return { state, totalDamage: 0 };
+	}
+
 	// RNGをcloneして入力stateを変更しない
 	let rng = state.rng.clone();
 	const order = rng.shuffle(state.enemies.map((_e, i) => i));
