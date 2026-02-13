@@ -55,6 +55,7 @@ export function showVictoryScreen(
 			// ゲーム画面に戻す
 			const continueState: GameState = { ...state, screen: "game" };
 			applyState(ctx, continueState);
+			render(ctx);
 			resolve("continue");
 		});
 
