@@ -2,14 +2,6 @@
 
 ## コンテキスト
 
-### 対象リポジトリ（origin）
-
-```
-$![git remote get-url origin | sed 's|.*github.com[:/]||;s|\.git$||']
-```
-
-> **重要**: フォーク構成のリポジトリでは `gh` がフォーク元を参照するため、`gh issue create` の `--repo` には必ず上記のリポジトリを指定すること。以降のコマンドで `{owner}/{repo}` と表記している箇所を上記の値で置き換えること。
-
 ### 調査対象
 
 - 引数: `$ARGUMENTS`
@@ -59,7 +51,6 @@ Issue間の依存関係を分析し、**番号が若い順にPR作成すれば�
 
 ```
 gh issue create \
-  --repo {owner}/{repo} \
   --title "refactor: <日本語の簡潔な説明>" \
   --body "$(cat <<'EOF'
 ## 背景

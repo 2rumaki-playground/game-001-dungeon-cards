@@ -1,4 +1,4 @@
-# game-001-dungeon-cards-02
+# game-001-dungeon-cards
 
 タイル制ローグライク × デッキ構築カードゲーム
 
