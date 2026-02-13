@@ -1,9 +1,28 @@
 /// <reference types="vitest" />
+import { visualizer } from "rollup-plugin-visualizer";
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
+	plugins: [
+		visualizer({
+			filename: "dist/stats.html",
+			gzipSize: true,
+			brotliSize: true,
+		}),
+	],
 	server: {
 		port: 3000,
+	},
+	build: {
+		target: "esnext",
+		chunkSizeWarningLimit: 600,
+		rollupOptions: {
+			output: {
+				manualChunks: {
+					pixi: ["pixi.js"],
+				},
+			},
+		},
 	},
 	test: {
 		globals: true,

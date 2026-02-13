@@ -19,6 +19,7 @@
     "@biomejs/biome": "^2.3.13",
     "@playwright/test": "^1.58.1",
     "@vitest/coverage-v8": "^4.0.18",
+    "rollup-plugin-visualizer": "^6.0.5",
     "typescript": "~5.9.3",
     "vite": "^7.2.4",
     "vitest": "^4.0.18"
