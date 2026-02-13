@@ -197,6 +197,7 @@ export class MapRenderer {
 	private specialTileEffectManager: SpecialTileEffectManager;
 	private skillForecastEffectManager: SkillForecastEffectManager;
 	private enemyAiOverlayManager: EnemyAiOverlayManager;
+	private enemyAiAnalyses: Map<string, EnemyAiAnalysis> = new Map();
 
 	constructor() {
 		this.container = new Container();
@@ -843,6 +844,7 @@ export class MapRenderer {
 		this.specialTileEffectManager.clear();
 		this.skillForecastEffectManager.clear();
 		this.enemyAiOverlayManager.clear();
+		this.enemyAiAnalyses.clear();
 	}
 
 	/**
@@ -860,12 +862,14 @@ export class MapRenderer {
 			y: this.container.y,
 			scale: this.container.scale.x,
 		};
+		const debugInfo = this.enemyAiAnalyses.get(enemyId);
 		this.enemyTooltip.show(
 			enemy,
 			enemyContainer.x,
 			enemyContainer.y,
 			viewport,
 			containerTransform,
+			debugInfo,
 		);
 	}
 
@@ -910,6 +914,10 @@ export class MapRenderer {
 		visitedTiles?: Set<string>,
 	): void {
 		this.enemyAiOverlayManager.update(analyses, visitedTiles);
+		this.enemyAiAnalyses.clear();
+		for (const a of analyses) {
+			this.enemyAiAnalyses.set(a.enemyId, a);
+		}
 	}
 
 	/**
@@ -917,5 +925,6 @@ export class MapRenderer {
 	 */
 	clearEnemyAiOverlay(): void {
 		this.enemyAiOverlayManager.clear();
+		this.enemyAiAnalyses.clear();
 	}
 }

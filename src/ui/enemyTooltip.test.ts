@@ -37,8 +37,8 @@ describe("EnemyTooltip", () => {
 	it("コンテナに背景とテキスト要素が含まれる", () => {
 		const tooltip = new EnemyTooltip();
 		const container = tooltip.getContainer();
-		// bg(1) + typeText(1) + hpText(1) + atkText(1) = 4
-		expect(container.children.length).toBe(4);
+		// bg(1) + typeText(1) + hpText(1) + atkText(1) + debugSeparator(1) = 5
+		expect(container.children.length).toBe(5);
 	});
 
 	it("セルの上にツールチップが配置される", () => {
