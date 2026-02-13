@@ -19,6 +19,7 @@ describe("getDebugCheats", () => {
 		expect(cheats.infiniteAp).toBe(false);
 		expect(cheats.fullMapVisible).toBe(false);
 		expect(cheats.skipEnemyTurn).toBe(false);
+		expect(cheats.showEnemyAi).toBe(false);
 	});
 });
 
@@ -44,6 +45,12 @@ describe("toggleDebugCheat", () => {
 		expect(cheats.infiniteAp).toBe(false);
 		expect(cheats.fullMapVisible).toBe(true);
 		expect(cheats.skipEnemyTurn).toBe(false);
+	});
+
+	it("showEnemyAiをトグルするとtrueになる", () => {
+		const result = toggleDebugCheat("showEnemyAi");
+		expect(result).toBe(true);
+		expect(getDebugCheats().showEnemyAi).toBe(true);
 	});
 });
 
@@ -76,6 +83,7 @@ describe("resetDebugCheats", () => {
 		toggleDebugCheat("infiniteAp");
 		toggleDebugCheat("fullMapVisible");
 		toggleDebugCheat("skipEnemyTurn");
+		toggleDebugCheat("showEnemyAi");
 
 		resetDebugCheats();
 
@@ -84,5 +92,6 @@ describe("resetDebugCheats", () => {
 		expect(cheats.infiniteAp).toBe(false);
 		expect(cheats.fullMapVisible).toBe(false);
 		expect(cheats.skipEnemyTurn).toBe(false);
+		expect(cheats.showEnemyAi).toBe(false);
 	});
 });

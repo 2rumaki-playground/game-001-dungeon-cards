@@ -5,6 +5,7 @@
 
 import { Container, Graphics, Sprite, Text, Texture, Ticker } from "pixi.js";
 import { CELL_SIZE, COLORS } from "../constants";
+import type { EnemyAiAnalysis } from "../game/enemyAiAnalysis";
 import type {
 	Direction,
 	Enemy,
@@ -194,6 +195,12 @@ export class MapRenderer {
 	private tooltipEnemyId: string | null = null;
 	private specialTileEffectManager: SpecialTileEffectManager;
 	private skillForecastEffectManager: SkillForecastEffectManager;
+	private enemyAiOverlayManager: {
+		getContainer(): Container;
+		update(analyses: EnemyAiAnalysis[], visitedTiles?: Set<string>): void;
+		clear(): void;
+	} | null = null;
+	private enemyAiAnalyses: Map<string, EnemyAiAnalysis> = new Map();
 
 	constructor() {
 		this.container = new Container();
@@ -224,6 +231,19 @@ export class MapRenderer {
 	 */
 	getContainer(): Container {
 		return this.container;
+	}
+
+	/**
+	 * 敵AI可視化オーバーレイマネージャを設定（DEV環境でのみ呼び出す）
+	 */
+	setEnemyAiOverlayManager(manager: {
+		getContainer(): Container;
+		update(analyses: EnemyAiAnalysis[], visitedTiles?: Set<string>): void;
+		clear(): void;
+	}): void {
+		this.enemyAiOverlayManager = manager;
+		const enemiesIndex = this.container.getChildIndex(this.enemiesContainer);
+		this.container.addChildAt(manager.getContainer(), enemiesIndex);
 	}
 
 	/**
@@ -837,6 +857,8 @@ export class MapRenderer {
 		this.hideEnemyTooltip();
 		this.specialTileEffectManager.clear();
 		this.skillForecastEffectManager.clear();
+		this.enemyAiOverlayManager?.clear();
+		this.enemyAiAnalyses.clear();
 	}
 
 	/**
@@ -854,12 +876,14 @@ export class MapRenderer {
 			y: this.container.y,
 			scale: this.container.scale.x,
 		};
+		const debugInfo = this.enemyAiAnalyses.get(enemyId);
 		this.enemyTooltip.show(
 			enemy,
 			enemyContainer.x,
 			enemyContainer.y,
 			viewport,
 			containerTransform,
+			debugInfo,
 		);
 	}
 
@@ -894,5 +918,27 @@ export class MapRenderer {
 	private hideEnemyTooltip(): void {
 		this.tooltipEnemyId = null;
 		this.enemyTooltip.hide();
+	}
+
+	/**
+	 * 敵AI可視化オーバーレイを更新
+	 */
+	updateEnemyAiOverlay(
+		analyses: EnemyAiAnalysis[],
+		visitedTiles?: Set<string>,
+	): void {
+		this.enemyAiOverlayManager?.update(analyses, visitedTiles);
+		this.enemyAiAnalyses.clear();
+		for (const a of analyses) {
+			this.enemyAiAnalyses.set(a.enemyId, a);
+		}
+	}
+
+	/**
+	 * 敵AI可視化オーバーレイをクリア
+	 */
+	clearEnemyAiOverlay(): void {
+		this.enemyAiOverlayManager?.clear();
+		this.enemyAiAnalyses.clear();
 	}
 }

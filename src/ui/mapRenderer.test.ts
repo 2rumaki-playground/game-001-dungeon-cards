@@ -297,9 +297,8 @@ describe("MapRenderer 攻撃エフェクト", () => {
 
 		await renderer.animateEnemyAttackHit(1);
 
-		// コンテナ内のプレイヤースプライト（5番目の子要素）のalphaが1であること
-		const container = renderer.getContainer();
-		const playerSprite = container.children[4];
+		// プレイヤースプライトのalphaが1であること
+		const playerSprite = (renderer as any).playerSprite;
 		expect(playerSprite.alpha).toBe(1);
 	});
 

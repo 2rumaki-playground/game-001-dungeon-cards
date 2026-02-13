@@ -10,6 +10,7 @@ import {
 	ENEMY_PARAMS,
 	ENEMY_TYPE_LABEL,
 } from "../constants";
+import type { EnemyAiAnalysis } from "../game/enemyAiAnalysis";
 import type { Enemy } from "../types";
 import { drawRoundedRect } from "./graphicsHelpers";
 
@@ -43,6 +44,15 @@ const TOOLTIP_BG_COLOR = 0x1a1a1a;
 /** ツールチップとセルの間隔 */
 const TOOLTIP_GAP = 4;
 
+/** デバッグ情報の区切り線色 */
+const DEBUG_SEPARATOR_COLOR = 0x555555;
+
+/** デバッグ情報のテキスト色 */
+const DEBUG_TEXT_COLOR = 0xbbbbbb;
+
+/** デバッグ情報のフォントサイズ */
+const DEBUG_FONT_SIZE = 10;
+
 /**
  * 敵情報ツールチップ
  */
@@ -52,6 +62,8 @@ export class EnemyTooltip {
 	private typeText: Text;
 	private hpText: Text;
 	private atkText: Text;
+	private debugTexts: Text[] = [];
+	private debugSeparator: Graphics;
 	private cachedBgWidth = 0;
 	private cachedBgHeight = 0;
 
@@ -83,6 +95,9 @@ export class EnemyTooltip {
 		this.atkText.x = TOOLTIP_PADDING;
 		this.atkText.y = TOOLTIP_PADDING + TOOLTIP_LINE_HEIGHT * 2;
 		this.container.addChild(this.atkText);
+
+		this.debugSeparator = new Graphics();
+		this.container.addChild(this.debugSeparator);
 	}
 
 	getContainer(): Container {
@@ -107,6 +122,7 @@ export class EnemyTooltip {
 			y: 0,
 			scale: 1,
 		},
+		debugInfo?: EnemyAiAnalysis,
 	): void {
 		const label = ENEMY_TYPE_LABEL[enemy.type];
 		const params = ENEMY_PARAMS[enemy.type];
@@ -117,6 +133,38 @@ export class EnemyTooltip {
 		this.typeText.text = label;
 		this.hpText.text = `HP: ${enemy.hp}/${enemy.maxHp}`;
 		this.atkText.text = `ATK: ${attackDamage}`;
+
+		// 既存のデバッグテキストを削除
+		this.clearDebugTexts();
+
+		// デバッグ情報を追加
+		let debugLineCount = 0;
+		const separatorY = TOOLTIP_PADDING + TOOLTIP_LINE_HEIGHT * 3 + 2;
+		if (debugInfo) {
+			const debugLines = [
+				`移動:${params.moveDistance} 索敵:${params.senseRange}`,
+				`判断: ${debugInfo.decision.reason}`,
+			];
+			const debugTextStyle = {
+				fontSize: DEBUG_FONT_SIZE,
+				fontFamily: "sans-serif",
+				fill: DEBUG_TEXT_COLOR,
+			};
+
+			for (let i = 0; i < debugLines.length; i++) {
+				const text = new Text({
+					text: debugLines[i],
+					style: debugTextStyle,
+				});
+				text.x = TOOLTIP_PADDING;
+				text.y = separatorY + 4 + i * (TOOLTIP_LINE_HEIGHT - 2);
+				this.container.addChild(text);
+				this.debugTexts.push(text);
+			}
+			debugLineCount = debugLines.length;
+		} else {
+			this.debugSeparator.clear();
+		}
 
 		// Text.width が環境によって例外を投げるケースがあるため、
 		// より安全な bounds ベースの計測を行う。
@@ -133,14 +181,37 @@ export class EnemyTooltip {
 				return 0;
 			}
 		};
+		const allTexts = [
+			this.typeText,
+			this.hpText,
+			this.atkText,
+			...this.debugTexts,
+		];
 		const maxTextWidth = Math.max(
 			TOOLTIP_MIN_WIDTH,
-			safeWidth(this.typeText),
-			safeWidth(this.hpText),
-			safeWidth(this.atkText),
+			...allTexts.map(safeWidth),
 		);
 		this.cachedBgWidth = maxTextWidth + TOOLTIP_PADDING * 2;
-		this.cachedBgHeight = TOOLTIP_LINE_HEIGHT * 3 + TOOLTIP_PADDING * 2;
+
+		// 区切り線を背景幅に合わせて描画（幅確定後）
+		if (debugInfo) {
+			this.debugSeparator.clear();
+			this.debugSeparator.moveTo(TOOLTIP_PADDING, separatorY);
+			this.debugSeparator.lineTo(
+				this.cachedBgWidth - TOOLTIP_PADDING,
+				separatorY,
+			);
+			this.debugSeparator.stroke({
+				color: DEBUG_SEPARATOR_COLOR,
+				width: 1,
+			});
+		}
+
+		const baseLines = 3;
+		const debugExtraHeight =
+			debugLineCount > 0 ? 6 + debugLineCount * (TOOLTIP_LINE_HEIGHT - 2) : 0;
+		this.cachedBgHeight =
+			TOOLTIP_LINE_HEIGHT * baseLines + TOOLTIP_PADDING * 2 + debugExtraHeight;
 
 		this.bg.clear();
 		drawRoundedRect(
@@ -154,6 +225,14 @@ export class EnemyTooltip {
 
 		this.applyPosition(pixelX, pixelY, viewport, containerTransform);
 		this.container.visible = true;
+	}
+
+	private clearDebugTexts(): void {
+		for (const text of this.debugTexts) {
+			this.container.removeChild(text);
+			text.destroy();
+		}
+		this.debugTexts = [];
 	}
 
 	/**

@@ -24,6 +24,7 @@ const CHEAT_BUTTONS: { key: keyof DebugCheats; label: string }[] = [
 	{ key: "infiniteAp", label: "AP無限" },
 	{ key: "fullMapVisible", label: "全マップ可視" },
 	{ key: "skipEnemyTurn", label: "敵スキップ" },
+	{ key: "showEnemyAi", label: "敵AI可視化" },
 ];
 
 /**

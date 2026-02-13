@@ -4,6 +4,7 @@
 
 import { LOG_AREA_GAP, STATUS_BAR_HEIGHT } from "../constants";
 import { getDebugCheats } from "../game/debugCheats";
+import { analyzeAllEnemies } from "../game/enemyAiAnalysis";
 import type { GameContext } from "../gameContext";
 import type { GameState } from "../types";
 import {
@@ -152,6 +153,14 @@ export function renderGameScreen(
 		ctx.ui.debugCheatPanel.show();
 	} else {
 		ctx.ui.debugCheatPanel?.hide();
+	}
+
+	// 敵AI可視化オーバーレイ（DEV環境 + デバッグモードON + showEnemyAiチートON時のみ）
+	if (import.meta.env.DEV && ctx.debugMode && getDebugCheats().showEnemyAi) {
+		const analyses = analyzeAllEnemies(ctx.state);
+		ctx.ui.mapRenderer.updateEnemyAiOverlay(analyses, visitedTiles);
+	} else {
+		ctx.ui.mapRenderer.clearEnemyAiOverlay();
 	}
 }
 

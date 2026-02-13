@@ -3,7 +3,7 @@
  * @see docs/spec/rules.md
  */
 
-import { BOSS_SKILL, ENEMY_PARAMS } from "../constants";
+import { BOSS_SKILL, ENEMY_PARAMS, ENEMY_TYPE_LABEL } from "../constants";
 import type { Direction, Enemy, GameState } from "../types";
 import { DIRECTION_DELTA } from "../types";
 import {
@@ -14,6 +14,7 @@ import {
 } from "./bossSkill";
 import { applyDamageToPlayer, checkGameOver, isDefeated } from "./combat";
 import { getDebugCheats } from "./debugCheats";
+import { DIRECTION_LABEL } from "./enemyAiAnalysis";
 import { isInBounds } from "./map";
 import { bfsFirstStep } from "./pathfinding";
 import { isAdjacent, manhattanDistance } from "./positionUtils";
@@ -30,7 +31,7 @@ import { addActionLog, setEnemies, updateEnemy } from "./state";
  * - プレイヤーがいるマス
  * - 階段タイル
  */
-function canEnemyMoveTo(
+export function canEnemyMoveTo(
 	state: GameState,
 	enemy: Enemy,
 	nx: number,
@@ -101,6 +102,9 @@ function moveEnemyByType(
 	enemy: Enemy,
 	moveDistance: number,
 ): GameState {
+	const showAi = import.meta.env.DEV && getDebugCheats().showEnemyAi;
+	const label = ENEMY_TYPE_LABEL[enemy.type];
+
 	if (moveDistance === 0) {
 		return addActionLog(state, "敵は動けなかった", "enemy");
 	}
@@ -115,23 +119,27 @@ function moveEnemyByType(
 			break;
 		}
 
+		const distBefore = manhattanDistance(
+			currentEnemy.position,
+			next.player.position,
+		);
 		const dir = pickMoveDirection(next, currentEnemy);
 		if (dir) {
 			const delta = DIRECTION_DELTA[dir];
+			const newPos = {
+				x: currentEnemy.position.x + delta.x,
+				y: currentEnemy.position.y + delta.y,
+			};
+			const distAfter = manhattanDistance(newPos, next.player.position);
 			const newEnemies = next.enemies.map((e) =>
-				e.id === enemy.id
-					? {
-							...e,
-							position: {
-								x: e.position.x + delta.x,
-								y: e.position.y + delta.y,
-							},
-						}
-					: e,
+				e.id === enemy.id ? { ...e, position: newPos } : e,
 			);
 			next = setEnemies(next, newEnemies);
 			if (step === 0) {
-				next = addActionLog(next, "敵が移動した", "enemy");
+				const msg = showAi
+					? `${label}が移動した（距離${distBefore}→${distAfter}, BFS:${DIRECTION_LABEL[dir]}）`
+					: "敵が移動した";
+				next = addActionLog(next, msg, "enemy");
 			}
 		} else {
 			if (step === 0) {
@@ -207,6 +215,8 @@ export function executeEnemyTurn(state: GameState): EnemyTurnResult {
 
 		const enemyRoom = findRoomAt(currentEnemy.position, next.rooms);
 
+		const showAi = import.meta.env.DEV && getDebugCheats().showEnemyAi;
+
 		if (isAdjacent(currentEnemy.position, next.player.position)) {
 			// 攻撃（激昂時はボーナスダメージ）— 部屋境界に関係なく発動
 			const enrageBonus = currentEnemy.enraged
@@ -214,7 +224,10 @@ export function executeEnemyTurn(state: GameState): EnemyTurnResult {
 				: 0;
 			const damage = params.attackDamage + enrageBonus;
 			next = applyDamageToPlayer(next, damage);
-			next = addActionLog(next, "敵が攻撃した", "enemy");
+			const attackMsg = showAi
+				? `${ENEMY_TYPE_LABEL[currentEnemy.type]}が攻撃した（隣接, ATK:${damage}）`
+				: "敵が攻撃した";
+			next = addActionLog(next, attackMsg, "enemy");
 			totalDamage += damage;
 		} else if (
 			enemyRoom !== null &&
