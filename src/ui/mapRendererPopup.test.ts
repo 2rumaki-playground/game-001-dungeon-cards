@@ -258,9 +258,9 @@ describe("MapRenderer 攻撃エフェクト", () => {
 		tickerMock.tick(300);
 		await promise;
 
-		// コンテナ内のプレイヤースプライト（5番目の子要素）のalphaが1であること
+		// コンテナ内のプレイヤースプライト（8番目の子要素）のalphaが1であること
 		const container = renderer.getContainer();
-		const playerSprite = container.children[4];
+		const playerSprite = container.children[7];
 		expect(playerSprite.alpha).toBe(1);
 	});
 
