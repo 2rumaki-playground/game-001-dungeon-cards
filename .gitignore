@@ -163,6 +163,9 @@ pnpm-debug.log*
 .claude/skills/
 .agents/
 
+# Benchmark results
+bench-results.json
+
 # claude-mem auto-generated files
 .claude/commands/CLAUDE.md
 src/ui/CLAUDE.md

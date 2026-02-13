@@ -1,0 +1,92 @@
+name: Benchmark
+
+on:
+  pull_request:
+    types: [opened, synchronize, ready_for_review]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: benchmark-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  benchmark:
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - run: pnpm install --frozen-lockfile
+
+      # --- Base branch ---
+      - name: Checkout base branch
+        run: git checkout ${{ github.event.pull_request.base.sha }}
+
+      - name: Install base dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build (base)
+        run: pnpm build
+
+      - name: Measure bundle size (base)
+        run: bash scripts/measure-bundle.sh dist base-bundle.json
+
+      - name: Run benchmarks (base)
+        run: pnpm bench:json 2>/dev/null || true
+
+      - name: Save base results
+        run: |
+          cp bench-results.json base-bench.json 2>/dev/null || echo '{"files":[]}' > base-bench.json
+          mv base-bundle.json /tmp/base-bundle.json
+          mv base-bench.json /tmp/base-bench.json
+
+      # --- Head branch ---
+      - name: Checkout head branch
+        run: git checkout ${{ github.event.pull_request.head.sha }}
+
+      - name: Install head dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build (head)
+        run: pnpm build
+
+      - name: Measure bundle size (head)
+        run: bash scripts/measure-bundle.sh dist head-bundle.json
+
+      - name: Run benchmarks (head)
+        run: pnpm bench:json 2>/dev/null || true
+
+      - name: Save head results
+        run: cp bench-results.json head-bench.json 2>/dev/null || echo '{"files":[]}' > head-bench.json
+
+      # --- Compare & report ---
+      - name: Generate comparison report
+        run: |
+          node scripts/compare-benchmarks.js \
+            --base-bench /tmp/base-bench.json \
+            --head-bench head-bench.json \
+            --base-bundle /tmp/base-bundle.json \
+            --head-bundle head-bundle.json \
+            --output report.md
+
+      - name: Post PR comment
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body-path: report.md
+          comment-tag: benchmark-report
