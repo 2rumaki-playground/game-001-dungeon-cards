@@ -3,7 +3,6 @@
  */
 
 import {
-	CARD_COST,
 	JUMP_DISTANCE,
 	STATUS_BAR_HEIGHT,
 	TRAP_DAMAGE,
@@ -26,6 +25,7 @@ import {
 	startPlayerTurn,
 } from "../game";
 import { buildQueuedCardIndexMap, canEnqueueCard } from "../game/cardQueue";
+import { getEffectiveCardCost } from "../game/debugCheats";
 import type { GameContext } from "../gameContext";
 import type { Card, Direction, Position, SpecialTileType } from "../types";
 import { DIRECTION_DELTA } from "../types";
@@ -336,7 +336,7 @@ async function processCardQueue(ctx: GameContext): Promise<void> {
 		ctx.ui.handRenderer.setQueuedCards(buildQueuedCardIndexMap(ctx.cardQueue));
 
 		// 予約時点と状態が変わっている可能性があるため、AP再検証
-		if (ctx.state.player.ap < CARD_COST[entry.card.type]) {
+		if (ctx.state.player.ap < getEffectiveCardCost(entry.card.type)) {
 			clearCardQueue(ctx);
 			return;
 		}

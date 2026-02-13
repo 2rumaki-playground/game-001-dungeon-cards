@@ -6,6 +6,9 @@
  * プロダクションビルド時はデッドコード除去される。
  */
 
+import { CARD_COST } from "../constants";
+import type { CardType } from "../types";
+
 export interface DebugCheats {
 	/** 無敵（ダメージを受けない） */
 	invincible: boolean;
@@ -37,6 +40,18 @@ export function getDebugCheats(): Readonly<DebugCheats> {
 export function toggleDebugCheat(key: keyof DebugCheats): boolean {
 	debugCheats[key] = !debugCheats[key];
 	return debugCheats[key];
+}
+
+/**
+ * チートを考慮した実効カードコストを返す
+ * AP無限チートON時は常に0を返す。
+ * キュー予約・実行前検証・UI表示すべてこの関数を通してコストを取得する。
+ */
+export function getEffectiveCardCost(cardType: CardType): number {
+	if (import.meta.env.DEV && debugCheats.infiniteAp) {
+		return 0;
+	}
+	return CARD_COST[cardType];
 }
 
 /**

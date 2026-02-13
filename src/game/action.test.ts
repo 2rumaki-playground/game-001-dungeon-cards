@@ -22,7 +22,11 @@ import {
 	executeStrongAttack,
 	executeWait,
 } from "./action";
-import { resetDebugCheats, toggleDebugCheat } from "./debugCheats";
+import {
+	getEffectiveCardCost,
+	resetDebugCheats,
+	toggleDebugCheat,
+} from "./debugCheats";
 
 describe("consumeApAndPlayCard", () => {
 	it("APが指定コスト分減少する", () => {
@@ -1139,7 +1143,9 @@ describe("consumeApAndPlayCard - AP無限チート", () => {
 				discardPile: [],
 			},
 		});
-		const result = consumeApAndPlayCard(state, "move-1", CARD_COST.move);
+		const cost = getEffectiveCardCost("move");
+		expect(cost).toBe(0);
+		const result = consumeApAndPlayCard(state, "move-1", cost);
 
 		expect(result.player.ap).toBe(MAX_AP);
 	});
@@ -1152,7 +1158,9 @@ describe("consumeApAndPlayCard - AP無限チート", () => {
 				discardPile: [],
 			},
 		});
-		const result = consumeApAndPlayCard(state, "move-1", CARD_COST.move);
+		const cost = getEffectiveCardCost("move");
+		expect(cost).toBe(CARD_COST.move);
+		const result = consumeApAndPlayCard(state, "move-1", cost);
 
 		expect(result.player.ap).toBe(MAX_AP - CARD_COST.move);
 	});
