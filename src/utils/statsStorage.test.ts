@@ -39,7 +39,7 @@ function createTestSession(overrides?: Partial<PlaySession>): PlaySession {
 		cardUsage: { move: 10, attack: 5, strong_attack: 2, jump: 1, wait: 3 },
 		totalDamageDealt: 20,
 		totalDamageTaken: 10,
-		turnCount: 15,
+		playerTurnCount: 15,
 		...overrides,
 	};
 }

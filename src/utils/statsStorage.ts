@@ -33,7 +33,7 @@ function isValidSession(value: unknown): value is PlaySession {
 		!(s.result === "clear" || s.result === "death") ||
 		typeof s.totalDamageDealt !== "number" ||
 		typeof s.totalDamageTaken !== "number" ||
-		typeof s.turnCount !== "number"
+		typeof s.playerTurnCount !== "number"
 	) {
 		return false;
 	}

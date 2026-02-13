@@ -24,7 +24,7 @@ describe("playStats", () => {
 			expect(session?.id).toBeTruthy();
 			expect(session?.startedAt).toBeGreaterThan(0);
 			expect(session?.maxFloor).toBe(1);
-			expect(session?.turnCount).toBe(0);
+			expect(session?.playerTurnCount).toBe(0);
 		});
 
 		it("initialFloorを指定するとmaxFloorがその値で初期化される", () => {
@@ -112,7 +112,7 @@ describe("playStats", () => {
 			startSession();
 			recordTurnEnd();
 			recordTurnEnd();
-			expect(getCurrentSession()?.turnCount).toBe(2);
+			expect(getCurrentSession()?.playerTurnCount).toBe(2);
 		});
 
 		it("セッション未開始時はnoopになる", () => {
@@ -133,7 +133,7 @@ describe("playStats", () => {
 			expect(result?.endedAt).toBeGreaterThan(0);
 			expect(result?.cardUsage.attack).toBe(1);
 			expect(result?.totalDamageDealt).toBe(5);
-			expect(result?.turnCount).toBe(1);
+			expect(result?.playerTurnCount).toBe(1);
 		});
 
 		it("クリア時はdeathCauseがnull", () => {

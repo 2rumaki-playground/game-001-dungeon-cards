@@ -15,7 +15,7 @@ type SessionAccumulator = {
 	cardUsage: Record<CardType, number>;
 	totalDamageDealt: number;
 	totalDamageTaken: number;
-	turnCount: number;
+	playerTurnCount: number;
 };
 
 let currentSession: SessionAccumulator | null = null;
@@ -37,7 +37,7 @@ export function startSession(initialFloor = 1): void {
 		cardUsage: { move: 0, attack: 0, strong_attack: 0, jump: 0, wait: 0 },
 		totalDamageDealt: 0,
 		totalDamageTaken: 0,
-		turnCount: 0,
+		playerTurnCount: 0,
 	};
 }
 
@@ -80,7 +80,7 @@ export function recordFloorReached(floor: number): void {
  */
 export function recordTurnEnd(): void {
 	if (!currentSession) return;
-	currentSession.turnCount++;
+	currentSession.playerTurnCount++;
 }
 
 /**

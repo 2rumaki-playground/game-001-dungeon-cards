@@ -37,5 +37,5 @@ export type PlaySession = {
 	/** 被ダメージ合計 */
 	totalDamageTaken: number;
 	/** ターン数 */
-	turnCount: number;
+	playerTurnCount: number;
 };
