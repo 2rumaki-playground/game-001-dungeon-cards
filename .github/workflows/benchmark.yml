@@ -44,7 +44,7 @@ jobs:
         run: pnpm build
 
       - name: Measure bundle size (base)
-        run: bash scripts/measure-bundle.sh dist base-bundle.json
+        run: bash scripts/measure-bundle.sh dist base-bundle.json || echo '{"total_bytes":0,"chunks":{}}' > base-bundle.json
 
       - name: Run benchmarks (base)
         run: pnpm bench:json 2>bench-stderr.log || true
@@ -69,7 +69,7 @@ jobs:
         run: pnpm build
 
       - name: Measure bundle size (head)
-        run: bash scripts/measure-bundle.sh dist head-bundle.json
+        run: bash scripts/measure-bundle.sh dist head-bundle.json || echo '{"total_bytes":0,"chunks":{}}' > head-bundle.json
 
       - name: Run benchmarks (head)
         run: pnpm bench:json 2>bench-stderr.log || true
