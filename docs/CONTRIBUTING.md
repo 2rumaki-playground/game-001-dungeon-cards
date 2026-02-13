@@ -46,8 +46,8 @@ pnpm exec playwright install --with-deps chromium  # E2Eテスト用
 
 | ワークフロー | トリガー | 内容 |
 |-------------|---------|------|
-| CI | PRのopen / ready_for_review | lint・ユニットテスト・E2Eテスト・ビルドを並列実行 |
-| Preview Deploy | PRのopen / synchronize / reopen / close | GitHub Pagesへプレビューサイトを自動デプロイ・削除 |
+| CI | PRのopened / ready_for_review | lint・ユニットテスト・E2Eテスト・ビルドを並列実行 |
+| Preview Deploy | PRのopened / synchronize / reopened / closed | GitHub Pagesへプレビューサイトを自動デプロイ・削除 |
 | Release | mainへのpush | Conventional Commitsに基づくバージョンタグの自動付与とGitHub Releaseの作成 |
 
 ### Preview Deploy
