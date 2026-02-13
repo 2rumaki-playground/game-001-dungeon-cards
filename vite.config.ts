@@ -17,7 +17,7 @@ export default defineConfig({
 		port: 3000,
 	},
 	build: {
-		target: "esnext",
+		target: "es2022",
 		chunkSizeWarningLimit: 600,
 		rollupOptions: {
 			output: {
