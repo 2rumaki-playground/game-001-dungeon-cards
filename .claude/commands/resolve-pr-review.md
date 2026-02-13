@@ -9,13 +9,13 @@
 
 ### リポジトリ情報の取得
 
-owner/repo名は以下で取得する:
+owner/repo名は **`origin` リモートのURL** から取得する（`gh repo view` は fork 構成で `upstream` を返す場合があるため）:
 
 ```
-gh repo view --json owner,name -q '(.owner.login) + "/" + .name'
+git remote get-url origin | sed -E 's#.+github\.com[:/]([^/]+/[^/.]+)(\.git)?$#\1#'
 ```
 
-この出力（例: `2rumaki-playground/game-001-dungeon-cards-02`）をもとに、以降のコマンドで `{owner}` `{repo}` と表記している箇所を置き換えること。
+この出力（例: `2rumaki-playground/game-001-dungeon-cards-02`）をもとに、`/` で分割して以降のコマンドで `{owner}` `{repo}` と表記している箇所を置き換えること。
 
 ## 指示
 
