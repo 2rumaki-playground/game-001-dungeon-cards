@@ -2,7 +2,7 @@
  * タイル描画・残骸・Fog of War の関数
  */
 
-import { Container, Graphics, Sprite } from "pixi.js";
+import { type Container, type Graphics, Sprite } from "pixi.js";
 import { CELL_SIZE } from "../constants";
 import type { GameMap } from "../types";
 import { getTileTexture } from "./assetLoader";

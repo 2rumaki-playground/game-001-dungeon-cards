@@ -6,6 +6,10 @@ import {
 	PLAYER_INITIAL_HP,
 } from "../constants";
 import { createTestState } from "../test-utils/createTestFixtures";
+import type {
+	DebugDeckComposition,
+	DebugEnemyComposition,
+} from "../types/debug";
 import { RNG } from "../utils/rng";
 import {
 	createDebugDeckState,
@@ -58,28 +62,40 @@ describe("debugStart", () => {
 		it("不正なカードタイプを指定した場合はエラーになる", () => {
 			const rng = new RNG(42);
 			expect(() => {
-				createDebugDeckState({ foo: 1 } as any, rng);
+				createDebugDeckState(
+					{ foo: 1 } as unknown as DebugDeckComposition,
+					rng,
+				);
 			}).toThrow();
 		});
 
 		it("負の count を指定した場合はエラーになる", () => {
 			const rng = new RNG(42);
 			expect(() => {
-				createDebugDeckState({ attack: -1 } as any, rng);
+				createDebugDeckState(
+					{ attack: -1 } as unknown as DebugDeckComposition,
+					rng,
+				);
 			}).toThrow();
 		});
 
 		it("小数の count を指定した場合はエラーになる", () => {
 			const rng = new RNG(42);
 			expect(() => {
-				createDebugDeckState({ attack: 1.5 } as any, rng);
+				createDebugDeckState(
+					{ attack: 1.5 } as unknown as DebugDeckComposition,
+					rng,
+				);
 			}).toThrow();
 		});
 
 		it("NaN の count を指定した場合はエラーになる", () => {
 			const rng = new RNG(42);
 			expect(() => {
-				createDebugDeckState({ attack: Number.NaN } as any, rng);
+				createDebugDeckState(
+					{ attack: Number.NaN } as unknown as DebugDeckComposition,
+					rng,
+				);
 			}).toThrow();
 		});
 	});
@@ -148,7 +164,7 @@ describe("debugStart", () => {
 			expect(() =>
 				createDebugEnemies(positions, {
 					foo: 1,
-				} as any),
+				} as unknown as DebugEnemyComposition),
 			).toThrow();
 		});
 
@@ -156,7 +172,7 @@ describe("debugStart", () => {
 			expect(() =>
 				createDebugEnemies(positions, {
 					normal: -1,
-				} as any),
+				} as unknown as DebugEnemyComposition),
 			).toThrow();
 		});
 
@@ -164,7 +180,7 @@ describe("debugStart", () => {
 			expect(() =>
 				createDebugEnemies(positions, {
 					normal: 1.5,
-				} as any),
+				} as unknown as DebugEnemyComposition),
 			).toThrow();
 		});
 
@@ -172,7 +188,7 @@ describe("debugStart", () => {
 			expect(() =>
 				createDebugEnemies(positions, {
 					normal: Infinity,
-				} as any),
+				} as unknown as DebugEnemyComposition),
 			).toThrow();
 		});
 
@@ -180,7 +196,7 @@ describe("debugStart", () => {
 			expect(() =>
 				createDebugEnemies(positions, {
 					normal: NaN,
-				} as any),
+				} as unknown as DebugEnemyComposition),
 			).toThrow();
 		});
 	});

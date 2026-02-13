@@ -2,7 +2,7 @@
  * 画面シェイク・フラッシュ・点滅エフェクト関数
  */
 
-import { Container, Graphics, Sprite, Ticker } from "pixi.js";
+import { type Container, Graphics, type Sprite, Ticker } from "pixi.js";
 import { CELL_SIZE } from "../constants";
 import { tween } from "../utils/tween";
 import {

@@ -2,7 +2,7 @@
  * マップ描画関連の定数・純粋ヘルパー関数
  */
 
-import { Graphics } from "pixi.js";
+import type { Graphics } from "pixi.js";
 import { CELL_SIZE } from "../constants";
 import type { EnemyType } from "../types/character";
 
