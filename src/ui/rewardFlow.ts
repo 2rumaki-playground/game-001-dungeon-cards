@@ -121,21 +121,30 @@ function showRewardCardSelection(
 		);
 		ctx.ui.rewardScreen.show();
 
-		ctx.ui.rewardScreen.setOnCardSelect(async (index) => {
+		let settled = false;
+		const cleanup = () => {
 			ctx.ui.rewardScreen.setOnCardSelect(() => {});
 			ctx.ui.rewardScreen.setOnSkip(() => {});
+			ctx.ui.rewardScreen.hide();
+		};
+
+		ctx.ui.rewardScreen.setOnCardSelect(async (index) => {
+			if (settled) return;
+			settled = true;
 			try {
 				await ctx.ui.rewardScreen.animateCardAcquire(index, choices[index]);
 			} catch (error) {
 				console.warn("カード取得アニメーション中にエラー:", error);
 			}
 			resolve(index);
+			cleanup();
 		});
 
 		ctx.ui.rewardScreen.setOnSkip(() => {
-			ctx.ui.rewardScreen.setOnCardSelect(() => {});
-			ctx.ui.rewardScreen.setOnSkip(() => {});
+			if (settled) return;
+			settled = true;
 			resolve(null);
+			cleanup();
 		});
 	});
 }
