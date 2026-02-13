@@ -27,12 +27,13 @@ function generateId(): string {
 
 /**
  * セッション開始
+ * @param initialFloor 開始時点の階層（デバッグ開始・途中再開時に指定）
  */
-export function startSession(): void {
+export function startSession(initialFloor = 1): void {
 	currentSession = {
 		id: generateId(),
 		startedAt: Date.now(),
-		maxFloor: 1,
+		maxFloor: initialFloor,
 		cardUsage: { move: 0, attack: 0, strong_attack: 0, jump: 0, wait: 0 },
 		totalDamageDealt: 0,
 		totalDamageTaken: 0,

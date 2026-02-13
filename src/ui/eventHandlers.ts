@@ -462,6 +462,7 @@ export function setupEventHandlers(ctx: GameContext): void {
 	ctx.ui.titleScreen.setOnDebugStartFloor(async (floor) => {
 		if (ctx.isAnimating) return;
 		ctx.isAnimating = true;
+		startSession(floor);
 		try {
 			const newState = startNewGameAtFloor(ctx.state, floor);
 			await ctx.ui.screenTransition.fadeTransition(() => {
@@ -484,7 +485,7 @@ export function setupEventHandlers(ctx: GameContext): void {
 		const savedState = loadGame();
 		if (savedState) {
 			ctx.isAnimating = true;
-			startSession();
+			startSession(savedState.floor);
 			try {
 				await ctx.ui.screenTransition.fadeTransition(() => {
 					updateState(ctx, savedState);

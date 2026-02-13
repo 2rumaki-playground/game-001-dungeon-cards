@@ -27,6 +27,12 @@ describe("playStats", () => {
 			expect(session?.turnCount).toBe(0);
 		});
 
+		it("initialFloorを指定するとmaxFloorがその値で初期化される", () => {
+			startSession(5);
+			const session = getCurrentSession();
+			expect(session?.maxFloor).toBe(5);
+		});
+
 		it("開始時にcardUsageが全カードタイプ0で初期化される", () => {
 			startSession();
 			const session = getCurrentSession();
