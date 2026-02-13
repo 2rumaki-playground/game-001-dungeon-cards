@@ -2,6 +2,7 @@
  * マップレンダラーのテスト（HPバー・ツールチップ）
  */
 
+import "../test-utils/mapRendererTestSetup";
 import { type FederatedPointerEvent, Graphics } from "pixi.js";
 import { describe, expect, it, vi } from "vitest";
 import { createRendererTestMap } from "../test-utils/mapRendererTestSetup";

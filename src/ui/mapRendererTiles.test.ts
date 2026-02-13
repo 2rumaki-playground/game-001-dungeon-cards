@@ -2,6 +2,7 @@
  * マップレンダラーのテスト（タイル描画・Fog of War）
  */
 
+import "../test-utils/mapRendererTestSetup";
 import { Graphics } from "pixi.js";
 import { describe, expect, it, vi } from "vitest";
 import { createRendererTestMap } from "../test-utils/mapRendererTestSetup";
