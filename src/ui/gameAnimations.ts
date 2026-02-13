@@ -3,39 +3,23 @@
  */
 
 import {
-	DECK_MAX_SIZE,
 	LOG_AREA_GAP,
 	PLAYER_ATTACK_DAMAGE,
 	PLAYER_STRONG_ATTACK_DAMAGE,
 	STATUS_BAR_HEIGHT,
 } from "../constants";
-import {
-	addRewardCardToDeck,
-	createRewardState,
-	getTotalDeckSize,
-	removeCardFromDeck,
-	returnToTitle,
-	shouldShowVictoryScreen,
-	shouldTriggerCardRemoval,
-	transitionFloor,
-} from "../game";
-import { endSession } from "../game/playStats";
 import type { GameContext } from "../gameContext";
-import type { CardType, Direction, GameState, Position } from "../types";
+import type { Direction, GameState, Position } from "../types";
 import { DIRECTION_DELTA } from "../types";
-import { savePlaySession } from "../utils/statsStorage";
-import { deleteSaveData, hasSaveData } from "../utils/storage";
 import { Easing, tweenValue } from "../utils/tween";
 import {
 	type AttackCardType,
 	createDefeatParticleConfig,
 	getAttackParticleConfig,
 } from "./battleParticles";
-import { getViewportPixelSize, gridToCenterPixel } from "./coordinates";
-import { applyState, render, updateState } from "./gameRenderer";
+import { getViewportPixelSize, gridToParticlePosition } from "./coordinates";
+import { applyState, render } from "./gameRenderer";
 import { HAND_AREA_HEIGHT } from "./layout";
-import { relayoutUI } from "./relayout";
-import { createConfettiConfig, createGlowConfig } from "./victoryParticles";
 
 /**
  * 固定ビューポートサイズから画面サイズを計算
@@ -143,307 +127,6 @@ export async function updateStateWithMoveAnimation(
 }
 
 /**
- * 報酬フローを実行する
- *
- * 撃破数に応じた報酬カード選択肢を全て表示し、
- * ユーザーが1枚選択（またはスキップ）するまで待機する。
- * @see docs/spec/deckbuilding.md「報酬画面」
- */
-async function executeRewardFlow(
-	ctx: GameContext,
-	state: GameState,
-): Promise<GameState> {
-	const result = createRewardState(state);
-	if (!result) return state;
-
-	let current: GameState = {
-		...result.updatedState,
-		screen: "reward" as const,
-		rewardState: result.rewardState,
-	};
-
-	// 報酬画面に遷移した状態を適用してから描画する
-	applyState(ctx, current);
-	render(ctx);
-
-	const { width: screenWidth, height: screenHeight } = getScreenSize(ctx);
-	const gameArea = getGameAreaSize(ctx);
-
-	const needsReplacement = getTotalDeckSize(current.deck) >= DECK_MAX_SIZE;
-
-	if (needsReplacement) {
-		// 入れ替えモード（仕様準拠）: まず除去カード選択→その後報酬カード選択→追加
-		// スキップ時は除去も追加も行わない（デッキ枚数不変）
-		// @see docs/spec/deckbuilding.md「デッキ上限到達時の入手」
-		const removeResult = await showRemoveCardSelection(
-			ctx,
-			current,
-			screenWidth,
-			screenHeight,
-			undefined,
-			gameArea,
-		);
-		if (removeResult !== null) {
-			const beforeRemove = current;
-			current = removeCardFromDeck(current, removeResult);
-			// 除去後に報酬カード選択
-			const selectedIndex = await showRewardCardSelection(
-				ctx,
-				result.rewardState.choices,
-				screenWidth,
-				screenHeight,
-				gameArea,
-			);
-			if (selectedIndex !== null) {
-				current = addRewardCardToDeck(
-					current,
-					result.rewardState.choices[selectedIndex],
-				);
-			} else {
-				// 報酬スキップ時は除去もロールバック（仕様: 枚数不変）
-				current = beforeRemove;
-			}
-		}
-	} else {
-		// 通常モード: 選択肢から1枚選択 or スキップ
-		const selectedIndex = await showRewardCardSelection(
-			ctx,
-			result.rewardState.choices,
-			screenWidth,
-			screenHeight,
-			gameArea,
-		);
-		if (selectedIndex !== null) {
-			current = addRewardCardToDeck(
-				current,
-				result.rewardState.choices[selectedIndex],
-			);
-		}
-	}
-
-	// 報酬完了: ゲーム画面に戻す
-	return { ...current, screen: "game", rewardState: null };
-}
-
-/**
- * 報酬カード選択をPromiseで待機する
- *
- * 全選択肢を表示し、ユーザーが1枚選択するかスキップするまで待機する。
- * @returns 選択されたカードのインデックス（スキップ時はnull）
- */
-function showRewardCardSelection(
-	ctx: GameContext,
-	choices: CardType[],
-	screenWidth: number,
-	screenHeight: number,
-	gameArea?: { width: number; height: number },
-): Promise<number | null> {
-	return new Promise((resolve) => {
-		ctx.ui.rewardScreen.render(
-			choices,
-			screenWidth,
-			screenHeight,
-			gameArea?.width,
-			gameArea?.height,
-		);
-		ctx.ui.rewardScreen.show();
-
-		ctx.ui.rewardScreen.setOnCardSelect(async (index) => {
-			ctx.ui.rewardScreen.setOnCardSelect(() => {});
-			ctx.ui.rewardScreen.setOnSkip(() => {});
-			try {
-				await ctx.ui.rewardScreen.animateCardAcquire(index, choices[index]);
-			} catch (error) {
-				console.warn("カード取得アニメーション中にエラー:", error);
-			}
-			resolve(index);
-		});
-
-		ctx.ui.rewardScreen.setOnSkip(() => {
-			ctx.ui.rewardScreen.setOnCardSelect(() => {});
-			ctx.ui.rewardScreen.setOnSkip(() => {});
-			resolve(null);
-		});
-	});
-}
-
-/**
- * カード除去選択画面をPromiseで待機する
- */
-function showRemoveCardSelection(
-	ctx: GameContext,
-	state: GameState,
-	screenWidth: number,
-	screenHeight: number,
-	title?: string,
-	gameArea?: { width: number; height: number },
-): Promise<string | null> {
-	return new Promise((resolve) => {
-		const allCards = [
-			...state.deck.drawPile,
-			...state.deck.hand,
-			...state.deck.discardPile,
-		];
-
-		ctx.ui.rewardScreen.renderRemoveSelection(
-			allCards,
-			screenWidth,
-			screenHeight,
-			title,
-			gameArea?.width,
-			gameArea?.height,
-		);
-		ctx.ui.rewardScreen.show();
-
-		ctx.ui.rewardScreen.setOnRemoveCard((cardId) => {
-			resolve(cardId);
-		});
-
-		ctx.ui.rewardScreen.setOnSkip(() => {
-			resolve(null);
-		});
-	});
-}
-
-/**
- * カード除去イベントを実行する
- *
- * 全敵撃破かつデッキ枚数が最小値を超えている場合、30%の確率で除去イベントが発生。
- * 報酬フローの前に挿入される。
- * @see docs/spec/deckbuilding.md「カード除去」
- */
-async function executeCardRemovalEvent(
-	ctx: GameContext,
-	state: GameState,
-	screenWidth: number,
-	screenHeight: number,
-	gameArea?: { width: number; height: number },
-): Promise<GameState> {
-	const { triggered, updatedState } = shouldTriggerCardRemoval(state);
-	if (!triggered) return updatedState;
-
-	// 除去イベント中は報酬フローと同様に screen を "reward" 扱いにして描画する
-	const prevScreen = updatedState.screen;
-	const removalState: GameState = {
-		...updatedState,
-		screen: "reward",
-	};
-	applyState(ctx, removalState);
-	render(ctx);
-
-	const removeResult = await showRemoveCardSelection(
-		ctx,
-		removalState,
-		screenWidth,
-		screenHeight,
-		"カード除去イベント",
-		gameArea,
-	);
-
-	let resultState: GameState;
-	if (removeResult !== null) {
-		resultState = removeCardFromDeck(removalState, removeResult);
-	} else {
-		resultState = removalState;
-	}
-
-	// 除去イベント終了後は元の screen に戻して返す
-	return {
-		...resultState,
-		screen: prevScreen,
-	};
-}
-
-/**
- * 階層遷移の共通フロー
- * カード除去→報酬→勝利判定→階層遷移→フェード→手札配布を実行する
- */
-async function executeFloorTransitionFlow(
-	ctx: GameContext,
-	baseState: GameState,
-): Promise<void> {
-	const { width: screenWidth, height: screenHeight } = getScreenSize(ctx);
-	const gameArea = getGameAreaSize(ctx);
-
-	// 1. カード除去イベント（報酬フローの前）
-	const afterRemoval = await executeCardRemovalEvent(
-		ctx,
-		baseState,
-		screenWidth,
-		screenHeight,
-		gameArea,
-	);
-
-	// 2. 報酬フロー（撃破数0ならスキップ）
-	const afterReward = await executeRewardFlow(ctx, afterRemoval);
-
-	// 3. 勝利画面（クリア階層のボス撃破済みの場合）
-	if (shouldShowVictoryScreen(afterReward)) {
-		const victoryResult = await showVictoryScreen(ctx, afterReward);
-		if (victoryResult === "title") return;
-	}
-
-	// 4. 階層遷移
-	const transitioned = transitionFloor(afterReward);
-
-	// 5. フェードトランジション（暗転中に階層バナー表示 + 状態更新）
-	await ctx.ui.screenTransition.fadeTransition(async () => {
-		await ctx.ui.floorBanner.show(transitioned.floor);
-		applyState(ctx, transitioned);
-		relayoutUI(ctx);
-		render(ctx, true);
-		await ctx.ui.floorBanner.hide();
-	});
-
-	// 6. フェードイン後に手札配布アニメーション
-	await ctx.ui.handRenderer.renderWithAnimation(
-		ctx.state.deck.hand,
-		ctx.state.player.ap,
-		transitioned.deck.hand.length,
-	);
-}
-
-/**
- * 階段への移動アニメーション後に報酬フロー→階層遷移する
- */
-export async function updateStateWithStairsAnimation(
-	ctx: GameContext,
-	stairsState: GameState,
-	stairsGridPos: Position,
-): Promise<void> {
-	if (ctx.isAnimating) return;
-	ctx.isAnimating = true;
-
-	// ドラッグオフセットをリセット（ズームは維持）
-	ctx.ui.cameraDragController.reset(false);
-
-	try {
-		await ctx.ui.mapRenderer.animatePlayerMove(stairsGridPos);
-		applyState(ctx, stairsState);
-		await executeFloorTransitionFlow(ctx, stairsState);
-	} finally {
-		ctx.isAnimating = false;
-	}
-}
-
-/**
- * 「次の階層へ」ボタン押下時の階層遷移処理
- * 階段移動アニメーションをスキップし、カード除去→報酬→勝利判定→階層遷移を行う
- */
-export async function executeNextFloorTransition(
-	ctx: GameContext,
-): Promise<void> {
-	if (ctx.isAnimating) return;
-	ctx.isAnimating = true;
-
-	try {
-		await executeFloorTransitionFlow(ctx, ctx.state);
-	} finally {
-		ctx.isAnimating = false;
-	}
-}
-
-/**
  * 壁にぶつかった時のバンプアニメーション付きで状態を更新
  */
 export async function updateStateWithBumpAnimation(
@@ -526,7 +209,11 @@ export async function updateStateWithAttackAnimation(
 
 		// カードタイプ別パーティクル
 		if (hitEnemy) {
-			const center = gridToCenterPixel(hitEnemy.position);
+			const center = gridToParticlePosition(
+				hitEnemy.position,
+				ctx.ui.mapRenderer.getContainer(),
+				ctx.ui.particleSystem.getContainer(),
+			);
 			hitAnimations.push(
 				ctx.ui.particleSystem.emit(getAttackParticleConfig(cardType, center)),
 			);
@@ -540,7 +227,11 @@ export async function updateStateWithAttackAnimation(
 				ctx.ui.mapRenderer.animateEnemyDefeat(hitEnemyId),
 			];
 			if (hitEnemy) {
-				const center = gridToCenterPixel(hitEnemy.position);
+				const center = gridToParticlePosition(
+					hitEnemy.position,
+					ctx.ui.mapRenderer.getContainer(),
+					ctx.ui.particleSystem.getContainer(),
+				);
 				defeatAnimations.push(
 					ctx.ui.particleSystem.emit(createDefeatParticleConfig(center)),
 				);
@@ -599,66 +290,4 @@ export async function updateStateWithMissAnimation(
 	} finally {
 		ctx.isAnimating = false;
 	}
-}
-
-/**
- * 勝利画面を表示し、ユーザーの選択を待機する
- * @returns "continue" で次フロアへ、"title" でタイトルに戻る
- */
-/** 紙吹雪の繰り返し発射間隔（ミリ秒） */
-const CONFETTI_INTERVAL = 3000;
-
-function showVictoryScreen(
-	ctx: GameContext,
-	state: GameState,
-): Promise<"continue" | "title"> {
-	return new Promise((resolve) => {
-		const victoryState: GameState = { ...state, screen: "victory" };
-		applyState(ctx, victoryState);
-		render(ctx);
-
-		const { width: screenWidth, height: screenHeight } = getScreenSize(ctx);
-		const particleHeight = screenHeight - STATUS_BAR_HEIGHT;
-		const ps = ctx.ui.particleSystem;
-
-		// パーティクル発射: 光の粒子（初回のみ）+ 紙吹雪（繰り返し）
-		let confettiTimer: number | undefined;
-		if (ps) {
-			ps.emit(createGlowConfig(screenWidth, particleHeight));
-			ps.emit(createConfettiConfig(screenWidth));
-			confettiTimer = setInterval(() => {
-				ps.emit(createConfettiConfig(screenWidth));
-			}, CONFETTI_INTERVAL);
-		}
-
-		const cleanup = (): void => {
-			if (confettiTimer !== undefined) {
-				clearInterval(confettiTimer);
-			}
-			ps?.clear();
-			ctx.ui.victoryScreen.setOnContinue(() => {});
-			ctx.ui.victoryScreen.setOnReturnToTitle(() => {});
-		};
-
-		ctx.ui.victoryScreen.setOnContinue(() => {
-			cleanup();
-			// ゲーム画面に戻す
-			const continueState: GameState = { ...state, screen: "game" };
-			applyState(ctx, continueState);
-			resolve("continue");
-		});
-
-		ctx.ui.victoryScreen.setOnReturnToTitle(async () => {
-			cleanup();
-			const session = endSession("clear", null);
-			if (session) savePlaySession(session);
-			deleteSaveData();
-			await ctx.ui.screenTransition.fadeTransition(() => {
-				updateState(ctx, returnToTitle(ctx.state));
-				const screen = getScreenSize(ctx);
-				ctx.ui.titleScreen.render(screen.width, screen.height, hasSaveData());
-			});
-			resolve("title");
-		});
-	});
 }

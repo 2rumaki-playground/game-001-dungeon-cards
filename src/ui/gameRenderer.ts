@@ -50,7 +50,6 @@ function renderTitleScreen(ctx: GameContext): void {
 	ctx.ui.victoryScreen.hide();
 	ctx.ui.statsScreen.hide();
 	ctx.ui.statusBar.hide();
-	ctx.ui.turnOverlay.hide();
 	ctx.ui.turnEndButton.hide();
 	ctx.ui.nextFloorButton.hide();
 	ctx.ui.returnToPlayerButton.hide();
@@ -115,7 +114,6 @@ export function renderGameScreen(
 		ctx.state.turn,
 		ctx.state.isCleared,
 	);
-	ctx.ui.turnOverlay.render(ctx.state.turn);
 	const visitedTiles =
 		import.meta.env.DEV && getDebugCheats().fullMapVisible
 			? undefined
@@ -172,7 +170,6 @@ function renderGameOverScreen(ctx: GameContext): void {
 	ctx.ui.titleScreen.hide();
 	ctx.ui.victoryScreen.hide();
 	ctx.ui.statusBar.hide();
-	ctx.ui.turnOverlay.hide();
 	ctx.ui.turnEndButton.hide();
 	ctx.ui.nextFloorButton.hide();
 	ctx.ui.returnToPlayerButton.hide();
@@ -197,7 +194,6 @@ function renderVictoryScreen(ctx: GameContext): void {
 	ctx.ui.titleScreen.hide();
 	ctx.ui.gameOverScreen.hide();
 	ctx.ui.statusBar.hide();
-	ctx.ui.turnOverlay.hide();
 	ctx.ui.turnEndButton.hide();
 	ctx.ui.nextFloorButton.hide();
 	ctx.ui.returnToPlayerButton.hide();

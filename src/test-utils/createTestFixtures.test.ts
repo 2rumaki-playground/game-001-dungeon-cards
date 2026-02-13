@@ -1,6 +1,18 @@
-import { describe, expect, it } from "vitest";
-import { MAP_HEIGHT, MAP_WIDTH, MAX_AP, PLAYER_INITIAL_HP } from "../constants";
-import { createTestMap, createTestState } from "./createTestFixtures";
+import { beforeEach, describe, expect, it } from "vitest";
+import {
+	ENEMY_PARAMS,
+	MAP_HEIGHT,
+	MAP_WIDTH,
+	MAX_AP,
+	PLAYER_INITIAL_HP,
+} from "../constants";
+import {
+	createTestEnemy,
+	createTestHand,
+	createTestMap,
+	createTestState,
+	resetTestEnemySeq,
+} from "./createTestFixtures";
 
 describe("createTestMap", () => {
 	it("7x7マップを生成する", () => {
@@ -56,5 +68,81 @@ describe("createTestState", () => {
 		const state1 = createTestState();
 		const state2 = createTestState();
 		expect(state1.map).not.toBe(state2.map);
+	});
+});
+
+describe("createTestEnemy", () => {
+	beforeEach(() => {
+		resetTestEnemySeq();
+	});
+
+	it("デフォルト値で通常敵を生成する", () => {
+		const enemy = createTestEnemy();
+		expect(enemy.type).toBe("normal");
+		expect(enemy.position).toEqual({ x: 4, y: 3 });
+		expect(enemy.hp).toBe(ENEMY_PARAMS.normal.hp);
+		expect(enemy.maxHp).toBe(ENEMY_PARAMS.normal.hp);
+		expect(enemy.id).toBe("enemy-1");
+	});
+
+	it("タイプ指定でHPが自動設定される", () => {
+		const boss = createTestEnemy("boss");
+		expect(boss.type).toBe("boss");
+		expect(boss.hp).toBe(ENEMY_PARAMS.boss.hp);
+		expect(boss.maxHp).toBe(ENEMY_PARAMS.boss.hp);
+
+		const heavy = createTestEnemy("heavy");
+		expect(heavy.hp).toBe(ENEMY_PARAMS.heavy.hp);
+	});
+
+	it("位置を指定できる", () => {
+		const enemy = createTestEnemy("normal", { x: 1, y: 2 });
+		expect(enemy.position).toEqual({ x: 1, y: 2 });
+	});
+
+	it("overridesで任意のフィールドを上書きできる", () => {
+		const enemy = createTestEnemy(
+			"boss",
+			{ x: 4, y: 3 },
+			{
+				id: "custom-boss",
+				hp: 7,
+				pendingSkill: { type: "area_attack" },
+				enraged: true,
+			},
+		);
+		expect(enemy.id).toBe("custom-boss");
+		expect(enemy.hp).toBe(7);
+		expect(enemy.maxHp).toBe(ENEMY_PARAMS.boss.hp);
+		expect(enemy.pendingSkill).toEqual({ type: "area_attack" });
+		expect(enemy.enraged).toBe(true);
+	});
+
+	it("複数回呼んでもIDが一意になる", () => {
+		const e1 = createTestEnemy();
+		const e2 = createTestEnemy();
+		expect(e1.id).not.toBe(e2.id);
+	});
+
+	it("overridesでtypeを上書きするとhp/maxHpが再計算される", () => {
+		const enemy = createTestEnemy("normal", { x: 4, y: 3 }, { type: "boss" });
+		expect(enemy.type).toBe("boss");
+		expect(enemy.hp).toBe(ENEMY_PARAMS.boss.hp);
+		expect(enemy.maxHp).toBe(ENEMY_PARAMS.boss.hp);
+	});
+});
+
+describe("createTestHand", () => {
+	it("CardType配列から手札を生成する", () => {
+		const hand = createTestHand(["move", "attack", "jump"]);
+		expect(hand).toHaveLength(3);
+		expect(hand[0]).toEqual({ id: "test-card-0", type: "move" });
+		expect(hand[1]).toEqual({ id: "test-card-1", type: "attack" });
+		expect(hand[2]).toEqual({ id: "test-card-2", type: "jump" });
+	});
+
+	it("空配列で空の手札を返す", () => {
+		const hand = createTestHand([]);
+		expect(hand).toEqual([]);
 	});
 });

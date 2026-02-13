@@ -8,6 +8,31 @@ import type { Position } from "../types";
 
 const CELL_WITH_GAP = CELL_SIZE + CELL_GAP;
 
+/** toGlobal/toLocalを持つコンテナのインタフェース */
+interface SpatialContainer {
+	toGlobal(pos: { x: number; y: number }): { x: number; y: number };
+	toLocal(pos: { x: number; y: number }): { x: number; y: number };
+}
+
+/**
+ * グリッド座標をパーティクルコンテナ空間の座標に変換
+ * マップ空間 → グローバル空間 → パーティクル空間 の変換パイプライン
+ * @param gridPos グリッド座標
+ * @param mapContainer マップのPixiJSコンテナ
+ * @param particleContainer パーティクルのPixiJSコンテナ
+ * @returns パーティクルコンテナ空間の座標
+ */
+export function gridToParticlePosition(
+	gridPos: Position,
+	mapContainer: SpatialContainer,
+	particleContainer: SpatialContainer,
+): Position {
+	const mapCenter = gridToCenterPixel(gridPos);
+	const globalCenter = mapContainer.toGlobal(mapCenter);
+	const local = particleContainer.toLocal(globalCenter);
+	return { x: local.x, y: local.y };
+}
+
 /**
  * グリッド座標からピクセル座標（左上）を計算
  * @param gridPos グリッド座標（0-indexed）

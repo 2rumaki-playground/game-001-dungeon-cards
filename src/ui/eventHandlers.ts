@@ -45,18 +45,20 @@ import {
 	calculateCameraOffset,
 	clampCameraOffset,
 	getViewportPixelSize,
-	gridToCenterPixel,
+	gridToParticlePosition,
 } from "./coordinates";
 import { detectEnemyMoves } from "./enemyMoveDetector";
 import {
 	executeNextFloorTransition,
+	updateStateWithStairsAnimation,
+} from "./floorTransition";
+import {
 	getGameAreaSize,
 	getScreenSize,
 	updateStateWithAttackAnimation,
 	updateStateWithBumpAnimation,
 	updateStateWithMissAnimation,
 	updateStateWithMoveAnimation,
-	updateStateWithStairsAnimation,
 } from "./gameAnimations";
 import {
 	applyCameraOffset,
@@ -88,11 +90,11 @@ async function showTileEffectPopup(
 
 	if (amount <= 0) return;
 
-	const mapCenter = gridToCenterPixel(gridPos);
-	const globalCenter = ctx.ui.mapRenderer.getContainer().toGlobal(mapCenter);
-	const particleOrigin = ctx.ui.particleSystem
-		.getContainer()
-		.toLocal(globalCenter);
+	const particleOrigin = gridToParticlePosition(
+		gridPos,
+		ctx.ui.mapRenderer.getContainer(),
+		ctx.ui.particleSystem.getContainer(),
+	);
 	const particleConfig =
 		tileType === "trap"
 			? createTrapDamageParticleConfig(particleOrigin)
@@ -233,7 +235,11 @@ function emitJumpParticles(
 	originPos: Position,
 	moveAngle: number,
 ): void {
-	const center = gridToCenterPixel(originPos);
+	const center = gridToParticlePosition(
+		originPos,
+		ctx.ui.mapRenderer.getContainer(),
+		ctx.ui.particleSystem.getContainer(),
+	);
 	ctx.ui.particleSystem.emit(createJumpParticleConfig(center, moveAngle));
 }
 
@@ -667,11 +673,8 @@ export function setupEventHandlers(ctx: GameContext): void {
 			);
 			ctx.ui.turnEndButton.render(ctx.state.turn);
 
-			// 敵ターンバナー表示 + オーバーレイフェードイン（並列実行）
-			await Promise.all([
-				ctx.ui.turnBanner.showBanner("enemy"),
-				ctx.ui.turnOverlay.fadeIn(),
-			]);
+			// 敵ターンバナー表示
+			await ctx.ui.turnBanner.showBanner("enemy");
 
 			const enemiesBefore = next.enemies;
 			const { state: enemyTurnState, totalDamage } = executeEnemyTurn(next);
@@ -721,11 +724,8 @@ export function setupEventHandlers(ctx: GameContext): void {
 				);
 				ctx.ui.turnEndButton.render(ctx.state.turn);
 
-				// オーバーレイフェードアウト + プレイヤーターンバナー表示（並列実行）
-				await Promise.all([
-					ctx.ui.turnOverlay.fadeOut(),
-					ctx.ui.turnBanner.showBanner("player"),
-				]);
+				// プレイヤーターンバナー表示
+				await ctx.ui.turnBanner.showBanner("player");
 
 				render(ctx, true);
 

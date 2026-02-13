@@ -1,24 +1,20 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { createTickerMock } from "../test-utils/mockPixi";
 import type { GameMap } from "../types/map";
 
-let tickerCallbacks: Array<(tick: { deltaMS: number }) => void> = [];
+const tickerMock = createTickerMock();
 vi.mock("pixi.js", async () => {
 	const actual = await vi.importActual<typeof import("pixi.js")>("pixi.js");
-
-	const MockTicker = {
-		shared: {
-			add: (fn: (tick: { deltaMS: number }) => void) => {
-				tickerCallbacks.push(fn);
-			},
-			remove: (fn: (tick: { deltaMS: number }) => void) => {
-				tickerCallbacks = tickerCallbacks.filter((cb) => cb !== fn);
-			},
-		},
-	};
-
 	return {
 		...actual,
-		Ticker: MockTicker,
+		Ticker: {
+			shared: {
+				add: (fn: (tick: { deltaMS: number }) => void) =>
+					tickerMock.shared.add(fn),
+				remove: (fn: (tick: { deltaMS: number }) => void) =>
+					tickerMock.shared.remove(fn),
+			},
+		},
 	};
 });
 
@@ -33,7 +29,7 @@ function createSimpleMap(tiles: string[][]): GameMap {
 
 describe("SpecialTileEffectManager", () => {
 	beforeEach(() => {
-		tickerCallbacks = [];
+		tickerMock.reset();
 	});
 
 	it("getContainer()がContainerを返す", () => {
@@ -49,7 +45,7 @@ describe("SpecialTileEffectManager", () => {
 			["treasure", "rest_area"],
 		]);
 		manager.update(map);
-		expect(tickerCallbacks).toHaveLength(1);
+		expect(tickerMock.callbacks).toHaveLength(1);
 	});
 
 	it("update()を複数回呼んでもTickerコールバックは1つだけ", () => {
@@ -57,7 +53,7 @@ describe("SpecialTileEffectManager", () => {
 		const map = createSimpleMap([["floor", "trap"]]);
 		manager.update(map);
 		manager.update(map);
-		expect(tickerCallbacks).toHaveLength(1);
+		expect(tickerMock.callbacks).toHaveLength(1);
 	});
 
 	it("update()で通常タイル（floor/wall）のみのマップではTickerに登録されない", () => {
@@ -67,14 +63,14 @@ describe("SpecialTileEffectManager", () => {
 			["floor", "floor"],
 		]);
 		manager.update(map);
-		expect(tickerCallbacks).toHaveLength(0);
+		expect(tickerMock.callbacks).toHaveLength(0);
 	});
 
 	it("update()で階段タイルを含むマップでTickerに登録される", () => {
 		const manager = new SpecialTileEffectManager();
 		const map = createSimpleMap([["floor", "stairs"]]);
 		manager.update(map);
-		expect(tickerCallbacks).toHaveLength(1);
+		expect(tickerMock.callbacks).toHaveLength(1);
 	});
 
 	it("update()でvisitedTilesが指定された場合、未訪問の特殊タイルはスキップ", () => {
@@ -87,12 +83,10 @@ describe("SpecialTileEffectManager", () => {
 		manager.update(map, visited);
 
 		// Tickerが登録されている（trapのエフェクトがある）
-		expect(tickerCallbacks).toHaveLength(1);
+		expect(tickerMock.callbacks).toHaveLength(1);
 
 		// 1フレーム進める → グローが描画される
-		for (const cb of [...tickerCallbacks]) {
-			cb({ deltaMS: 16 });
-		}
+		tickerMock.tick(16);
 
 		// エフェクト数を確認（visitedの1つだけ）
 		expect(manager.getEffectCount()).toBe(1);
@@ -123,10 +117,10 @@ describe("SpecialTileEffectManager", () => {
 		const manager = new SpecialTileEffectManager();
 		const map = createSimpleMap([["trap"]]);
 		manager.update(map);
-		expect(tickerCallbacks).toHaveLength(1);
+		expect(tickerMock.callbacks).toHaveLength(1);
 
 		manager.clear();
-		expect(tickerCallbacks).toHaveLength(0);
+		expect(tickerMock.callbacks).toHaveLength(0);
 	});
 
 	it("clear()後にgetEffectCount()が0を返す", () => {
@@ -145,9 +139,7 @@ describe("SpecialTileEffectManager", () => {
 		manager.update(map);
 
 		// 1フレーム進める
-		for (const cb of [...tickerCallbacks]) {
-			cb({ deltaMS: 16 });
-		}
+		tickerMock.tick(16);
 
 		// コンテナに描画用Graphicsがある
 		expect(manager.getContainer().children.length).toBeGreaterThanOrEqual(1);
@@ -196,9 +188,7 @@ describe("SpecialTileEffectManager", () => {
 
 		// 矢印も描画されない（arrowGraphicsの子要素で確認）
 		// Tickerを進めてもstairsエフェクトは増えない
-		for (const cb of [...tickerCallbacks]) {
-			cb({ deltaMS: 16 });
-		}
+		tickerMock.tick(16);
 		expect(manager.getStairsEffect("0,0")).toBeUndefined();
 	});
 

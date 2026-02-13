@@ -1,10 +1,24 @@
-export * from "./action";
-export * from "./cardPool";
-export * from "./deck";
-export * from "./enemyAi";
-export * from "./floor";
-export * from "./map";
-export * from "./reward";
-export * from "./state";
-export * from "./turn";
-export * from "./victory";
+export {
+	executeAttack,
+	executeJump,
+	executeMove,
+	executeStrongAttack,
+	executeWait,
+} from "./action";
+export { getTotalDeckSize } from "./deck";
+export { executeEnemyTurn } from "./enemyAi";
+export { transitionFloor } from "./floor";
+export {
+	addRewardCardToDeck,
+	createRewardState,
+	removeCardFromDeck,
+	shouldTriggerCardRemoval,
+} from "./reward";
+export {
+	createTitleScreenState,
+	returnToTitle,
+	startNewGame,
+	startNewGameAtFloor,
+} from "./state";
+export { endPlayerTurn, startPlayerTurn } from "./turn";
+export { shouldShowVictoryScreen } from "./victory";
