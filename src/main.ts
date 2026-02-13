@@ -204,6 +204,9 @@ async function initializeUIComponents(
 		debugTargetSelector = new DebugTargetSelector();
 		const targetSelectorContainer = debugTargetSelector.getContainer();
 		mapRenderer.getContainer().addChild(targetSelectorContainer);
+
+		const { EnemyAiOverlayManager } = await import("./ui/enemyAiOverlay");
+		mapRenderer.setEnemyAiOverlayManager(new EnemyAiOverlayManager());
 	}
 
 	return {

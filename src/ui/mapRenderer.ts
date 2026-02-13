@@ -23,7 +23,6 @@ import {
 	getTileTexture,
 } from "./assetLoader";
 import { getViewportPixelSize, gridToPixel } from "./coordinates";
-import { EnemyAiOverlayManager } from "./enemyAiOverlay";
 import type { EnemyMove } from "./enemyMoveDetector";
 import { EnemyTooltip } from "./enemyTooltip";
 import {
@@ -196,7 +195,11 @@ export class MapRenderer {
 	private tooltipEnemyId: string | null = null;
 	private specialTileEffectManager: SpecialTileEffectManager;
 	private skillForecastEffectManager: SkillForecastEffectManager;
-	private enemyAiOverlayManager: EnemyAiOverlayManager;
+	private enemyAiOverlayManager: {
+		getContainer(): Container;
+		update(analyses: EnemyAiAnalysis[], visitedTiles?: Set<string>): void;
+		clear(): void;
+	} | null = null;
 	private enemyAiAnalyses: Map<string, EnemyAiAnalysis> = new Map();
 
 	constructor() {
@@ -209,7 +212,6 @@ export class MapRenderer {
 		this.enemyTooltip = new EnemyTooltip();
 		this.specialTileEffectManager = new SpecialTileEffectManager();
 		this.skillForecastEffectManager = new SkillForecastEffectManager();
-		this.enemyAiOverlayManager = new EnemyAiOverlayManager();
 
 		this.container.addChild(this.tilesContainer);
 		this.container.addChild(this.specialTileEffectManager.getContainer());
@@ -217,7 +219,6 @@ export class MapRenderer {
 		this.container.addChild(
 			this.skillForecastEffectManager.getRangeContainer(),
 		);
-		this.container.addChild(this.enemyAiOverlayManager.getContainer());
 		this.container.addChild(this.enemiesContainer);
 		this.container.addChild(this.skillForecastEffectManager.getIconContainer());
 		this.container.addChild(this.fogGraphics);
@@ -230,6 +231,19 @@ export class MapRenderer {
 	 */
 	getContainer(): Container {
 		return this.container;
+	}
+
+	/**
+	 * 敵AI可視化オーバーレイマネージャを設定（DEV環境でのみ呼び出す）
+	 */
+	setEnemyAiOverlayManager(manager: {
+		getContainer(): Container;
+		update(analyses: EnemyAiAnalysis[], visitedTiles?: Set<string>): void;
+		clear(): void;
+	}): void {
+		this.enemyAiOverlayManager = manager;
+		const enemiesIndex = this.container.getChildIndex(this.enemiesContainer);
+		this.container.addChildAt(manager.getContainer(), enemiesIndex);
 	}
 
 	/**
@@ -843,7 +857,7 @@ export class MapRenderer {
 		this.hideEnemyTooltip();
 		this.specialTileEffectManager.clear();
 		this.skillForecastEffectManager.clear();
-		this.enemyAiOverlayManager.clear();
+		this.enemyAiOverlayManager?.clear();
 		this.enemyAiAnalyses.clear();
 	}
 
@@ -913,7 +927,7 @@ export class MapRenderer {
 		analyses: EnemyAiAnalysis[],
 		visitedTiles?: Set<string>,
 	): void {
-		this.enemyAiOverlayManager.update(analyses, visitedTiles);
+		this.enemyAiOverlayManager?.update(analyses, visitedTiles);
 		this.enemyAiAnalyses.clear();
 		for (const a of analyses) {
 			this.enemyAiAnalyses.set(a.enemyId, a);
@@ -924,7 +938,7 @@ export class MapRenderer {
 	 * 敵AI可視化オーバーレイをクリア
 	 */
 	clearEnemyAiOverlay(): void {
-		this.enemyAiOverlayManager.clear();
+		this.enemyAiOverlayManager?.clear();
 		this.enemyAiAnalyses.clear();
 	}
 }
