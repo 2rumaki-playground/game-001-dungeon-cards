@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 import {
 	CLEAR_FLOOR,
 	ENEMY_ATTACK_DAMAGE,
@@ -16,6 +16,7 @@ import {
 	checkGameOver,
 	isDefeated,
 } from "./combat";
+import { resetDebugCheats, toggleDebugCheat } from "./debugCheats";
 
 describe("isDefeated", () => {
 	it("HP0の場合trueを返す", () => {
@@ -390,5 +391,27 @@ describe("checkGameOver", () => {
 		checkGameOver(state);
 
 		expect(state.screen).toBe(originalScreen);
+	});
+});
+
+describe("applyDamageToPlayer - 無敵チート", () => {
+	afterEach(() => {
+		resetDebugCheats();
+	});
+
+	it("無敵ONの場合、ダメージを受けない", () => {
+		toggleDebugCheat("invincible");
+		const state = createTestState();
+		const result = applyDamageToPlayer(state, ENEMY_ATTACK_DAMAGE);
+
+		expect(result.player.hp).toBe(PLAYER_INITIAL_HP);
+		expect(result).toBe(state);
+	});
+
+	it("無敵OFFの場合、通常通りダメージを受ける", () => {
+		const state = createTestState();
+		const result = applyDamageToPlayer(state, ENEMY_ATTACK_DAMAGE);
+
+		expect(result.player.hp).toBe(PLAYER_INITIAL_HP - ENEMY_ATTACK_DAMAGE);
 	});
 });

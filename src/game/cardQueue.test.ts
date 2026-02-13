@@ -2,7 +2,7 @@
  * カード予約キューのテスト
  */
 
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 import type { Card } from "../types";
 import {
 	buildQueuedCardIndexMap,
@@ -10,6 +10,7 @@ import {
 	getQueuedApCost,
 	type QueuedCard,
 } from "./cardQueue";
+import { resetDebugCheats, toggleDebugCheat } from "./debugCheats";
 
 describe("cardQueue", () => {
 	describe("getQueuedApCost", () => {
@@ -111,6 +112,29 @@ describe("cardQueue", () => {
 					["c3", 3],
 				]),
 			);
+		});
+	});
+
+	describe("AP無限チート", () => {
+		afterEach(() => {
+			resetDebugCheats();
+		});
+
+		it("AP無限ON時にgetQueuedApCostが常に0を返す", () => {
+			toggleDebugCheat("infiniteAp");
+			const queue: QueuedCard[] = [
+				{ card: { id: "c1", type: "move" }, direction: "up" },
+				{ card: { id: "c2", type: "strong_attack" }, direction: "down" },
+			];
+			// 通常: move(1) + strong_attack(2) = 3 だがAP無限ONなので0
+			expect(getQueuedApCost(queue)).toBe(0);
+		});
+
+		it("AP無限ON時にcanEnqueueCardがAP不足でもtrueを返す", () => {
+			toggleDebugCheat("infiniteAp");
+			const card: Card = { id: "c1", type: "strong_attack" };
+			// AP=0, strong_attack costs 2 → 通常NG だがAP無限ONなのでOK
+			expect(canEnqueueCard(0, [], card)).toBe(true);
 		});
 	});
 });

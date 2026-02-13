@@ -3,8 +3,8 @@
  * @see https://github.com/2rumaki-playground/game-001-dungeon-cards/issues/263
  */
 
-import { CARD_COST } from "../constants";
 import type { Card, Direction } from "../types";
+import { getEffectiveCardCost } from "./debugCheats";
 
 /** 予約済みカードエントリ */
 export type QueuedCard = {
@@ -16,7 +16,10 @@ export type QueuedCard = {
  * キュー内カードの合計APコストを計算
  */
 export function getQueuedApCost(queue: QueuedCard[]): number {
-	return queue.reduce((sum, entry) => sum + CARD_COST[entry.card.type], 0);
+	return queue.reduce(
+		(sum, entry) => sum + getEffectiveCardCost(entry.card.type),
+		0,
+	);
 }
 
 /**
@@ -46,5 +49,5 @@ export function canEnqueueCard(
 ): boolean {
 	const pendingCost = getQueuedApCost(queue);
 	const availableAp = currentAp - pendingCost;
-	return availableAp >= CARD_COST[card.type];
+	return availableAp >= getEffectiveCardCost(card.type);
 }

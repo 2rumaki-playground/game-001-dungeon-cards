@@ -4,7 +4,8 @@
  */
 
 import { Container, Graphics, Text } from "pixi.js";
-import { CARD_COST, CARD_RARITY } from "../constants";
+import { CARD_RARITY } from "../constants";
+import { getEffectiveCardCost } from "../game/debugCheats";
 import type { Card, CardType, Direction } from "../types";
 import { Easing, tween } from "../utils/tween";
 import {
@@ -202,7 +203,7 @@ export class HandRenderer {
 		for (let i = 0; i < hand.length; i++) {
 			const card = hand[i];
 			const x = startX + i * (CARD_WIDTH + CARD_GAP);
-			const cost = CARD_COST[card.type];
+			const cost = getEffectiveCardCost(card.type);
 			const enabled = currentAp >= cost;
 			const selected = card.id === this.selectedCardId;
 			const hovered = enabled && card.id === this.hoveredCardId;
@@ -377,7 +378,7 @@ export class HandRenderer {
 		cardContainer.addChild(nameText);
 
 		// APコスト
-		const cost = CARD_COST[card.type];
+		const cost = getEffectiveCardCost(card.type);
 		const costFill = !enabled
 			? 0x666666
 			: cost >= 2
@@ -590,7 +591,7 @@ export class HandRenderer {
 		const hoveredCard = hand.find((c) => c.id === this.hoveredCardId);
 		if (!hoveredCard) return;
 
-		const cost = CARD_COST[hoveredCard.type];
+		const cost = getEffectiveCardCost(hoveredCard.type);
 		if (this.currentAp < cost) return;
 
 		const cardIndex = hand.findIndex((c) => c.id === this.hoveredCardId);
@@ -616,7 +617,7 @@ export class HandRenderer {
 	} {
 		const tooltip = new Container();
 
-		const cost = CARD_COST[cardType];
+		const cost = getEffectiveCardCost(cardType);
 		const rarity = CARD_RARITY[cardType];
 
 		// テキスト要素を先に生成してから高さを計算

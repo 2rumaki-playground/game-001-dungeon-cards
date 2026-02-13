@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 import {
 	CARD_COST,
 	ENEMY_HP,
@@ -22,6 +22,11 @@ import {
 	executeStrongAttack,
 	executeWait,
 } from "./action";
+import {
+	getEffectiveCardCost,
+	resetDebugCheats,
+	toggleDebugCheat,
+} from "./debugCheats";
 
 describe("consumeApAndPlayCard", () => {
 	it("APが指定コスト分減少する", () => {
@@ -1121,5 +1126,42 @@ describe("executeJump - visitedTiles", () => {
 		// (1,1)からupは(1,-1)=マップ外なので失敗
 		const result = executeJump(state, "jump-1", "up");
 		expect(result.state.visitedTiles.size).toBe(0);
+	});
+});
+
+describe("consumeApAndPlayCard - AP無限チート", () => {
+	afterEach(() => {
+		resetDebugCheats();
+	});
+
+	it("AP無限ONの場合、APが減らない", () => {
+		toggleDebugCheat("infiniteAp");
+		const state = createTestState({
+			deck: {
+				drawPile: [],
+				hand: [{ id: "move-1", type: "move" }],
+				discardPile: [],
+			},
+		});
+		const cost = getEffectiveCardCost("move");
+		expect(cost).toBe(0);
+		const result = consumeApAndPlayCard(state, "move-1", cost);
+
+		expect(result.player.ap).toBe(MAX_AP);
+	});
+
+	it("AP無限OFFの場合、通常通りAPが減る", () => {
+		const state = createTestState({
+			deck: {
+				drawPile: [],
+				hand: [{ id: "move-1", type: "move" }],
+				discardPile: [],
+			},
+		});
+		const cost = getEffectiveCardCost("move");
+		expect(cost).toBe(CARD_COST.move);
+		const result = consumeApAndPlayCard(state, "move-1", cost);
+
+		expect(result.player.ap).toBe(MAX_AP - CARD_COST.move);
 	});
 });

@@ -173,12 +173,15 @@ async function initializeUIComponents(
 	let debugCardRenderer:
 		| import("./ui/debugCardRenderer").DebugCardRenderer
 		| null = null;
+	let debugCheatPanel: import("./ui/debugCheatPanel").DebugCheatPanel | null =
+		null;
 	let debugTargetSelector:
 		| import("./ui/debugTargetSelector").DebugTargetSelector
 		| null = null;
 
 	if (import.meta.env.DEV) {
 		const { DebugCardRenderer } = await import("./ui/debugCardRenderer");
+		const { DebugCheatPanel } = await import("./ui/debugCheatPanel");
 		const { DebugTargetSelector } = await import("./ui/debugTargetSelector");
 
 		debugCardRenderer = new DebugCardRenderer();
@@ -191,6 +194,12 @@ async function initializeUIComponents(
 			totalHeight - debugCardRenderer.getTotalHeight() - BUTTON_BOTTOM_MARGIN;
 		const deckViewerIndex = app.stage.getChildIndex(deckViewer.getContainer());
 		app.stage.addChildAt(debugCardContainer, deckViewerIndex);
+
+		debugCheatPanel = new DebugCheatPanel();
+		const cheatPanelContainer = debugCheatPanel.getContainer();
+		cheatPanelContainer.x = 8;
+		cheatPanelContainer.y = STATUS_BAR_HEIGHT + 8;
+		app.stage.addChild(cheatPanelContainer);
 
 		debugTargetSelector = new DebugTargetSelector();
 		const targetSelectorContainer = debugTargetSelector.getContainer();
@@ -218,6 +227,7 @@ async function initializeUIComponents(
 		cameraDragController,
 		returnToPlayerButton,
 		debugCardRenderer,
+		debugCheatPanel,
 		debugTargetSelector,
 	};
 }
