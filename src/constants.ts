@@ -347,4 +347,8 @@ export const COLORS = {
 	skillAreaAttack: 0xdd3333,
 	// システム（行動ログ等）
 	system: 0x888888,
+	// デバッグ: 敵AI可視化
+	debugMoveCandidate: 0x44aa66,
+	debugMoveBest: 0x66ff88,
+	debugAttackRange: 0xcc4444,
 } as const;
