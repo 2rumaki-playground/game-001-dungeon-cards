@@ -25,8 +25,8 @@ import { UI_COLOR_GOLD, UI_COLORS_DISABLED } from "./uiColors";
 /** カード描画定数 */
 export const CARD_WIDTH = 90;
 export const CARD_HEIGHT = 120;
-const CARD_GAP = 8;
-const CARD_RADIUS = 8;
+export const CARD_GAP = 8;
+export const CARD_RADIUS = 8;
 
 /**
  * アニメーション定数
