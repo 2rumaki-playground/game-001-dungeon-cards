@@ -57,7 +57,7 @@ jobs:
 
       # --- Head branch ---
       - name: Clean build artifacts
-        run: rm -rf dist
+        run: rm -rf dist bench-results.json
 
       - name: Checkout head branch
         run: git checkout ${{ github.event.pull_request.head.sha }}
