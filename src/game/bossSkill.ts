@@ -128,11 +128,17 @@ function executePowerStrike(state: GameState, enemy: Enemy): SkillResult {
 
 	const params = ENEMY_PARAMS[enemy.type];
 	const damage = params.attackDamage * BOSS_SKILL.powerStrikeMultiplier;
+	const hpBefore = next.player.hp;
 	next = applyDamageToPlayer(next, damage);
 	next = {
 		...next,
 		lastAttackerEnemyType: enemy.type,
-		acquisitionCounters: updateHitCounter(next.acquisitionCounters, enemy.type),
+		...(next.player.hp < hpBefore && {
+			acquisitionCounters: updateHitCounter(
+				next.acquisitionCounters,
+				enemy.type,
+			),
+		}),
 	};
 	next = addActionLog(next, "ミニボスが強化攻撃を放った", "enemy");
 
