@@ -163,11 +163,17 @@ function executeAreaAttack(state: GameState, enemy: Enemy): SkillResult {
 	}
 
 	const damage = BOSS_SKILL.areaAttackDamage;
+	const hpBefore = next.player.hp;
 	next = applyDamageToPlayer(next, damage);
 	next = {
 		...next,
 		lastAttackerEnemyType: enemy.type,
-		acquisitionCounters: updateHitCounter(next.acquisitionCounters, enemy.type),
+		...(next.player.hp < hpBefore && {
+			acquisitionCounters: updateHitCounter(
+				next.acquisitionCounters,
+				enemy.type,
+			),
+		}),
 	};
 	next = addActionLog(next, "ボスが範囲攻撃を放った", "enemy");
 
