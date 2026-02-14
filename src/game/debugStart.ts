@@ -46,6 +46,7 @@ export function createDebugDeckState(
 			createCard(type as CardType),
 		);
 	});
+	// デバッグ用: シャッフルした順序をdeckOrderとする（本番は固定順）
 	const shuffled = rng.shuffle(cards);
 	return {
 		deckOrder: [...shuffled],
