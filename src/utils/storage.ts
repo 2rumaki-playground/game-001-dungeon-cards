@@ -6,7 +6,7 @@
 import { getEnemyCount, INITIAL_FLOOR } from "../constants";
 import { createInitialCounters } from "../game/cardAcquisition";
 import { initCardIdCounterFromDeck } from "../game/deck";
-import type { GameState, Room } from "../types";
+import type { AcquisitionCounters, GameState, Room } from "../types";
 import { RNG } from "./rng";
 
 const SAVE_KEY = "dungeon-cards-save";
@@ -47,6 +47,53 @@ function sanitizeRooms(raw: unknown): Room[] {
 /**
  * remnants をバリデーションし、安全な辞書として再構築
  */
+const ENEMY_TYPES = ["normal", "heavy", "scout", "miniboss", "boss"] as const;
+
+/**
+ * acquisitionCounters をバリデーションし、不正なら初期値にフォールバック
+ */
+function sanitizeAcquisitionCounters(raw: unknown): AcquisitionCounters {
+	if (raw == null || typeof raw !== "object") return createInitialCounters();
+	const data = raw as Record<string, unknown>;
+
+	if (
+		data.defeatCounts == null ||
+		typeof data.defeatCounts !== "object" ||
+		data.hitCounts == null ||
+		typeof data.hitCounts !== "object"
+	) {
+		return createInitialCounters();
+	}
+
+	const defeatCounts = data.defeatCounts as Record<string, unknown>;
+	const hitCounts = data.hitCounts as Record<string, unknown>;
+
+	for (const key of ENEMY_TYPES) {
+		const d = defeatCounts[key];
+		const h = hitCounts[key];
+		if (
+			typeof d !== "number" ||
+			!Number.isFinite(d) ||
+			d < 0 ||
+			typeof h !== "number" ||
+			!Number.isFinite(h) ||
+			h < 0
+		) {
+			return createInitialCounters();
+		}
+	}
+
+	const initial = createInitialCounters();
+	return {
+		defeatCounts: Object.fromEntries(
+			ENEMY_TYPES.map((k) => [k, Math.floor(defeatCounts[k] as number)]),
+		) as typeof initial.defeatCounts,
+		hitCounts: Object.fromEntries(
+			ENEMY_TYPES.map((k) => [k, Math.floor(hitCounts[k] as number)]),
+		) as typeof initial.hitCounts,
+	};
+}
+
 function sanitizeRemnants(raw: unknown): Record<string, number> {
 	const result: Record<string, number> = Object.create(null);
 	if (raw == null || typeof raw !== "object") return result;
@@ -211,7 +258,9 @@ export function loadGame(): GameState | null {
 						)
 					: 0,
 			remnants: sanitizeRemnants(data.remnants),
-			acquisitionCounters: data.acquisitionCounters ?? createInitialCounters(),
+			acquisitionCounters: sanitizeAcquisitionCounters(
+				data.acquisitionCounters,
+			),
 			cardExchangeState: null,
 		};
 
