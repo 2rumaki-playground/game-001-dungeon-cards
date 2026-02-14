@@ -166,6 +166,48 @@ describe("compareBundles", () => {
 		expect(result.unit).toBe("KB");
 	});
 
+	it("baseとheadが非ゼロで増加した場合に正の差分が表示される", () => {
+		const result = compareBundles(
+			{ total_bytes: 1000, chunks: { "index.js": 1000 } },
+			{ total_bytes: 1500, chunks: { "index.js": 1500 } },
+		);
+
+		expect(result.rows).not.toContain("new");
+		expect(result.rows).toMatch(/\+\d+(\.\d+)?%/);
+	});
+
+	it("baseとheadが非ゼロで減少した場合に負の差分が表示される", () => {
+		const result = compareBundles(
+			{ total_bytes: 2000, chunks: { "index.js": 2000 } },
+			{ total_bytes: 1000, chunks: { "index.js": 1000 } },
+		);
+
+		expect(result.rows).not.toContain("new");
+		expect(result.rows).toMatch(/-\d+(\.\d+)?%/);
+	});
+
+	it("baseとheadが同じ値の場合は変化なしと表示される", () => {
+		const result = compareBundles(
+			{ total_bytes: 1234, chunks: { "index.js": 1234 } },
+			{ total_bytes: 1234, chunks: { "index.js": 1234 } },
+		);
+
+		expect(result.rows).not.toContain("new");
+		expect(result.rows).toContain("変化なし");
+	});
+
+	it("複数チャンクで一部が増加・一部が変化なしでも正しく表示される", () => {
+		const result = compareBundles(
+			{ total_bytes: 3000, chunks: { "index.js": 1000, pixi: 2000 } },
+			{ total_bytes: 3500, chunks: { "index.js": 1500, pixi: 2000 } },
+		);
+
+		expect(result.rows).toContain("index.js");
+		expect(result.rows).toContain("pixi");
+		expect(result.rows).toMatch(/\+\d+(\.\d+)?%/);
+		expect(result.rows).toContain("変化なし");
+	});
+
 	it("チャンク名のハッシュが正規化される", () => {
 		const result = compareBundles(
 			{ total_bytes: 0, chunks: {} },
