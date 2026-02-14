@@ -146,12 +146,9 @@ function compareBenchmarks(basePath, headPath) {
 		if (bMedian === 0 && hMedian === 0) continue;
 
 		const diff = hMedian - bMedian;
-		const pct =
-			bMedian > 0
-				? ((diff / bMedian) * 100).toFixed(1)
-				: "new";
-		const regression =
-			typeof pct === "string" ? false : Number(pct) > BENCH_WARN_THRESHOLD * 100;
+		const pctValue = bMedian > 0 ? (diff / bMedian) * 100 : null;
+		const regression = pctValue !== null && pctValue > BENCH_WARN_THRESHOLD * 100;
+		const pct = pctValue !== null ? pctValue.toFixed(1) : "new";
 		if (regression) hasRegression = true;
 
 		const warn = regression ? " :warning:" : "";
