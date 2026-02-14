@@ -81,7 +81,11 @@ export function applyDamageToEnemy(
 				},
 			};
 			const label = ENEMY_TYPE_LABEL[target.type];
-			next = addActionLog(next, `${label}を倒してカードを獲得した`, "system");
+			next = addActionLog(
+				next,
+				`${label}を倒してカード交換が可能になった`,
+				"system",
+			);
 		} else {
 			next = addActionLog(next, "敵を倒した", "system");
 		}
