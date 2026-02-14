@@ -102,7 +102,8 @@ export function exchangeCardInDeck(
 	removeCardId: string,
 	newCardType: CardType,
 ): GameState {
-	const newCard = createCard(newCardType, assignRandomKeyword(state.rng));
+	const rng = state.rng.clone();
+	const newCard = createCard(newCardType, assignRandomKeyword(rng));
 
 	// deckOrderから除去対象のインデックスを取得
 	const orderIndex = state.deck.deckOrder.findIndex(
@@ -129,7 +130,7 @@ export function exchangeCardInDeck(
 
 	return {
 		...state,
-		rng: state.rng.clone(),
+		rng,
 		deck: newDeck,
 	};
 }
