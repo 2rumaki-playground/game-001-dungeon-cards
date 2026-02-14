@@ -296,7 +296,9 @@ export class RewardScreen {
 		const acquiredCardHeight = hasAcquired
 			? REWARD_CARD_HEIGHT + sectionGap
 			: 0;
-		const subtitleHeight = hasAcquired ? subtitleFontSize + sectionGap : 0;
+		const showSubtitle =
+			hasAcquired && !titleText.includes("交換するカードを選択");
+		const subtitleHeight = showSubtitle ? subtitleFontSize + sectionGap : 0;
 		const contentHeight =
 			titleFontSize +
 			sectionGap +
@@ -324,20 +326,25 @@ export class RewardScreen {
 			this.container.addChild(acquiredCard);
 			currentY += REWARD_CARD_HEIGHT + sectionGap;
 
-			// サブタイトル
-			const subtitle = new Text({
-				text: "交換するカードを選択",
-				style: {
-					fontSize: subtitleFontSize,
-					fontFamily: "sans-serif",
-					fill: 0xcccccc,
-				},
-			});
-			subtitle.anchor.set(0.5);
-			subtitle.x = areaW / 2;
-			subtitle.y = currentY + subtitleFontSize / 2;
-			this.container.addChild(subtitle);
-			currentY += subtitleFontSize + sectionGap;
+			// タイトルに同じ案内文が含まれていない場合のみサブタイトルを表示して重複を回避
+			const hasSubtitleInTitle =
+				typeof title.text === "string" &&
+				title.text.includes("交換するカードを選択");
+			if (!hasSubtitleInTitle) {
+				const subtitle = new Text({
+					text: "交換するカードを選択",
+					style: {
+						fontSize: subtitleFontSize,
+						fontFamily: "sans-serif",
+						fill: 0xcccccc,
+					},
+				});
+				subtitle.anchor.set(0.5);
+				subtitle.x = areaW / 2;
+				subtitle.y = currentY + subtitleFontSize / 2;
+				this.container.addChild(subtitle);
+				currentY += subtitleFontSize + sectionGap;
+			}
 		}
 
 		// グリッドコンテナ
