@@ -93,6 +93,7 @@ function showExchangeSelection(
 			title,
 			gameArea?.width,
 			gameArea?.height,
+			state.cardExchangeState?.acquiredCardType,
 		);
 		ctx.ui.rewardScreen.show();
 
