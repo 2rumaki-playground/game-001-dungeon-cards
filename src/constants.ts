@@ -3,7 +3,7 @@
  * @see docs/spec/constants.md
  */
 
-import type { CardType, EnemyCardAcquisitionConfig, EnemyType } from "./types";
+import type { EnemyCardAcquisitionConfig, EnemyType } from "./types";
 
 // 行動関連
 export const MAX_AP = 3;
@@ -172,15 +172,8 @@ export function getBossType(floor: number): "miniboss" | "boss" | null {
 // デッキ構築（v1.2）
 export const DECK_MAX_SIZE = 6;
 export const DECK_MIN_SIZE = 6;
-// 敵撃破時カード獲得（正典: docs/spec/constants.md）
-export const ENEMY_CARD_MAPPING: Record<EnemyType, CardType> = {
-	normal: "move",
-	heavy: "strong_attack",
-	scout: "jump",
-	miniboss: "attack",
-	boss: "wait",
-};
-
+// 敵撃破時カード獲得条件（正典: docs/spec/constants.md）
+// カードマッピングは各エントリの cardType を参照
 export const ENEMY_ACQUISITION_CONDITIONS: Record<
 	EnemyType,
 	EnemyCardAcquisitionConfig
