@@ -3,7 +3,7 @@
  * @see docs/spec/mvp/rules.md - セーブとログ
  */
 
-import { getEnemyCount, INITIAL_FLOOR } from "../constants";
+import { getEnemyCount, INITIAL_FLOOR, KEYWORDS } from "../constants";
 import { createInitialCounters } from "../game/cardAcquisition";
 import { initCardIdCounterFromDeck } from "../game/deck";
 import type { AcquisitionCounters, GameState, Room } from "../types";
@@ -212,7 +212,7 @@ export function loadGame(): GameState | null {
 				if (Array.isArray(cards)) {
 					for (const card of cards) {
 						if (card && typeof card === "object" && !card.keyword) {
-							card.keyword = "flame";
+							card.keyword = KEYWORDS[0];
 						}
 					}
 				}
