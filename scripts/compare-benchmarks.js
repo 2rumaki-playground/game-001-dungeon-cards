@@ -40,6 +40,9 @@ function formatByteDiff(diff, pct) {
 	if (pct === "new") {
 		return `${sign}${formatBytes(Math.abs(diff))} (new)`;
 	}
+	if (pct === "N/A") {
+		return `${sign}${formatBytes(Math.abs(diff))} (N/A)`;
+	}
 	return `${sign}${formatBytes(Math.abs(diff))} (${sign}${pct}%)`;
 }
 
@@ -47,6 +50,9 @@ function formatTimeDiff(diff, pct) {
 	const sign = diff > 0 ? "+" : "";
 	if (pct === "new") {
 		return `${sign}${diff.toFixed(4)}ms (new)`;
+	}
+	if (pct === "N/A") {
+		return `${sign}${diff.toFixed(4)}ms (N/A)`;
 	}
 	return `${sign}${diff.toFixed(4)}ms (${sign}${pct}%)`;
 }
