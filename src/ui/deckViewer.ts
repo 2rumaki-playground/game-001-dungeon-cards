@@ -4,19 +4,21 @@
  */
 
 import { Container, Graphics, Text } from "pixi.js";
+import { getEffectiveCardCost } from "../game/debugCheats";
 import { getAllCards, getTotalDeckSize } from "../game/deck";
-import type { CardType, DeckState } from "../types";
+import type { Card, DeckState } from "../types";
 import {
-	CARD_ROW_GAP,
-	CARD_ROW_HEIGHT,
-	CARD_ROW_LIST_WIDTH,
-	createCardListRow,
-} from "./cardRowRenderer";
+	CARD_COLORS,
+	CARD_EFFECT_TEXT,
+	CARD_TYPE_NAME,
+	CARD_TYPE_SYMBOL,
+} from "./cardConstants";
 import {
 	createOverlay,
 	drawRoundedRect,
 	makeInteractive,
 } from "./graphicsHelpers";
+import { CARD_HEIGHT, CARD_WIDTH } from "./handRenderer";
 import { BUTTON_HEIGHT, DECK_BUTTON_WIDTH } from "./layout";
 import { UI_COLOR_GOLD, UI_COLORS_BUTTON_SECONDARY } from "./uiColors";
 
@@ -35,14 +37,10 @@ const DECK_BUTTON_COLORS = {
 	text: 0xffffff,
 } as const;
 
-/** 表示順（CardType定義順） */
-const CARD_TYPE_ORDER: CardType[] = [
-	"move",
-	"attack",
-	"strong_attack",
-	"jump",
-	"wait",
-];
+/** グリッドレイアウト定数 */
+const GRID_COLUMNS = 3;
+const CARD_GAP = 8;
+const CARD_RADIUS = 8;
 
 /**
  * デッキ閲覧UIレンダラー
@@ -130,7 +128,7 @@ export class DeckViewer {
 	): void {
 		this.container.removeChildren();
 
-		const cardCounts = this.countCardsByType(deck);
+		const allCards = getAllCards(deck);
 		const totalCards = getTotalDeckSize(deck);
 
 		// 半透明オーバーレイ（背面UIへのポインタ入力を吸収）
@@ -142,21 +140,20 @@ export class DeckViewer {
 		const areaW = gameArea?.width ?? screenWidth;
 		const areaH = gameArea?.height ?? screenHeight;
 
-		const types = CARD_TYPE_ORDER.filter((t) => (cardCounts.get(t) ?? 0) > 0);
+		// グリッドサイズ計算
+		const gridRows = Math.ceil(allCards.length / GRID_COLUMNS);
+		const gridWidth = GRID_COLUMNS * CARD_WIDTH + (GRID_COLUMNS - 1) * CARD_GAP;
+		const gridHeight = gridRows * CARD_HEIGHT + (gridRows - 1) * CARD_GAP;
 
 		// コンテンツ全体の高さを計算して上下センタリング
 		const titleFontSize = 24;
-		const titleToListGap = 12;
-		const listHeight =
-			types.length === 0
-				? 0
-				: types.length * CARD_ROW_HEIGHT + (types.length - 1) * CARD_ROW_GAP;
-		const listToCloseGap = 10;
+		const titleToGridGap = 12;
+		const gridToCloseGap = 10;
 		const contentHeight =
 			titleFontSize +
-			titleToListGap +
-			listHeight +
-			listToCloseGap +
+			titleToGridGap +
+			gridHeight +
+			gridToCloseGap +
 			CLOSE_BUTTON_HEIGHT;
 		const contentStartY = (areaH - contentHeight) / 2;
 
@@ -175,37 +172,103 @@ export class DeckViewer {
 		title.y = contentStartY + titleFontSize / 2;
 		this.container.addChild(title);
 
-		// カード種別リスト
-		const listX = (areaW - CARD_ROW_LIST_WIDTH) / 2;
-		const listStartY = contentStartY + titleFontSize + titleToListGap;
+		// カードグリッド
+		const gridX = (areaW - gridWidth) / 2;
+		const gridStartY = contentStartY + titleFontSize + titleToGridGap;
 
-		for (let i = 0; i < types.length; i++) {
-			const cardType = types[i];
-			const count = cardCounts.get(cardType) ?? 0;
-			const y = listStartY + i * (CARD_ROW_HEIGHT + CARD_ROW_GAP);
-			const row = createCardListRow({ cardType, count });
-			row.label = "card-row";
-			row.x = listX;
-			row.y = y;
-			this.container.addChild(row);
+		for (let i = 0; i < allCards.length; i++) {
+			const col = i % GRID_COLUMNS;
+			const row = Math.floor(i / GRID_COLUMNS);
+			const x = gridX + col * (CARD_WIDTH + CARD_GAP);
+			const y = gridStartY + row * (CARD_HEIGHT + CARD_GAP);
+			const cardView = this.createStaticCardView(allCards[i], x, y);
+			this.container.addChild(cardView);
 		}
 
 		// 閉じるボタン
-		const closeY = listStartY + listHeight + listToCloseGap;
+		const closeY = gridStartY + gridHeight + gridToCloseGap;
 		const closeButton = this.createCloseButton(areaW / 2, closeY);
 		this.container.addChild(closeButton);
 	}
 
 	/**
-	 * デッキ内の全カードを種別ごとに集計
+	 * 静的カードビューを生成（インタラクションなし）
 	 */
-	private countCardsByType(deck: DeckState): Map<CardType, number> {
-		const counts = new Map<CardType, number>();
-		const allCards = getAllCards(deck);
-		for (const card of allCards) {
-			counts.set(card.type, (counts.get(card.type) ?? 0) + 1);
-		}
-		return counts;
+	private createStaticCardView(card: Card, x: number, y: number): Container {
+		const cardContainer = new Container();
+		cardContainer.x = x;
+		cardContainer.y = y;
+
+		// 背景
+		const bg = new Graphics();
+		const colors = CARD_COLORS[card.type];
+		drawRoundedRect(bg, CARD_WIDTH, CARD_HEIGHT, CARD_RADIUS, colors.bg, {
+			color: colors.border,
+			width: 2,
+		});
+		cardContainer.addChild(bg);
+
+		// シンボル
+		const symbolText = new Text({
+			text: CARD_TYPE_SYMBOL[card.type],
+			style: {
+				fontSize: 18,
+				fontFamily: "sans-serif",
+				fill: 0xffffff,
+			},
+		});
+		symbolText.anchor.set(0.5, 0);
+		symbolText.x = CARD_WIDTH / 2;
+		symbolText.y = 12;
+		cardContainer.addChild(symbolText);
+
+		// カード名
+		const nameText = new Text({
+			text: CARD_TYPE_NAME[card.type],
+			style: {
+				fontSize: 16,
+				fontFamily: "sans-serif",
+				fill: 0xffffff,
+				fontWeight: "bold",
+			},
+		});
+		nameText.anchor.set(0.5, 0);
+		nameText.x = CARD_WIDTH / 2;
+		nameText.y = 34;
+		cardContainer.addChild(nameText);
+
+		// APコスト
+		const cost = getEffectiveCardCost(card.type);
+		const costFill = cost >= 2 ? 0xffaa44 : cost === 0 ? 0x666666 : 0xcccccc;
+		const costText = new Text({
+			text: cost > 0 ? `AP: ${cost}` : "",
+			style: {
+				fontSize: 13,
+				fontFamily: "sans-serif",
+				fill: costFill,
+				fontWeight: cost >= 2 ? "bold" : "normal",
+			},
+		});
+		costText.anchor.set(0.5, 0);
+		costText.x = CARD_WIDTH / 2;
+		costText.y = 56;
+		cardContainer.addChild(costText);
+
+		// 効果テキスト
+		const effectText = new Text({
+			text: CARD_EFFECT_TEXT[card.type],
+			style: {
+				fontSize: 11,
+				fontFamily: "sans-serif",
+				fill: 0xaaaaaa,
+			},
+		});
+		effectText.anchor.set(0.5, 0);
+		effectText.x = CARD_WIDTH / 2;
+		effectText.y = 74;
+		cardContainer.addChild(effectText);
+
+		return cardContainer;
 	}
 
 	/**

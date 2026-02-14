@@ -1,12 +1,8 @@
 import type { Graphics } from "pixi.js";
 import { describe, expect, it, vi } from "vitest";
 import type { Card, DeckState } from "../types";
-import {
-	CARD_ROW_GAP,
-	CARD_ROW_HEIGHT,
-	CARD_ROW_LIST_WIDTH,
-} from "./cardRowRenderer";
 import { CLOSE_BUTTON_HEIGHT, DeckViewer } from "./deckViewer";
+import { CARD_HEIGHT, CARD_WIDTH } from "./handRenderer";
 
 /** テスト用デッキ */
 function createTestDeck(): DeckState {
@@ -98,17 +94,14 @@ describe("DeckViewer", () => {
 			expect(title.text).toBe("デッキ一覧 (8枚)");
 		});
 
-		it("各カード種別の枚数が表示される", () => {
+		it("全カードが個別に表示される", () => {
 			const viewer = new DeckViewer();
 			const deck = createTestDeck();
 			viewer.render(deck, 600, 400);
 
 			const container = viewer.getContainer();
-			// overlay + title + 5種別の行 + 閉じるボタン
-			// ただしデッキに含まれる種別のみ表示
-			// テストデッキ: move x3, attack x2, strong_attack x1, jump x1, wait x1 = 5種別
-			// overlay(1) + title(1) + 5行 + 閉じるボタン(1) = 8
-			expect(container.children.length).toBe(8);
+			// overlay(1) + title(1) + 8カード + 閉じるボタン(1) = 11
+			expect(container.children.length).toBe(11);
 		});
 
 		it("オーバーレイはscreenWidthで全画面を覆う", () => {
@@ -142,7 +135,7 @@ describe("DeckViewer", () => {
 			expect(title.x).toBe(gameAreaWidth / 2);
 		});
 
-		it("カードリストがgameAreaWidthの中央に配置される", () => {
+		it("カードグリッドがgameAreaWidthの中央に配置される", () => {
 			const viewer = new DeckViewer();
 			const deck = createTestDeck();
 			const screenWidth = 800;
@@ -153,15 +146,12 @@ describe("DeckViewer", () => {
 			});
 
 			const container = viewer.getContainer();
-			// カード行をlabelで特定
-			const firstRow = container.children.find(
-				(child) => child.label === "card-row",
-			);
-			if (!firstRow) {
-				throw new Error("card-row element not found");
-			}
-			const expectedListX = (gameAreaWidth - CARD_ROW_LIST_WIDTH) / 2;
-			expect(firstRow.x).toBe(expectedListX);
+			// children[2]が最初のカード（overlay=0, title=1）
+			const firstCard = container.children[2];
+			const CARD_GAP = 8;
+			const gridWidth = 3 * CARD_WIDTH + 2 * CARD_GAP;
+			const expectedGridX = (gameAreaWidth - gridWidth) / 2;
+			expect(firstCard.x).toBe(expectedGridX);
 		});
 
 		it("コンテンツがgameAreaHeightの中央に配置される", () => {
@@ -177,21 +167,19 @@ describe("DeckViewer", () => {
 			const container = viewer.getContainer();
 			const title = container.children[1] as import("pixi.js").Text;
 
-			// コンテンツ全体の高さを計算
+			// グリッドベースでコンテンツ高さを計算
 			const titleFontSize = 24;
-			const titleToListGap = 12;
+			const titleToGridGap = 12;
+			const CARD_GAP = 8;
 			const allCards = [...deck.drawPile, ...deck.hand, ...deck.discardPile];
-			const typesCount = new Set(allCards.map((card) => card.type)).size;
-			const listHeight =
-				typesCount === 0
-					? 0
-					: typesCount * CARD_ROW_HEIGHT + (typesCount - 1) * CARD_ROW_GAP;
-			const listToCloseGap = 10;
+			const gridRows = Math.ceil(allCards.length / 3);
+			const gridHeight = gridRows * CARD_HEIGHT + (gridRows - 1) * CARD_GAP;
+			const gridToCloseGap = 10;
 			const contentHeight =
 				titleFontSize +
-				titleToListGap +
-				listHeight +
-				listToCloseGap +
+				titleToGridGap +
+				gridHeight +
+				gridToCloseGap +
 				CLOSE_BUTTON_HEIGHT;
 			const expectedStartY = (gameAreaHeight - contentHeight) / 2;
 
