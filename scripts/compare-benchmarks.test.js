@@ -284,4 +284,119 @@ describe("compareBenchmarks", () => {
 		expect(result.rows).toContain("μs");
 		expect(result.rows).toContain("ms");
 	});
+
+	it("20%以上劣化した場合に警告アイコンが表示される", () => {
+		const result = compareBenchmarks(
+			{
+				files: [
+					{
+						groups: [
+							{
+								benchmarks: [
+									{ name: "regression", median: 1.0, mean: 1.0 },
+								],
+							},
+						],
+					},
+				],
+			},
+			{
+				files: [
+					{
+						groups: [
+							{
+								benchmarks: [
+									{ name: "regression", median: 1.3, mean: 1.3 },
+								],
+							},
+						],
+					},
+				],
+			},
+		);
+
+		const row = result.rows
+			.trim()
+			.split("\n")
+			.find((line) => line.includes("regression"));
+		expect(row).toContain(":warning:");
+		expect(result.hasRegression).toBe(true);
+	});
+
+	it("パフォーマンスが改善した場合に負の差分が表示される", () => {
+		const result = compareBenchmarks(
+			{
+				files: [
+					{
+						groups: [
+							{
+								benchmarks: [
+									{ name: "improvement", median: 2.0, mean: 2.0 },
+								],
+							},
+						],
+					},
+				],
+			},
+			{
+				files: [
+					{
+						groups: [
+							{
+								benchmarks: [
+									{ name: "improvement", median: 1.0, mean: 1.0 },
+								],
+							},
+						],
+					},
+				],
+			},
+		);
+
+		const row = result.rows
+			.trim()
+			.split("\n")
+			.find((line) => line.includes("improvement"));
+		expect(row).not.toContain(":warning:");
+		expect(row).toMatch(/-\d+/);
+		expect(result.hasRegression).toBe(false);
+	});
+
+	it("baseとheadが同じ値の場合は変化なしと表示される", () => {
+		const result = compareBenchmarks(
+			{
+				files: [
+					{
+						groups: [
+							{
+								benchmarks: [
+									{ name: "same", median: 1.5, mean: 1.5 },
+								],
+							},
+						],
+					},
+				],
+			},
+			{
+				files: [
+					{
+						groups: [
+							{
+								benchmarks: [
+									{ name: "same", median: 1.5, mean: 1.5 },
+								],
+							},
+						],
+					},
+				],
+			},
+		);
+
+		const row = result.rows
+			.trim()
+			.split("\n")
+			.find((line) => line.includes("same"));
+		expect(row).toContain("変化なし");
+		expect(row).not.toContain("new");
+	});
 });
