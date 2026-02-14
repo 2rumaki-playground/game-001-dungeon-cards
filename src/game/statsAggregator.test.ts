@@ -227,6 +227,70 @@ describe("aggregateStats", () => {
 
 		expect(stats.averageMaxFloor).toBe(6);
 	});
+
+	it("空配列でenemyTypeDeathRankingが空", () => {
+		const stats = aggregateStats([]);
+		expect(stats.enemyTypeDeathRanking).toHaveLength(0);
+	});
+
+	it("killedByEnemyTypeがあるセッションで敵タイプ別ランキングを集計する", () => {
+		const stats = aggregateStats([
+			createDeathSession({
+				id: "s1",
+				deathCause: "enemy_attack",
+				killedByEnemyType: "normal",
+			}),
+			createDeathSession({
+				id: "s2",
+				deathCause: "enemy_attack",
+				killedByEnemyType: "boss",
+			}),
+			createDeathSession({
+				id: "s3",
+				deathCause: "enemy_attack",
+				killedByEnemyType: "normal",
+			}),
+		]);
+
+		expect(stats.enemyTypeDeathRanking).toHaveLength(2);
+		expect(stats.enemyTypeDeathRanking[0]).toEqual({
+			enemyType: "normal",
+			count: 2,
+		});
+		expect(stats.enemyTypeDeathRanking[1]).toEqual({
+			enemyType: "boss",
+			count: 1,
+		});
+	});
+
+	it("killedByEnemyTypeがないセッションはenemyTypeDeathRankingに含まれない", () => {
+		const stats = aggregateStats([
+			createDeathSession({ id: "s1", deathCause: "trap" }),
+			createDeathSession({ id: "s2", deathCause: "enemy_attack" }),
+		]);
+
+		expect(stats.enemyTypeDeathRanking).toHaveLength(0);
+	});
+
+	it("deathCauseがenemy_attackでない場合はkilledByEnemyTypeがあってもランキング対象外", () => {
+		const stats = aggregateStats([
+			// データ不整合: deathCauseはtrapだがkilledByEnemyTypeが設定されている
+			createDeathSession({
+				id: "s1",
+				deathCause: "trap",
+				killedByEnemyType: "normal",
+			}),
+			// 正常ケース: enemy_attackだがkilledByEnemyTypeが未設定
+			createDeathSession({
+				id: "s2",
+				deathCause: "enemy_attack",
+				killedByEnemyType: undefined,
+			}),
+		]);
+
+		// いずれのセッションもランキング対象外となり、集計結果は空になる
+		expect(stats.enemyTypeDeathRanking).toHaveLength(0);
+	});
 });
 
 describe("formatDuration", () => {

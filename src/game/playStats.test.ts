@@ -152,6 +152,33 @@ describe("playStats", () => {
 		it("セッション未開始時はnullを返す", () => {
 			expect(endSession("death", "unknown")).toBeNull();
 		});
+
+		it("killedByEnemyTypeを渡すとPlaySessionに含まれる", () => {
+			startSession();
+			const result = endSession("death", "enemy_attack", "boss");
+			expect(result).not.toBeNull();
+			expect(result?.result).toBe("death");
+			expect(result?.deathCause).toBe("enemy_attack");
+			if (result?.result === "death") {
+				expect(result.killedByEnemyType).toBe("boss");
+			}
+		});
+
+		it("killedByEnemyTypeを省略するとフィールドが含まれない", () => {
+			startSession();
+			const result = endSession("death", "enemy_attack");
+			expect(result).not.toBeNull();
+			if (result?.result === "death") {
+				expect(result.killedByEnemyType).toBeUndefined();
+			}
+		});
+
+		it("クリア時はkilledByEnemyTypeが含まれない", () => {
+			startSession();
+			const result = endSession("clear", null);
+			expect(result?.result).toBe("clear");
+			expect(result?.deathCause).toBeNull();
+		});
 	});
 
 	describe("resetSession", () => {

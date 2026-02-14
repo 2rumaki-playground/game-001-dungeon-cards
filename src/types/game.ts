@@ -5,7 +5,7 @@
 
 import type { RNG } from "../utils/rng";
 import type { CardType, DeckState } from "./card";
-import type { Enemy, Player } from "./character";
+import type { Enemy, EnemyType, Player } from "./character";
 import type { GameMap, Room } from "./map";
 
 /**
@@ -76,4 +76,6 @@ export type GameState = {
 	remnants: Record<string, number>;
 	/** 訪問済みタイル座標（"x,y" 形式のSet） */
 	visitedTiles: Set<string>;
+	/** 最後に攻撃した敵のタイプ（死因追跡用） */
+	lastAttackerEnemyType?: EnemyType | null;
 };

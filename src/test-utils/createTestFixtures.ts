@@ -49,6 +49,7 @@ export function createTestState(overrides?: Partial<GameState>): GameState {
 		isCleared: false,
 		remnants: {},
 		visitedTiles: new Set<string>(),
+		lastAttackerEnemyType: null,
 		...overrides,
 	};
 }

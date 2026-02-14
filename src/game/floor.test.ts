@@ -69,6 +69,7 @@ function createTestState(overrides?: Partial<GameState>): GameState {
 		remnants: {},
 		rooms: [],
 		visitedTiles: new Set<string>(),
+		lastAttackerEnemyType: null,
 		...overrides,
 	};
 }

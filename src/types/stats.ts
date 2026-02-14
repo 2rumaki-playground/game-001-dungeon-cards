@@ -3,6 +3,7 @@
  */
 
 import type { CardType } from "./card";
+import type { EnemyType } from "./character";
 
 /**
  * プレイ結果
@@ -41,4 +42,9 @@ type PlaySessionBase = {
  */
 export type PlaySession =
 	| (PlaySessionBase & { result: "clear"; deathCause: null })
-	| (PlaySessionBase & { result: "death"; deathCause: DeathCause });
+	| (PlaySessionBase & {
+			result: "death";
+			deathCause: DeathCause;
+			/** 敵攻撃死亡時の敵タイプ（enemy_attack時のみ有効） */
+			killedByEnemyType?: EnemyType;
+	  });

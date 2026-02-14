@@ -6,7 +6,13 @@
  */
 
 import { INITIAL_FLOOR } from "../constants";
-import type { CardType, DeathCause, PlayResult, PlaySession } from "../types";
+import type {
+	CardType,
+	DeathCause,
+	EnemyType,
+	PlayResult,
+	PlaySession,
+} from "../types";
 
 /** 進行中のセッションデータ（内部用） */
 type SessionAccumulator = {
@@ -95,19 +101,26 @@ export function endSession(
 export function endSession(
 	result: "death",
 	deathCause: DeathCause,
+	killedByEnemyType?: EnemyType,
 ): PlaySession | null;
 export function endSession(
 	result: PlayResult,
 	deathCause: DeathCause | null,
+	killedByEnemyType?: EnemyType,
 ): PlaySession | null {
 	if (!currentSession) return null;
 
-	const session = {
+	const base = {
 		...currentSession,
 		endedAt: Date.now(),
 		result,
 		deathCause,
-	} as PlaySession;
+	};
+
+	const session =
+		result === "death" && deathCause === "enemy_attack" && killedByEnemyType
+			? ({ ...base, killedByEnemyType } as PlaySession)
+			: (base as PlaySession);
 
 	currentSession = null;
 	return session;

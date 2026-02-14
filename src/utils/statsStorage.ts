@@ -3,10 +3,12 @@
  * @see docs/spec/constants.md - プレイ統計
  */
 
-import { MAX_PLAY_SESSIONS } from "../constants";
-import type { CardType, PlaySession } from "../types";
+import { ENEMY_PARAMS, MAX_PLAY_SESSIONS } from "../constants";
+import type { CardType, EnemyType, PlaySession } from "../types";
 
 const STATS_KEY = "dungeon-cards-stats";
+
+const VALID_ENEMY_TYPES = Object.keys(ENEMY_PARAMS) as EnemyType[];
 
 const REQUIRED_CARD_TYPES: CardType[] = [
 	"move",
@@ -50,6 +52,16 @@ function isValidSession(value: unknown): value is PlaySession {
 			deathCause !== "unknown"
 		) {
 			return false;
+		}
+		// killedByEnemyTypeは省略可能だが、存在する場合は
+		// deathCauseがenemy_attackであり、かつ有効なEnemyTypeであること
+		if (s.killedByEnemyType !== undefined) {
+			if (deathCause !== "enemy_attack") {
+				return false;
+			}
+			if (!VALID_ENEMY_TYPES.includes(s.killedByEnemyType as EnemyType)) {
+				return false;
+			}
 		}
 	}
 
