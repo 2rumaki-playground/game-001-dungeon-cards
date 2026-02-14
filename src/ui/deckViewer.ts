@@ -4,21 +4,21 @@
  */
 
 import { Container, Graphics, Text } from "pixi.js";
-import { CARD_COST } from "../constants";
+import { getEffectiveCardCost } from "../game/debugCheats";
 import { getAllCards, getTotalDeckSize } from "../game/deck";
-import type { Card, DeckState } from "../types";
+import type { Card, CardType, DeckState } from "../types";
 import {
-	CARD_COLORS,
-	CARD_EFFECT_TEXT,
-	CARD_TYPE_NAME,
-	CARD_TYPE_SYMBOL,
-} from "./cardConstants";
+	createCardTooltip,
+	TOOLTIP_MARGIN,
+	TOOLTIP_WIDTH,
+} from "./cardTooltip";
 import {
 	createOverlay,
 	drawRoundedRect,
 	makeInteractive,
 } from "./graphicsHelpers";
-import { CARD_GAP, CARD_HEIGHT, CARD_RADIUS, CARD_WIDTH } from "./handRenderer";
+import { createGridCardView } from "./gridCardView";
+import { CARD_GAP, CARD_HEIGHT, CARD_WIDTH } from "./handRenderer";
 import { BUTTON_HEIGHT, DECK_BUTTON_WIDTH } from "./layout";
 import { UI_COLOR_GOLD, UI_COLORS_BUTTON_SECONDARY } from "./uiColors";
 
@@ -46,12 +46,17 @@ const GRID_COLUMNS = 3;
 export class DeckViewer {
 	private container: Container;
 	private buttonContainer: Container;
+	private tooltipContainer: Container;
 	private onClose: (() => void) | null = null;
 	private onOpen: (() => void) | null = null;
 
 	constructor() {
 		this.container = new Container();
 		this.container.visible = false;
+		this.tooltipContainer = new Container();
+		this.tooltipContainer.label = "tooltip";
+		this.tooltipContainer.eventMode = "none";
+		this.tooltipContainer.interactiveChildren = false;
 
 		this.buttonContainer = new Container();
 		this.buttonContainer.visible = false;
@@ -188,84 +193,28 @@ export class DeckViewer {
 		const closeY = gridStartY + gridHeight + gridToCloseGap;
 		const closeButton = this.createCloseButton(areaW / 2, closeY);
 		this.container.addChild(closeButton);
+
+		// ツールチップコンテナ（Z-order最前面）
+		this.tooltipContainer.removeChildren();
+		this.container.addChild(this.tooltipContainer);
 	}
 
 	/**
-	 * 静的カードビューを生成（インタラクションなし）
+	 * 静的カードビューを生成（ツールチップ付き）
 	 */
 	private createStaticCardView(card: Card, x: number, y: number): Container {
-		const cardContainer = new Container();
+		const cardContainer = createGridCardView(card.type);
 		cardContainer.x = x;
 		cardContainer.y = y;
 
-		// 背景
-		const bg = new Graphics();
-		const colors = CARD_COLORS[card.type];
-		drawRoundedRect(bg, CARD_WIDTH, CARD_HEIGHT, CARD_RADIUS, colors.bg, {
-			color: colors.border,
-			width: 2,
+		// ツールチップ表示用のインタラクション
+		cardContainer.eventMode = "static";
+		cardContainer.on("pointerover", () => {
+			this.showCardTooltip(card.type, x, y);
 		});
-		cardContainer.addChild(bg);
-
-		// シンボル
-		const symbolText = new Text({
-			text: CARD_TYPE_SYMBOL[card.type],
-			style: {
-				fontSize: 18,
-				fontFamily: "sans-serif",
-				fill: 0xffffff,
-			},
+		cardContainer.on("pointerout", () => {
+			this.hideCardTooltip();
 		});
-		symbolText.anchor.set(0.5, 0);
-		symbolText.x = CARD_WIDTH / 2;
-		symbolText.y = 12;
-		cardContainer.addChild(symbolText);
-
-		// カード名
-		const nameText = new Text({
-			text: CARD_TYPE_NAME[card.type],
-			style: {
-				fontSize: 16,
-				fontFamily: "sans-serif",
-				fill: 0xffffff,
-				fontWeight: "bold",
-			},
-		});
-		nameText.anchor.set(0.5, 0);
-		nameText.x = CARD_WIDTH / 2;
-		nameText.y = 34;
-		cardContainer.addChild(nameText);
-
-		// APコスト
-		const cost = CARD_COST[card.type];
-		const costFill = cost >= 2 ? 0xffaa44 : cost === 0 ? 0x666666 : 0xcccccc;
-		const costText = new Text({
-			text: cost > 0 ? `AP: ${cost}` : "",
-			style: {
-				fontSize: 13,
-				fontFamily: "sans-serif",
-				fill: costFill,
-				fontWeight: cost >= 2 ? "bold" : "normal",
-			},
-		});
-		costText.anchor.set(0.5, 0);
-		costText.x = CARD_WIDTH / 2;
-		costText.y = 56;
-		cardContainer.addChild(costText);
-
-		// 効果テキスト
-		const effectText = new Text({
-			text: CARD_EFFECT_TEXT[card.type],
-			style: {
-				fontSize: 11,
-				fontFamily: "sans-serif",
-				fill: 0xaaaaaa,
-			},
-		});
-		effectText.anchor.set(0.5, 0);
-		effectText.x = CARD_WIDTH / 2;
-		effectText.y = 74;
-		cardContainer.addChild(effectText);
 
 		return cardContainer;
 	}
@@ -346,5 +295,31 @@ export class DeckViewer {
 		});
 
 		this.buttonContainer.addChild(button);
+	}
+
+	/**
+	 * ツールチップをカード上部中央に表示
+	 */
+	private showCardTooltip(
+		cardType: CardType,
+		cardX: number,
+		cardY: number,
+	): void {
+		this.tooltipContainer.removeChildren();
+		const cost = getEffectiveCardCost(cardType);
+		const { container: tooltip, height: tooltipHeight } = createCardTooltip(
+			cardType,
+			cost,
+		);
+		tooltip.x = cardX + CARD_WIDTH / 2 - TOOLTIP_WIDTH / 2;
+		tooltip.y = cardY - tooltipHeight - TOOLTIP_MARGIN;
+		this.tooltipContainer.addChild(tooltip);
+	}
+
+	/**
+	 * ツールチップを非表示
+	 */
+	private hideCardTooltip(): void {
+		this.tooltipContainer.removeChildren();
 	}
 }

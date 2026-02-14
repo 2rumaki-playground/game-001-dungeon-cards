@@ -6,7 +6,7 @@
 import { ENEMY_TYPE_LABEL } from "../constants";
 import { exchangeCardInDeck } from "../game/cardAcquisition";
 import type { GameContext } from "../gameContext";
-import type { GameState } from "../types";
+import type { CardType, GameState } from "../types";
 import { CARD_TYPE_NAME } from "./cardConstants";
 import { getGameAreaSize, getScreenSize } from "./gameAnimations";
 import { applyState, render } from "./gameRenderer";
@@ -38,6 +38,7 @@ export async function executeExchangeFlow(
 		screenHeight,
 		title,
 		gameArea,
+		exchange.acquiredCardType,
 	);
 
 	if (exchangeResult !== null) {
@@ -69,7 +70,8 @@ function showExchangeSelection(
 	screenWidth: number,
 	screenHeight: number,
 	title: string,
-	gameArea?: { width: number; height: number },
+	gameArea: { width: number; height: number } | undefined,
+	acquiredCardType: CardType,
 ): Promise<string | null> {
 	return new Promise((resolve) => {
 		const allCards = [
@@ -93,6 +95,7 @@ function showExchangeSelection(
 			title,
 			gameArea?.width,
 			gameArea?.height,
+			acquiredCardType,
 		);
 		ctx.ui.rewardScreen.show();
 

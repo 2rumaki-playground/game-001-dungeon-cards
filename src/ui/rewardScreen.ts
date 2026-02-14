@@ -4,7 +4,7 @@
  */
 
 import { Container, Graphics, Text } from "pixi.js";
-import { CARD_COST } from "../constants";
+import { getEffectiveCardCost } from "../game/debugCheats";
 import type { Card, CardType, Rarity } from "../types";
 import { Easing, tween } from "../utils/tween";
 import {
@@ -17,16 +17,17 @@ import {
 	RARITY_NAME,
 } from "./cardConstants";
 import {
-	CARD_ROW_GAP,
-	CARD_ROW_HEIGHT,
-	CARD_ROW_LIST_WIDTH,
-	createCardListRow,
-} from "./cardRowRenderer";
+	createCardTooltip,
+	TOOLTIP_MARGIN,
+	TOOLTIP_WIDTH,
+} from "./cardTooltip";
 import {
 	createOverlay,
 	drawRoundedRect,
 	makeInteractive,
 } from "./graphicsHelpers";
+import { createGridCardView } from "./gridCardView";
+import { CARD_GAP, CARD_HEIGHT, CARD_RADIUS, CARD_WIDTH } from "./handRenderer";
 import type { ParticleSystem } from "./particleSystem";
 import {
 	UI_COLOR_GOLD,
@@ -64,8 +65,8 @@ const REMOVE_FADE_DURATION = 400;
 const REMOVE_PARTICLE_COLORS = [0xff4444, 0xff6644, 0xcc2222];
 const REMOVE_PARTICLE_COUNT = 15;
 
-/** 除去モードのカード一覧設定 */
-const REMOVE_LIST_MAX_HEIGHT = 300;
+/** グリッドレイアウト定数 */
+const GRID_COLUMNS = 3;
 
 /**
  * 報酬画面レンダラー
@@ -77,17 +78,22 @@ export class RewardScreen {
 	private onRemoveCard: ((cardId: string) => void) | null = null;
 	private particleSystem: ParticleSystem | null = null;
 	private cardContainers: Container[] = [];
-	private scrollContainer: Container | null = null;
+	private gridContainer: Container | null = null;
 	private selectedCardIndex: number | null = null;
 	private confirmButtonContainer: Container | null = null;
 	private selectedRemoveCardId: string | null = null;
 	private selectedRemoveItem: { container: Container; width: number } | null =
 		null;
 	private isRemoving = false;
+	private tooltipContainer: Container;
 
 	constructor() {
 		this.container = new Container();
 		this.container.visible = false;
+		this.tooltipContainer = new Container();
+		this.tooltipContainer.label = "tooltip";
+		this.tooltipContainer.eventMode = "none";
+		this.tooltipContainer.interactiveChildren = false;
 	}
 
 	setParticleSystem(particleSystem: ParticleSystem): void {
@@ -124,7 +130,7 @@ export class RewardScreen {
 	): void {
 		this.container.removeChildren();
 		this.cardContainers = [];
-		this.scrollContainer = null;
+		this.gridContainer = null;
 		this.selectedCardIndex = null;
 		this.confirmButtonContainer = null;
 		this.selectedRemoveCardId = null;
@@ -223,12 +229,17 @@ export class RewardScreen {
 		this.confirmButtonContainer.addChild(skipBtn);
 
 		this.container.addChild(this.confirmButtonContainer);
+
+		// ツールチップコンテナ（Z-order最前面）
+		this.tooltipContainer.removeChildren();
+		this.container.addChild(this.tooltipContainer);
 	}
 
 	/**
-	 * 除去選択画面のデッキ一覧を描画
+	 * 除去選択画面のデッキ一覧を描画（グリッド形式）
 	 * @param gameAreaWidth ゲームエリアの幅（ログエリアを除いた領域）
 	 * @param gameAreaHeight ゲームエリアの高さ
+	 * @param acquiredCardType 獲得候補カードの種別（交換画面で表示）
 	 */
 	renderRemoveSelection(
 		deckCards: Card[],
@@ -237,10 +248,11 @@ export class RewardScreen {
 		titleText = "除去するカードを選択",
 		gameAreaWidth?: number,
 		gameAreaHeight?: number,
+		acquiredCardType?: CardType,
 	): void {
 		this.container.removeChildren();
 		this.cardContainers = [];
-		this.scrollContainer = null;
+		this.gridContainer = null;
 		this.selectedRemoveCardId = null;
 		this.selectedRemoveItem = null;
 		this.confirmButtonContainer = null;
@@ -269,25 +281,34 @@ export class RewardScreen {
 		title.anchor.set(0.5);
 		this.container.addChild(title);
 
-		// リストとボタンのサイズ計算
-		const listX = (areaW - CARD_ROW_LIST_WIDTH) / 2;
-		const totalListHeight =
-			deckCards.length === 0
-				? 0
-				: deckCards.length * CARD_ROW_HEIGHT +
-					(deckCards.length - 1) * CARD_ROW_GAP;
-		const visibleHeight = Math.min(REMOVE_LIST_MAX_HEIGHT, totalListHeight);
-
-		// コンテンツ全体の高さ（タイトル + gap + リスト + gap + ボタン）
-		const titleToListGap = 12;
-		const listToButtonGap = 10;
+		// レイアウト間隔
+		const sectionGap = 12;
+		const subtitleFontSize = 16;
+		const gridToButtonGap = 10;
 		const buttonGap = 12;
 		const totalButtonWidth = BUTTON_WIDTH * 2 + buttonGap;
+
+		// グリッドサイズ計算
+		const gridRows = Math.ceil(deckCards.length / GRID_COLUMNS);
+		const gridWidth = GRID_COLUMNS * CARD_WIDTH + (GRID_COLUMNS - 1) * CARD_GAP;
+		const gridHeight =
+			gridRows > 0 ? gridRows * CARD_HEIGHT + (gridRows - 1) * CARD_GAP : 0;
+
+		// コンテンツ全体の高さ計算
+		const hasAcquired = acquiredCardType !== undefined;
+		const acquiredCardHeight = hasAcquired
+			? REWARD_CARD_HEIGHT + sectionGap
+			: 0;
+		const showSubtitle =
+			hasAcquired && !titleText.includes("交換するカードを選択");
+		const subtitleHeight = showSubtitle ? subtitleFontSize + sectionGap : 0;
 		const contentHeight =
 			titleFontSize +
-			titleToListGap +
-			visibleHeight +
-			listToButtonGap +
+			sectionGap +
+			acquiredCardHeight +
+			subtitleHeight +
+			gridHeight +
+			gridToButtonGap +
 			BUTTON_HEIGHT;
 		const contentStartY = (areaH - contentHeight) / 2;
 
@@ -295,74 +316,66 @@ export class RewardScreen {
 		title.x = areaW / 2;
 		title.y = contentStartY + titleFontSize / 2;
 
-		const listStartY = contentStartY + titleFontSize + titleToListGap;
+		let currentY = contentStartY + titleFontSize + sectionGap;
 
-		// スクロールコンテナ
-		this.scrollContainer = new Container();
-		const scrollContainer = this.scrollContainer;
+		// 獲得候補カード（指定時のみ）
+		if (hasAcquired) {
+			const acquiredX = (areaW - REWARD_CARD_WIDTH) / 2;
+			const acquiredCard = this.createAcquiredCardPreview(
+				acquiredCardType,
+				acquiredX,
+				currentY,
+			);
+			this.container.addChild(acquiredCard);
+			currentY += REWARD_CARD_HEIGHT + sectionGap;
+
+			// タイトルに同じ案内文が含まれていない場合のみサブタイトルを表示して重複を回避
+			if (showSubtitle) {
+				const subtitle = new Text({
+					text: "交換するカードを選択",
+					style: {
+						fontSize: subtitleFontSize,
+						fontFamily: "sans-serif",
+						fill: 0xcccccc,
+					},
+				});
+				subtitle.anchor.set(0.5);
+				subtitle.x = areaW / 2;
+				subtitle.y = currentY + subtitleFontSize / 2;
+				this.container.addChild(subtitle);
+				currentY += subtitleFontSize + sectionGap;
+			}
+		}
+
+		// グリッドコンテナ
+		this.gridContainer = new Container();
+		this.gridContainer.label = "gridContainer";
+		const gridX = (areaW - gridWidth) / 2;
+		this.gridContainer.x = gridX;
+		this.gridContainer.y = currentY;
+
 		for (let i = 0; i < deckCards.length; i++) {
 			const card = deckCards[i];
-			const y = i * (CARD_ROW_HEIGHT + CARD_ROW_GAP);
-			const item = this.createRemoveCardItem(card, 0, y, CARD_ROW_LIST_WIDTH);
-			scrollContainer.addChild(item);
+			const col = i % GRID_COLUMNS;
+			const row = Math.floor(i / GRID_COLUMNS);
+			const x = col * (CARD_WIDTH + CARD_GAP);
+			const y = row * (CARD_HEIGHT + CARD_GAP);
+			const item = this.createExchangeGridCard(card, x, y);
+			this.gridContainer.addChild(item);
 		}
-		scrollContainer.x = listX;
-		scrollContainer.y = listStartY;
-
-		// リスト表示領域をマスクで制限
-		// PixiJS v8ではマスクをディスプレイリストに追加せず参照のみ保持する
-		const maskGraphics = new Graphics();
-		maskGraphics.rect(listX, listStartY, CARD_ROW_LIST_WIDTH, visibleHeight);
-		maskGraphics.fill(0xffffff);
-		scrollContainer.mask = maskGraphics;
-		this.container.addChild(scrollContainer);
-
-		// ドラッグスクロール（scrollContainer自体にイベントを持たせる）
-		if (totalListHeight > REMOVE_LIST_MAX_HEIGHT) {
-			scrollContainer.eventMode = "static";
-			scrollContainer.cursor = "grab";
-			scrollContainer.interactiveChildren = true;
-
-			let isDragging = false;
-			let lastY = 0;
-			const minScrollY = listStartY - (totalListHeight - visibleHeight);
-			const maxScrollY = listStartY;
-
-			scrollContainer.on("pointerdown", (e) => {
-				isDragging = true;
-				lastY = e.globalY;
-				scrollContainer.cursor = "grabbing";
-			});
-			scrollContainer.on("pointermove", (e) => {
-				if (!isDragging) return;
-				const dy = e.globalY - lastY;
-				lastY = e.globalY;
-				scrollContainer.y = Math.max(
-					minScrollY,
-					Math.min(maxScrollY, scrollContainer.y + dy),
-				);
-			});
-			scrollContainer.on("pointerup", () => {
-				isDragging = false;
-				scrollContainer.cursor = "grab";
-			});
-			scrollContainer.on("pointerupoutside", () => {
-				isDragging = false;
-				scrollContainer.cursor = "grab";
-			});
-		}
+		this.container.addChild(this.gridContainer);
 
 		// 統一ボタンエリア
-		const cancelY = listStartY + visibleHeight + listToButtonGap;
+		const buttonY = currentY + gridHeight + gridToButtonGap;
 		const buttonStartX = (areaW - totalButtonWidth) / 2;
 
 		this.confirmButtonContainer = new Container();
 
-		// 「除去」ボタン（未選択時は無効）
+		// 「交換」ボタン（未選択時は無効）
 		const removeConfirmBtn = this.createButton(
-			"除去",
+			"交換",
 			buttonStartX,
-			cancelY,
+			buttonY,
 			UI_COLORS_DISABLED.bg,
 			UI_COLORS_DISABLED.border,
 			async () => {
@@ -376,10 +389,10 @@ export class RewardScreen {
 				const cardId = this.selectedRemoveCardId;
 				const item = this.selectedRemoveItem;
 				// アニメーション中は入力を一括無効化
-				const prevEventMode = this.scrollContainer?.eventMode;
-				if (this.scrollContainer) {
-					this.scrollContainer.eventMode = "none";
-					this.scrollContainer.interactiveChildren = false;
+				const prevEventMode = this.gridContainer?.eventMode;
+				if (this.gridContainer) {
+					this.gridContainer.eventMode = "none";
+					this.gridContainer.interactiveChildren = false;
 				}
 				if (this.confirmButtonContainer) {
 					this.confirmButtonContainer.interactiveChildren = false;
@@ -391,9 +404,9 @@ export class RewardScreen {
 					console.error("カード除去処理中にエラーが発生しました", error);
 				} finally {
 					this.isRemoving = false;
-					if (this.scrollContainer) {
-						this.scrollContainer.eventMode = prevEventMode ?? "passive";
-						this.scrollContainer.interactiveChildren = true;
+					if (this.gridContainer) {
+						this.gridContainer.eventMode = prevEventMode ?? "passive";
+						this.gridContainer.interactiveChildren = true;
 					}
 					if (this.confirmButtonContainer) {
 						this.confirmButtonContainer.interactiveChildren = true;
@@ -411,7 +424,7 @@ export class RewardScreen {
 		const skipBtn = this.createButton(
 			"スキップ",
 			buttonStartX + BUTTON_WIDTH + buttonGap,
-			cancelY,
+			buttonY,
 			UI_COLORS_BUTTON_SECONDARY.bg,
 			UI_COLORS_BUTTON_SECONDARY.border,
 			() => {
@@ -422,20 +435,17 @@ export class RewardScreen {
 		this.confirmButtonContainer.addChild(skipBtn);
 
 		this.container.addChild(this.confirmButtonContainer);
+
+		// ツールチップコンテナ（Z-order最前面）
+		this.tooltipContainer.removeChildren();
+		this.container.addChild(this.tooltipContainer);
 	}
 
 	/**
-	 * 報酬カードを1枚生成
+	 * 報酬カードの描画部分を生成（共通ロジック）
 	 */
-	private createRewardCard(
-		cardType: CardType,
-		x: number,
-		y: number,
-		index: number,
-	): Container {
+	private createRewardCardView(cardType: CardType): Container {
 		const cardContainer = new Container();
-		cardContainer.x = x;
-		cardContainer.y = y;
 
 		const colors = CARD_COLORS[cardType];
 		const rarity = CARD_RARITY[cardType];
@@ -503,7 +513,7 @@ export class RewardScreen {
 		cardContainer.addChild(rarityText);
 
 		// APコスト
-		const cost = CARD_COST[cardType];
+		const cost = getEffectiveCardCost(cardType);
 		const costText = new Text({
 			text: cost > 0 ? `AP: ${cost}` : "",
 			style: {
@@ -531,9 +541,33 @@ export class RewardScreen {
 		effect.y = 94;
 		cardContainer.addChild(effect);
 
+		return cardContainer;
+	}
+
+	/**
+	 * 報酬カードを1枚生成
+	 */
+	private createRewardCard(
+		cardType: CardType,
+		x: number,
+		y: number,
+		index: number,
+	): Container {
+		const cardContainer = this.createRewardCardView(cardType);
+		cardContainer.x = x;
+		cardContainer.y = y;
+
 		// カード全体をクリック可能にする
 		makeInteractive(cardContainer, () => {
 			this.selectRewardCard(index);
+		});
+
+		// ツールチップ表示
+		cardContainer.on("pointerover", () => {
+			this.showTooltip(cardType, x, y, REWARD_CARD_WIDTH);
+		});
+		cardContainer.on("pointerout", () => {
+			this.hideTooltip();
 		});
 
 		return cardContainer;
@@ -632,26 +666,44 @@ export class RewardScreen {
 	}
 
 	/**
-	 * 除去用カードアイテムを生成
+	 * 交換グリッド用カードを生成（共通カードビュー + インタラクション付き）
 	 */
-	private createRemoveCardItem(
-		card: Card,
-		x: number,
-		y: number,
-		width: number,
-	): Container {
-		const item = createCardListRow({ cardType: card.type, width });
-		item.x = x;
-		item.y = y;
+	private createExchangeGridCard(card: Card, x: number, y: number): Container {
+		const cardContainer = createGridCardView(card.type);
+		cardContainer.x = x;
+		cardContainer.y = y;
 
-		// カード行全体をタップ可能にする（ドラッグ開始の pointerdown と干渉しないよう pointertap を使用）
-		item.eventMode = "static";
-		item.cursor = "pointer";
-		item.on("pointertap", () => {
-			this.selectRemoveCard(card.id, item, width);
+		// クリックで選択（左クリックのみ）
+		makeInteractive(cardContainer, () => {
+			this.selectRemoveCard(card.id, cardContainer, CARD_WIDTH);
 		});
 
-		return item;
+		// ツールチップ表示
+		cardContainer.on("pointerover", () => {
+			this.showGridTooltip(card.type, cardContainer);
+		});
+		cardContainer.on("pointerout", () => {
+			this.hideTooltip();
+		});
+
+		return cardContainer;
+	}
+
+	/**
+	 * 獲得候補カードのプレビューを生成（インタラクションなし）
+	 */
+	private createAcquiredCardPreview(
+		cardType: CardType,
+		x: number,
+		y: number,
+	): Container {
+		const cardContainer = this.createRewardCardView(cardType);
+		cardContainer.x = x;
+		cardContainer.y = y;
+		cardContainer.label = "acquiredCard";
+		cardContainer.eventMode = "none";
+
+		return cardContainer;
 	}
 
 	/**
@@ -668,7 +720,7 @@ export class RewardScreen {
 		}
 		this.selectedRemoveCardId = cardId;
 		this.selectedRemoveItem = { container: item, width };
-		this.highlightCard(item, width, CARD_ROW_HEIGHT, 6);
+		this.highlightCard(item, width, CARD_HEIGHT, CARD_RADIUS);
 		this.updateRemoveConfirmButton();
 	}
 
@@ -831,7 +883,7 @@ export class RewardScreen {
 		// アイテム中心のグローバル座標をパーティクルシステムのローカル座標に変換
 		const globalPos = itemContainer.toGlobal({
 			x: itemWidth / 2,
-			y: CARD_ROW_HEIGHT / 2,
+			y: CARD_HEIGHT / 2,
 		});
 		const particleOrigin = this.particleSystem
 			? this.particleSystem.getContainer().toLocal(globalPos)
@@ -852,5 +904,53 @@ export class RewardScreen {
 			{ alpha: 0, scaleX: 0.8, scaleY: 0.8 },
 			{ duration: REMOVE_FADE_DURATION, easing: Easing.easeInOut },
 		);
+	}
+
+	/**
+	 * ツールチップをカード上部中央に表示（報酬カード用）
+	 */
+	private showTooltip(
+		cardType: CardType,
+		cardX: number,
+		cardY: number,
+		cardWidth: number,
+	): void {
+		this.tooltipContainer.removeChildren();
+		const cost = getEffectiveCardCost(cardType);
+		const { container: tooltip, height: tooltipHeight } = createCardTooltip(
+			cardType,
+			cost,
+		);
+		tooltip.x = cardX + cardWidth / 2 - TOOLTIP_WIDTH / 2;
+		tooltip.y = cardY - tooltipHeight - TOOLTIP_MARGIN;
+		this.tooltipContainer.addChild(tooltip);
+	}
+
+	/**
+	 * ツールチップをカード上部中央に表示（グリッドカード用）
+	 */
+	private showGridTooltip(cardType: CardType, cardContainer: Container): void {
+		this.tooltipContainer.removeChildren();
+		if (!this.gridContainer) return;
+		const cost = getEffectiveCardCost(cardType);
+		const { container: tooltip, height: tooltipHeight } = createCardTooltip(
+			cardType,
+			cost,
+		);
+		tooltip.x =
+			this.gridContainer.x +
+			cardContainer.x +
+			CARD_WIDTH / 2 -
+			TOOLTIP_WIDTH / 2;
+		tooltip.y =
+			this.gridContainer.y + cardContainer.y - tooltipHeight - TOOLTIP_MARGIN;
+		this.tooltipContainer.addChild(tooltip);
+	}
+
+	/**
+	 * ツールチップを非表示
+	 */
+	private hideTooltip(): void {
+		this.tooltipContainer.removeChildren();
 	}
 }

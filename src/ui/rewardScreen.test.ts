@@ -1,7 +1,9 @@
-import type { Container, FederatedPointerEvent } from "pixi.js";
+import type { Container, FederatedPointerEvent, Text } from "pixi.js";
 import { describe, expect, it, vi } from "vitest";
 import { createTweenMock, mockEasing } from "../test-utils/mockTween";
 import type { Card } from "../types";
+import { CARD_DESCRIPTION, CARD_TYPE_NAME } from "./cardConstants";
+import { CARD_GAP, CARD_HEIGHT, CARD_WIDTH } from "./handRenderer";
 import type { ParticleSystem } from "./particleSystem";
 import { RewardScreen } from "./rewardScreen";
 
@@ -18,6 +20,22 @@ function findByLabel(parent: Container, label: string): Container | null {
 			const c = child as Container;
 			if (c.children?.length > 0) {
 				const found = findByLabel(c, label);
+				if (found) return found;
+			}
+		}
+	}
+	return null;
+}
+
+/** 再帰的にtextプロパティが一致するText要素を探す */
+function findTextByContent(parent: Container, content: string): Text | null {
+	for (const child of parent.children) {
+		if ("text" in child && (child as Text).text === content)
+			return child as Text;
+		if ("children" in child) {
+			const c = child as Container;
+			if (c.children?.length > 0) {
+				const found = findTextByContent(c, content);
 				if (found) return found;
 			}
 		}
@@ -58,9 +76,9 @@ describe("RewardScreen", () => {
 			const screen = new RewardScreen();
 			screen.render(["move", "attack"], 600, 400);
 
-			// オーバーレイ + タイトル + カード2枚 + confirmButtonContainer = 5つ
+			// オーバーレイ + タイトル + カード2枚 + confirmButtonContainer + tooltipContainer = 6つ
 			const container = screen.getContainer();
-			expect(container.children.length).toBe(5);
+			expect(container.children.length).toBe(6);
 		});
 
 		it("gameAreaWidth指定時にタイトルとカードがゲームエリア中央に配置される", () => {
@@ -269,22 +287,134 @@ describe("RewardScreen", () => {
 			expect(container.children.length).toBeGreaterThan(0);
 		});
 
-		it("カード行選択→除去ボタンクリックでコールバックが呼ばれる", async () => {
+		it("グリッドコンテナにカードが3列で配置される", () => {
+			const sixCards: Card[] = [
+				{ id: "c1", type: "move" },
+				{ id: "c2", type: "attack" },
+				{ id: "c3", type: "jump" },
+				{ id: "c4", type: "move" },
+				{ id: "c5", type: "attack" },
+				{ id: "c6", type: "jump" },
+			];
+			const screen = new RewardScreen();
+			screen.renderRemoveSelection(sixCards, 600, 800);
+
+			const container = screen.getContainer();
+			const gridContainer = findByLabel(container, "gridContainer");
+			expect(gridContainer).toBeDefined();
+			expect(gridContainer?.children.length).toBe(6);
+
+			// 1行目: 0,1,2 → col=0,1,2
+			const card0 = gridContainer?.children[0] as Container;
+			const card1 = gridContainer?.children[1] as Container;
+			const card2 = gridContainer?.children[2] as Container;
+			expect(card0.x).toBe(0);
+			expect(card1.x).toBe(CARD_WIDTH + CARD_GAP);
+			expect(card2.x).toBe(2 * (CARD_WIDTH + CARD_GAP));
+			expect(card0.y).toBe(0);
+			expect(card1.y).toBe(0);
+			expect(card2.y).toBe(0);
+
+			// 2行目: 3,4,5 → row=1
+			const card3 = gridContainer?.children[3] as Container;
+			expect(card3.x).toBe(0);
+			expect(card3.y).toBe(CARD_HEIGHT + CARD_GAP);
+		});
+
+		it("acquiredCardType指定時に獲得候補カードが表示される", () => {
+			const screen = new RewardScreen();
+			screen.renderRemoveSelection(
+				testCards,
+				600,
+				800,
+				"テスト",
+				undefined,
+				undefined,
+				"jump",
+			);
+
+			const container = screen.getContainer();
+			const acquiredCard = findByLabel(container, "acquiredCard");
+			expect(acquiredCard).toBeDefined();
+			expect(acquiredCard?.eventMode).toBe("none");
+		});
+
+		it("acquiredCardType指定かつタイトルに案内文を含まない場合、サブタイトルが表示される", () => {
+			const screen = new RewardScreen();
+			screen.renderRemoveSelection(
+				testCards,
+				600,
+				800,
+				"テスト",
+				undefined,
+				undefined,
+				"jump",
+			);
+
+			const container = screen.getContainer();
+			const subtitle = findTextByContent(container, "交換するカードを選択");
+			expect(subtitle).not.toBeNull();
+		});
+
+		it("acquiredCardType指定かつタイトルに案内文を含む場合、サブタイトルが表示されない", () => {
+			const screen = new RewardScreen();
+			screen.renderRemoveSelection(
+				testCards,
+				600,
+				800,
+				"交換するカードを選択",
+				undefined,
+				undefined,
+				"jump",
+			);
+
+			const container = screen.getContainer();
+			// タイトル自体が「交換するカードを選択」なので、サブタイトルは非表示
+			// タイトルのText要素は存在するが、サブタイトルとしての2つ目は存在しない
+			const allTexts: Text[] = [];
+			function collectTexts(node: Container) {
+				for (const child of node.children) {
+					if (
+						"text" in child &&
+						(child as Text).text === "交換するカードを選択"
+					)
+						allTexts.push(child as Text);
+					if ("children" in child) {
+						const c = child as Container;
+						if (c.children?.length > 0) collectTexts(c);
+					}
+				}
+			}
+			collectTexts(container);
+			// タイトルの1つだけ存在し、サブタイトルとしての重複はない
+			expect(allTexts).toHaveLength(1);
+		});
+
+		it("acquiredCardType未指定時に獲得候補カードが表示されない", () => {
+			const screen = new RewardScreen();
+			screen.renderRemoveSelection(testCards, 600, 400);
+
+			const container = screen.getContainer();
+			const acquiredCard = findByLabel(container, "acquiredCard");
+			expect(acquiredCard).toBeNull();
+		});
+
+		it("カード選択→交換ボタンクリックでコールバックが呼ばれる", async () => {
 			const screen = new RewardScreen();
 			const callback = vi.fn();
 			screen.setOnRemoveCard(callback);
 			screen.renderRemoveSelection(testCards, 600, 400);
 
 			const container = screen.getContainer();
-			// scrollContainer内の最初のカード行をクリック
-			const scrollContainer = container.children.find(
-				(c) => "mask" in c && c.mask != null,
+			const gridContainer = findByLabel(
+				container,
+				"gridContainer",
 			) as Container;
-			expect(scrollContainer).toBeDefined();
-			const firstItem = scrollContainer.children[0] as Container;
-			firstItem.emit("pointertap", { button: 0 } as FederatedPointerEvent);
+			expect(gridContainer).toBeDefined();
+			const firstItem = gridContainer.children[0] as Container;
+			firstItem.emit("pointerdown", { button: 0 } as FederatedPointerEvent);
 
-			// 除去ボタンをクリック
+			// 交換ボタンをクリック
 			const removeBtn = findByLabel(container, "removeBtn");
 			expect(removeBtn).toBeDefined();
 			expect(removeBtn?.eventMode).toBe("static");
@@ -296,7 +426,7 @@ describe("RewardScreen", () => {
 			});
 		});
 
-		it("未選択時に除去ボタンが無効状態", () => {
+		it("未選択時に交換ボタンが無効状態", () => {
 			const screen = new RewardScreen();
 			screen.renderRemoveSelection(testCards, 600, 400);
 
@@ -306,7 +436,7 @@ describe("RewardScreen", () => {
 			expect(removeBtn?.eventMode).toBe("none");
 		});
 
-		it("カード行選択後に除去ボタンが有効状態になる", () => {
+		it("カード選択後に交換ボタンが有効状態になる", () => {
 			const screen = new RewardScreen();
 			screen.renderRemoveSelection(testCards, 600, 400);
 
@@ -314,46 +444,49 @@ describe("RewardScreen", () => {
 			const removeBtn = findByLabel(container, "removeBtn");
 			expect(removeBtn?.eventMode).toBe("none");
 
-			// カード行をクリック
-			const scrollContainer = container.children.find(
-				(c) => "mask" in c && c.mask != null,
+			// カードをクリック
+			const gridContainer = findByLabel(
+				container,
+				"gridContainer",
 			) as Container;
-			const firstItem = scrollContainer.children[0] as Container;
-			firstItem.emit("pointertap", { button: 0 } as FederatedPointerEvent);
+			const firstItem = gridContainer.children[0] as Container;
+			firstItem.emit("pointerdown", { button: 0 } as FederatedPointerEvent);
 
 			expect(removeBtn?.eventMode).toBe("static");
 		});
 
-		it("カード行クリックでハイライトが付与される", () => {
+		it("カードクリックでハイライトが付与される", () => {
 			const screen = new RewardScreen();
 			screen.renderRemoveSelection(testCards, 600, 400);
 
 			const container = screen.getContainer();
-			const scrollContainer = container.children.find(
-				(c) => "mask" in c && c.mask != null,
+			const gridContainer = findByLabel(
+				container,
+				"gridContainer",
 			) as Container;
-			const firstItem = scrollContainer.children[0] as Container;
-			firstItem.emit("pointertap", { button: 0 } as FederatedPointerEvent);
+			const firstItem = gridContainer.children[0] as Container;
+			firstItem.emit("pointerdown", { button: 0 } as FederatedPointerEvent);
 
 			const highlight = firstItem.children.find((c) => c.label === "highlight");
 			expect(highlight).toBeDefined();
 		});
 
-		it("別カード行クリックで前回ハイライトが解除される", () => {
+		it("別カードクリックで前回ハイライトが解除される", () => {
 			const screen = new RewardScreen();
 			screen.renderRemoveSelection(testCards, 600, 400);
 
 			const container = screen.getContainer();
-			const scrollContainer = container.children.find(
-				(c) => "mask" in c && c.mask != null,
+			const gridContainer = findByLabel(
+				container,
+				"gridContainer",
 			) as Container;
-			const item0 = scrollContainer.children[0] as Container;
-			const item1 = scrollContainer.children[1] as Container;
+			const item0 = gridContainer.children[0] as Container;
+			const item1 = gridContainer.children[1] as Container;
 
-			item0.emit("pointertap", { button: 0 } as FederatedPointerEvent);
+			item0.emit("pointerdown", { button: 0 } as FederatedPointerEvent);
 			expect(item0.children.find((c) => c.label === "highlight")).toBeDefined();
 
-			item1.emit("pointertap", { button: 0 } as FederatedPointerEvent);
+			item1.emit("pointerdown", { button: 0 } as FederatedPointerEvent);
 			expect(
 				item0.children.find((c) => c.label === "highlight"),
 			).toBeUndefined();
@@ -406,7 +539,7 @@ describe("RewardScreen", () => {
 			};
 		}
 
-		it("除去ボタンクリックでemitが呼ばれonRemoveCardが発火する", async () => {
+		it("交換ボタンクリックでemitが呼ばれonRemoveCardが発火する", async () => {
 			const screen = new RewardScreen();
 			const { particle, mockEmit } = createMockParticle();
 			screen.setParticleSystem(particle);
@@ -416,15 +549,16 @@ describe("RewardScreen", () => {
 			screen.renderRemoveSelection(testCards, 600, 400);
 
 			const container = screen.getContainer();
-			// カード行を選択
-			const scrollContainer = container.children.find(
-				(c) => "mask" in c && c.mask != null,
+			// グリッド内のカードを選択
+			const gridContainer = findByLabel(
+				container,
+				"gridContainer",
 			) as Container;
-			scrollContainer.children[0].emit("pointertap", {
+			gridContainer.children[0].emit("pointerdown", {
 				button: 0,
 			} as FederatedPointerEvent);
 
-			// 除去ボタンをクリック
+			// 交換ボタンをクリック
 			const removeBtn = findByLabel(container, "removeBtn");
 			removeBtn?.emit("pointerdown", { button: 0 } as FederatedPointerEvent);
 
@@ -445,15 +579,16 @@ describe("RewardScreen", () => {
 			screen.renderRemoveSelection(testCards, 600, 400);
 
 			const container = screen.getContainer();
-			// カード行を選択
-			const scrollContainer = container.children.find(
-				(c) => "mask" in c && c.mask != null,
+			// グリッド内のカードを選択
+			const gridContainer = findByLabel(
+				container,
+				"gridContainer",
 			) as Container;
-			scrollContainer.children[0].emit("pointertap", {
+			gridContainer.children[0].emit("pointerdown", {
 				button: 0,
 			} as FederatedPointerEvent);
 
-			// 除去ボタンをクリック
+			// 交換ボタンをクリック
 			const removeBtn = findByLabel(container, "removeBtn");
 			removeBtn?.emit("pointerdown", { button: 0 } as FederatedPointerEvent);
 
@@ -466,7 +601,7 @@ describe("RewardScreen", () => {
 			expect(confirmContainer?.interactiveChildren).toBe(false);
 		});
 
-		it("除去ボタンクリック後にスクロールコンテナが無効化される", () => {
+		it("交換ボタンクリック後にグリッドコンテナが無効化される", () => {
 			const screen = new RewardScreen();
 			const { particle } = createMockParticle();
 			screen.setParticleSystem(particle);
@@ -475,20 +610,21 @@ describe("RewardScreen", () => {
 			screen.renderRemoveSelection(testCards, 600, 400);
 
 			const container = screen.getContainer();
-			// カード行を選択
-			const scrollContainer = container.children.find(
-				(c) => "mask" in c && c.mask != null,
+			// グリッド内のカードを選択
+			const gridContainer = findByLabel(
+				container,
+				"gridContainer",
 			) as Container;
-			scrollContainer.children[0].emit("pointertap", {
+			gridContainer.children[0].emit("pointerdown", {
 				button: 0,
 			} as FederatedPointerEvent);
 
-			// 除去ボタンをクリック
+			// 交換ボタンをクリック
 			const removeBtn = findByLabel(container, "removeBtn");
 			removeBtn?.emit("pointerdown", { button: 0 } as FederatedPointerEvent);
 
-			// スクロールコンテナのinteractiveChildrenがfalseになる
-			expect(scrollContainer?.interactiveChildren).toBe(false);
+			// グリッドコンテナのinteractiveChildrenがfalseになる
+			expect(gridContainer?.interactiveChildren).toBe(false);
 		});
 	});
 
@@ -547,6 +683,110 @@ describe("RewardScreen", () => {
 					life: { min: 300, max: 800 },
 				}),
 			);
+		});
+	});
+
+	describe("ツールチップ", () => {
+		function getAllTextsRecursive(container: Container): Text[] {
+			const texts: Text[] = [];
+			for (const child of container.children) {
+				if (
+					"text" in child &&
+					typeof (child as { text: unknown }).text === "string"
+				) {
+					texts.push(child as unknown as Text);
+				}
+				if ("children" in child) {
+					texts.push(...getAllTextsRecursive(child as Container));
+				}
+			}
+			return texts;
+		}
+
+		function findTooltipContainer(screen: RewardScreen): Container | null {
+			return findByLabel(screen.getContainer(), "tooltip");
+		}
+
+		it("報酬カードのpointeroverでツールチップが表示される", () => {
+			const screen = new RewardScreen();
+			screen.render(["move", "attack"], 600, 400);
+
+			const container = screen.getContainer();
+			// children[2]がカードコンテナ
+			const card = container.children[2] as Container;
+			card.emit("pointerover", {} as FederatedPointerEvent);
+
+			const tooltipContainer = findTooltipContainer(screen);
+			expect(tooltipContainer).toBeDefined();
+			expect(tooltipContainer?.children.length).toBeGreaterThan(0);
+
+			const texts = getAllTextsRecursive(tooltipContainer as Container);
+			const hasName = texts.some((t) => t.text.includes(CARD_TYPE_NAME.move));
+			expect(hasName).toBe(true);
+		});
+
+		it("報酬カードのpointeroutでツールチップが消える", () => {
+			const screen = new RewardScreen();
+			screen.render(["move"], 600, 400);
+
+			const container = screen.getContainer();
+			const card = container.children[2] as Container;
+			card.emit("pointerover", {} as FederatedPointerEvent);
+
+			const tooltipContainer = findTooltipContainer(screen);
+			expect(tooltipContainer?.children.length).toBeGreaterThan(0);
+
+			card.emit("pointerout", {} as FederatedPointerEvent);
+			expect(tooltipContainer?.children.length).toBe(0);
+		});
+
+		it("交換グリッドカードのpointeroverでツールチップが表示される", () => {
+			const testCards: Card[] = [
+				{ id: "c1", type: "move" },
+				{ id: "c2", type: "attack" },
+				{ id: "c3", type: "jump" },
+			];
+			const screen = new RewardScreen();
+			screen.renderRemoveSelection(testCards, 600, 800);
+
+			const container = screen.getContainer();
+			const gridContainer = findByLabel(
+				container,
+				"gridContainer",
+			) as Container;
+			const firstItem = gridContainer.children[0] as Container;
+			firstItem.emit("pointerover", {} as FederatedPointerEvent);
+
+			const tooltipContainer = findTooltipContainer(screen);
+			expect(tooltipContainer).toBeDefined();
+			expect(tooltipContainer?.children.length).toBeGreaterThan(0);
+
+			const texts = getAllTextsRecursive(tooltipContainer as Container);
+			const hasDesc = texts.some((t) => t.text.includes(CARD_DESCRIPTION.move));
+			expect(hasDesc).toBe(true);
+		});
+
+		it("交換グリッドカードのpointeroutでツールチップが消える", () => {
+			const testCards: Card[] = [
+				{ id: "c1", type: "move" },
+				{ id: "c2", type: "attack" },
+			];
+			const screen = new RewardScreen();
+			screen.renderRemoveSelection(testCards, 600, 800);
+
+			const container = screen.getContainer();
+			const gridContainer = findByLabel(
+				container,
+				"gridContainer",
+			) as Container;
+			const firstItem = gridContainer.children[0] as Container;
+			firstItem.emit("pointerover", {} as FederatedPointerEvent);
+
+			const tooltipContainer = findTooltipContainer(screen);
+			expect(tooltipContainer?.children.length).toBeGreaterThan(0);
+
+			firstItem.emit("pointerout", {} as FederatedPointerEvent);
+			expect(tooltipContainer?.children.length).toBe(0);
 		});
 	});
 });
