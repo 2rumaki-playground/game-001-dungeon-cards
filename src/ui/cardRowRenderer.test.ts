@@ -1,10 +1,6 @@
 import { Container, Text } from "pixi.js";
 import { describe, expect, it } from "vitest";
-import {
-	CARD_EFFECT_TEXT,
-	CARD_TYPE_NAME,
-	CARD_TYPE_SYMBOL,
-} from "./cardConstants";
+import { CARD_TYPE_NAME, CARD_TYPE_SYMBOL } from "./cardConstants";
 import {
 	CARD_ROW_HEIGHT,
 	CARD_ROW_LIST_WIDTH,
@@ -50,23 +46,19 @@ describe("cardRowRenderer", () => {
 			expect(nameText?.style.fontWeight).toBe("bold");
 		});
 
-		it("効果テキストが含まれる", () => {
+		it("APコストが表示される", () => {
 			const row = createCardListRow({ cardType: "move" });
 			const texts = row.children.filter((c) => c instanceof Text) as Text[];
-			const effectText = texts.find((t) =>
-				t.text.includes(CARD_EFFECT_TEXT.move),
-			);
-			expect(effectText).toBeDefined();
+			const costText = texts.find((t) => t.text.includes("AP:"));
+			expect(costText).toBeDefined();
+			expect(costText?.style.fontSize).toBe(11);
 		});
 
-		it("効果テキストのフォントサイズが11px", () => {
-			const row = createCardListRow({ cardType: "attack" });
+		it("APコスト0のカードはコストテキストが空", () => {
+			const row = createCardListRow({ cardType: "wait" });
 			const texts = row.children.filter((c) => c instanceof Text) as Text[];
-			const effectText = texts.find((t) =>
-				t.text.includes(CARD_EFFECT_TEXT.attack),
-			);
-			expect(effectText).toBeDefined();
-			expect(effectText?.style.fontSize).toBe(11);
+			const costText = texts.find((t) => t.text.includes("AP:"));
+			expect(costText).toBeUndefined();
 		});
 
 		it("枚数を指定すると名前行に枚数が表示される", () => {

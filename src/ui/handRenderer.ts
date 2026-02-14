@@ -9,7 +9,6 @@ import type { Card, CardType, Direction } from "../types";
 import { Easing, tween } from "../utils/tween";
 import {
 	CARD_COLORS as BASE_CARD_COLORS,
-	CARD_EFFECT_TEXT,
 	CARD_GLOW_COLORS,
 	CARD_TYPE_NAME,
 	CARD_TYPE_SYMBOL,
@@ -382,20 +381,6 @@ export class HandRenderer {
 		costText.x = CARD_WIDTH / 2;
 		costText.y = 56;
 		cardContainer.addChild(costText);
-
-		// 効果テキスト
-		const effectText = new Text({
-			text: CARD_EFFECT_TEXT[card.type],
-			style: {
-				fontSize: 11,
-				fontFamily: "sans-serif",
-				fill: enabled ? 0xaaaaaa : 0x555555,
-			},
-		});
-		effectText.anchor.set(0.5, 0);
-		effectText.x = CARD_WIDTH / 2;
-		effectText.y = 74;
-		cardContainer.addChild(effectText);
 
 		// 方向カードには方向ヒントを表示
 		if (

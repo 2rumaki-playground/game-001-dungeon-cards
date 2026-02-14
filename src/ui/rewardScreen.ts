@@ -9,7 +9,6 @@ import type { Card, CardType, Rarity } from "../types";
 import { Easing, tween } from "../utils/tween";
 import {
 	CARD_COLORS,
-	CARD_EFFECT_TEXT,
 	CARD_RARITY,
 	CARD_TYPE_NAME,
 	CARD_TYPE_SYMBOL,
@@ -526,20 +525,6 @@ export class RewardScreen {
 		costText.x = REWARD_CARD_WIDTH / 2;
 		costText.y = 78;
 		cardContainer.addChild(costText);
-
-		// 効果テキスト
-		const effect = new Text({
-			text: CARD_EFFECT_TEXT[cardType],
-			style: {
-				fontSize: 11,
-				fontFamily: "sans-serif",
-				fill: 0xaaaaaa,
-			},
-		});
-		effect.anchor.set(0.5, 0);
-		effect.x = REWARD_CARD_WIDTH / 2;
-		effect.y = 94;
-		cardContainer.addChild(effect);
 
 		return cardContainer;
 	}
