@@ -112,6 +112,7 @@ export function createInitialPlayer(): Player {
  */
 export function createEmptyDeckState(): DeckState {
 	return {
+		deckOrder: [],
 		drawPile: [],
 		hand: [],
 		discardPile: [],
@@ -194,8 +195,8 @@ export function createInitialGameState(
  */
 export function startNewGame(state: GameState): GameState {
 	const gameState = createInitialGameState(state.rng.seed);
-	const deck = createInitialDeckState(gameState.rng);
-	const deckWithHand = drawCards(deck, gameState.rng);
+	const deck = createInitialDeckState();
+	const deckWithHand = drawCards(deck);
 	return { ...gameState, deck: deckWithHand };
 }
 
@@ -207,8 +208,8 @@ export function startNewGameAtFloor(
 	floor: number,
 ): GameState {
 	const gameState = createInitialGameState(state.rng.seed, floor);
-	const deck = createInitialDeckState(gameState.rng);
-	const deckWithHand = drawCards(deck, gameState.rng);
+	const deck = createInitialDeckState();
+	const deckWithHand = drawCards(deck);
 	return { ...gameState, deck: deckWithHand };
 }
 

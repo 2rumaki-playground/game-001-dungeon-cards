@@ -21,6 +21,7 @@ function createTestDeck(): DeckState {
 		{ id: "w1", type: "wait" },
 	];
 	return {
+		deckOrder: cards,
 		drawPile: cards.slice(0, 4),
 		hand: cards.slice(4, 6),
 		discardPile: cards.slice(6),
@@ -210,6 +211,7 @@ describe("DeckViewer", () => {
 		it("空デッキでも描画できる", () => {
 			const viewer = new DeckViewer();
 			const emptyDeck: DeckState = {
+				deckOrder: [],
 				drawPile: [],
 				hand: [],
 				discardPile: [],

@@ -209,6 +209,18 @@ export function loadGame(): GameState | null {
 			remnants: sanitizeRemnants(data.remnants),
 		};
 
+		// 旧セーブデータ互換: deckOrderがない場合は全カードの現在順をデフォルトに
+		if (state.deck && !Array.isArray(state.deck.deckOrder)) {
+			state.deck = {
+				...state.deck,
+				deckOrder: [
+					...state.deck.drawPile,
+					...state.deck.hand,
+					...state.deck.discardPile,
+				],
+			};
+		}
+
 		// カードIDカウンターをデッキの最大IDで初期化
 		if (state.deck) {
 			initCardIdCounterFromDeck(state.deck);

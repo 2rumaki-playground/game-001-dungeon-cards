@@ -8,23 +8,17 @@ import type { CardType, EnemyType, Rarity } from "./types";
 // 行動関連
 export const MAX_AP = 3;
 export const TURN_START_AP = 3;
-export const HAND_LIMIT = 5;
+export const HAND_LIMIT = 3;
 
 // デッキ構成
 export const INITIAL_DECK = {
-	moveCards: 6,
-	attackCards: 6,
-	strongAttackCards: 2,
-	jumpCards: 2,
-	waitCards: 2,
+	moveCards: 3,
+	attackCards: 2,
+	waitCards: 1,
 } as const;
 
 export const TOTAL_DECK_SIZE =
-	INITIAL_DECK.moveCards +
-	INITIAL_DECK.attackCards +
-	INITIAL_DECK.strongAttackCards +
-	INITIAL_DECK.jumpCards +
-	INITIAL_DECK.waitCards;
+	INITIAL_DECK.moveCards + INITIAL_DECK.attackCards + INITIAL_DECK.waitCards;
 
 // カードAPコスト
 export const CARD_COST = {
@@ -176,8 +170,8 @@ export function getBossType(floor: number): "miniboss" | "boss" | null {
 }
 
 // デッキ構築（v1.2）
-export const DECK_MAX_SIZE = 30;
-export const DECK_MIN_SIZE = 10;
+export const DECK_MAX_SIZE = 6;
+export const DECK_MIN_SIZE = 6;
 export const CARD_REMOVAL_CHANCE = 0.3;
 
 // カードレアリティ（正典: docs/spec/constants.md）

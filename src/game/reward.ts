@@ -46,6 +46,7 @@ export function addRewardCardToDeck(
 		rng: state.rng.clone(),
 		deck: {
 			...state.deck,
+			deckOrder: [...state.deck.deckOrder, newCard],
 			drawPile: [...state.deck.drawPile, newCard],
 		},
 	};
@@ -87,6 +88,7 @@ export function removeCardFromDeck(
 		...state,
 		rng: state.rng.clone(),
 		deck: {
+			deckOrder: state.deck.deckOrder.filter((c) => c.id !== cardId),
 			drawPile: state.deck.drawPile.filter((c) => c.id !== cardId),
 			hand: state.deck.hand.filter((c) => c.id !== cardId),
 			discardPile: state.deck.discardPile.filter((c) => c.id !== cardId),

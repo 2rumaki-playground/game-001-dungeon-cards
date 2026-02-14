@@ -6,7 +6,6 @@
 
 import { HAND_LIMIT, INITIAL_DECK } from "../constants";
 import type { Card, CardType, DeckState } from "../types";
-import type { RNG } from "../utils/rng";
 
 /**
  * デッキの3ゾーン（山札・手札・捨て札）を結合した全カード配列を取得
@@ -62,35 +61,34 @@ function createCards(type: CardType, count: number): Card[] {
 }
 
 /**
- * 初期デッキを生成（シャッフル済み）
+ * 初期デッキを生成（固定順）
  */
-export function createInitialDeck(rng: RNG): Card[] {
-	const cards: Card[] = [
+export function createInitialDeck(): Card[] {
+	return [
 		...createCards("move", INITIAL_DECK.moveCards),
 		...createCards("attack", INITIAL_DECK.attackCards),
-		...createCards("strong_attack", INITIAL_DECK.strongAttackCards),
-		...createCards("jump", INITIAL_DECK.jumpCards),
 		...createCards("wait", INITIAL_DECK.waitCards),
 	];
-	return rng.shuffle(cards);
 }
 
 /**
- * 初期デッキ状態を生成（山札にシャッフル済みデッキをセット）
+ * 初期デッキ状態を生成（deckOrder = 固定順のデッキ）
  */
-export function createInitialDeckState(rng: RNG): DeckState {
+export function createInitialDeckState(): DeckState {
+	const cards = createInitialDeck();
 	return {
-		drawPile: createInitialDeck(rng),
+		deckOrder: [...cards],
+		drawPile: [...cards],
 		hand: [],
 		discardPile: [],
 	};
 }
 
 /**
- * ドロー時に捨て札→山札のリシャッフルが発生するかを判定
+ * ドロー時に捨て札→山札のリサイクルが発生するかを判定
  * アニメーション制御用
  */
-export function willReshuffle(deck: DeckState, count?: number): boolean {
+export function willRecycle(deck: DeckState, count?: number): boolean {
 	const drawCount = count ?? Math.max(0, HAND_LIMIT - deck.hand.length);
 	return (
 		drawCount > 0 &&
@@ -100,14 +98,18 @@ export function willReshuffle(deck: DeckState, count?: number): boolean {
 }
 
 /**
- * 山札からカードを引いて手札に加える
- * 山札が不足する場合は捨て札をシャッフルして山札に戻す
+ * 捨て札をdeckOrderの順番で復元して山札に戻す
  */
-export function drawCards(
-	deck: DeckState,
-	rng: RNG,
-	count?: number,
-): DeckState {
+function recycleDiscardPile(deck: DeckState): Card[] {
+	const discardIds = new Set(deck.discardPile.map((c) => c.id));
+	return deck.deckOrder.filter((c) => discardIds.has(c.id));
+}
+
+/**
+ * 山札からカードを引いて手札に加える
+ * 山札が不足する場合は捨て札をdeckOrderの順番で復元して山札に戻す
+ */
+export function drawCards(deck: DeckState, count?: number): DeckState {
 	const drawCount = count ?? Math.max(0, HAND_LIMIT - deck.hand.length);
 	if (drawCount <= 0) return deck;
 
@@ -120,7 +122,10 @@ export function drawCards(
 			break;
 		}
 		if (drawPile.length === 0) {
-			drawPile = rng.shuffle(discardPile);
+			drawPile = recycleDiscardPile({
+				...deck,
+				discardPile,
+			});
 			discardPile = [];
 		}
 		const card = drawPile.shift();
@@ -129,7 +134,7 @@ export function drawCards(
 		}
 	}
 
-	return { drawPile, hand, discardPile };
+	return { deckOrder: deck.deckOrder, drawPile, hand, discardPile };
 }
 
 /**
@@ -144,6 +149,7 @@ export function playCard(deck: DeckState, cardId: string): DeckState {
 	const hand = [...deck.hand];
 	const [card] = hand.splice(cardIndex, 1);
 	return {
+		deckOrder: deck.deckOrder,
 		drawPile: [...deck.drawPile],
 		hand,
 		discardPile: [...deck.discardPile, card],
@@ -155,6 +161,7 @@ export function playCard(deck: DeckState, cardId: string): DeckState {
  */
 export function discardHand(deck: DeckState): DeckState {
 	return {
+		deckOrder: deck.deckOrder,
 		drawPile: [...deck.drawPile],
 		hand: [],
 		discardPile: [...deck.discardPile, ...deck.hand],
@@ -162,12 +169,28 @@ export function discardHand(deck: DeckState): DeckState {
 }
 
 /**
- * デッキをリセット（全カードを山札に戻してシャッフル）
+ * デッキをリセット（全カードをdeckOrderの順番で山札に復元）
  */
-export function reshuffleDeck(deck: DeckState, rng: RNG): DeckState {
-	const allCards = getAllCards(deck);
+export function resetDeck(deck: DeckState): DeckState {
 	return {
-		drawPile: rng.shuffle(allCards),
+		deckOrder: deck.deckOrder,
+		drawPile: [...deck.deckOrder],
+		hand: [],
+		discardPile: [],
+	};
+}
+
+/**
+ * プレイヤーが設定した並び順をdeckOrderとdrawPileにセット
+ * 階層開始時の並び替えUI用
+ */
+export function setDeckOrder(
+	_deck: DeckState,
+	orderedCards: Card[],
+): DeckState {
+	return {
+		deckOrder: [...orderedCards],
+		drawPile: [...orderedCards],
 		hand: [],
 		discardPile: [],
 	};
