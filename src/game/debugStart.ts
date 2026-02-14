@@ -17,7 +17,12 @@ import type {
 	DebugStartParams,
 } from "../types/debug";
 import type { RNG } from "../utils/rng";
-import { createCard, createInitialDeckState, drawCards } from "./deck";
+import {
+	assignRandomKeyword,
+	createCard,
+	createInitialDeckState,
+	drawCards,
+} from "./deck";
 import { createInitialGameState } from "./state";
 
 /**
@@ -43,7 +48,7 @@ export function createDebugDeckState(
 			);
 		}
 		return Array.from({ length: normalizedCount }, () =>
-			createCard(type as CardType),
+			createCard(type as CardType, assignRandomKeyword(rng)),
 		);
 	});
 	// デバッグ用: シャッフルした順序をdeckOrderとする（本番は固定順）
@@ -129,7 +134,7 @@ export function startNewGameWithDebugParams(
 	// デッキ: 指定があればカスタム、なければデフォルト
 	const deck = params.deck
 		? createDebugDeckState(params.deck, base.rng)
-		: createInitialDeckState();
+		: createInitialDeckState(base.rng);
 
 	// 敵: 指定があればカスタム、なければベースのまま
 	const enemies = params.enemies

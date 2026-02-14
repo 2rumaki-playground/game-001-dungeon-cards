@@ -94,5 +94,6 @@ export function createTestHand(cards: CardType[]): Card[] {
 	return cards.map((type, i) => ({
 		id: `test-card-${i}`,
 		type,
+		keyword: "flame" as const,
 	}));
 }

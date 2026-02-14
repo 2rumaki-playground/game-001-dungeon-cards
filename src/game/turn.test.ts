@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { HAND_LIMIT, TURN_START_AP } from "../constants";
 import type { GameState } from "../types";
+import { RNG } from "../utils/rng";
 import { createInitialDeckState } from "./deck";
 import { createInitialPlayer, createTitleScreenState } from "./state";
 import { endPlayerTurn, startPlayerTurn } from "./turn";
@@ -11,7 +12,8 @@ import { endPlayerTurn, startPlayerTurn } from "./turn";
 function createGameState(overrides?: Partial<GameState>): GameState {
 	const seed = 12345;
 	const base = createTitleScreenState(seed);
-	const deck = createInitialDeckState();
+	const rng = new RNG(seed);
+	const deck = createInitialDeckState(rng);
 	return {
 		...base,
 		screen: "game",
@@ -56,7 +58,7 @@ describe("turn", () => {
 		});
 
 		it("既に手札がある場合は上限まで補充する", () => {
-			const deck = createInitialDeckState();
+			const deck = createInitialDeckState(new RNG(12345));
 			// 手札に1枚ある状態を作る
 			const hand = deck.drawPile.slice(0, 1);
 			const drawPile = deck.drawPile.slice(1);
@@ -85,7 +87,7 @@ describe("turn", () => {
 
 	describe("endPlayerTurn", () => {
 		it("手札をすべて捨て札に移動する", () => {
-			const deck = createInitialDeckState();
+			const deck = createInitialDeckState(new RNG(12345));
 			// 手札に3枚ある状態
 			const hand = deck.drawPile.slice(0, 3);
 			const drawPile = deck.drawPile.slice(3);
@@ -112,7 +114,7 @@ describe("turn", () => {
 		});
 
 		it("元の状態を変更しない（イミュータブル）", () => {
-			const deck = createInitialDeckState();
+			const deck = createInitialDeckState(new RNG(12345));
 			const hand = deck.drawPile.slice(0, 3);
 			const drawPile = deck.drawPile.slice(3);
 			const state = createGameState({

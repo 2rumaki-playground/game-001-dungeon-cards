@@ -20,6 +20,9 @@ export const INITIAL_DECK = {
 export const TOTAL_DECK_SIZE =
 	INITIAL_DECK.moveCards + INITIAL_DECK.attackCards + INITIAL_DECK.waitCards;
 
+// カードキーワード（属性）
+export const KEYWORDS = ["flame", "water"] as const;
+
 // カードAPコスト
 export const CARD_COST = {
 	move: 1,

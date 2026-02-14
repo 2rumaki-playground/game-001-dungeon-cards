@@ -37,7 +37,7 @@ describe("executeAttack", () => {
 			deck: {
 				deckOrder: [],
 				drawPile: [],
-				hand: [{ id: "attack-1", type: "attack" }],
+				hand: [{ id: "attack-1", type: "attack", keyword: "flame" }],
 				discardPile: [],
 			},
 		});
@@ -74,7 +74,7 @@ describe("executeAttack", () => {
 			deck: {
 				deckOrder: [],
 				drawPile: [],
-				hand: [{ id: "attack-1", type: "attack" }],
+				hand: [{ id: "attack-1", type: "attack", keyword: "flame" }],
 				discardPile: [],
 			},
 		});
@@ -115,7 +115,7 @@ describe("executeAttack", () => {
 			deck: {
 				deckOrder: [],
 				drawPile: [],
-				hand: [{ id: "attack-1", type: "attack" }],
+				hand: [{ id: "attack-1", type: "attack", keyword: "flame" }],
 				discardPile: [],
 			},
 		});
@@ -143,7 +143,7 @@ describe("executeAttack", () => {
 			deck: {
 				deckOrder: [],
 				drawPile: [],
-				hand: [{ id: "attack-1", type: "attack" }],
+				hand: [{ id: "attack-1", type: "attack", keyword: "flame" }],
 				discardPile: [],
 			},
 		});
@@ -164,7 +164,7 @@ describe("executeWait", () => {
 			deck: {
 				deckOrder: [],
 				drawPile: [],
-				hand: [{ id: "wait-1", type: "wait" }],
+				hand: [{ id: "wait-1", type: "wait", keyword: "flame" }],
 				discardPile: [],
 			},
 		});
@@ -187,7 +187,7 @@ describe("executeWait", () => {
 			deck: {
 				deckOrder: [],
 				drawPile: [],
-				hand: [{ id: "wait-1", type: "wait" }],
+				hand: [{ id: "wait-1", type: "wait", keyword: "flame" }],
 				discardPile: [],
 			},
 		});
@@ -217,7 +217,7 @@ describe("executeStrongAttack", () => {
 			deck: {
 				deckOrder: [],
 				drawPile: [],
-				hand: [{ id: "strong-1", type: "strong_attack" }],
+				hand: [{ id: "strong-1", type: "strong_attack", keyword: "flame" }],
 				discardPile: [],
 			},
 		});
@@ -252,7 +252,7 @@ describe("executeStrongAttack", () => {
 			deck: {
 				deckOrder: [],
 				drawPile: [],
-				hand: [{ id: "strong-1", type: "strong_attack" }],
+				hand: [{ id: "strong-1", type: "strong_attack", keyword: "flame" }],
 				discardPile: [],
 			},
 		});
@@ -292,7 +292,7 @@ describe("executeStrongAttack", () => {
 			deck: {
 				deckOrder: [],
 				drawPile: [],
-				hand: [{ id: "strong-1", type: "strong_attack" }],
+				hand: [{ id: "strong-1", type: "strong_attack", keyword: "flame" }],
 				discardPile: [],
 			},
 		});
@@ -324,7 +324,7 @@ describe("executeStrongAttack", () => {
 			deck: {
 				deckOrder: [],
 				drawPile: [],
-				hand: [{ id: "strong-1", type: "strong_attack" }],
+				hand: [{ id: "strong-1", type: "strong_attack", keyword: "flame" }],
 				discardPile: [],
 			},
 		});
@@ -350,7 +350,7 @@ describe("consumeApAndPlayCard - AP無限チート", () => {
 			deck: {
 				deckOrder: [],
 				drawPile: [],
-				hand: [{ id: "move-1", type: "move" }],
+				hand: [{ id: "move-1", type: "move", keyword: "flame" }],
 				discardPile: [],
 			},
 		});
@@ -366,7 +366,7 @@ describe("consumeApAndPlayCard - AP無限チート", () => {
 			deck: {
 				deckOrder: [],
 				drawPile: [],
-				hand: [{ id: "move-1", type: "move" }],
+				hand: [{ id: "move-1", type: "move", keyword: "flame" }],
 				discardPile: [],
 			},
 		});

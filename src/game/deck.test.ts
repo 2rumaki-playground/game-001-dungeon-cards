@@ -1,7 +1,10 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { HAND_LIMIT, INITIAL_DECK, TOTAL_DECK_SIZE } from "../constants";
 import type { DeckState } from "../types";
+import { RNG } from "../utils/rng";
 import {
+	assignRandomKeyword,
+	createCard,
 	createInitialDeck,
 	createInitialDeckState,
 	discardHand,
@@ -16,18 +19,21 @@ import {
 } from "./deck";
 
 describe("deck", () => {
+	let rng: RNG;
+
 	beforeEach(() => {
 		resetCardIdCounter();
+		rng = new RNG(12345);
 	});
 
 	describe("createInitialDeck", () => {
 		it("合計6枚のカードを生成する", () => {
-			const deck = createInitialDeck();
+			const deck = createInitialDeck(rng);
 			expect(deck).toHaveLength(TOTAL_DECK_SIZE);
 		});
 
 		it("移動カード3枚、攻撃カード2枚、待機カード1枚を含む", () => {
-			const deck = createInitialDeck();
+			const deck = createInitialDeck(rng);
 			const moveCards = deck.filter((c) => c.type === "move");
 			const attackCards = deck.filter((c) => c.type === "attack");
 			const waitCards = deck.filter((c) => c.type === "wait");
@@ -37,13 +43,13 @@ describe("deck", () => {
 		});
 
 		it("各カードに一意のIDを持つ", () => {
-			const deck = createInitialDeck();
+			const deck = createInitialDeck(rng);
 			const ids = deck.map((c) => c.id);
 			expect(new Set(ids).size).toBe(ids.length);
 		});
 
 		it("固定順で生成される（move, move, move, attack, attack, wait）", () => {
-			const deck = createInitialDeck();
+			const deck = createInitialDeck(rng);
 			expect(deck.map((c) => c.type)).toEqual([
 				"move",
 				"move",
@@ -57,14 +63,14 @@ describe("deck", () => {
 
 	describe("createInitialDeckState", () => {
 		it("山札にデッキをセットし、手札・捨て札は空", () => {
-			const state = createInitialDeckState();
+			const state = createInitialDeckState(rng);
 			expect(state.drawPile).toHaveLength(TOTAL_DECK_SIZE);
 			expect(state.hand).toHaveLength(0);
 			expect(state.discardPile).toHaveLength(0);
 		});
 
 		it("deckOrderが設定される", () => {
-			const state = createInitialDeckState();
+			const state = createInitialDeckState(rng);
 			expect(state.deckOrder).toHaveLength(TOTAL_DECK_SIZE);
 			expect(state.deckOrder.map((c) => c.type)).toEqual(
 				state.drawPile.map((c) => c.type),
@@ -74,14 +80,14 @@ describe("deck", () => {
 
 	describe("drawCards", () => {
 		it("手札上限まで山札からカードを引く", () => {
-			const deck = createInitialDeckState();
+			const deck = createInitialDeckState(rng);
 			const result = drawCards(deck);
 			expect(result.hand).toHaveLength(HAND_LIMIT);
 			expect(result.drawPile).toHaveLength(TOTAL_DECK_SIZE - HAND_LIMIT);
 		});
 
 		it("指定枚数だけカードを引く", () => {
-			const deck = createInitialDeckState();
+			const deck = createInitialDeckState(rng);
 			const result = drawCards(deck, 2);
 			expect(result.hand).toHaveLength(2);
 			expect(result.drawPile).toHaveLength(TOTAL_DECK_SIZE - 2);
@@ -89,19 +95,19 @@ describe("deck", () => {
 
 		it("山札が不足する場合は捨て札をdeckOrder順で復元して山札に戻す", () => {
 			const deckOrder = [
-				{ id: "card-1", type: "move" as const },
-				{ id: "card-2", type: "attack" as const },
-				{ id: "card-3", type: "attack" as const },
-				{ id: "card-4", type: "wait" as const },
+				{ id: "card-1", type: "move" as const, keyword: "flame" as const },
+				{ id: "card-2", type: "attack" as const, keyword: "flame" as const },
+				{ id: "card-3", type: "attack" as const, keyword: "flame" as const },
+				{ id: "card-4", type: "wait" as const, keyword: "flame" as const },
 			];
 			const deck: DeckState = {
 				deckOrder,
-				drawPile: [{ id: "card-1", type: "move" }],
+				drawPile: [{ id: "card-1", type: "move", keyword: "flame" }],
 				hand: [],
 				discardPile: [
-					{ id: "card-2", type: "attack" },
-					{ id: "card-3", type: "attack" },
-					{ id: "card-4", type: "wait" },
+					{ id: "card-2", type: "attack", keyword: "flame" },
+					{ id: "card-3", type: "attack", keyword: "flame" },
+					{ id: "card-4", type: "wait", keyword: "flame" },
 				],
 			};
 			const result = drawCards(deck, 3);
@@ -112,18 +118,18 @@ describe("deck", () => {
 
 		it("捨て札復元時にdeckOrderの順番が維持される", () => {
 			const deckOrder = [
-				{ id: "card-1", type: "move" as const },
-				{ id: "card-2", type: "attack" as const },
-				{ id: "card-3", type: "wait" as const },
+				{ id: "card-1", type: "move" as const, keyword: "flame" as const },
+				{ id: "card-2", type: "attack" as const, keyword: "flame" as const },
+				{ id: "card-3", type: "wait" as const, keyword: "flame" as const },
 			];
 			const deck: DeckState = {
 				deckOrder,
 				drawPile: [],
 				hand: [],
 				discardPile: [
-					{ id: "card-3", type: "wait" },
-					{ id: "card-1", type: "move" },
-					{ id: "card-2", type: "attack" },
+					{ id: "card-3", type: "wait", keyword: "flame" },
+					{ id: "card-1", type: "move", keyword: "flame" },
+					{ id: "card-2", type: "attack", keyword: "flame" },
 				],
 			};
 			const result = drawCards(deck, 3);
@@ -138,19 +144,19 @@ describe("deck", () => {
 		it("山札・捨て札の合計が引く枚数に満たない場合は引ける枚数だけ引く", () => {
 			const deck: DeckState = {
 				deckOrder: [
-					{ id: "card-1", type: "move" },
-					{ id: "card-2", type: "attack" },
+					{ id: "card-1", type: "move", keyword: "flame" },
+					{ id: "card-2", type: "attack", keyword: "flame" },
 				],
-				drawPile: [{ id: "card-1", type: "move" }],
+				drawPile: [{ id: "card-1", type: "move", keyword: "flame" }],
 				hand: [],
-				discardPile: [{ id: "card-2", type: "attack" }],
+				discardPile: [{ id: "card-2", type: "attack", keyword: "flame" }],
 			};
 			const result = drawCards(deck, 5);
 			expect(result.hand).toHaveLength(2);
 		});
 
 		it("手札が既にある場合は上限まで補充する", () => {
-			const deck = createInitialDeckState();
+			const deck = createInitialDeckState(rng);
 			// 手札に1枚ある状態を作る
 			const hand = deck.drawPile.slice(0, 1);
 			const drawPile = deck.drawPile.slice(1);
@@ -164,7 +170,7 @@ describe("deck", () => {
 		});
 
 		it("deckOrderが維持される", () => {
-			const deck = createInitialDeckState();
+			const deck = createInitialDeckState(rng);
 			const result = drawCards(deck);
 			expect(result.deckOrder).toEqual(deck.deckOrder);
 		});
@@ -172,11 +178,15 @@ describe("deck", () => {
 
 	describe("playCard", () => {
 		it("手札からカードを捨て札に移動する", () => {
-			const card = { id: "card-1", type: "move" as const };
+			const card = {
+				id: "card-1",
+				type: "move" as const,
+				keyword: "flame" as const,
+			};
 			const deck: DeckState = {
-				deckOrder: [card, { id: "card-2", type: "attack" }],
+				deckOrder: [card, { id: "card-2", type: "attack", keyword: "flame" }],
 				drawPile: [],
-				hand: [card, { id: "card-2", type: "attack" }],
+				hand: [card, { id: "card-2", type: "attack", keyword: "flame" }],
 				discardPile: [],
 			};
 			const result = playCard(deck, "card-1");
@@ -188,9 +198,9 @@ describe("deck", () => {
 
 		it("存在しないカードIDを指定した場合はデッキを変更しない", () => {
 			const deck: DeckState = {
-				deckOrder: [{ id: "card-1", type: "move" }],
+				deckOrder: [{ id: "card-1", type: "move", keyword: "flame" }],
 				drawPile: [],
-				hand: [{ id: "card-1", type: "move" }],
+				hand: [{ id: "card-1", type: "move", keyword: "flame" }],
 				discardPile: [],
 			};
 			const result = playCard(deck, "nonexistent");
@@ -202,14 +212,14 @@ describe("deck", () => {
 		it("手札をすべて捨て札に移動する", () => {
 			const deck: DeckState = {
 				deckOrder: [
-					{ id: "card-1", type: "move" },
-					{ id: "card-2", type: "attack" },
-					{ id: "card-3", type: "wait" },
+					{ id: "card-1", type: "move", keyword: "flame" },
+					{ id: "card-2", type: "attack", keyword: "flame" },
+					{ id: "card-3", type: "wait", keyword: "flame" },
 				],
-				drawPile: [{ id: "card-3", type: "wait" }],
+				drawPile: [{ id: "card-3", type: "wait", keyword: "flame" }],
 				hand: [
-					{ id: "card-1", type: "move" },
-					{ id: "card-2", type: "attack" },
+					{ id: "card-1", type: "move", keyword: "flame" },
+					{ id: "card-2", type: "attack", keyword: "flame" },
 				],
 				discardPile: [],
 			};
@@ -223,15 +233,15 @@ describe("deck", () => {
 	describe("resetDeck", () => {
 		it("全カードをdeckOrderの順番で山札に復元する", () => {
 			const deckOrder = [
-				{ id: "card-1", type: "move" as const },
-				{ id: "card-2", type: "attack" as const },
-				{ id: "card-3", type: "wait" as const },
+				{ id: "card-1", type: "move" as const, keyword: "flame" as const },
+				{ id: "card-2", type: "attack" as const, keyword: "flame" as const },
+				{ id: "card-3", type: "wait" as const, keyword: "flame" as const },
 			];
 			const deck: DeckState = {
 				deckOrder,
-				drawPile: [{ id: "card-1", type: "move" }],
-				hand: [{ id: "card-2", type: "attack" }],
-				discardPile: [{ id: "card-3", type: "wait" }],
+				drawPile: [{ id: "card-1", type: "move", keyword: "flame" }],
+				hand: [{ id: "card-2", type: "attack", keyword: "flame" }],
+				discardPile: [{ id: "card-3", type: "wait", keyword: "flame" }],
 			};
 			const result = resetDeck(deck);
 			expect(result.drawPile).toHaveLength(3);
@@ -246,16 +256,16 @@ describe("deck", () => {
 
 		it("deckOrderが維持される", () => {
 			const deckOrder = [
-				{ id: "card-1", type: "move" as const },
-				{ id: "card-2", type: "attack" as const },
+				{ id: "card-1", type: "move" as const, keyword: "flame" as const },
+				{ id: "card-2", type: "attack" as const, keyword: "flame" as const },
 			];
 			const deck: DeckState = {
 				deckOrder,
 				drawPile: [],
 				hand: [],
 				discardPile: [
-					{ id: "card-1", type: "move" },
-					{ id: "card-2", type: "attack" },
+					{ id: "card-1", type: "move", keyword: "flame" },
+					{ id: "card-2", type: "attack", keyword: "flame" },
 				],
 			};
 			const result = resetDeck(deck);
@@ -266,9 +276,9 @@ describe("deck", () => {
 	describe("setDeckOrder", () => {
 		it("新しい並び順をdeckOrderとdrawPileにセットする", () => {
 			const originalOrder = [
-				{ id: "card-1", type: "move" as const },
-				{ id: "card-2", type: "attack" as const },
-				{ id: "card-3", type: "wait" as const },
+				{ id: "card-1", type: "move" as const, keyword: "flame" as const },
+				{ id: "card-2", type: "attack" as const, keyword: "flame" as const },
+				{ id: "card-3", type: "wait" as const, keyword: "flame" as const },
 			];
 			const deck: DeckState = {
 				deckOrder: originalOrder,
@@ -277,9 +287,9 @@ describe("deck", () => {
 				discardPile: [],
 			};
 			const newOrder = [
-				{ id: "card-3", type: "wait" as const },
-				{ id: "card-1", type: "move" as const },
-				{ id: "card-2", type: "attack" as const },
+				{ id: "card-3", type: "wait" as const, keyword: "flame" as const },
+				{ id: "card-1", type: "move" as const, keyword: "flame" as const },
+				{ id: "card-2", type: "attack" as const, keyword: "flame" as const },
 			];
 			const result = setDeckOrder(deck, newOrder);
 			expect(result.deckOrder.map((c) => c.id)).toEqual([
@@ -301,9 +311,9 @@ describe("deck", () => {
 		it("3ゾーンの全カードを結合した配列を返す", () => {
 			const deck: DeckState = {
 				deckOrder: [],
-				drawPile: [{ id: "card-1", type: "move" }],
-				hand: [{ id: "card-2", type: "attack" }],
-				discardPile: [{ id: "card-3", type: "wait" }],
+				drawPile: [{ id: "card-1", type: "move", keyword: "flame" }],
+				hand: [{ id: "card-2", type: "attack", keyword: "flame" }],
+				discardPile: [{ id: "card-3", type: "wait", keyword: "flame" }],
 			};
 			const result = getAllCards(deck);
 			expect(result).toHaveLength(3);
@@ -325,11 +335,13 @@ describe("deck", () => {
 		it("山札がドロー枚数より少なく捨て札がある場合はtrueを返す", () => {
 			const deck: DeckState = {
 				deckOrder: [],
-				drawPile: [{ id: "card-1", type: "move" as const }],
+				drawPile: [
+					{ id: "card-1", type: "move" as const, keyword: "flame" as const },
+				],
 				hand: [],
 				discardPile: [
-					{ id: "card-2", type: "attack" as const },
-					{ id: "card-3", type: "wait" as const },
+					{ id: "card-2", type: "attack" as const, keyword: "flame" as const },
+					{ id: "card-3", type: "wait" as const, keyword: "flame" as const },
 				],
 			};
 			expect(willRecycle(deck)).toBe(true);
@@ -341,6 +353,7 @@ describe("deck", () => {
 				drawPile: Array.from({ length: HAND_LIMIT }, (_, i) => ({
 					id: `card-${i + 1}`,
 					type: "move" as const,
+					keyword: "flame" as const,
 				})),
 				hand: [],
 				discardPile: [],
@@ -351,7 +364,9 @@ describe("deck", () => {
 		it("捨て札が空の場合はfalseを返す", () => {
 			const deck: DeckState = {
 				deckOrder: [],
-				drawPile: [{ id: "card-1", type: "move" as const }],
+				drawPile: [
+					{ id: "card-1", type: "move" as const, keyword: "flame" as const },
+				],
 				hand: [],
 				discardPile: [],
 			};
@@ -365,8 +380,11 @@ describe("deck", () => {
 				hand: Array.from({ length: HAND_LIMIT }, (_, i) => ({
 					id: `card-${i + 1}`,
 					type: "move" as const,
+					keyword: "flame" as const,
 				})),
-				discardPile: [{ id: "card-99", type: "attack" as const }],
+				discardPile: [
+					{ id: "card-99", type: "attack" as const, keyword: "flame" as const },
+				],
 			};
 			expect(willRecycle(deck)).toBe(false);
 		});
@@ -377,13 +395,13 @@ describe("deck", () => {
 			const deck: DeckState = {
 				deckOrder: [],
 				drawPile: [
-					{ id: "card-1", type: "move" },
-					{ id: "card-2", type: "attack" },
+					{ id: "card-1", type: "move", keyword: "flame" },
+					{ id: "card-2", type: "attack", keyword: "flame" },
 				],
-				hand: [{ id: "card-3", type: "move" }],
+				hand: [{ id: "card-3", type: "move", keyword: "flame" }],
 				discardPile: [
-					{ id: "card-4", type: "wait" },
-					{ id: "card-5", type: "move" },
+					{ id: "card-4", type: "wait", keyword: "flame" },
+					{ id: "card-5", type: "move", keyword: "flame" },
 				],
 			};
 			expect(getTotalDeckSize(deck)).toBe(5);
@@ -397,6 +415,48 @@ describe("deck", () => {
 				discardPile: [],
 			};
 			expect(getTotalDeckSize(deck)).toBe(0);
+		});
+	});
+
+	describe("assignRandomKeyword", () => {
+		it("flameまたはwaterを返す", () => {
+			const rng = new RNG(42);
+			const keyword = assignRandomKeyword(rng);
+			expect(["flame", "water"]).toContain(keyword);
+		});
+
+		it("同一シードで同一結果を返す（再現性）", () => {
+			const rng1 = new RNG(42);
+			const rng2 = new RNG(42);
+			expect(assignRandomKeyword(rng1)).toBe(assignRandomKeyword(rng2));
+		});
+	});
+
+	describe("createCard with keyword", () => {
+		it("指定キーワードが設定される", () => {
+			const card = createCard("move", "flame");
+			expect(card.keyword).toBe("flame");
+
+			const card2 = createCard("attack", "water");
+			expect(card2.keyword).toBe("water");
+		});
+	});
+
+	describe("createInitialDeck keyword assignment", () => {
+		it("全カードにキーワードが付与される", () => {
+			const rng = new RNG(42);
+			const deck = createInitialDeck(rng);
+			for (const card of deck) {
+				expect(["flame", "water"]).toContain(card.keyword);
+			}
+		});
+
+		it("同一シードで同一キーワード割り当てになる（再現性）", () => {
+			const rng1 = new RNG(42);
+			const rng2 = new RNG(42);
+			const deck1 = createInitialDeck(rng1);
+			const deck2 = createInitialDeck(rng2);
+			expect(deck1.map((c) => c.keyword)).toEqual(deck2.map((c) => c.keyword));
 		});
 	});
 });

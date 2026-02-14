@@ -205,6 +205,20 @@ export function loadGame(): GameState | null {
 				}))
 			: data.enemies;
 
+		// 旧セーブデータの後方互換: keyword未設定のカードに"flame"を補完
+		if (data.deck && typeof data.deck === "object") {
+			for (const zone of ["deckOrder", "drawPile", "hand", "discardPile"]) {
+				const cards = data.deck[zone];
+				if (Array.isArray(cards)) {
+					for (const card of cards) {
+						if (card && typeof card === "object" && !card.keyword) {
+							card.keyword = "flame";
+						}
+					}
+				}
+			}
+		}
+
 		// 旧セーブデータの後方互換:
 		// - actor 未設定または不正値のログに "system" を補完
 		// - actionLog が配列でない場合は空配列にフォールバック
