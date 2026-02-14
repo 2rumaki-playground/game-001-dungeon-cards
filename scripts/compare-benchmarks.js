@@ -9,6 +9,7 @@
  *     --output report.md
  */
 import { readFileSync, writeFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 
 const BUNDLE_WARN_THRESHOLD = 0.05;
 const BENCH_WARN_THRESHOLD = 0.2;
@@ -176,7 +177,7 @@ export function compareBenchmarks(base, head) {
 
 // --- CLI entry point ---
 
-const __filename = new URL(import.meta.url).pathname;
+const __filename = fileURLToPath(import.meta.url);
 if (process.argv[1] === __filename) {
 	const args = process.argv.slice(2);
 
