@@ -168,6 +168,7 @@ export async function updateStateWithBumpAnimation(
 /**
  * プレイヤー攻撃ヒット時のアニメーション付きで状態を更新
  * @param cardType 使用したカードタイプ（ダメージ値算出・パーティクル演出に使用）
+ * @param overkill 超過ダメージ量（0で従来同等、正値で撃破演出が段階的に強化される）
  */
 export async function updateStateWithAttackAnimation(
 	ctx: GameContext,
