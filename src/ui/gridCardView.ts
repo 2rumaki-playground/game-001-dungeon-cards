@@ -4,7 +4,7 @@
  */
 
 import { Container, Graphics, Text } from "pixi.js";
-import { CARD_COST } from "../constants";
+import { getEffectiveCardCost } from "../game/debugCheats";
 import type { CardType } from "../types";
 import {
 	CARD_COLORS,
@@ -63,7 +63,7 @@ export function createGridCardView(cardType: CardType): Container {
 	cardContainer.addChild(nameText);
 
 	// APコスト
-	const cost = CARD_COST[cardType];
+	const cost = getEffectiveCardCost(cardType);
 	const costFill = cost >= 2 ? 0xffaa44 : cost === 0 ? 0x666666 : 0xcccccc;
 	const costText = new Text({
 		text: cost > 0 ? `AP: ${cost}` : "",
