@@ -4,11 +4,16 @@
 
 import type { Container, FederatedPointerEvent, Text } from "pixi.js";
 import { describe, expect, it, vi } from "vitest";
-import { CARD_COST, CARD_RARITY } from "../constants";
+import { CARD_COST } from "../constants";
 import { createTweenMock, mockEasing } from "../test-utils/mockTween";
 import type { Card, CardType } from "../types";
 import { tween } from "../utils/tween";
-import { CARD_DESCRIPTION, CARD_TYPE_NAME, RARITY_NAME } from "./cardConstants";
+import {
+	CARD_DESCRIPTION,
+	CARD_RARITY,
+	CARD_TYPE_NAME,
+	RARITY_NAME,
+} from "./cardConstants";
 import {
 	CARD_HEIGHT,
 	CARD_WIDTH,

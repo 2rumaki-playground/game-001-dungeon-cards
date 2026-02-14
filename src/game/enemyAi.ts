@@ -12,6 +12,7 @@ import {
 	decideMinibossSkill,
 	executePendingSkill,
 } from "./bossSkill";
+import { updateHitCounter } from "./cardAcquisition";
 import { applyDamageToPlayer, checkGameOver, isDefeated } from "./combat";
 import { getDebugCheats } from "./debugCheats";
 import { DIRECTION_LABEL } from "./enemyAiAnalysis";
@@ -227,6 +228,10 @@ export function executeEnemyTurn(state: GameState): EnemyTurnResult {
 			next = {
 				...next,
 				lastAttackerEnemyType: currentEnemy.type,
+				acquisitionCounters: updateHitCounter(
+					next.acquisitionCounters,
+					currentEnemy.type,
+				),
 			};
 			const attackMsg = showAi
 				? `${ENEMY_TYPE_LABEL[currentEnemy.type]}が攻撃した（隣接, ATK:${damage}）`

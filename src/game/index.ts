@@ -9,12 +9,6 @@ export { getTotalDeckSize } from "./deck";
 export { executeEnemyTurn } from "./enemyAi";
 export { transitionFloor } from "./floor";
 export {
-	addRewardCardToDeck,
-	createRewardState,
-	removeCardFromDeck,
-	shouldTriggerCardRemoval,
-} from "./reward";
-export {
 	createTitleScreenState,
 	returnToTitle,
 	startNewGame,

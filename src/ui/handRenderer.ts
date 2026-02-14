@@ -4,7 +4,6 @@
  */
 
 import { Container, Graphics, Text } from "pixi.js";
-import { CARD_RARITY } from "../constants";
 import { getEffectiveCardCost } from "../game/debugCheats";
 import type { Card, CardType, Direction } from "../types";
 import { Easing, tween } from "../utils/tween";
@@ -13,6 +12,7 @@ import {
 	CARD_DESCRIPTION,
 	CARD_EFFECT_TEXT,
 	CARD_GLOW_COLORS,
+	CARD_RARITY,
 	CARD_TYPE_NAME,
 	CARD_TYPE_SYMBOL,
 	RARITY_COLORS,

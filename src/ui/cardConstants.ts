@@ -55,6 +55,15 @@ export const CARD_GLOW_COLORS: Record<CardType, number[]> = {
 	wait: [0x888888, 0x666666],
 };
 
+/** カードレアリティ（UI表示用） */
+export const CARD_RARITY: Record<CardType, Rarity> = {
+	move: "common",
+	attack: "common",
+	wait: "common",
+	strong_attack: "uncommon",
+	jump: "rare",
+};
+
 /** レアリティ色 */
 export const RARITY_COLORS: Record<Rarity, number> = {
 	common: 0x888888,

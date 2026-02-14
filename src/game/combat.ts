@@ -3,7 +3,12 @@
  * @see docs/spec/mvp/rules.md
  */
 
+import { ENEMY_ACQUISITION_CONDITIONS, ENEMY_TYPE_LABEL } from "../constants";
 import type { GameState } from "../types";
+import {
+	checkAcquisitionCondition,
+	updateDefeatCounter,
+} from "./cardAcquisition";
 import { getDebugCheats } from "./debugCheats";
 import { recordDamageDealt, recordDamageTaken } from "./playStats";
 import {
@@ -52,13 +57,37 @@ export function applyDamageToEnemy(
 	if (target && isDefeated(target.hp)) {
 		next = addRemnant(next, target.position);
 		next = removeEnemy(next, enemyId);
+
+		// 撃破カウンターを更新
+		const updatedCounters = updateDefeatCounter(
+			next.acquisitionCounters,
+			target.type,
+		);
 		next = {
 			...next,
 			rng: next.rng.clone(),
 			defeatedEnemyCount: next.defeatedEnemyCount + 1,
+			acquisitionCounters: updatedCounters,
 		};
+
+		// カード獲得条件の判定
+		if (checkAcquisitionCondition(updatedCounters, target.type)) {
+			const config = ENEMY_ACQUISITION_CONDITIONS[target.type];
+			next = {
+				...next,
+				cardExchangeState: {
+					acquiredCardType: config.cardType,
+					defeatedEnemyType: target.type,
+				},
+			};
+			const label = ENEMY_TYPE_LABEL[target.type];
+			next = addActionLog(next, `${label}を倒してカードを獲得した`, "system");
+		} else {
+			next = addActionLog(next, "敵を倒した", "system");
+		}
+
 		next = checkVictory(next, target.type);
-		return addActionLog(next, "敵を倒した", "system");
+		return next;
 	}
 
 	return addActionLog(next, "敵にダメージを与えた", "system");

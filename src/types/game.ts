@@ -4,23 +4,15 @@
  */
 
 import type { RNG } from "../utils/rng";
-import type { CardType, DeckState } from "./card";
+import type { DeckState } from "./card";
+import type { AcquisitionCounters, CardExchangeState } from "./cardAcquisition";
 import type { Enemy, EnemyType, Player } from "./character";
 import type { GameMap, Room } from "./map";
 
 /**
  * 画面種別
  */
-export type Screen = "title" | "game" | "gameOver" | "reward" | "victory";
-
-/**
- * 報酬画面の状態
- * @see docs/spec/deckbuilding.md
- */
-export type RewardState = {
-	/** 撃破数分のカード選択肢 */
-	choices: CardType[];
-};
+export type Screen = "title" | "game" | "gameOver" | "exchange" | "victory";
 
 /**
  * ターン種別
@@ -68,8 +60,6 @@ export type GameState = {
 	rng: RNG;
 	/** このフロアで撃破した敵の数 */
 	defeatedEnemyCount: number;
-	/** 報酬画面の状態（null = 報酬画面ではない） */
-	rewardState: RewardState | null;
 	/** ゲームクリア済みフラグ（クリア階層（CLEAR_FLOOR）のボス撃破） */
 	isCleared: boolean;
 	/** 敵撃破の残骸情報（key: "x,y" 形式の座標、value: 撃破数） */
@@ -78,4 +68,8 @@ export type GameState = {
 	visitedTiles: Set<string>;
 	/** 最後に攻撃した敵のタイプ（死因追跡用） */
 	lastAttackerEnemyType?: EnemyType | null;
+	/** カード獲得条件のカウンター（ランごとに累計） */
+	acquisitionCounters: AcquisitionCounters;
+	/** カード交換の保留状態（敵撃破時に条件達成した場合にセット） */
+	cardExchangeState: CardExchangeState;
 };

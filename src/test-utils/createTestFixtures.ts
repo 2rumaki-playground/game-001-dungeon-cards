@@ -1,4 +1,5 @@
 import { ENEMY_PARAMS, MAX_AP, PLAYER_INITIAL_HP } from "../constants";
+import { createInitialCounters } from "../game/cardAcquisition";
 import { createFixedLayoutMap } from "../game/map";
 import type {
 	Card,
@@ -46,11 +47,12 @@ export function createTestState(overrides?: Partial<GameState>): GameState {
 		actionLog: [],
 		rng: new RNG(12345),
 		defeatedEnemyCount: 0,
-		rewardState: null,
 		isCleared: false,
 		remnants: {},
 		visitedTiles: new Set<string>(),
 		lastAttackerEnemyType: null,
+		acquisitionCounters: createInitialCounters(),
+		cardExchangeState: null,
 		...overrides,
 	};
 }

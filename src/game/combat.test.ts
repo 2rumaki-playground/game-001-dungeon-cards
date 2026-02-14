@@ -277,6 +277,36 @@ describe("checkGameOver", () => {
 	});
 });
 
+describe("applyDamageToEnemy - カード獲得条件", () => {
+	it("敵撃破時に撃破カウンターが更新される", () => {
+		const enemy = createTestEnemy("normal", { x: 4, y: 3 }, { hp: 1 });
+		const state = createTestState({ enemies: [enemy] });
+		const result = applyDamageToEnemy(state, enemy.id, PLAYER_ATTACK_DAMAGE);
+
+		expect(result.acquisitionCounters.defeatCounts.normal).toBe(1);
+	});
+
+	it("条件達成時にcardExchangeStateがセットされる", () => {
+		const enemy = createTestEnemy("miniboss", { x: 4, y: 3 }, { hp: 1 });
+		// minibossは1体撃破で条件達成
+		const state = createTestState({ enemies: [enemy] });
+		const result = applyDamageToEnemy(state, enemy.id, PLAYER_ATTACK_DAMAGE);
+
+		expect(result.cardExchangeState).not.toBeNull();
+		expect(result.cardExchangeState?.acquiredCardType).toBe("attack");
+		expect(result.cardExchangeState?.defeatedEnemyType).toBe("miniboss");
+	});
+
+	it("条件未達時にcardExchangeStateがnullのまま", () => {
+		const enemy = createTestEnemy("normal", { x: 4, y: 3 }, { hp: 1 });
+		// normalは3体撃破が必要、1体では未達
+		const state = createTestState({ enemies: [enemy] });
+		const result = applyDamageToEnemy(state, enemy.id, PLAYER_ATTACK_DAMAGE);
+
+		expect(result.cardExchangeState).toBeNull();
+	});
+});
+
 describe("applyDamageToPlayer - 無敵チート", () => {
 	afterEach(() => {
 		resetDebugCheats();

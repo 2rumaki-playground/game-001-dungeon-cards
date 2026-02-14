@@ -4,6 +4,7 @@
  */
 
 import { getEnemyCount, INITIAL_FLOOR } from "../constants";
+import { createInitialCounters } from "../game/cardAcquisition";
 import { initCardIdCounterFromDeck } from "../game/deck";
 import type { GameState, Room } from "../types";
 import { RNG } from "./rng";
@@ -135,8 +136,12 @@ export function loadGame(): GameState | null {
 			return null;
 		}
 
-		// screen の検証（reward/victory画面はgameに復帰、撃破数もリセット）
-		if (data.screen === "reward" || data.screen === "victory") {
+		// screen の検証（reward/victory/exchange画面はgameに復帰、撃破数もリセット）
+		if (
+			data.screen === "reward" ||
+			data.screen === "victory" ||
+			data.screen === "exchange"
+		) {
 			data.screen = "game";
 			data.defeatedEnemyCount = 0;
 		}
@@ -205,8 +210,9 @@ export function loadGame(): GameState | null {
 							getEnemyCount(data.floor),
 						)
 					: 0,
-			rewardState: null,
 			remnants: sanitizeRemnants(data.remnants),
+			acquisitionCounters: data.acquisitionCounters ?? createInitialCounters(),
+			cardExchangeState: null,
 		};
 
 		// 旧セーブデータ互換: deckOrderがない場合は全カードをID順でソートして生成

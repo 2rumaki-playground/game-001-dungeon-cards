@@ -12,6 +12,7 @@ import { createTestEnemy } from "../test-utils/createTestFixtures";
 import type { GameMap, GameState, Tile } from "../types";
 import { RNG } from "../utils/rng";
 import * as storage from "../utils/storage"; // Import for mocking
+import { createInitialCounters } from "./cardAcquisition";
 import { createInitialDeckState } from "./deck";
 import { transitionFloor } from "./floor";
 
@@ -64,12 +65,13 @@ function createTestState(overrides?: Partial<GameState>): GameState {
 		actionLog: [],
 		rng,
 		defeatedEnemyCount: 0,
-		rewardState: null,
 		isCleared: false,
 		remnants: {},
 		rooms: [],
 		visitedTiles: new Set<string>(),
 		lastAttackerEnemyType: null,
+		acquisitionCounters: createInitialCounters(),
+		cardExchangeState: null,
 		...overrides,
 	};
 }
