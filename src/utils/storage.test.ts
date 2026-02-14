@@ -133,6 +133,59 @@ describe("storage", () => {
 		}
 	});
 
+	it("should add default keyword to cards without keyword field (backward compatibility)", () => {
+		const state = createTitleScreenState(42);
+		const saveData = {
+			...state,
+			screen: "game",
+			deck: {
+				deckOrder: [{ id: "c1", type: "move" }],
+				drawPile: [{ id: "c2", type: "attack" }],
+				hand: [{ id: "c3", type: "jump" }],
+				discardPile: [{ id: "c4", type: "wait" }],
+			},
+			rng: state.rng.serialize(),
+		};
+		localStorageMock.setItem("dungeon-cards-save", JSON.stringify(saveData));
+
+		const loaded = loadGame();
+		expect(loaded).not.toBeNull();
+		if (loaded) {
+			for (const zone of [
+				"deckOrder",
+				"drawPile",
+				"hand",
+				"discardPile",
+			] as const) {
+				for (const card of loaded.deck[zone]) {
+					expect(card.keyword).toBe("flame");
+				}
+			}
+		}
+	});
+
+	it("should preserve existing keyword field on cards", () => {
+		const state = createTitleScreenState(42);
+		const saveData = {
+			...state,
+			screen: "game",
+			deck: {
+				deckOrder: [{ id: "c1", type: "move", keyword: "water" }],
+				drawPile: [],
+				hand: [],
+				discardPile: [],
+			},
+			rng: state.rng.serialize(),
+		};
+		localStorageMock.setItem("dungeon-cards-save", JSON.stringify(saveData));
+
+		const loaded = loadGame();
+		expect(loaded).not.toBeNull();
+		if (loaded) {
+			expect(loaded.deck.deckOrder[0].keyword).toBe("water");
+		}
+	});
+
 	it("should sanitize invalid defeatedEnemyCount to 0", () => {
 		const state = createTitleScreenState(42);
 		const invalidCounts = ["abc", null, undefined, -1];
