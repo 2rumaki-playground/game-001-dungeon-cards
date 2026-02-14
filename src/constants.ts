@@ -3,7 +3,7 @@
  * @see docs/spec/constants.md
  */
 
-import type { EnemyCardAcquisitionConfig, EnemyType } from "./types";
+import type { EnemyCardAcquisitionConfig, EnemyType, Keyword } from "./types";
 
 // 行動関連
 export const MAX_AP = 3;
@@ -19,6 +19,12 @@ export const INITIAL_DECK = {
 
 export const TOTAL_DECK_SIZE =
 	INITIAL_DECK.moveCards + INITIAL_DECK.attackCards + INITIAL_DECK.waitCards;
+
+// カードキーワード（属性）
+export const KEYWORDS = [
+	"flame",
+	"water",
+] as const satisfies readonly Keyword[];
 
 // カードAPコスト
 export const CARD_COST = {

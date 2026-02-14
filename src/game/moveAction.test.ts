@@ -19,7 +19,7 @@ describe("consumeApAndPlayCard", () => {
 			deck: {
 				deckOrder: [],
 				drawPile: [],
-				hand: [{ id: "move-1", type: "move" }],
+				hand: [{ id: "move-1", type: "move", keyword: "flame" }],
 				discardPile: [],
 			},
 		});
@@ -33,7 +33,7 @@ describe("consumeApAndPlayCard", () => {
 			deck: {
 				deckOrder: [],
 				drawPile: [],
-				hand: [{ id: "attack-1", type: "attack" }],
+				hand: [{ id: "attack-1", type: "attack", keyword: "flame" }],
 				discardPile: [],
 			},
 		});
@@ -49,7 +49,7 @@ describe("consumeApAndPlayCard", () => {
 			deck: {
 				deckOrder: [],
 				drawPile: [],
-				hand: [{ id: "wait-1", type: "wait" }],
+				hand: [{ id: "wait-1", type: "wait", keyword: "flame" }],
 				discardPile: [],
 			},
 		});
@@ -65,7 +65,7 @@ describe("consumeApAndPlayCard", () => {
 			deck: {
 				deckOrder: [],
 				drawPile: [],
-				hand: [{ id: "move-1", type: "move" }],
+				hand: [{ id: "move-1", type: "move", keyword: "flame" }],
 				discardPile: [],
 			},
 		});
@@ -85,7 +85,7 @@ describe("executeMove", () => {
 			deck: {
 				deckOrder: [],
 				drawPile: [],
-				hand: [{ id: "move-1", type: "move" }],
+				hand: [{ id: "move-1", type: "move", keyword: "flame" }],
 				discardPile: [],
 			},
 		});
@@ -122,7 +122,7 @@ describe("executeMove", () => {
 			deck: {
 				deckOrder: [],
 				drawPile: [],
-				hand: [{ id: "move-1", type: "move" }],
+				hand: [{ id: "move-1", type: "move", keyword: "flame" }],
 				discardPile: [],
 			},
 		});
@@ -154,7 +154,7 @@ describe("executeMove", () => {
 			deck: {
 				deckOrder: [],
 				drawPile: [],
-				hand: [{ id: "move-1", type: "move" }],
+				hand: [{ id: "move-1", type: "move", keyword: "flame" }],
 				discardPile: [],
 			},
 		});
@@ -180,7 +180,7 @@ describe("executeMove", () => {
 			deck: {
 				deckOrder: [],
 				drawPile: [],
-				hand: [{ id: "move-1", type: "move" }],
+				hand: [{ id: "move-1", type: "move", keyword: "flame" }],
 				discardPile: [],
 			},
 		});
@@ -206,7 +206,7 @@ describe("executeMove", () => {
 			deck: {
 				deckOrder: [],
 				drawPile: [],
-				hand: [{ id: "move-1", type: "move" }],
+				hand: [{ id: "move-1", type: "move", keyword: "flame" }],
 				discardPile: [],
 			},
 		});
@@ -238,7 +238,7 @@ describe("executeMove", () => {
 			deck: {
 				deckOrder: [],
 				drawPile: [],
-				hand: [{ id: "move-1", type: "move" }],
+				hand: [{ id: "move-1", type: "move", keyword: "flame" }],
 				discardPile: [],
 			},
 		});
@@ -263,7 +263,7 @@ describe("executeMove", () => {
 			deck: {
 				deckOrder: [],
 				drawPile: [],
-				hand: [{ id: "move-1", type: "move" }],
+				hand: [{ id: "move-1", type: "move", keyword: "flame" }],
 				discardPile: [],
 			},
 		});
@@ -277,7 +277,7 @@ describe("executeMove", () => {
 			deck: {
 				deckOrder: [],
 				drawPile: [],
-				hand: [{ id: "move-1", type: "move" }],
+				hand: [{ id: "move-1", type: "move", keyword: "flame" }],
 				discardPile: [],
 			},
 		});
@@ -292,7 +292,7 @@ describe("executeMove", () => {
 			deck: {
 				deckOrder: [],
 				drawPile: [],
-				hand: [{ id: "move-1", type: "move" }],
+				hand: [{ id: "move-1", type: "move", keyword: "flame" }],
 				discardPile: [],
 			},
 		});
@@ -313,7 +313,7 @@ describe("executeMove - visitedTiles", () => {
 			deck: {
 				deckOrder: [],
 				drawPile: [],
-				hand: [{ id: "move-1", type: "move" }],
+				hand: [{ id: "move-1", type: "move", keyword: "flame" }],
 				discardPile: [],
 			},
 		});
@@ -333,7 +333,7 @@ describe("executeMove - visitedTiles", () => {
 			deck: {
 				deckOrder: [],
 				drawPile: [],
-				hand: [{ id: "move-1", type: "move" }],
+				hand: [{ id: "move-1", type: "move", keyword: "flame" }],
 				discardPile: [],
 			},
 		});
@@ -349,7 +349,7 @@ describe("executeMove - visitedTiles", () => {
 			deck: {
 				deckOrder: [],
 				drawPile: [],
-				hand: [{ id: "move-1", type: "move" }],
+				hand: [{ id: "move-1", type: "move", keyword: "flame" }],
 				discardPile: [],
 			},
 		});

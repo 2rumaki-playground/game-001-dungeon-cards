@@ -143,9 +143,9 @@ describe("getDirectionFromClickPosition", () => {
 describe("HandRenderer ホバー・選択演出", () => {
 	function createTestCards(): Card[] {
 		return [
-			{ id: "card-1", type: "move" },
-			{ id: "card-2", type: "attack" },
-			{ id: "card-3", type: "wait" },
+			{ id: "card-1", type: "move", keyword: "flame" },
+			{ id: "card-2", type: "attack", keyword: "flame" },
+			{ id: "card-3", type: "wait", keyword: "flame" },
 		];
 	}
 
@@ -535,9 +535,9 @@ describe("HandRenderer ホバー・選択演出", () => {
 describe("HandRenderer キュー表示", () => {
 	function createTestCards(): Card[] {
 		return [
-			{ id: "card-1", type: "move" },
-			{ id: "card-2", type: "attack" },
-			{ id: "card-3", type: "wait" },
+			{ id: "card-1", type: "move", keyword: "flame" },
+			{ id: "card-2", type: "attack", keyword: "flame" },
+			{ id: "card-3", type: "wait", keyword: "flame" },
 		];
 	}
 
@@ -646,7 +646,7 @@ describe("カード種別ビジュアル差別化", () => {
 
 	function renderSingleCard(type: CardType): Container {
 		const renderer = new HandRenderer();
-		const cards: Card[] = [{ id: `card-${type}`, type }];
+		const cards: Card[] = [{ id: `card-${type}`, type, keyword: "flame" }];
 		renderer.render(cards, 10);
 		const cardsContainer = renderer
 			.getContainer()
@@ -720,9 +720,9 @@ describe("カード種別ビジュアル差別化", () => {
 describe("HandRenderer ツールチップ表示", () => {
 	function createTestCards(): Card[] {
 		return [
-			{ id: "card-1", type: "move" },
-			{ id: "card-2", type: "attack" },
-			{ id: "card-3", type: "strong_attack" },
+			{ id: "card-1", type: "move", keyword: "flame" },
+			{ id: "card-2", type: "attack", keyword: "flame" },
+			{ id: "card-3", type: "strong_attack", keyword: "flame" },
 		];
 	}
 
@@ -887,7 +887,7 @@ describe("HandRenderer ツールチップ表示", () => {
 
 	it("待機カード(cost=0)のツールチップにAPコストが表示されない", () => {
 		const renderer = new HandRenderer();
-		const cards: Card[] = [{ id: "card-wait", type: "wait" }];
+		const cards: Card[] = [{ id: "card-wait", type: "wait", keyword: "flame" }];
 		renderer.render(cards, 10);
 
 		const card0 = findCardContainer(renderer, 0);

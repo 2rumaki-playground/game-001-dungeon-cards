@@ -26,7 +26,7 @@ describe("executeJump", () => {
 			deck: {
 				deckOrder: [],
 				drawPile: [],
-				hand: [{ id: "jump-1", type: "jump" }],
+				hand: [{ id: "jump-1", type: "jump", keyword: "flame" }],
 				discardPile: [],
 			},
 		});
@@ -94,7 +94,7 @@ describe("executeJump", () => {
 			deck: {
 				deckOrder: [],
 				drawPile: [],
-				hand: [{ id: "jump-1", type: "jump" }],
+				hand: [{ id: "jump-1", type: "jump", keyword: "flame" }],
 				discardPile: [],
 			},
 		});
@@ -106,7 +106,7 @@ describe("executeJump", () => {
 		expect(result.deck.hand).toHaveLength(0);
 		expect(result.deck.discardPile).toHaveLength(1);
 		expect(result.deck.discardPile[0]).toEqual(
-			expect.objectContaining({ id: "jump-1", type: "jump" }),
+			expect.objectContaining({ id: "jump-1", type: "jump", keyword: "flame" }),
 		);
 	});
 
@@ -154,7 +154,7 @@ describe("executeJump", () => {
 			deck: {
 				deckOrder: [],
 				drawPile: [],
-				hand: [{ id: "jump-1", type: "jump" }],
+				hand: [{ id: "jump-1", type: "jump", keyword: "flame" }],
 				discardPile: [],
 			},
 		});
@@ -187,7 +187,7 @@ describe("executeJump", () => {
 			deck: {
 				deckOrder: [],
 				drawPile: [],
-				hand: [{ id: "jump-1", type: "jump" }],
+				hand: [{ id: "jump-1", type: "jump", keyword: "flame" }],
 				discardPile: [],
 			},
 		});
@@ -218,7 +218,7 @@ describe("executeJump", () => {
 			deck: {
 				deckOrder: [],
 				drawPile: [],
-				hand: [{ id: "jump-1", type: "jump" }],
+				hand: [{ id: "jump-1", type: "jump", keyword: "flame" }],
 				discardPile: [],
 			},
 		});
@@ -245,7 +245,7 @@ describe("executeJump", () => {
 			deck: {
 				deckOrder: [],
 				drawPile: [],
-				hand: [{ id: "jump-1", type: "jump" }],
+				hand: [{ id: "jump-1", type: "jump", keyword: "flame" }],
 				discardPile: [],
 			},
 		});
@@ -274,7 +274,7 @@ describe("executeJump", () => {
 			deck: {
 				deckOrder: [],
 				drawPile: [],
-				hand: [{ id: "jump-1", type: "jump" }],
+				hand: [{ id: "jump-1", type: "jump", keyword: "flame" }],
 				discardPile: [],
 			},
 		});
@@ -303,7 +303,7 @@ describe("executeJump", () => {
 			deck: {
 				deckOrder: [],
 				drawPile: [],
-				hand: [{ id: "jump-1", type: "jump" }],
+				hand: [{ id: "jump-1", type: "jump", keyword: "flame" }],
 				discardPile: [],
 			},
 		});
@@ -328,7 +328,7 @@ describe("executeJump", () => {
 			deck: {
 				deckOrder: [],
 				drawPile: [],
-				hand: [{ id: "jump-1", type: "jump" }],
+				hand: [{ id: "jump-1", type: "jump", keyword: "flame" }],
 				discardPile: [],
 			},
 		});
@@ -343,7 +343,7 @@ describe("executeJump", () => {
 			deck: {
 				deckOrder: [],
 				drawPile: [],
-				hand: [{ id: "jump-1", type: "jump" }],
+				hand: [{ id: "jump-1", type: "jump", keyword: "flame" }],
 				discardPile: [],
 			},
 		});
@@ -364,7 +364,7 @@ describe("executeJump - visitedTiles", () => {
 			deck: {
 				deckOrder: [],
 				drawPile: [],
-				hand: [{ id: "jump-1", type: "jump" }],
+				hand: [{ id: "jump-1", type: "jump", keyword: "flame" }],
 				discardPile: [],
 			},
 		});
@@ -384,7 +384,7 @@ describe("executeJump - visitedTiles", () => {
 			deck: {
 				deckOrder: [],
 				drawPile: [],
-				hand: [{ id: "jump-1", type: "jump" }],
+				hand: [{ id: "jump-1", type: "jump", keyword: "flame" }],
 				discardPile: [],
 			},
 		});

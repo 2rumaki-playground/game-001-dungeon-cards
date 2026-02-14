@@ -61,7 +61,7 @@ function createTestState(overrides?: Partial<GameState>): GameState {
 			maxAp: MAX_AP,
 		},
 		enemies: [createTestEnemy("normal", { x: 2, y: 2 })],
-		deck: createInitialDeckState(),
+		deck: createInitialDeckState(rng),
 		actionLog: [],
 		rng,
 		defeatedEnemyCount: 0,

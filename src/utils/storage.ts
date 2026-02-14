@@ -3,7 +3,7 @@
  * @see docs/spec/mvp/rules.md - セーブとログ
  */
 
-import { getEnemyCount, INITIAL_FLOOR } from "../constants";
+import { getEnemyCount, INITIAL_FLOOR, KEYWORDS } from "../constants";
 import { createInitialCounters } from "../game/cardAcquisition";
 import { initCardIdCounterFromDeck } from "../game/deck";
 import type { AcquisitionCounters, GameState, Room } from "../types";
@@ -204,6 +204,20 @@ export function loadGame(): GameState | null {
 					type: e.type ?? "normal",
 				}))
 			: data.enemies;
+
+		// 旧セーブデータの後方互換: keyword未設定のカードに"flame"を補完
+		if (data.deck && typeof data.deck === "object") {
+			for (const zone of ["deckOrder", "drawPile", "hand", "discardPile"]) {
+				const cards = data.deck[zone];
+				if (Array.isArray(cards)) {
+					for (const card of cards) {
+						if (card && typeof card === "object" && !card.keyword) {
+							card.keyword = KEYWORDS[0];
+						}
+					}
+				}
+			}
+		}
 
 		// 旧セーブデータの後方互換:
 		// - actor 未設定または不正値のログに "system" を補完

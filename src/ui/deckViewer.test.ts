@@ -8,14 +8,14 @@ import { CARD_GAP, CARD_HEIGHT, CARD_WIDTH } from "./handRenderer";
 /** テスト用デッキ */
 function createTestDeck(): DeckState {
 	const cards: Card[] = [
-		{ id: "m1", type: "move" },
-		{ id: "m2", type: "move" },
-		{ id: "m3", type: "move" },
-		{ id: "a1", type: "attack" },
-		{ id: "a2", type: "attack" },
-		{ id: "sa1", type: "strong_attack" },
-		{ id: "r1", type: "jump" },
-		{ id: "w1", type: "wait" },
+		{ id: "m1", type: "move", keyword: "flame" },
+		{ id: "m2", type: "move", keyword: "flame" },
+		{ id: "m3", type: "move", keyword: "flame" },
+		{ id: "a1", type: "attack", keyword: "flame" },
+		{ id: "a2", type: "attack", keyword: "flame" },
+		{ id: "sa1", type: "strong_attack", keyword: "flame" },
+		{ id: "r1", type: "jump", keyword: "flame" },
+		{ id: "w1", type: "wait", keyword: "flame" },
 	];
 	return {
 		deckOrder: cards,

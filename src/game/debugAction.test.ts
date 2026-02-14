@@ -116,8 +116,8 @@ describe("executeDebugOneshotKill", () => {
 				deckOrder: [],
 				drawPile: [],
 				hand: [
-					{ id: "card-1", type: "move" },
-					{ id: "card-2", type: "attack" },
+					{ id: "card-1", type: "move", keyword: "flame" },
+					{ id: "card-2", type: "attack", keyword: "flame" },
 				],
 				discardPile: [],
 			},
@@ -153,8 +153,8 @@ describe("executeDebugTeleport", () => {
 				deckOrder: [],
 				drawPile: [],
 				hand: [
-					{ id: "card-1", type: "move" },
-					{ id: "card-2", type: "attack" },
+					{ id: "card-1", type: "move", keyword: "flame" },
+					{ id: "card-2", type: "attack", keyword: "flame" },
 				],
 				discardPile: [],
 			},
