@@ -24,7 +24,7 @@ import { checkVictory } from "./victory";
 /** 敵ダメージ適用の結果 */
 export type DamageResult = {
 	state: GameState;
-	/** 超過ダメージ量（撃破時のみ、非撃破時は0） */
+	/** 超過ダメージ量（Math.max(0, damage - enemy.hp)、非撃破時は自然に0となる） */
 	overkill: number;
 	/** 敵が撃破されたか */
 	defeated: boolean;
