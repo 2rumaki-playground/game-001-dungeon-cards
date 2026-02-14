@@ -17,6 +17,11 @@ import {
 	RARITY_NAME,
 } from "./cardConstants";
 import {
+	createCardTooltip,
+	TOOLTIP_MARGIN,
+	TOOLTIP_WIDTH,
+} from "./cardTooltip";
+import {
 	createOverlay,
 	drawRoundedRect,
 	makeInteractive,
@@ -79,10 +84,13 @@ export class RewardScreen {
 	private selectedRemoveItem: { container: Container; width: number } | null =
 		null;
 	private isRemoving = false;
+	private tooltipContainer: Container;
 
 	constructor() {
 		this.container = new Container();
 		this.container.visible = false;
+		this.tooltipContainer = new Container();
+		this.tooltipContainer.label = "tooltip";
 	}
 
 	setParticleSystem(particleSystem: ParticleSystem): void {
@@ -218,6 +226,10 @@ export class RewardScreen {
 		this.confirmButtonContainer.addChild(skipBtn);
 
 		this.container.addChild(this.confirmButtonContainer);
+
+		// ツールチップコンテナ（Z-order最前面）
+		this.tooltipContainer.removeChildren();
+		this.container.addChild(this.tooltipContainer);
 	}
 
 	/**
@@ -416,6 +428,10 @@ export class RewardScreen {
 		this.confirmButtonContainer.addChild(skipBtn);
 
 		this.container.addChild(this.confirmButtonContainer);
+
+		// ツールチップコンテナ（Z-order最前面）
+		this.tooltipContainer.removeChildren();
+		this.container.addChild(this.tooltipContainer);
 	}
 
 	/**
@@ -528,6 +544,14 @@ export class RewardScreen {
 		// カード全体をクリック可能にする
 		makeInteractive(cardContainer, () => {
 			this.selectRewardCard(index);
+		});
+
+		// ツールチップ表示
+		cardContainer.on("pointerover", () => {
+			this.showTooltip(cardType, x, y, REWARD_CARD_WIDTH);
+		});
+		cardContainer.on("pointerout", () => {
+			this.hideTooltip();
 		});
 
 		return cardContainer;
@@ -707,6 +731,14 @@ export class RewardScreen {
 		cardContainer.cursor = "pointer";
 		cardContainer.on("pointertap", () => {
 			this.selectRemoveCard(card.id, cardContainer, CARD_WIDTH);
+		});
+
+		// ツールチップ表示
+		cardContainer.on("pointerover", () => {
+			this.showGridTooltip(card.type, cardContainer);
+		});
+		cardContainer.on("pointerout", () => {
+			this.hideTooltip();
 		});
 
 		return cardContainer;
@@ -1023,5 +1055,53 @@ export class RewardScreen {
 			{ alpha: 0, scaleX: 0.8, scaleY: 0.8 },
 			{ duration: REMOVE_FADE_DURATION, easing: Easing.easeInOut },
 		);
+	}
+
+	/**
+	 * ツールチップをカード上部中央に表示（報酬カード用）
+	 */
+	private showTooltip(
+		cardType: CardType,
+		cardX: number,
+		cardY: number,
+		cardWidth: number,
+	): void {
+		this.tooltipContainer.removeChildren();
+		const cost = CARD_COST[cardType];
+		const { container: tooltip, height: tooltipHeight } = createCardTooltip(
+			cardType,
+			cost,
+		);
+		tooltip.x = cardX + cardWidth / 2 - TOOLTIP_WIDTH / 2;
+		tooltip.y = cardY - tooltipHeight - TOOLTIP_MARGIN;
+		this.tooltipContainer.addChild(tooltip);
+	}
+
+	/**
+	 * ツールチップをカード上部中央に表示（グリッドカード用）
+	 */
+	private showGridTooltip(cardType: CardType, cardContainer: Container): void {
+		this.tooltipContainer.removeChildren();
+		if (!this.gridContainer) return;
+		const cost = CARD_COST[cardType];
+		const { container: tooltip, height: tooltipHeight } = createCardTooltip(
+			cardType,
+			cost,
+		);
+		tooltip.x =
+			this.gridContainer.x +
+			cardContainer.x +
+			CARD_WIDTH / 2 -
+			TOOLTIP_WIDTH / 2;
+		tooltip.y =
+			this.gridContainer.y + cardContainer.y - tooltipHeight - TOOLTIP_MARGIN;
+		this.tooltipContainer.addChild(tooltip);
+	}
+
+	/**
+	 * ツールチップを非表示
+	 */
+	private hideTooltip(): void {
+		this.tooltipContainer.removeChildren();
 	}
 }

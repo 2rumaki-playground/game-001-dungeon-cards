@@ -6,13 +6,18 @@
 import { Container, Graphics, Text } from "pixi.js";
 import { CARD_COST } from "../constants";
 import { getAllCards, getTotalDeckSize } from "../game/deck";
-import type { Card, DeckState } from "../types";
+import type { Card, CardType, DeckState } from "../types";
 import {
 	CARD_COLORS,
 	CARD_EFFECT_TEXT,
 	CARD_TYPE_NAME,
 	CARD_TYPE_SYMBOL,
 } from "./cardConstants";
+import {
+	createCardTooltip,
+	TOOLTIP_MARGIN,
+	TOOLTIP_WIDTH,
+} from "./cardTooltip";
 import {
 	createOverlay,
 	drawRoundedRect,
@@ -46,12 +51,15 @@ const GRID_COLUMNS = 3;
 export class DeckViewer {
 	private container: Container;
 	private buttonContainer: Container;
+	private tooltipContainer: Container;
 	private onClose: (() => void) | null = null;
 	private onOpen: (() => void) | null = null;
 
 	constructor() {
 		this.container = new Container();
 		this.container.visible = false;
+		this.tooltipContainer = new Container();
+		this.tooltipContainer.label = "tooltip";
 
 		this.buttonContainer = new Container();
 		this.buttonContainer.visible = false;
@@ -188,10 +196,14 @@ export class DeckViewer {
 		const closeY = gridStartY + gridHeight + gridToCloseGap;
 		const closeButton = this.createCloseButton(areaW / 2, closeY);
 		this.container.addChild(closeButton);
+
+		// ツールチップコンテナ（Z-order最前面）
+		this.tooltipContainer.removeChildren();
+		this.container.addChild(this.tooltipContainer);
 	}
 
 	/**
-	 * 静的カードビューを生成（インタラクションなし）
+	 * 静的カードビューを生成（ツールチップ付き）
 	 */
 	private createStaticCardView(card: Card, x: number, y: number): Container {
 		const cardContainer = new Container();
@@ -266,6 +278,15 @@ export class DeckViewer {
 		effectText.x = CARD_WIDTH / 2;
 		effectText.y = 74;
 		cardContainer.addChild(effectText);
+
+		// ツールチップ表示用のインタラクション
+		cardContainer.eventMode = "static";
+		cardContainer.on("pointerover", () => {
+			this.showCardTooltip(card.type, x, y);
+		});
+		cardContainer.on("pointerout", () => {
+			this.hideCardTooltip();
+		});
 
 		return cardContainer;
 	}
@@ -346,5 +367,31 @@ export class DeckViewer {
 		});
 
 		this.buttonContainer.addChild(button);
+	}
+
+	/**
+	 * ツールチップをカード上部中央に表示
+	 */
+	private showCardTooltip(
+		cardType: CardType,
+		cardX: number,
+		cardY: number,
+	): void {
+		this.tooltipContainer.removeChildren();
+		const cost = CARD_COST[cardType];
+		const { container: tooltip, height: tooltipHeight } = createCardTooltip(
+			cardType,
+			cost,
+		);
+		tooltip.x = cardX + CARD_WIDTH / 2 - TOOLTIP_WIDTH / 2;
+		tooltip.y = cardY - tooltipHeight - TOOLTIP_MARGIN;
+		this.tooltipContainer.addChild(tooltip);
+	}
+
+	/**
+	 * ツールチップを非表示
+	 */
+	private hideCardTooltip(): void {
+		this.tooltipContainer.removeChildren();
 	}
 }

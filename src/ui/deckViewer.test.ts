@@ -1,6 +1,7 @@
-import type { Graphics } from "pixi.js";
+import type { Container, FederatedPointerEvent, Graphics, Text } from "pixi.js";
 import { describe, expect, it, vi } from "vitest";
 import type { Card, DeckState } from "../types";
+import { CARD_DESCRIPTION, CARD_TYPE_NAME } from "./cardConstants";
 import { CLOSE_BUTTON_HEIGHT, DeckViewer } from "./deckViewer";
 import { CARD_GAP, CARD_HEIGHT, CARD_WIDTH } from "./handRenderer";
 
@@ -100,8 +101,8 @@ describe("DeckViewer", () => {
 			viewer.render(deck, 600, 400);
 
 			const container = viewer.getContainer();
-			// overlay(1) + title(1) + 8カード + 閉じるボタン(1) = 11
-			expect(container.children.length).toBe(11);
+			// overlay(1) + title(1) + 8カード + 閉じるボタン(1) + tooltipContainer(1) = 12
+			expect(container.children.length).toBe(12);
 		});
 
 		it("オーバーレイはscreenWidthで全画面を覆う", () => {
@@ -218,8 +219,8 @@ describe("DeckViewer", () => {
 			viewer.render(createTestDeck(), 600, 400);
 
 			const container = viewer.getContainer();
-			// 最後の子要素が閉じるボタン
-			const closeBtn = container.children[container.children.length - 1];
+			// tooltipContainerが最後なので、閉じるボタンはその1つ前
+			const closeBtn = container.children[container.children.length - 2];
 			expect(closeBtn.eventMode).toBe("static");
 			closeBtn.emit("pointerdown", {
 				button: 0,
@@ -250,6 +251,88 @@ describe("DeckViewer", () => {
 			} as import("pixi.js").FederatedPointerEvent);
 
 			expect(callback).toHaveBeenCalled();
+		});
+	});
+
+	describe("ツールチップ", () => {
+		function getAllTextsRecursive(container: Container): Text[] {
+			const texts: Text[] = [];
+			for (const child of container.children) {
+				if (
+					"text" in child &&
+					typeof (child as { text: unknown }).text === "string"
+				) {
+					texts.push(child as unknown as Text);
+				}
+				if ("children" in child) {
+					texts.push(...getAllTextsRecursive(child as Container));
+				}
+			}
+			return texts;
+		}
+
+		function findByLabel(parent: Container, label: string): Container | null {
+			for (const child of parent.children) {
+				if (child.label === label) return child as Container;
+				if ("children" in child) {
+					const c = child as Container;
+					if (c.children?.length > 0) {
+						const found = findByLabel(c, label);
+						if (found) return found;
+					}
+				}
+			}
+			return null;
+		}
+
+		it("カードのpointeroverでツールチップが表示される", () => {
+			const viewer = new DeckViewer();
+			const deck = createTestDeck();
+			viewer.render(deck, 600, 400);
+
+			const container = viewer.getContainer();
+			// children[2]が最初のカード（overlay=0, title=1）
+			const card = container.children[2] as Container;
+			card.emit("pointerover", {} as FederatedPointerEvent);
+
+			const tooltipContainer = findByLabel(container, "tooltip");
+			expect(tooltipContainer).toBeDefined();
+			expect(tooltipContainer?.children.length).toBeGreaterThan(0);
+
+			const texts = getAllTextsRecursive(tooltipContainer as Container);
+			const hasName = texts.some((t) => t.text.includes(CARD_TYPE_NAME.move));
+			expect(hasName).toBe(true);
+		});
+
+		it("カードのpointeroutでツールチップが消える", () => {
+			const viewer = new DeckViewer();
+			const deck = createTestDeck();
+			viewer.render(deck, 600, 400);
+
+			const container = viewer.getContainer();
+			const card = container.children[2] as Container;
+			card.emit("pointerover", {} as FederatedPointerEvent);
+
+			const tooltipContainer = findByLabel(container, "tooltip");
+			expect(tooltipContainer?.children.length).toBeGreaterThan(0);
+
+			card.emit("pointerout", {} as FederatedPointerEvent);
+			expect(tooltipContainer?.children.length).toBe(0);
+		});
+
+		it("ツールチップにCARD_DESCRIPTIONが含まれる", () => {
+			const viewer = new DeckViewer();
+			const deck = createTestDeck();
+			viewer.render(deck, 600, 400);
+
+			const container = viewer.getContainer();
+			const card = container.children[2] as Container;
+			card.emit("pointerover", {} as FederatedPointerEvent);
+
+			const tooltipContainer = findByLabel(container, "tooltip");
+			const texts = getAllTextsRecursive(tooltipContainer as Container);
+			const hasDesc = texts.some((t) => t.text.includes(CARD_DESCRIPTION.move));
+			expect(hasDesc).toBe(true);
 		});
 	});
 });
