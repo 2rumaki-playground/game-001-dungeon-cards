@@ -25,6 +25,7 @@ import type {
 	Turn,
 } from "../types";
 import { RNG } from "../utils/rng";
+import { createInitialCounters } from "./cardAcquisition";
 import { createInitialDeckState, drawCards } from "./deck";
 import { createEmptyVisitedTiles, revealAtPosition } from "./fogOfWar";
 import { generateMapPlacement } from "./map";
@@ -142,11 +143,12 @@ export function createTitleScreenState(seed?: number): GameState {
 		actionLog: [],
 		rng: new RNG(seed),
 		defeatedEnemyCount: 0,
-		rewardState: null,
 		isCleared: false,
 		remnants: {},
 		visitedTiles: createEmptyVisitedTiles(),
 		lastAttackerEnemyType: null,
+		acquisitionCounters: createInitialCounters(),
+		cardExchangeState: null,
 	};
 }
 
@@ -177,7 +179,6 @@ export function createInitialGameState(
 		actionLog: [],
 		rng,
 		defeatedEnemyCount: 0,
-		rewardState: null,
 		isCleared: false,
 		remnants: {},
 		visitedTiles: revealAtPosition(
@@ -187,6 +188,8 @@ export function createInitialGameState(
 			map,
 		),
 		lastAttackerEnemyType: null,
+		acquisitionCounters: createInitialCounters(),
+		cardExchangeState: null,
 	};
 }
 

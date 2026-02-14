@@ -4,12 +4,13 @@
  */
 
 import { Container, Graphics, Text } from "pixi.js";
-import { CARD_COST, CARD_RARITY } from "../constants";
+import { CARD_COST } from "../constants";
 import type { Card, CardType, Rarity } from "../types";
 import { Easing, tween } from "../utils/tween";
 import {
 	CARD_COLORS,
 	CARD_EFFECT_TEXT,
+	CARD_RARITY,
 	CARD_TYPE_NAME,
 	CARD_TYPE_SYMBOL,
 	RARITY_COLORS,

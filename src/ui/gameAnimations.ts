@@ -18,6 +18,7 @@ import {
 	getAttackParticleConfig,
 } from "./battleParticles";
 import { getViewportPixelSize, gridToParticlePosition } from "./coordinates";
+import { executeExchangeFlow } from "./exchangeFlow";
 import { applyState, render } from "./gameRenderer";
 import { HAND_AREA_HEIGHT } from "./layout";
 
@@ -239,6 +240,13 @@ export async function updateStateWithAttackAnimation(
 			await Promise.all(defeatAnimations);
 			// 撃破後、敵描画を反映
 			render(ctx);
+
+			// カード交換条件達成時に交換UIを表示
+			if (newState.cardExchangeState) {
+				const exchangedState = await executeExchangeFlow(ctx, newState);
+				applyState(ctx, exchangedState);
+				render(ctx);
+			}
 		}
 	} finally {
 		ctx.isAnimating = false;

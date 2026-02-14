@@ -12,6 +12,7 @@ import {
 	decideMinibossSkill,
 	executePendingSkill,
 } from "./bossSkill";
+import { updateHitCounter } from "./cardAcquisition";
 import { applyDamageToPlayer, checkGameOver, isDefeated } from "./combat";
 import { getDebugCheats } from "./debugCheats";
 import { DIRECTION_LABEL } from "./enemyAiAnalysis";
@@ -223,10 +224,17 @@ export function executeEnemyTurn(state: GameState): EnemyTurnResult {
 				? BOSS_SKILL.enrageBonusDamage
 				: 0;
 			const damage = params.attackDamage + enrageBonus;
+			const hpBefore = next.player.hp;
 			next = applyDamageToPlayer(next, damage);
 			next = {
 				...next,
 				lastAttackerEnemyType: currentEnemy.type,
+				...(next.player.hp < hpBefore && {
+					acquisitionCounters: updateHitCounter(
+						next.acquisitionCounters,
+						currentEnemy.type,
+					),
+				}),
 			};
 			const attackMsg = showAi
 				? `${ENEMY_TYPE_LABEL[currentEnemy.type]}が攻撃した（隣接, ATK:${damage}）`
