@@ -110,6 +110,10 @@ describe("formatByteDiff", () => {
 	it("負の差分をフォーマットする", () => {
 		expect(formatByteDiff(-5120, "-5.00")).toBe("-5.0 KB (-5.00%)");
 	});
+
+	it("差分ゼロの場合は「変化なし」を返す", () => {
+		expect(formatByteDiff(0, "0.00")).toBe("変化なし");
+	});
 });
 
 describe("formatTimeDiff", () => {
@@ -123,6 +127,10 @@ describe("formatTimeDiff", () => {
 
 	it("ms単位で差分をフォーマットする", () => {
 		expect(formatTimeDiff(1.5, "10.0")).toBe("+1.50ms (+10.0%)");
+	});
+
+	it("差分ゼロの場合は「変化なし」を返す", () => {
+		expect(formatTimeDiff(0, "0.0")).toBe("変化なし");
 	});
 });
 

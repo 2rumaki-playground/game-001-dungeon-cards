@@ -49,14 +49,16 @@ export function formatBytesInUnit(bytes, unit) {
 
 export function formatByteDiff(diff, pct) {
 	if (pct === "new") return "new";
-	const sign = diff > 0 ? "+" : diff < 0 ? "-" : "";
+	if (diff === 0) return "変化なし";
+	const sign = diff > 0 ? "+" : "-";
 	const absPct = pct.replace(/^-/, "");
 	return `${sign}${formatBytes(Math.abs(diff))} (${sign}${absPct}%)`;
 }
 
 export function formatTimeDiff(diff, pct) {
 	if (pct === "new") return "new";
-	const sign = diff > 0 ? "+" : diff < 0 ? "-" : "";
+	if (diff === 0) return "変化なし";
+	const sign = diff > 0 ? "+" : "-";
 	const absPct = pct.replace(/^-/, "");
 	return `${sign}${formatTime(Math.abs(diff))} (${sign}${absPct}%)`;
 }
