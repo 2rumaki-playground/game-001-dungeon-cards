@@ -17,11 +17,12 @@ beforeEach(() => {
 describe("getTotalDeckSize", () => {
 	it("山札+手札+捨て札の合計を返す", () => {
 		const deck = {
+			deckOrder: [],
 			drawPile: [
 				{ id: "c-1", type: "move" as const },
 				{ id: "c-2", type: "attack" as const },
 			],
-			hand: [{ id: "c-3", type: "jump" as const }],
+			hand: [{ id: "c-3", type: "move" as const }],
 			discardPile: [
 				{ id: "c-4", type: "wait" as const },
 				{ id: "c-5", type: "move" as const },
@@ -32,7 +33,12 @@ describe("getTotalDeckSize", () => {
 	});
 
 	it("空デッキで0を返す", () => {
-		const deck = { drawPile: [], hand: [], discardPile: [] };
+		const deck = {
+			deckOrder: [],
+			drawPile: [],
+			hand: [],
+			discardPile: [],
+		};
 		expect(getTotalDeckSize(deck)).toBe(0);
 	});
 });
@@ -112,7 +118,7 @@ describe("removeCardFromDeck", () => {
 			{ id: "c-2", type: "attack" },
 		];
 		const state = createTestState({
-			deck: { drawPile: cards, hand: [], discardPile: [] },
+			deck: { deckOrder: cards, drawPile: cards, hand: [], discardPile: [] },
 		});
 
 		const result = removeCardFromDeck(state, "c-1");
@@ -123,6 +129,7 @@ describe("removeCardFromDeck", () => {
 	it("手札からカードを除去する", () => {
 		const state = createTestState({
 			deck: {
+				deckOrder: [],
 				drawPile: [],
 				hand: [{ id: "c-1", type: "move" }],
 				discardPile: [],
@@ -136,6 +143,7 @@ describe("removeCardFromDeck", () => {
 	it("捨て札からカードを除去する", () => {
 		const state = createTestState({
 			deck: {
+				deckOrder: [],
 				drawPile: [],
 				hand: [],
 				discardPile: [{ id: "c-1", type: "move" }],
@@ -149,7 +157,7 @@ describe("removeCardFromDeck", () => {
 	it("元の状態が変更されない（イミュータブル）", () => {
 		const cards: Card[] = [{ id: "c-1", type: "move" }];
 		const state = createTestState({
-			deck: { drawPile: cards, hand: [], discardPile: [] },
+			deck: { deckOrder: cards, drawPile: cards, hand: [], discardPile: [] },
 		});
 
 		removeCardFromDeck(state, "c-1");
@@ -160,6 +168,7 @@ describe("removeCardFromDeck", () => {
 describe("shouldTriggerCardRemoval", () => {
 	/** DECK_MIN_SIZEより多いカードのデッキを作成 */
 	function createLargeDeck(size: number): {
+		deckOrder: Card[];
 		drawPile: Card[];
 		hand: Card[];
 		discardPile: Card[];
@@ -168,7 +177,7 @@ describe("shouldTriggerCardRemoval", () => {
 			id: `c-${i + 1}`,
 			type: "move" as const,
 		}));
-		return { drawPile: cards, hand: [], discardPile: [] };
+		return { deckOrder: cards, drawPile: cards, hand: [], discardPile: [] };
 	}
 
 	it("全敵撃破していない場合 → triggered: false", () => {

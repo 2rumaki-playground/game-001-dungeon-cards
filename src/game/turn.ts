@@ -24,7 +24,7 @@ export function startPlayerTurn(state: GameState): GameState {
 	}));
 
 	// 手札補充
-	next = setDeck(next, drawCards(next.deck, next.rng));
+	next = setDeck(next, drawCards(next.deck));
 
 	// ターンをplayerに設定
 	next = changeTurn(next, "player");

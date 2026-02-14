@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { HAND_LIMIT, TURN_START_AP } from "../constants";
 import type { GameState } from "../types";
-import { RNG } from "../utils/rng";
 import { createInitialDeckState } from "./deck";
 import { createInitialPlayer, createTitleScreenState } from "./state";
 import { endPlayerTurn, startPlayerTurn } from "./turn";
@@ -11,9 +10,8 @@ import { endPlayerTurn, startPlayerTurn } from "./turn";
  */
 function createGameState(overrides?: Partial<GameState>): GameState {
 	const seed = 12345;
-	const rng = new RNG(seed);
 	const base = createTitleScreenState(seed);
-	const deck = createInitialDeckState(rng);
+	const deck = createInitialDeckState();
 	return {
 		...base,
 		screen: "game",
@@ -58,11 +56,10 @@ describe("turn", () => {
 		});
 
 		it("既に手札がある場合は上限まで補充する", () => {
-			const rng = new RNG(12345);
-			const deck = createInitialDeckState(rng);
-			// 手札に2枚ある状態を作る
-			const hand = deck.drawPile.slice(0, 2);
-			const drawPile = deck.drawPile.slice(2);
+			const deck = createInitialDeckState();
+			// 手札に1枚ある状態を作る
+			const hand = deck.drawPile.slice(0, 1);
+			const drawPile = deck.drawPile.slice(1);
 			const state = createGameState({
 				deck: { ...deck, hand, drawPile },
 			});
@@ -88,11 +85,10 @@ describe("turn", () => {
 
 	describe("endPlayerTurn", () => {
 		it("手札をすべて捨て札に移動する", () => {
-			const rng = new RNG(12345);
-			const deck = createInitialDeckState(rng);
-			// 手札に5枚ある状態
-			const hand = deck.drawPile.slice(0, 5);
-			const drawPile = deck.drawPile.slice(5);
+			const deck = createInitialDeckState();
+			// 手札に3枚ある状態
+			const hand = deck.drawPile.slice(0, 3);
+			const drawPile = deck.drawPile.slice(3);
 			const state = createGameState({
 				deck: { ...deck, hand, drawPile, discardPile: [] },
 			});
@@ -100,7 +96,7 @@ describe("turn", () => {
 			const next = endPlayerTurn(state);
 
 			expect(next.deck.hand.length).toBe(0);
-			expect(next.deck.discardPile.length).toBe(5);
+			expect(next.deck.discardPile.length).toBe(3);
 		});
 
 		it("ターンをplayerからenemyに遷移する", () => {
@@ -116,8 +112,7 @@ describe("turn", () => {
 		});
 
 		it("元の状態を変更しない（イミュータブル）", () => {
-			const rng = new RNG(12345);
-			const deck = createInitialDeckState(rng);
+			const deck = createInitialDeckState();
 			const hand = deck.drawPile.slice(0, 3);
 			const drawPile = deck.drawPile.slice(3);
 			const state = createGameState({

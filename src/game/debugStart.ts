@@ -46,8 +46,11 @@ export function createDebugDeckState(
 			createCard(type as CardType),
 		);
 	});
+	// デバッグ用: シャッフルした順序をdeckOrderとする（本番は固定順）
+	const shuffled = rng.shuffle(cards);
 	return {
-		drawPile: rng.shuffle(cards),
+		deckOrder: [...shuffled],
+		drawPile: [...shuffled],
 		hand: [],
 		discardPile: [],
 	};
@@ -126,7 +129,7 @@ export function startNewGameWithDebugParams(
 	// デッキ: 指定があればカスタム、なければデフォルト
 	const deck = params.deck
 		? createDebugDeckState(params.deck, base.rng)
-		: createInitialDeckState(base.rng);
+		: createInitialDeckState();
 
 	// 敵: 指定があればカスタム、なければベースのまま
 	const enemies = params.enemies
@@ -160,7 +163,7 @@ export function startNewGameWithDebugParams(
 	};
 
 	// 手札を補充
-	const deckWithHand = drawCards(deck, base.rng);
+	const deckWithHand = drawCards(deck);
 
 	return {
 		...base,

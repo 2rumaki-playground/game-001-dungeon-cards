@@ -5,6 +5,7 @@
 
 import {
 	CARD_REMOVAL_CHANCE,
+	DECK_MAX_SIZE,
 	DECK_MIN_SIZE,
 	getEnemyCount,
 } from "../constants";
@@ -35,17 +36,22 @@ export function createRewardState(
 
 /**
  * デッキにカード1枚を追加（山札に追加）
+ * デッキが上限に達している場合は追加せず現在の状態を返す
  */
 export function addRewardCardToDeck(
 	state: GameState,
 	cardType: CardType,
 ): GameState {
+	if (getTotalDeckSize(state.deck) >= DECK_MAX_SIZE) {
+		return state;
+	}
 	const newCard = createCard(cardType);
 	return {
 		...state,
 		rng: state.rng.clone(),
 		deck: {
 			...state.deck,
+			deckOrder: [...state.deck.deckOrder, newCard],
 			drawPile: [...state.deck.drawPile, newCard],
 		},
 	};
@@ -87,6 +93,7 @@ export function removeCardFromDeck(
 		...state,
 		rng: state.rng.clone(),
 		deck: {
+			deckOrder: state.deck.deckOrder.filter((c) => c.id !== cardId),
 			drawPile: state.deck.drawPile.filter((c) => c.id !== cardId),
 			hand: state.deck.hand.filter((c) => c.id !== cardId),
 			discardPile: state.deck.discardPile.filter((c) => c.id !== cardId),

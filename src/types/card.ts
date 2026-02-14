@@ -25,6 +25,8 @@ export type Card = {
  * デッキ状態
  */
 export type DeckState = {
+	/** プレイヤーが設定した山札の順番 */
+	deckOrder: Card[];
 	/** 山札 */
 	drawPile: Card[];
 	/** 手札 */

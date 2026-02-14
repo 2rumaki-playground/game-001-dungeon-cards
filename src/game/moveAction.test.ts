@@ -17,6 +17,7 @@ describe("consumeApAndPlayCard", () => {
 	it("APが指定コスト分減少する", () => {
 		const state = createTestState({
 			deck: {
+				deckOrder: [],
 				drawPile: [],
 				hand: [{ id: "move-1", type: "move" }],
 				discardPile: [],
@@ -30,6 +31,7 @@ describe("consumeApAndPlayCard", () => {
 	it("カードが手札から捨て札に移動する", () => {
 		const state = createTestState({
 			deck: {
+				deckOrder: [],
 				drawPile: [],
 				hand: [{ id: "attack-1", type: "attack" }],
 				discardPile: [],
@@ -45,6 +47,7 @@ describe("consumeApAndPlayCard", () => {
 	it("コスト0の場合APが変化しない", () => {
 		const state = createTestState({
 			deck: {
+				deckOrder: [],
 				drawPile: [],
 				hand: [{ id: "wait-1", type: "wait" }],
 				discardPile: [],
@@ -60,6 +63,7 @@ describe("consumeApAndPlayCard", () => {
 	it("元のGameStateが変更されない（イミュータブル）", () => {
 		const state = createTestState({
 			deck: {
+				deckOrder: [],
 				drawPile: [],
 				hand: [{ id: "move-1", type: "move" }],
 				discardPile: [],
@@ -79,6 +83,7 @@ describe("executeMove", () => {
 	it("床タイルへの移動成功: 位置更新・AP消費・カード捨て札移動・行動ログ", () => {
 		const state = createTestState({
 			deck: {
+				deckOrder: [],
 				drawPile: [],
 				hand: [{ id: "move-1", type: "move" }],
 				discardPile: [],
@@ -115,6 +120,7 @@ describe("executeMove", () => {
 				maxAp: MAX_AP,
 			},
 			deck: {
+				deckOrder: [],
 				drawPile: [],
 				hand: [{ id: "move-1", type: "move" }],
 				discardPile: [],
@@ -146,6 +152,7 @@ describe("executeMove", () => {
 		const state = createTestState({
 			enemies,
 			deck: {
+				deckOrder: [],
 				drawPile: [],
 				hand: [{ id: "move-1", type: "move" }],
 				discardPile: [],
@@ -171,6 +178,7 @@ describe("executeMove", () => {
 			map,
 			floor: 1,
 			deck: {
+				deckOrder: [],
 				drawPile: [],
 				hand: [{ id: "move-1", type: "move" }],
 				discardPile: [],
@@ -196,6 +204,7 @@ describe("executeMove", () => {
 		const state = createTestState({
 			map,
 			deck: {
+				deckOrder: [],
 				drawPile: [],
 				hand: [{ id: "move-1", type: "move" }],
 				discardPile: [],
@@ -227,6 +236,7 @@ describe("executeMove", () => {
 				maxAp: MAX_AP,
 			},
 			deck: {
+				deckOrder: [],
 				drawPile: [],
 				hand: [{ id: "move-1", type: "move" }],
 				discardPile: [],
@@ -251,6 +261,7 @@ describe("executeMove", () => {
 				maxAp: MAX_AP,
 			},
 			deck: {
+				deckOrder: [],
 				drawPile: [],
 				hand: [{ id: "move-1", type: "move" }],
 				discardPile: [],
@@ -264,6 +275,7 @@ describe("executeMove", () => {
 	it("床タイルへの移動: tileEffectがnull", () => {
 		const state = createTestState({
 			deck: {
+				deckOrder: [],
 				drawPile: [],
 				hand: [{ id: "move-1", type: "move" }],
 				discardPile: [],
@@ -278,6 +290,7 @@ describe("executeMove", () => {
 	it("元のGameStateが変更されない（イミュータブル）", () => {
 		const state = createTestState({
 			deck: {
+				deckOrder: [],
 				drawPile: [],
 				hand: [{ id: "move-1", type: "move" }],
 				discardPile: [],
@@ -298,6 +311,7 @@ describe("executeMove - visitedTiles", () => {
 	it("移動成功時に移動先が訪問済みに追加される", () => {
 		const state = createTestState({
 			deck: {
+				deckOrder: [],
 				drawPile: [],
 				hand: [{ id: "move-1", type: "move" }],
 				discardPile: [],
@@ -317,6 +331,7 @@ describe("executeMove - visitedTiles", () => {
 				maxAp: MAX_AP,
 			},
 			deck: {
+				deckOrder: [],
 				drawPile: [],
 				hand: [{ id: "move-1", type: "move" }],
 				discardPile: [],
@@ -332,6 +347,7 @@ describe("executeMove - visitedTiles", () => {
 		const state = createTestState({
 			rooms: [room],
 			deck: {
+				deckOrder: [],
 				drawPile: [],
 				hand: [{ id: "move-1", type: "move" }],
 				discardPile: [],

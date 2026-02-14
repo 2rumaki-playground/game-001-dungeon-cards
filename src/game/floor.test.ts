@@ -60,7 +60,7 @@ function createTestState(overrides?: Partial<GameState>): GameState {
 			maxAp: MAX_AP,
 		},
 		enemies: [createTestEnemy("normal", { x: 2, y: 2 })],
-		deck: createInitialDeckState(rng),
+		deck: createInitialDeckState(),
 		actionLog: [],
 		rng,
 		defeatedEnemyCount: 0,
@@ -125,11 +125,11 @@ describe("transitionFloor", () => {
 		}
 	});
 
-	it("デッキが全カード山札に戻りシャッフルされる", () => {
+	it("デッキが全カードdeckOrder順で山札に復元される", () => {
 		const state = createTestState();
 		const result = transitionFloor(state);
 
-		// 手札と捨て札は空
+		// 手札が補充され、捨て札は空
 		expect(result.deck.hand).toHaveLength(HAND_LIMIT);
 		expect(result.deck.discardPile).toHaveLength(0);
 		// 山札 + 手札 = 全カード数
