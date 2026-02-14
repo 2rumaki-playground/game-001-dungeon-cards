@@ -60,6 +60,10 @@ describe("formatTime", () => {
 		expect(formatTime(10)).toBe("10.00ms");
 		expect(formatTime(1)).toBe("1.00ms");
 	});
+
+	it("0を渡した場合はμs単位で0.0μsを返す", () => {
+		expect(formatTime(0)).toBe("0.0μs");
+	});
 });
 
 describe("determineBestUnit", () => {
