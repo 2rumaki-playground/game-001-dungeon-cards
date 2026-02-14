@@ -6,7 +6,7 @@
 import { ENEMY_TYPE_LABEL } from "../constants";
 import { exchangeCardInDeck } from "../game/cardAcquisition";
 import type { GameContext } from "../gameContext";
-import type { CardExchangeState, GameState } from "../types";
+import type { GameState } from "../types";
 import { CARD_TYPE_NAME } from "./cardConstants";
 import { getGameAreaSize, getScreenSize } from "./gameAnimations";
 import { applyState, render } from "./gameRenderer";
@@ -34,7 +34,6 @@ export async function executeExchangeFlow(
 	const exchangeResult = await showExchangeSelection(
 		ctx,
 		state,
-		exchange,
 		screenWidth,
 		screenHeight,
 		title,
@@ -67,7 +66,6 @@ export async function executeExchangeFlow(
 function showExchangeSelection(
 	ctx: GameContext,
 	state: GameState,
-	_exchange: CardExchangeState & object,
 	screenWidth: number,
 	screenHeight: number,
 	title: string,
