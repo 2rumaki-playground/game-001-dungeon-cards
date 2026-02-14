@@ -45,7 +45,7 @@ function sanitizeRooms(raw: unknown): Room[] {
 }
 
 /**
- * remnants をバリデーションし、安全な辞書として再構築
+ * acquisitionCounters のバリデーションに使用する敵タイプ一覧
  */
 const ENEMY_TYPES = ["normal", "heavy", "scout", "miniboss", "boss"] as const;
 
