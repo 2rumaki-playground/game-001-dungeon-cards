@@ -345,7 +345,7 @@ describe("RewardScreen", () => {
 			) as Container;
 			expect(gridContainer).toBeDefined();
 			const firstItem = gridContainer.children[0] as Container;
-			firstItem.emit("pointertap", { button: 0 } as FederatedPointerEvent);
+			firstItem.emit("pointerdown", { button: 0 } as FederatedPointerEvent);
 
 			// 交換ボタンをクリック
 			const removeBtn = findByLabel(container, "removeBtn");
@@ -383,7 +383,7 @@ describe("RewardScreen", () => {
 				"gridContainer",
 			) as Container;
 			const firstItem = gridContainer.children[0] as Container;
-			firstItem.emit("pointertap", { button: 0 } as FederatedPointerEvent);
+			firstItem.emit("pointerdown", { button: 0 } as FederatedPointerEvent);
 
 			expect(removeBtn?.eventMode).toBe("static");
 		});
@@ -398,7 +398,7 @@ describe("RewardScreen", () => {
 				"gridContainer",
 			) as Container;
 			const firstItem = gridContainer.children[0] as Container;
-			firstItem.emit("pointertap", { button: 0 } as FederatedPointerEvent);
+			firstItem.emit("pointerdown", { button: 0 } as FederatedPointerEvent);
 
 			const highlight = firstItem.children.find((c) => c.label === "highlight");
 			expect(highlight).toBeDefined();
@@ -416,10 +416,10 @@ describe("RewardScreen", () => {
 			const item0 = gridContainer.children[0] as Container;
 			const item1 = gridContainer.children[1] as Container;
 
-			item0.emit("pointertap", { button: 0 } as FederatedPointerEvent);
+			item0.emit("pointerdown", { button: 0 } as FederatedPointerEvent);
 			expect(item0.children.find((c) => c.label === "highlight")).toBeDefined();
 
-			item1.emit("pointertap", { button: 0 } as FederatedPointerEvent);
+			item1.emit("pointerdown", { button: 0 } as FederatedPointerEvent);
 			expect(
 				item0.children.find((c) => c.label === "highlight"),
 			).toBeUndefined();
@@ -487,7 +487,7 @@ describe("RewardScreen", () => {
 				container,
 				"gridContainer",
 			) as Container;
-			gridContainer.children[0].emit("pointertap", {
+			gridContainer.children[0].emit("pointerdown", {
 				button: 0,
 			} as FederatedPointerEvent);
 
@@ -517,7 +517,7 @@ describe("RewardScreen", () => {
 				container,
 				"gridContainer",
 			) as Container;
-			gridContainer.children[0].emit("pointertap", {
+			gridContainer.children[0].emit("pointerdown", {
 				button: 0,
 			} as FederatedPointerEvent);
 
@@ -548,7 +548,7 @@ describe("RewardScreen", () => {
 				container,
 				"gridContainer",
 			) as Container;
-			gridContainer.children[0].emit("pointertap", {
+			gridContainer.children[0].emit("pointerdown", {
 				button: 0,
 			} as FederatedPointerEvent);
 

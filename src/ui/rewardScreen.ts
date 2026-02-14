@@ -26,6 +26,7 @@ import {
 	drawRoundedRect,
 	makeInteractive,
 } from "./graphicsHelpers";
+import { createGridCardView } from "./gridCardView";
 import { CARD_GAP, CARD_HEIGHT, CARD_RADIUS, CARD_WIDTH } from "./handRenderer";
 import type { ParticleSystem } from "./particleSystem";
 import {
@@ -657,86 +658,15 @@ export class RewardScreen {
 	}
 
 	/**
-	 * 交換グリッド用カードを生成（deckViewerと同じ描画 + インタラクション付き）
+	 * 交換グリッド用カードを生成（共通カードビュー + インタラクション付き）
 	 */
 	private createExchangeGridCard(card: Card, x: number, y: number): Container {
-		const cardContainer = new Container();
+		const cardContainer = createGridCardView(card.type);
 		cardContainer.x = x;
 		cardContainer.y = y;
 
-		// 背景
-		const bg = new Graphics();
-		const colors = CARD_COLORS[card.type];
-		drawRoundedRect(bg, CARD_WIDTH, CARD_HEIGHT, CARD_RADIUS, colors.bg, {
-			color: colors.border,
-			width: 2,
-		});
-		cardContainer.addChild(bg);
-
-		// シンボル
-		const symbolText = new Text({
-			text: CARD_TYPE_SYMBOL[card.type],
-			style: {
-				fontSize: 18,
-				fontFamily: "sans-serif",
-				fill: 0xffffff,
-			},
-		});
-		symbolText.anchor.set(0.5, 0);
-		symbolText.x = CARD_WIDTH / 2;
-		symbolText.y = 12;
-		cardContainer.addChild(symbolText);
-
-		// カード名
-		const nameText = new Text({
-			text: CARD_TYPE_NAME[card.type],
-			style: {
-				fontSize: 16,
-				fontFamily: "sans-serif",
-				fill: 0xffffff,
-				fontWeight: "bold",
-			},
-		});
-		nameText.anchor.set(0.5, 0);
-		nameText.x = CARD_WIDTH / 2;
-		nameText.y = 34;
-		cardContainer.addChild(nameText);
-
-		// APコスト
-		const cost = CARD_COST[card.type];
-		const costFill = cost >= 2 ? 0xffaa44 : cost === 0 ? 0x666666 : 0xcccccc;
-		const costText = new Text({
-			text: cost > 0 ? `AP: ${cost}` : "",
-			style: {
-				fontSize: 13,
-				fontFamily: "sans-serif",
-				fill: costFill,
-				fontWeight: cost >= 2 ? "bold" : "normal",
-			},
-		});
-		costText.anchor.set(0.5, 0);
-		costText.x = CARD_WIDTH / 2;
-		costText.y = 56;
-		cardContainer.addChild(costText);
-
-		// 効果テキスト
-		const effectText = new Text({
-			text: CARD_EFFECT_TEXT[card.type],
-			style: {
-				fontSize: 11,
-				fontFamily: "sans-serif",
-				fill: 0xaaaaaa,
-			},
-		});
-		effectText.anchor.set(0.5, 0);
-		effectText.x = CARD_WIDTH / 2;
-		effectText.y = 74;
-		cardContainer.addChild(effectText);
-
-		// タップで選択（pointertapでドラッグと干渉しない）
-		cardContainer.eventMode = "static";
-		cardContainer.cursor = "pointer";
-		cardContainer.on("pointertap", () => {
+		// クリックで選択（左クリックのみ）
+		makeInteractive(cardContainer, () => {
 			this.selectRemoveCard(card.id, cardContainer, CARD_WIDTH);
 		});
 
