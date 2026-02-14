@@ -183,12 +183,8 @@ export function loadGame(): GameState | null {
 			return null;
 		}
 
-		// screen の検証（reward/victory/exchange画面はgameに復帰、撃破数もリセット）
-		if (
-			data.screen === "reward" ||
-			data.screen === "victory" ||
-			data.screen === "exchange"
-		) {
+		// screen の検証（victory/exchange画面はgameに復帰、撃破数もリセット）
+		if (data.screen === "victory" || data.screen === "exchange") {
 			data.screen = "game";
 			data.defeatedEnemyCount = 0;
 		}
