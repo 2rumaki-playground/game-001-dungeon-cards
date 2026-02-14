@@ -50,7 +50,7 @@ export function initCardIdCounterFromDeck(deck: DeckState): void {
  * RNGを使ってランダムにキーワードを割り当てる
  */
 export function assignRandomKeyword(rng: RNG): Keyword {
-	return rng.pick(KEYWORDS as unknown as Keyword[]);
+	return rng.pick<Keyword>(KEYWORDS);
 }
 
 /**
