@@ -28,15 +28,6 @@ export const CARD_TYPE_SYMBOL: Record<CardType, string> = {
 	wait: "⏳",
 };
 
-/** カード効果テキスト */
-export const CARD_EFFECT_TEXT: Record<CardType, string> = {
-	move: "1マス移動",
-	attack: `${PLAYER_ATTACK_DAMAGE}ダメージ`,
-	strong_attack: `${PLAYER_STRONG_ATTACK_DAMAGE}ダメージ`,
-	jump: `${JUMP_DISTANCE}マス先に着地`,
-	wait: "-",
-};
-
 /** カード種別の日本語名 */
 export const CARD_TYPE_NAME: Record<CardType, string> = {
 	move: "移動",

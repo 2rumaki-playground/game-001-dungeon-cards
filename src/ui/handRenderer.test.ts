@@ -680,24 +680,6 @@ describe("カード種別ビジュアル差別化", () => {
 		});
 	});
 
-	describe("効果テキスト表示", () => {
-		it.each([
-			["move", "1マス移動"],
-			["attack", "1ダメージ"],
-			["strong_attack", "3ダメージ"],
-			["jump", "2マス先に着地"],
-			["wait", "-"],
-		] as [
-			CardType,
-			string,
-		][])("%s カードに効果テキスト「%s」が表示される", (type, expectedEffect) => {
-			const cardContainer = renderSingleCard(type);
-			const texts = getTextChildren(cardContainer);
-			const effectText = texts.find((t) => t.text === expectedEffect);
-			expect(effectText).toBeDefined();
-		});
-	});
-
 	describe("APコスト表示強化", () => {
 		it("コスト2のカードはAPコストが強調色で表示される", () => {
 			for (const type of allCardTypes) {

@@ -2,12 +2,7 @@ import { Container, Graphics, Text } from "pixi.js";
 import { describe, expect, it } from "vitest";
 import { CARD_COST } from "../constants";
 import type { CardType } from "../types";
-import {
-	CARD_COLORS,
-	CARD_EFFECT_TEXT,
-	CARD_TYPE_NAME,
-	CARD_TYPE_SYMBOL,
-} from "./cardConstants";
+import { CARD_COLORS, CARD_TYPE_NAME, CARD_TYPE_SYMBOL } from "./cardConstants";
 import { createGridCardView } from "./gridCardView";
 import { CARD_HEIGHT, CARD_WIDTH } from "./handRenderer";
 
@@ -37,14 +32,6 @@ describe("gridCardView", () => {
 			const name = texts.find((t) => t.text === CARD_TYPE_NAME.jump);
 			expect(name).toBeDefined();
 			expect(name?.style.fontWeight).toBe("bold");
-		});
-
-		it("効果テキストが含まれる", () => {
-			const view = createGridCardView("move");
-			const texts = view.children.filter((c) => c instanceof Text) as Text[];
-			const effect = texts.find((t) => t.text === CARD_EFFECT_TEXT.move);
-			expect(effect).toBeDefined();
-			expect(effect?.style.fontSize).toBe(11);
 		});
 
 		it("各カードタイプで正しいシンボル・名前が使用される", () => {
@@ -111,9 +98,9 @@ describe("gridCardView", () => {
 			expect(symbol?.x).toBe(CARD_WIDTH / 2);
 		});
 
-		it("子要素が5つ（背景、シンボル、名前、コスト、効果）", () => {
+		it("子要素が4つ（背景、シンボル、名前、コスト）", () => {
 			const view = createGridCardView("attack");
-			expect(view.children.length).toBe(5);
+			expect(view.children.length).toBe(4);
 		});
 
 		it("CARD_WIDTHが90px、CARD_HEIGHTが120px", () => {
