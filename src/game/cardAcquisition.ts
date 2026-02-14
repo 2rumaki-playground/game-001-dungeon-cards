@@ -108,12 +108,13 @@ export function exchangeCardInDeck(
 	const orderIndex = state.deck.deckOrder.findIndex(
 		(c) => c.id === removeCardId,
 	);
-	const newDeckOrder = [...state.deck.deckOrder];
-	if (orderIndex >= 0) {
-		newDeckOrder.splice(orderIndex, 1, newCard);
-	} else {
-		newDeckOrder.push(newCard);
+	if (orderIndex < 0) {
+		throw new Error(
+			`exchangeCardInDeck: removeCardId "${removeCardId}" not found in deckOrder`,
+		);
 	}
+	const newDeckOrder = [...state.deck.deckOrder];
+	newDeckOrder.splice(orderIndex, 1, newCard);
 
 	// 3ゾーンから除去
 	const removeFromZone = (zone: Card[]): Card[] =>

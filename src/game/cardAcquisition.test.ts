@@ -250,4 +250,20 @@ describe("exchangeCardInDeck", () => {
 		const result = exchangeCardInDeck(state, "test-card-2", "strong_attack");
 		expect(validateDeckConsistency(result.deck)).toBe(true);
 	});
+
+	it("存在しないカードIDでエラーをthrow", () => {
+		const cards = createTestCards();
+		const state = createTestState({
+			deck: {
+				deckOrder: [...cards],
+				drawPile: [cards[0], cards[1], cards[2]],
+				hand: [cards[3], cards[4]],
+				discardPile: [cards[5]],
+			},
+		});
+
+		expect(() =>
+			exchangeCardInDeck(state, "nonexistent-id", "strong_attack"),
+		).toThrow('removeCardId "nonexistent-id" not found in deckOrder');
+	});
 });
