@@ -3,7 +3,7 @@ import { RNG } from "../utils/rng";
 import { generateBSPMap } from "./bsp";
 import { generateMapPlacement } from "./map";
 
-describe("BSP map generation", () => {
+describe("BSPマップ生成", () => {
 	bench("generateBSPMap 9x9", () => {
 		const rng = new RNG(42);
 		generateBSPMap(9, 9, rng, 5);
@@ -20,7 +20,7 @@ describe("BSP map generation", () => {
 	});
 });
 
-describe("Full map placement", () => {
+describe("完全マップ配置", () => {
 	bench("generateMapPlacement floor 1", () => {
 		const rng = new RNG(42);
 		generateMapPlacement(rng, 1);

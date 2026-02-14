@@ -11,7 +11,7 @@ const rng19 = new RNG(42);
 // biome-ignore lint/style/noNonNullAssertion: fixed seed guarantees map generation
 const map19 = generateBSPMap(19, 19, rng19, 15)!.map;
 
-describe("BFS pathfinding", () => {
+describe("BFS経路探索", () => {
 	bench("bfsFirstStep 9x9", () => {
 		bfsFirstStep(map9, { x: 2, y: 2 }, { x: 7, y: 7 });
 	});
