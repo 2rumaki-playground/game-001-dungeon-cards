@@ -92,7 +92,7 @@ export function aggregateStats(sessions: PlaySession[]): AggregatedStats {
 				s.maxFloor,
 				(deathFloorDistribution.get(s.maxFloor) ?? 0) + 1,
 			);
-			if (s.killedByEnemyType) {
+			if (s.deathCause === "enemy_attack" && s.killedByEnemyType) {
 				enemyTypeTotals.set(
 					s.killedByEnemyType,
 					(enemyTypeTotals.get(s.killedByEnemyType) ?? 0) + 1,

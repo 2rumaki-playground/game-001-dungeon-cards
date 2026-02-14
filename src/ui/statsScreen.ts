@@ -337,7 +337,7 @@ export class StatsScreen {
 		};
 
 		let y = startY;
-		this.addText("敵タイプ別キル", x, y, headerStyle);
+		this.addText("敵タイプ別死因", x, y, headerStyle);
 		y += LINE_HEIGHT + 2;
 
 		for (const entry of ranking) {

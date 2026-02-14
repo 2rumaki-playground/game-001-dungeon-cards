@@ -77,5 +77,5 @@ export type GameState = {
 	/** 訪問済みタイル座標（"x,y" 形式のSet） */
 	visitedTiles: Set<string>;
 	/** 最後に攻撃した敵のタイプ（死因追跡用） */
-	lastAttackerEnemyType: EnemyType | null;
+	lastAttackerEnemyType?: EnemyType | null;
 };

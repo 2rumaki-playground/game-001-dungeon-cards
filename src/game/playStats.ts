@@ -118,7 +118,7 @@ export function endSession(
 	};
 
 	const session =
-		result === "death" && killedByEnemyType
+		result === "death" && deathCause === "enemy_attack" && killedByEnemyType
 			? ({ ...base, killedByEnemyType } as PlaySession)
 			: (base as PlaySession);
 
