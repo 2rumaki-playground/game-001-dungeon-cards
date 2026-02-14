@@ -9,58 +9,67 @@
  *     --output report.md
  */
 import { readFileSync, writeFileSync } from "node:fs";
-
-const args = process.argv.slice(2);
-
-function getArg(name) {
-	const idx = args.indexOf(name);
-	return idx !== -1 ? args[idx + 1] : null;
-}
-
-const baseBenchPath = getArg("--base-bench");
-const headBenchPath = getArg("--head-bench");
-const baseBundlePath = getArg("--base-bundle");
-const headBundlePath = getArg("--head-bundle");
-const outputPath = getArg("--output") || "report.md";
+import { fileURLToPath } from "node:url";
 
 const BUNDLE_WARN_THRESHOLD = 0.05;
 const BENCH_WARN_THRESHOLD = 0.2;
 
 // --- Formatting ---
 
-function formatBytes(bytes) {
+export function formatBytes(bytes) {
 	if (bytes >= 1024 * 1024)
 		return `${(bytes / 1024 / 1024).toFixed(2)} MB`;
 	if (bytes >= 1024) return `${(bytes / 1024).toFixed(1)} KB`;
 	return `${bytes} B`;
 }
 
-function formatByteDiff(diff, pct) {
-	const sign = diff > 0 ? "+" : "";
-	if (pct === "new") {
-		return `${sign}${formatBytes(Math.abs(diff))} (new)`;
-	}
-	if (pct === "N/A") {
-		return `${sign}${formatBytes(Math.abs(diff))} (N/A)`;
-	}
-	return `${sign}${formatBytes(Math.abs(diff))} (${sign}${pct}%)`;
+export function formatTime(ms) {
+	if (ms < 1) return `${(ms * 1000).toFixed(1)}μs`;
+	return `${ms.toFixed(2)}ms`;
 }
 
-function formatTimeDiff(diff, pct) {
-	const sign = diff > 0 ? "+" : "";
-	if (pct === "new") {
-		return `${sign}${diff.toFixed(4)}ms (new)`;
+export function determineBestUnit(values) {
+	const nonZero = values.filter((v) => v > 0);
+	if (nonZero.length === 0) return "B";
+	const maxVal = Math.max(...nonZero);
+	if (maxVal >= 1024 * 1024) return "MB";
+	if (maxVal >= 1024) return "KB";
+	return "B";
+}
+
+export function formatBytesInUnit(bytes, unit) {
+	switch (unit) {
+		case "MB":
+			return `${(bytes / 1024 / 1024).toFixed(2)}`;
+		case "KB":
+			return `${(bytes / 1024).toFixed(1)}`;
+		default:
+			return `${bytes}`;
 	}
-	if (pct === "N/A") {
-		return `${sign}${diff.toFixed(4)}ms (N/A)`;
-	}
-	return `${sign}${diff.toFixed(4)}ms (${sign}${pct}%)`;
+}
+
+export function formatByteDiff(diff, pct) {
+	if (pct === "new") return "new";
+	if (diff === 0) return "変化なし";
+	const pctNum = Number(pct);
+	const sign = pctNum > 0 ? "+" : "-";
+	const absPct = Math.abs(pctNum).toFixed(2);
+	return `${sign}${formatBytes(Math.abs(diff))} (${sign}${absPct}%)`;
+}
+
+export function formatTimeDiff(diff, pct) {
+	if (pct === "new") return "new";
+	if (diff === 0) return "変化なし";
+	const pctNum = Number(pct);
+	const sign = pctNum > 0 ? "+" : "-";
+	const absPct = Math.abs(pctNum).toFixed(1);
+	return `${sign}${formatTime(Math.abs(diff))} (${sign}${absPct}%)`;
 }
 
 // --- Bundle comparison ---
 
-function normalizeChunkName(name) {
-	return name.replace(/-[A-Za-z0-9]{8}\.js$/, "");
+export function normalizeChunkName(name) {
+	return name.replace(/-[A-Za-z0-9_-]{8}\.(js|css)$/, ".$1");
 }
 
 function normalizeChunks(chunks) {
@@ -71,20 +80,28 @@ function normalizeChunks(chunks) {
 	return result;
 }
 
-function compareBundles(basePath, headPath) {
-	const base = JSON.parse(readFileSync(basePath, "utf-8"));
-	const head = JSON.parse(readFileSync(headPath, "utf-8"));
+export function compareBundles(base, head) {
+	const baseChunks = normalizeChunks(base.chunks);
+	const headChunks = normalizeChunks(head.chunks);
+
+	const allValues = [
+		base.total_bytes,
+		head.total_bytes,
+		...Object.values(baseChunks),
+		...Object.values(headChunks),
+	];
+	const unit = determineBestUnit(allValues);
+
+	const fmtVal = (v) => (v === 0 ? "—" : formatBytesInUnit(v, unit));
 
 	const totalDiff = head.total_bytes - base.total_bytes;
 	const totalPct =
 		base.total_bytes > 0
 			? ((totalDiff / base.total_bytes) * 100).toFixed(2)
-			: "N/A";
+			: "new";
 
-	let rows = `| **Total** | ${formatBytes(base.total_bytes)} | ${formatBytes(head.total_bytes)} | ${formatByteDiff(totalDiff, totalPct)} |\n`;
+	let rows = `| **Total** | ${fmtVal(base.total_bytes)} | ${fmtVal(head.total_bytes)} | ${formatByteDiff(totalDiff, totalPct)} |\n`;
 
-	const baseChunks = normalizeChunks(base.chunks);
-	const headChunks = normalizeChunks(head.chunks);
 	const allPrefixes = new Set([
 		...Object.keys(baseChunks),
 		...Object.keys(headChunks),
@@ -96,14 +113,14 @@ function compareBundles(basePath, headPath) {
 		const diff = hSize - bSize;
 		const pct =
 			bSize > 0 ? ((diff / bSize) * 100).toFixed(2) : "new";
-		rows += `| ${prefix} | ${formatBytes(bSize)} | ${formatBytes(hSize)} | ${formatByteDiff(diff, pct)} |\n`;
+		rows += `| ${prefix} | ${fmtVal(bSize)} | ${fmtVal(hSize)} | ${formatByteDiff(diff, pct)} |\n`;
 	}
 
 	const warning =
 		base.total_bytes > 0 &&
 		Math.abs(totalDiff / base.total_bytes) > BUNDLE_WARN_THRESHOLD;
 
-	return { rows, warning };
+	return { rows, warning, unit };
 }
 
 // --- Bench comparison ---
@@ -121,10 +138,7 @@ function flattenBenchResults(json) {
 	return map;
 }
 
-function compareBenchmarks(basePath, headPath) {
-	const base = JSON.parse(readFileSync(basePath, "utf-8"));
-	const head = JSON.parse(readFileSync(headPath, "utf-8"));
-
+export function compareBenchmarks(base, head) {
 	const baseMap = flattenBenchResults(base);
 	const headMap = flattenBenchResults(head);
 	const allNames = new Set([
@@ -145,53 +159,76 @@ function compareBenchmarks(basePath, headPath) {
 
 		if (bMedian === 0 && hMedian === 0) continue;
 
+		const fmtVal = (v) => (v === 0 ? "—" : formatTime(v));
+
 		const diff = hMedian - bMedian;
 		const pctValue = bMedian > 0 ? (diff / bMedian) * 100 : null;
-		const regression = pctValue !== null && pctValue > BENCH_WARN_THRESHOLD * 100;
+		const regression =
+			pctValue !== null && pctValue > BENCH_WARN_THRESHOLD * 100;
 		const pct = pctValue !== null ? pctValue.toFixed(1) : "new";
 		if (regression) hasRegression = true;
 
 		const warn = regression ? " :warning:" : "";
-		rows += `| ${name} | ${bMedian.toFixed(4)}ms | ${hMedian.toFixed(4)}ms | ${formatTimeDiff(diff, pct)}${warn} |\n`;
+		rows += `| ${name} | ${fmtVal(bMedian)} | ${fmtVal(hMedian)} | ${formatTimeDiff(diff, pct)}${warn} |\n`;
 	}
 
 	return { rows, hasRegression };
 }
 
-// --- Main ---
+// --- CLI entry point ---
 
-let md =
-	"## :bar_chart: パフォーマンスベンチマーク\n\n";
+const __filename = fileURLToPath(import.meta.url);
+if (process.argv[1] === __filename) {
+	const args = process.argv.slice(2);
 
-if (baseBundlePath && headBundlePath) {
-	const bundle = compareBundles(baseBundlePath, headBundlePath);
-	md += "### バンドルサイズ\n\n";
-	md += "| チャンク | base | head | 差分 |\n";
-	md += "|----------|------|------|------|\n";
-	md += bundle.rows;
-	if (bundle.warning) {
-		md +=
-			"\n> :warning: **バンドルサイズが5%以上変化しています**\n";
+	function getArg(name) {
+		const idx = args.indexOf(name);
+		return idx !== -1 ? args[idx + 1] : null;
 	}
-	md += "\n";
-}
 
-if (baseBenchPath && headBenchPath) {
-	const bench = compareBenchmarks(baseBenchPath, headBenchPath);
-	if (bench.rows) {
-		md += "### 実行時間ベンチマーク\n\n";
-		md += "| ベンチマーク | base | head | 差分 |\n";
-		md += "|-------------|------|------|------|\n";
-		md += bench.rows;
-		if (bench.hasRegression) {
+	const baseBenchPath = getArg("--base-bench");
+	const headBenchPath = getArg("--head-bench");
+	const baseBundlePath = getArg("--base-bundle");
+	const headBundlePath = getArg("--head-bundle");
+	const outputPath = getArg("--output") || "report.md";
+
+	let md = "## :bar_chart: パフォーマンスベンチマーク\n\n";
+
+	if (baseBundlePath && headBundlePath) {
+		const base = JSON.parse(readFileSync(baseBundlePath, "utf-8"));
+		const head = JSON.parse(readFileSync(headBundlePath, "utf-8"));
+		const bundle = compareBundles(base, head);
+		md += "### バンドルサイズ\n\n";
+		md += `| チャンク | base (${bundle.unit}) | head (${bundle.unit}) | 差分 |\n`;
+		md += "|----------|------|------|------|\n";
+		md += bundle.rows;
+		if (bundle.warning) {
 			md +=
-				"\n> :warning: **20%以上の性能劣化が検出されました**\n";
+				"\n> :warning: **バンドルサイズが5%以上変化しています**\n";
 		}
 		md += "\n";
-	} else {
-		md += "### 実行時間ベンチマーク\n\nベンチマーク結果がありません。\n\n";
 	}
-}
 
-writeFileSync(outputPath, md);
-console.log(`Report written to ${outputPath}`);
+	if (baseBenchPath && headBenchPath) {
+		const base = JSON.parse(readFileSync(baseBenchPath, "utf-8"));
+		const head = JSON.parse(readFileSync(headBenchPath, "utf-8"));
+		const bench = compareBenchmarks(base, head);
+		if (bench.rows) {
+			md += "### 実行時間ベンチマーク\n\n";
+			md += "| ベンチマーク | base | head | 差分 |\n";
+			md += "|-------------|------|------|------|\n";
+			md += bench.rows;
+			if (bench.hasRegression) {
+				md +=
+					"\n> :warning: **20%以上の性能劣化が検出されました**\n";
+			}
+			md += "\n";
+		} else {
+			md +=
+				"### 実行時間ベンチマーク\n\nベンチマーク結果がありません。\n\n";
+		}
+	}
+
+	writeFileSync(outputPath, md);
+	console.log(`Report written to ${outputPath}`);
+}
