@@ -271,6 +271,26 @@ describe("aggregateStats", () => {
 
 		expect(stats.enemyTypeDeathRanking).toHaveLength(0);
 	});
+
+	it("deathCauseがenemy_attackでない場合はkilledByEnemyTypeがあってもランキング対象外", () => {
+		const stats = aggregateStats([
+			// データ不整合: deathCauseはtrapだがkilledByEnemyTypeが設定されている
+			createDeathSession({
+				id: "s1",
+				deathCause: "trap",
+				killedByEnemyType: "normal",
+			}),
+			// 正常ケース: enemy_attackだがkilledByEnemyTypeが未設定
+			createDeathSession({
+				id: "s2",
+				deathCause: "enemy_attack",
+				killedByEnemyType: undefined,
+			}),
+		]);
+
+		// いずれのセッションもランキング対象外となり、集計結果は空になる
+		expect(stats.enemyTypeDeathRanking).toHaveLength(0);
+	});
 });
 
 describe("formatDuration", () => {
