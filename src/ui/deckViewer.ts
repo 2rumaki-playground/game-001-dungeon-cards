@@ -4,7 +4,7 @@
  */
 
 import { Container, Graphics, Text } from "pixi.js";
-import { getEffectiveCardCost } from "../game/debugCheats";
+import { CARD_COST } from "../constants";
 import { getAllCards, getTotalDeckSize } from "../game/deck";
 import type { Card, DeckState } from "../types";
 import {
@@ -237,7 +237,7 @@ export class DeckViewer {
 		cardContainer.addChild(nameText);
 
 		// APコスト
-		const cost = getEffectiveCardCost(card.type);
+		const cost = CARD_COST[card.type];
 		const costFill = cost >= 2 ? 0xffaa44 : cost === 0 ? 0x666666 : 0xcccccc;
 		const costText = new Text({
 			text: cost > 0 ? `AP: ${cost}` : "",
