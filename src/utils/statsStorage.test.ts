@@ -185,6 +185,18 @@ describe("statsStorage", () => {
 			expect(loadPlaySessions()).toHaveLength(0);
 		});
 
+		it("killedByEnemyTypeがあるがdeathCauseがtrapの場合はフィルタリングされる", () => {
+			const session = createTestSession({
+				deathCause: "trap",
+				killedByEnemyType: "boss",
+			});
+			localStorageMock.setItem(
+				"dungeon-cards-stats",
+				JSON.stringify([session]),
+			);
+			expect(loadPlaySessions()).toHaveLength(0);
+		});
+
 		it("cardUsageに必須キーが欠落している場合はフィルタリングされる", () => {
 			const session = createTestSession();
 			const raw = { ...session, cardUsage: { move: 1 } };
