@@ -4,7 +4,7 @@
  */
 
 import { Container, Graphics, Text } from "pixi.js";
-import { CARD_COST } from "../constants";
+import { getEffectiveCardCost } from "../game/debugCheats";
 import { getAllCards, getTotalDeckSize } from "../game/deck";
 import type { Card, CardType, DeckState } from "../types";
 import {
@@ -306,7 +306,7 @@ export class DeckViewer {
 		cardY: number,
 	): void {
 		this.tooltipContainer.removeChildren();
-		const cost = CARD_COST[cardType];
+		const cost = getEffectiveCardCost(cardType);
 		const { container: tooltip, height: tooltipHeight } = createCardTooltip(
 			cardType,
 			cost,

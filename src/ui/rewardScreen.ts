@@ -5,6 +5,7 @@
 
 import { Container, Graphics, Text } from "pixi.js";
 import { CARD_COST } from "../constants";
+import { getEffectiveCardCost } from "../game/debugCheats";
 import type { Card, CardType, Rarity } from "../types";
 import { Easing, tween } from "../utils/tween";
 import {
@@ -916,7 +917,7 @@ export class RewardScreen {
 		cardWidth: number,
 	): void {
 		this.tooltipContainer.removeChildren();
-		const cost = CARD_COST[cardType];
+		const cost = getEffectiveCardCost(cardType);
 		const { container: tooltip, height: tooltipHeight } = createCardTooltip(
 			cardType,
 			cost,
@@ -932,7 +933,7 @@ export class RewardScreen {
 	private showGridTooltip(cardType: CardType, cardContainer: Container): void {
 		this.tooltipContainer.removeChildren();
 		if (!this.gridContainer) return;
-		const cost = CARD_COST[cardType];
+		const cost = getEffectiveCardCost(cardType);
 		const { container: tooltip, height: tooltipHeight } = createCardTooltip(
 			cardType,
 			cost,
