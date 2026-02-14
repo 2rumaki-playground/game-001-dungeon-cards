@@ -3,7 +3,12 @@
  * @see docs/spec/mvp/rules.md
  */
 
+import { ENEMY_ACQUISITION_CONDITIONS, ENEMY_TYPE_LABEL } from "../constants";
 import type { GameState } from "../types";
+import {
+	checkAcquisitionCondition,
+	updateDefeatCounter,
+} from "./cardAcquisition";
 import { getDebugCheats } from "./debugCheats";
 import { recordDamageDealt, recordDamageTaken } from "./playStats";
 import {
@@ -15,6 +20,15 @@ import {
 	updatePlayer,
 } from "./state";
 import { checkVictory } from "./victory";
+
+/** 敵ダメージ適用の結果 */
+export type DamageResult = {
+	state: GameState;
+	/** 超過ダメージ量（Math.max(0, damage - enemy.hp)、非撃破時は自然に0となる） */
+	overkill: number;
+	/** 敵が撃破されたか */
+	defeated: boolean;
+};
 
 /**
  * HP0以下で撃破判定
@@ -34,12 +48,14 @@ export function applyDamageToEnemy(
 	state: GameState,
 	enemyId: string,
 	damage: number,
-): GameState {
+): DamageResult {
 	// 対象の敵が存在しない場合は何もしない
 	const enemy = state.enemies.find((e) => e.id === enemyId);
 	if (!enemy) {
-		return state;
+		return { state, overkill: 0, defeated: false };
 	}
+
+	const overkill = Math.max(0, damage - enemy.hp);
 
 	recordDamageDealt(Math.min(damage, enemy.hp));
 
@@ -52,16 +68,48 @@ export function applyDamageToEnemy(
 	if (target && isDefeated(target.hp)) {
 		next = addRemnant(next, target.position);
 		next = removeEnemy(next, enemyId);
+
+		// 撃破カウンターを更新
+		const updatedCounters = updateDefeatCounter(
+			next.acquisitionCounters,
+			target.type,
+		);
 		next = {
 			...next,
 			rng: next.rng.clone(),
 			defeatedEnemyCount: next.defeatedEnemyCount + 1,
+			acquisitionCounters: updatedCounters,
 		};
+
+		// カード獲得条件の判定
+		if (checkAcquisitionCondition(updatedCounters, target.type)) {
+			const config = ENEMY_ACQUISITION_CONDITIONS[target.type];
+			next = {
+				...next,
+				cardExchangeState: {
+					acquiredCardType: config.cardType,
+					defeatedEnemyType: target.type,
+				},
+			};
+			const label = ENEMY_TYPE_LABEL[target.type];
+			next = addActionLog(
+				next,
+				`${label}を倒してカード交換が可能になった`,
+				"system",
+			);
+		} else {
+			next = addActionLog(next, "敵を倒した", "system");
+		}
+
 		next = checkVictory(next, target.type);
-		return addActionLog(next, "敵を倒した", "system");
+		return { state: next, overkill, defeated: true };
 	}
 
-	return addActionLog(next, "敵にダメージを与えた", "system");
+	return {
+		state: addActionLog(next, "敵にダメージを与えた", "system"),
+		overkill: 0,
+		defeated: false,
+	};
 }
 
 /**

@@ -23,15 +23,13 @@ import type { EnemyType } from "./types";
 
 describe("constants", () => {
 	it("デッキ合計枚数が正しい", () => {
-		expect(TOTAL_DECK_SIZE).toBe(18);
+		expect(TOTAL_DECK_SIZE).toBe(6);
 	});
 
 	it("初期デッキの内訳が正しい", () => {
-		expect(INITIAL_DECK.moveCards).toBe(6);
-		expect(INITIAL_DECK.attackCards).toBe(6);
-		expect(INITIAL_DECK.strongAttackCards).toBe(2);
-		expect(INITIAL_DECK.jumpCards).toBe(2);
-		expect(INITIAL_DECK.waitCards).toBe(2);
+		expect(INITIAL_DECK.moveCards).toBe(3);
+		expect(INITIAL_DECK.attackCards).toBe(2);
+		expect(INITIAL_DECK.waitCards).toBe(1);
 	});
 
 	it("ジャンプカードのAPコストが2", () => {

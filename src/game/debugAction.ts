@@ -25,7 +25,7 @@ export function executeDebugOneshotKill(
 		return state;
 	}
 
-	const next = applyDamageToEnemy(state, enemyId, enemy.hp);
+	const next = applyDamageToEnemy(state, enemyId, enemy.hp).state;
 	return addActionLog(next, "[DEBUG] 一撃で敵を倒した", "system");
 }
 

@@ -24,6 +24,7 @@ describe("executeJump", () => {
 				maxAp: MAX_AP,
 			},
 			deck: {
+				deckOrder: [],
 				drawPile: [],
 				hand: [{ id: "jump-1", type: "jump" }],
 				discardPile: [],
@@ -91,6 +92,7 @@ describe("executeJump", () => {
 			},
 			...createOverrides(),
 			deck: {
+				deckOrder: [],
 				drawPile: [],
 				hand: [{ id: "jump-1", type: "jump" }],
 				discardPile: [],
@@ -150,6 +152,7 @@ describe("executeJump", () => {
 				maxAp: MAX_AP,
 			},
 			deck: {
+				deckOrder: [],
 				drawPile: [],
 				hand: [{ id: "jump-1", type: "jump" }],
 				discardPile: [],
@@ -182,6 +185,7 @@ describe("executeJump", () => {
 				maxAp: MAX_AP,
 			},
 			deck: {
+				deckOrder: [],
 				drawPile: [],
 				hand: [{ id: "jump-1", type: "jump" }],
 				discardPile: [],
@@ -212,6 +216,7 @@ describe("executeJump", () => {
 				maxAp: MAX_AP,
 			},
 			deck: {
+				deckOrder: [],
 				drawPile: [],
 				hand: [{ id: "jump-1", type: "jump" }],
 				discardPile: [],
@@ -238,6 +243,7 @@ describe("executeJump", () => {
 				maxAp: MAX_AP,
 			},
 			deck: {
+				deckOrder: [],
 				drawPile: [],
 				hand: [{ id: "jump-1", type: "jump" }],
 				discardPile: [],
@@ -266,6 +272,7 @@ describe("executeJump", () => {
 				maxAp: MAX_AP,
 			},
 			deck: {
+				deckOrder: [],
 				drawPile: [],
 				hand: [{ id: "jump-1", type: "jump" }],
 				discardPile: [],
@@ -294,6 +301,7 @@ describe("executeJump", () => {
 				maxAp: MAX_AP,
 			},
 			deck: {
+				deckOrder: [],
 				drawPile: [],
 				hand: [{ id: "jump-1", type: "jump" }],
 				discardPile: [],
@@ -318,6 +326,7 @@ describe("executeJump", () => {
 				maxAp: MAX_AP,
 			},
 			deck: {
+				deckOrder: [],
 				drawPile: [],
 				hand: [{ id: "jump-1", type: "jump" }],
 				discardPile: [],
@@ -332,6 +341,7 @@ describe("executeJump", () => {
 	it("元のGameStateが変更されない（イミュータブル）", () => {
 		const state = createTestState({
 			deck: {
+				deckOrder: [],
 				drawPile: [],
 				hand: [{ id: "jump-1", type: "jump" }],
 				discardPile: [],
@@ -352,6 +362,7 @@ describe("executeJump - visitedTiles", () => {
 	it("ジャンプ着地時に着地先が訪問済みに追加される", () => {
 		const state = createTestState({
 			deck: {
+				deckOrder: [],
 				drawPile: [],
 				hand: [{ id: "jump-1", type: "jump" }],
 				discardPile: [],
@@ -371,6 +382,7 @@ describe("executeJump - visitedTiles", () => {
 				maxAp: MAX_AP,
 			},
 			deck: {
+				deckOrder: [],
 				drawPile: [],
 				hand: [{ id: "jump-1", type: "jump" }],
 				discardPile: [],

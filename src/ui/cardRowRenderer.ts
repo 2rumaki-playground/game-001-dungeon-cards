@@ -4,11 +4,11 @@
  */
 
 import { Container, Graphics, Text } from "pixi.js";
-import { CARD_COST, CARD_RARITY } from "../constants";
+import { CARD_COST } from "../constants";
 import type { CardType } from "../types";
 import {
 	CARD_COLORS,
-	CARD_EFFECT_TEXT,
+	CARD_RARITY,
 	CARD_TYPE_NAME,
 	CARD_TYPE_SYMBOL,
 	RARITY_COLORS,
@@ -54,7 +54,7 @@ type CardListRowOptions = {
 /**
  * カード一覧の1行を生成する共通ヘルパー
  *
- * 背景 + レアリティバー + カード名（シンボル付き） + 効果テキスト を描画する。
+ * 背景 + レアリティバー + カード名（シンボル付き） + APコスト を描画する。
  * 追加のUI要素（除去ボタン等）は呼び出し側でコンテナに追加する。
  */
 export function createCardListRow(options: CardListRowOptions): Container {
@@ -103,14 +103,11 @@ export function createCardListRow(options: CardListRowOptions): Container {
 	nameText.y = NAME_Y;
 	row.addChild(nameText);
 
-	// AP + 効果テキスト
+	// APコスト
 	const cost = CARD_COST[cardType];
-	const effectStr =
-		cost > 0
-			? `${CARD_EFFECT_TEXT[cardType]} / AP: ${cost}`
-			: CARD_EFFECT_TEXT[cardType];
+	const costStr = cost > 0 ? `AP: ${cost}` : "";
 	const effectText = new Text({
-		text: effectStr,
+		text: costStr,
 		style: {
 			fontSize: EFFECT_FONT_SIZE,
 			fontFamily: "sans-serif",

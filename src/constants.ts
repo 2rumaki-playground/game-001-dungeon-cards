@@ -3,28 +3,22 @@
  * @see docs/spec/constants.md
  */
 
-import type { CardType, EnemyType, Rarity } from "./types";
+import type { EnemyCardAcquisitionConfig, EnemyType } from "./types";
 
 // 行動関連
 export const MAX_AP = 3;
 export const TURN_START_AP = 3;
-export const HAND_LIMIT = 5;
+export const HAND_LIMIT = 3;
 
 // デッキ構成
 export const INITIAL_DECK = {
-	moveCards: 6,
-	attackCards: 6,
-	strongAttackCards: 2,
-	jumpCards: 2,
-	waitCards: 2,
+	moveCards: 3,
+	attackCards: 2,
+	waitCards: 1,
 } as const;
 
 export const TOTAL_DECK_SIZE =
-	INITIAL_DECK.moveCards +
-	INITIAL_DECK.attackCards +
-	INITIAL_DECK.strongAttackCards +
-	INITIAL_DECK.jumpCards +
-	INITIAL_DECK.waitCards;
+	INITIAL_DECK.moveCards + INITIAL_DECK.attackCards + INITIAL_DECK.waitCards;
 
 // カードAPコスト
 export const CARD_COST = {
@@ -176,24 +170,42 @@ export function getBossType(floor: number): "miniboss" | "boss" | null {
 }
 
 // デッキ構築（v1.2）
-export const DECK_MAX_SIZE = 30;
-export const DECK_MIN_SIZE = 10;
-export const CARD_REMOVAL_CHANCE = 0.3;
-
-// カードレアリティ（正典: docs/spec/constants.md）
-export const CARD_RARITY: Record<CardType, Rarity> = {
-	move: "common",
-	attack: "common",
-	wait: "common",
-	strong_attack: "uncommon",
-	jump: "rare",
-};
-
-// レアリティ出現率（正典: docs/spec/constants.md）
-export const RARITY_WEIGHTS: Record<Rarity, number> = {
-	common: 70,
-	uncommon: 25,
-	rare: 5,
+export const DECK_MAX_SIZE = 6;
+export const DECK_MIN_SIZE = 6;
+// 敵撃破時カード獲得条件（正典: docs/spec/constants.md）
+// カードマッピングは各エントリの cardType を参照
+export const ENEMY_ACQUISITION_CONDITIONS: Record<
+	EnemyType,
+	EnemyCardAcquisitionConfig
+> = {
+	normal: {
+		cardType: "move",
+		conditions: [{ type: "defeat_count", threshold: 3 }],
+		conditionLogic: "and",
+	},
+	heavy: {
+		cardType: "strong_attack",
+		conditions: [{ type: "defeat_count", threshold: 2 }],
+		conditionLogic: "and",
+	},
+	scout: {
+		cardType: "jump",
+		conditions: [
+			{ type: "defeat_count", threshold: 2 },
+			{ type: "hit_count", threshold: 1 },
+		],
+		conditionLogic: "and",
+	},
+	miniboss: {
+		cardType: "attack",
+		conditions: [{ type: "defeat_count", threshold: 1 }],
+		conditionLogic: "and",
+	},
+	boss: {
+		cardType: "wait",
+		conditions: [{ type: "defeat_count", threshold: 1 }],
+		conditionLogic: "and",
+	},
 };
 
 // 行動ログ

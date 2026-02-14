@@ -28,15 +28,6 @@ export const CARD_TYPE_SYMBOL: Record<CardType, string> = {
 	wait: "⏳",
 };
 
-/** カード効果テキスト */
-export const CARD_EFFECT_TEXT: Record<CardType, string> = {
-	move: "1マス移動",
-	attack: `${PLAYER_ATTACK_DAMAGE}ダメージ`,
-	strong_attack: `${PLAYER_STRONG_ATTACK_DAMAGE}ダメージ`,
-	jump: `${JUMP_DISTANCE}マス先に着地`,
-	wait: "-",
-};
-
 /** カード種別の日本語名 */
 export const CARD_TYPE_NAME: Record<CardType, string> = {
 	move: "移動",
@@ -53,6 +44,15 @@ export const CARD_GLOW_COLORS: Record<CardType, number[]> = {
 	strong_attack: [0xff66cc, 0xcc44aa],
 	jump: [0x44ff66, 0x22cc44],
 	wait: [0x888888, 0x666666],
+};
+
+/** カードレアリティ（UI表示用） */
+export const CARD_RARITY: Record<CardType, Rarity> = {
+	move: "common",
+	attack: "common",
+	wait: "common",
+	strong_attack: "uncommon",
+	jump: "rare",
 };
 
 /** レアリティ色 */

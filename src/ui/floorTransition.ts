@@ -5,10 +5,8 @@
 import { shouldShowVictoryScreen, transitionFloor } from "../game";
 import type { GameContext } from "../gameContext";
 import type { GameState, Position } from "../types";
-import { getGameAreaSize, getScreenSize } from "./gameAnimations";
 import { applyState, render } from "./gameRenderer";
 import { relayoutUI } from "./relayout";
-import { executeCardRemovalEvent, executeRewardFlow } from "./rewardFlow";
 import { showVictoryScreen } from "./victoryFlow";
 
 /**
@@ -19,29 +17,14 @@ async function executeFloorTransitionFlow(
 	ctx: GameContext,
 	baseState: GameState,
 ): Promise<void> {
-	const { width: screenWidth, height: screenHeight } = getScreenSize(ctx);
-	const gameArea = getGameAreaSize(ctx);
-
-	// 1. カード除去イベント（報酬フローの前）
-	const afterRemoval = await executeCardRemovalEvent(
-		ctx,
-		baseState,
-		screenWidth,
-		screenHeight,
-		gameArea,
-	);
-
-	// 2. 報酬フロー（撃破数0ならスキップ）
-	const afterReward = await executeRewardFlow(ctx, afterRemoval);
-
-	// 3. 勝利画面（クリア階層のボス撃破済みの場合）
-	if (shouldShowVictoryScreen(afterReward)) {
-		const victoryResult = await showVictoryScreen(ctx, afterReward);
+	// 1. 勝利画面（クリア階層のボス撃破済みの場合）
+	if (shouldShowVictoryScreen(baseState)) {
+		const victoryResult = await showVictoryScreen(ctx, baseState);
 		if (victoryResult === "title") return;
 	}
 
-	// 4. 階層遷移
-	const transitioned = transitionFloor(afterReward);
+	// 2. 階層遷移
+	const transitioned = transitionFloor(baseState);
 
 	// 5. フェードトランジション（暗転中に階層バナー表示 + 状態更新）
 	await ctx.ui.screenTransition.fadeTransition(async () => {

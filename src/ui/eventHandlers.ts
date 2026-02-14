@@ -195,11 +195,18 @@ async function handleAttackCardExecution(
 		state: next,
 		hit,
 		enemyId,
+		overkill,
 	} = executeAttack(ctx.state, cardId, direction);
 	ctx.ui.directionSelector.hide();
 	ctx.pendingCard = null;
 	if (hit && enemyId) {
-		await updateStateWithAttackAnimation(ctx, next, enemyId, "attack");
+		await updateStateWithAttackAnimation(
+			ctx,
+			next,
+			enemyId,
+			"attack",
+			overkill,
+		);
 	} else {
 		await updateStateWithMissAnimation(ctx, next, direction);
 	}
@@ -217,11 +224,18 @@ async function handleStrongAttackCardExecution(
 		state: next,
 		hit,
 		enemyId,
+		overkill,
 	} = executeStrongAttack(ctx.state, cardId, direction);
 	ctx.ui.directionSelector.hide();
 	ctx.pendingCard = null;
 	if (hit && enemyId) {
-		await updateStateWithAttackAnimation(ctx, next, enemyId, "strong_attack");
+		await updateStateWithAttackAnimation(
+			ctx,
+			next,
+			enemyId,
+			"strong_attack",
+			overkill,
+		);
 	} else {
 		await updateStateWithMissAnimation(ctx, next, direction);
 	}

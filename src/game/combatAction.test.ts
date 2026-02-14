@@ -35,6 +35,7 @@ describe("executeAttack", () => {
 		const state = createTestState({
 			enemies,
 			deck: {
+				deckOrder: [],
 				drawPile: [],
 				hand: [{ id: "attack-1", type: "attack" }],
 				discardPile: [],
@@ -71,6 +72,7 @@ describe("executeAttack", () => {
 		const state = createTestState({
 			enemies,
 			deck: {
+				deckOrder: [],
 				drawPile: [],
 				hand: [{ id: "attack-1", type: "attack" }],
 				discardPile: [],
@@ -111,6 +113,7 @@ describe("executeAttack", () => {
 					}
 				: {}),
 			deck: {
+				deckOrder: [],
 				drawPile: [],
 				hand: [{ id: "attack-1", type: "attack" }],
 				discardPile: [],
@@ -138,6 +141,7 @@ describe("executeAttack", () => {
 		const state = createTestState({
 			enemies,
 			deck: {
+				deckOrder: [],
 				drawPile: [],
 				hand: [{ id: "attack-1", type: "attack" }],
 				discardPile: [],
@@ -158,6 +162,7 @@ describe("executeWait", () => {
 	it("待機成功: AP消費なし・カード捨て札移動・行動ログ", () => {
 		const state = createTestState({
 			deck: {
+				deckOrder: [],
 				drawPile: [],
 				hand: [{ id: "wait-1", type: "wait" }],
 				discardPile: [],
@@ -180,6 +185,7 @@ describe("executeWait", () => {
 	it("元のGameStateが変更されない（イミュータブル）", () => {
 		const state = createTestState({
 			deck: {
+				deckOrder: [],
 				drawPile: [],
 				hand: [{ id: "wait-1", type: "wait" }],
 				discardPile: [],
@@ -209,6 +215,7 @@ describe("executeStrongAttack", () => {
 		const state = createTestState({
 			enemies,
 			deck: {
+				deckOrder: [],
 				drawPile: [],
 				hand: [{ id: "strong-1", type: "strong_attack" }],
 				discardPile: [],
@@ -243,6 +250,7 @@ describe("executeStrongAttack", () => {
 		const state = createTestState({
 			enemies,
 			deck: {
+				deckOrder: [],
 				drawPile: [],
 				hand: [{ id: "strong-1", type: "strong_attack" }],
 				discardPile: [],
@@ -282,6 +290,7 @@ describe("executeStrongAttack", () => {
 					}
 				: {}),
 			deck: {
+				deckOrder: [],
 				drawPile: [],
 				hand: [{ id: "strong-1", type: "strong_attack" }],
 				discardPile: [],
@@ -313,6 +322,7 @@ describe("executeStrongAttack", () => {
 		const state = createTestState({
 			enemies,
 			deck: {
+				deckOrder: [],
 				drawPile: [],
 				hand: [{ id: "strong-1", type: "strong_attack" }],
 				discardPile: [],
@@ -338,6 +348,7 @@ describe("consumeApAndPlayCard - AP無限チート", () => {
 		toggleDebugCheat("infiniteAp");
 		const state = createTestState({
 			deck: {
+				deckOrder: [],
 				drawPile: [],
 				hand: [{ id: "move-1", type: "move" }],
 				discardPile: [],
@@ -353,6 +364,7 @@ describe("consumeApAndPlayCard - AP無限チート", () => {
 	it("AP無限OFFの場合、通常通りAPが減る", () => {
 		const state = createTestState({
 			deck: {
+				deckOrder: [],
 				drawPile: [],
 				hand: [{ id: "move-1", type: "move" }],
 				discardPile: [],

@@ -178,6 +178,8 @@ export type AttackResult = {
 	state: GameState;
 	hit: boolean;
 	enemyId?: string;
+	/** 超過ダメージ量（ミス時は0） */
+	overkill: number;
 };
 
 /**
@@ -195,18 +197,27 @@ function executeAttackBase(
 	missLog: string,
 ): AttackResult {
 	// AP消費 + カードを捨て札へ
-	let next = consumeApAndPlayCard(state, cardId, apCost);
+	const next = consumeApAndPlayCard(state, cardId, apCost);
 
 	// 攻撃判定（AP消費・カード使用後の状態で判定）
 	const result = canAttack(next, direction);
 	if (!result.hit) {
-		return { state: addActionLog(next, missLog, "player"), hit: false };
+		return {
+			state: addActionLog(next, missLog, "player"),
+			hit: false,
+			overkill: 0,
+		};
 	}
 
 	// 敵にダメージ（HP0以下で自動除去）
-	next = applyDamageToEnemy(next, result.enemyId, damage);
+	const damageResult = applyDamageToEnemy(next, result.enemyId, damage);
 
-	return { state: next, hit: true, enemyId: result.enemyId };
+	return {
+		state: damageResult.state,
+		hit: true,
+		enemyId: result.enemyId,
+		overkill: damageResult.overkill,
+	};
 }
 
 /**

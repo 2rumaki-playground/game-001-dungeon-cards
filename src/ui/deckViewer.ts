@@ -4,19 +4,21 @@
  */
 
 import { Container, Graphics, Text } from "pixi.js";
+import { getEffectiveCardCost } from "../game/debugCheats";
 import { getAllCards, getTotalDeckSize } from "../game/deck";
-import type { CardType, DeckState } from "../types";
+import type { Card, CardType, DeckState } from "../types";
 import {
-	CARD_ROW_GAP,
-	CARD_ROW_HEIGHT,
-	CARD_ROW_LIST_WIDTH,
-	createCardListRow,
-} from "./cardRowRenderer";
+	createCardTooltip,
+	TOOLTIP_MARGIN,
+	TOOLTIP_WIDTH,
+} from "./cardTooltip";
 import {
 	createOverlay,
 	drawRoundedRect,
 	makeInteractive,
 } from "./graphicsHelpers";
+import { createGridCardView } from "./gridCardView";
+import { CARD_GAP, CARD_HEIGHT, CARD_WIDTH } from "./handRenderer";
 import { BUTTON_HEIGHT, DECK_BUTTON_WIDTH } from "./layout";
 import { UI_COLOR_GOLD, UI_COLORS_BUTTON_SECONDARY } from "./uiColors";
 
@@ -35,14 +37,8 @@ const DECK_BUTTON_COLORS = {
 	text: 0xffffff,
 } as const;
 
-/** 表示順（CardType定義順） */
-const CARD_TYPE_ORDER: CardType[] = [
-	"move",
-	"attack",
-	"strong_attack",
-	"jump",
-	"wait",
-];
+/** グリッドレイアウト定数 */
+const GRID_COLUMNS = 3;
 
 /**
  * デッキ閲覧UIレンダラー
@@ -50,12 +46,17 @@ const CARD_TYPE_ORDER: CardType[] = [
 export class DeckViewer {
 	private container: Container;
 	private buttonContainer: Container;
+	private tooltipContainer: Container;
 	private onClose: (() => void) | null = null;
 	private onOpen: (() => void) | null = null;
 
 	constructor() {
 		this.container = new Container();
 		this.container.visible = false;
+		this.tooltipContainer = new Container();
+		this.tooltipContainer.label = "tooltip";
+		this.tooltipContainer.eventMode = "none";
+		this.tooltipContainer.interactiveChildren = false;
 
 		this.buttonContainer = new Container();
 		this.buttonContainer.visible = false;
@@ -130,7 +131,7 @@ export class DeckViewer {
 	): void {
 		this.container.removeChildren();
 
-		const cardCounts = this.countCardsByType(deck);
+		const allCards = getAllCards(deck);
 		const totalCards = getTotalDeckSize(deck);
 
 		// 半透明オーバーレイ（背面UIへのポインタ入力を吸収）
@@ -142,21 +143,21 @@ export class DeckViewer {
 		const areaW = gameArea?.width ?? screenWidth;
 		const areaH = gameArea?.height ?? screenHeight;
 
-		const types = CARD_TYPE_ORDER.filter((t) => (cardCounts.get(t) ?? 0) > 0);
+		// グリッドサイズ計算
+		const gridRows = Math.ceil(allCards.length / GRID_COLUMNS);
+		const gridWidth = GRID_COLUMNS * CARD_WIDTH + (GRID_COLUMNS - 1) * CARD_GAP;
+		const gridHeight =
+			gridRows > 0 ? gridRows * CARD_HEIGHT + (gridRows - 1) * CARD_GAP : 0;
 
 		// コンテンツ全体の高さを計算して上下センタリング
 		const titleFontSize = 24;
-		const titleToListGap = 12;
-		const listHeight =
-			types.length === 0
-				? 0
-				: types.length * CARD_ROW_HEIGHT + (types.length - 1) * CARD_ROW_GAP;
-		const listToCloseGap = 10;
+		const titleToGridGap = 12;
+		const gridToCloseGap = 10;
 		const contentHeight =
 			titleFontSize +
-			titleToListGap +
-			listHeight +
-			listToCloseGap +
+			titleToGridGap +
+			gridHeight +
+			gridToCloseGap +
 			CLOSE_BUTTON_HEIGHT;
 		const contentStartY = (areaH - contentHeight) / 2;
 
@@ -175,37 +176,47 @@ export class DeckViewer {
 		title.y = contentStartY + titleFontSize / 2;
 		this.container.addChild(title);
 
-		// カード種別リスト
-		const listX = (areaW - CARD_ROW_LIST_WIDTH) / 2;
-		const listStartY = contentStartY + titleFontSize + titleToListGap;
+		// カードグリッド
+		const gridX = (areaW - gridWidth) / 2;
+		const gridStartY = contentStartY + titleFontSize + titleToGridGap;
 
-		for (let i = 0; i < types.length; i++) {
-			const cardType = types[i];
-			const count = cardCounts.get(cardType) ?? 0;
-			const y = listStartY + i * (CARD_ROW_HEIGHT + CARD_ROW_GAP);
-			const row = createCardListRow({ cardType, count });
-			row.label = "card-row";
-			row.x = listX;
-			row.y = y;
-			this.container.addChild(row);
+		for (let i = 0; i < allCards.length; i++) {
+			const col = i % GRID_COLUMNS;
+			const row = Math.floor(i / GRID_COLUMNS);
+			const x = gridX + col * (CARD_WIDTH + CARD_GAP);
+			const y = gridStartY + row * (CARD_HEIGHT + CARD_GAP);
+			const cardView = this.createStaticCardView(allCards[i], x, y);
+			this.container.addChild(cardView);
 		}
 
 		// 閉じるボタン
-		const closeY = listStartY + listHeight + listToCloseGap;
+		const closeY = gridStartY + gridHeight + gridToCloseGap;
 		const closeButton = this.createCloseButton(areaW / 2, closeY);
 		this.container.addChild(closeButton);
+
+		// ツールチップコンテナ（Z-order最前面）
+		this.tooltipContainer.removeChildren();
+		this.container.addChild(this.tooltipContainer);
 	}
 
 	/**
-	 * デッキ内の全カードを種別ごとに集計
+	 * 静的カードビューを生成（ツールチップ付き）
 	 */
-	private countCardsByType(deck: DeckState): Map<CardType, number> {
-		const counts = new Map<CardType, number>();
-		const allCards = getAllCards(deck);
-		for (const card of allCards) {
-			counts.set(card.type, (counts.get(card.type) ?? 0) + 1);
-		}
-		return counts;
+	private createStaticCardView(card: Card, x: number, y: number): Container {
+		const cardContainer = createGridCardView(card.type);
+		cardContainer.x = x;
+		cardContainer.y = y;
+
+		// ツールチップ表示用のインタラクション
+		cardContainer.eventMode = "static";
+		cardContainer.on("pointerover", () => {
+			this.showCardTooltip(card.type, x, y);
+		});
+		cardContainer.on("pointerout", () => {
+			this.hideCardTooltip();
+		});
+
+		return cardContainer;
 	}
 
 	/**
@@ -284,5 +295,31 @@ export class DeckViewer {
 		});
 
 		this.buttonContainer.addChild(button);
+	}
+
+	/**
+	 * ツールチップをカード上部中央に表示
+	 */
+	private showCardTooltip(
+		cardType: CardType,
+		cardX: number,
+		cardY: number,
+	): void {
+		this.tooltipContainer.removeChildren();
+		const cost = getEffectiveCardCost(cardType);
+		const { container: tooltip, height: tooltipHeight } = createCardTooltip(
+			cardType,
+			cost,
+		);
+		tooltip.x = cardX + CARD_WIDTH / 2 - TOOLTIP_WIDTH / 2;
+		tooltip.y = cardY - tooltipHeight - TOOLTIP_MARGIN;
+		this.tooltipContainer.addChild(tooltip);
+	}
+
+	/**
+	 * ツールチップを非表示
+	 */
+	private hideCardTooltip(): void {
+		this.tooltipContainer.removeChildren();
 	}
 }

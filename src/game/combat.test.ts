@@ -43,7 +43,7 @@ describe("applyDamageToEnemy", () => {
 		const state = createTestState({ enemies: [enemy] });
 		const result = applyDamageToEnemy(state, enemy.id, PLAYER_ATTACK_DAMAGE);
 
-		expect(result.enemies[0].hp).toBe(ENEMY_HP - PLAYER_ATTACK_DAMAGE);
+		expect(result.state.enemies[0].hp).toBe(ENEMY_HP - PLAYER_ATTACK_DAMAGE);
 	});
 
 	it("HP0以下の敵をマップから除去する", () => {
@@ -51,7 +51,7 @@ describe("applyDamageToEnemy", () => {
 		const state = createTestState({ enemies: [enemy] });
 		const result = applyDamageToEnemy(state, enemy.id, PLAYER_ATTACK_DAMAGE);
 
-		expect(result.enemies).toHaveLength(0);
+		expect(result.state.enemies).toHaveLength(0);
 	});
 
 	it("敵撃破時に行動ログを記録する", () => {
@@ -59,8 +59,8 @@ describe("applyDamageToEnemy", () => {
 		const state = createTestState({ enemies: [enemy] });
 		const result = applyDamageToEnemy(state, enemy.id, PLAYER_ATTACK_DAMAGE);
 
-		expect(result.actionLog.length).toBeGreaterThan(0);
-		expect(result.actionLog[0].message).toBe("敵を倒した");
+		expect(result.state.actionLog.length).toBeGreaterThan(0);
+		expect(result.state.actionLog[0].message).toBe("敵を倒した");
 	});
 
 	it("ダメージ時に行動ログを記録する", () => {
@@ -68,8 +68,8 @@ describe("applyDamageToEnemy", () => {
 		const state = createTestState({ enemies: [enemy] });
 		const result = applyDamageToEnemy(state, enemy.id, PLAYER_ATTACK_DAMAGE);
 
-		expect(result.actionLog.length).toBeGreaterThan(0);
-		expect(result.actionLog[0].message).toBe("敵にダメージを与えた");
+		expect(result.state.actionLog.length).toBeGreaterThan(0);
+		expect(result.state.actionLog[0].message).toBe("敵にダメージを与えた");
 	});
 
 	it("複数の敵のうち1体にダメージを与えても他の敵は影響を受けない", () => {
@@ -78,7 +78,7 @@ describe("applyDamageToEnemy", () => {
 		const state = createTestState({ enemies: [enemy1, enemy2] });
 		const result = applyDamageToEnemy(state, enemy1.id, PLAYER_ATTACK_DAMAGE);
 
-		const resultEnemy2 = result.enemies.find((e) => e.id === enemy2.id);
+		const resultEnemy2 = result.state.enemies.find((e) => e.id === enemy2.id);
 		expect(resultEnemy2).toBeDefined();
 		expect(resultEnemy2?.hp).toBe(ENEMY_HP);
 	});
@@ -91,8 +91,10 @@ describe("applyDamageToEnemy", () => {
 			PLAYER_ATTACK_DAMAGE,
 		);
 
-		expect(result).toBe(state);
-		expect(result.actionLog).toHaveLength(0);
+		expect(result.state).toBe(state);
+		expect(result.state.actionLog).toHaveLength(0);
+		expect(result.overkill).toBe(0);
+		expect(result.defeated).toBe(false);
 	});
 
 	it("元のGameStateが変更されない（イミュータブル）", () => {
@@ -111,7 +113,7 @@ describe("applyDamageToEnemy", () => {
 		expect(state.defeatedEnemyCount).toBe(0);
 
 		const result = applyDamageToEnemy(state, enemy.id, PLAYER_ATTACK_DAMAGE);
-		expect(result.defeatedEnemyCount).toBe(1);
+		expect(result.state.defeatedEnemyCount).toBe(1);
 	});
 
 	it.each([
@@ -126,7 +128,7 @@ describe("applyDamageToEnemy", () => {
 		const state = createTestState({ enemies: [enemy], floor });
 		const result = applyDamageToEnemy(state, enemy.id, PLAYER_ATTACK_DAMAGE);
 
-		expect(result.isCleared).toBe(expected);
+		expect(result.state.isCleared).toBe(expected);
 	});
 
 	it("敵撃破時にremnantsに撃破座標が記録される", () => {
@@ -134,7 +136,7 @@ describe("applyDamageToEnemy", () => {
 		const state = createTestState({ enemies: [enemy] });
 		const result = applyDamageToEnemy(state, enemy.id, PLAYER_ATTACK_DAMAGE);
 
-		expect(result.remnants["4,3"]).toBe(1);
+		expect(result.state.remnants["4,3"]).toBe(1);
 	});
 
 	it("同一座標で2体撃破するとremnantsのカウントが2になる", () => {
@@ -150,9 +152,9 @@ describe("applyDamageToEnemy", () => {
 		);
 		const state = createTestState({ enemies: [enemy1, enemy2] });
 		let result = applyDamageToEnemy(state, enemy1.id, PLAYER_ATTACK_DAMAGE);
-		result = applyDamageToEnemy(result, enemy2.id, PLAYER_ATTACK_DAMAGE);
+		result = applyDamageToEnemy(result.state, enemy2.id, PLAYER_ATTACK_DAMAGE);
 
-		expect(result.remnants["4,3"]).toBe(2);
+		expect(result.state.remnants["4,3"]).toBe(2);
 	});
 
 	it("ダメージのみ（非撃破）ではremnantsが変わらない", () => {
@@ -160,7 +162,7 @@ describe("applyDamageToEnemy", () => {
 		const state = createTestState({ enemies: [enemy] });
 		const result = applyDamageToEnemy(state, enemy.id, PLAYER_ATTACK_DAMAGE);
 
-		expect(result.remnants).toEqual({});
+		expect(result.state.remnants).toEqual({});
 	});
 
 	it("ダメージのみ（非撃破）ではdefeatedEnemyCountが変わらない", () => {
@@ -168,7 +170,44 @@ describe("applyDamageToEnemy", () => {
 		const state = createTestState({ enemies: [enemy] });
 		const result = applyDamageToEnemy(state, enemy.id, PLAYER_ATTACK_DAMAGE);
 
-		expect(result.defeatedEnemyCount).toBe(0);
+		expect(result.state.defeatedEnemyCount).toBe(0);
+	});
+});
+
+describe("applyDamageToEnemy - オーバーキル", () => {
+	it("ちょうど撃破時はoverkill=0, defeated=true", () => {
+		const enemy = createTestEnemy("normal", { x: 4, y: 3 }, { hp: 1 });
+		const state = createTestState({ enemies: [enemy] });
+		const result = applyDamageToEnemy(state, enemy.id, 1);
+
+		expect(result.overkill).toBe(0);
+		expect(result.defeated).toBe(true);
+	});
+
+	it("オーバーキル時はoverkill=超過分, defeated=true", () => {
+		const enemy = createTestEnemy("normal", { x: 4, y: 3 }, { hp: 1 });
+		const state = createTestState({ enemies: [enemy] });
+		const result = applyDamageToEnemy(state, enemy.id, 3);
+
+		expect(result.overkill).toBe(2);
+		expect(result.defeated).toBe(true);
+	});
+
+	it("非撃破時はoverkill=0, defeated=false", () => {
+		const enemy = createTestEnemy("normal", { x: 4, y: 3 }, { hp: 3 });
+		const state = createTestState({ enemies: [enemy] });
+		const result = applyDamageToEnemy(state, enemy.id, 1);
+
+		expect(result.overkill).toBe(0);
+		expect(result.defeated).toBe(false);
+	});
+
+	it("敵不在時はoverkill=0, defeated=false", () => {
+		const state = createTestState();
+		const result = applyDamageToEnemy(state, "nonexistent", 1);
+
+		expect(result.overkill).toBe(0);
+		expect(result.defeated).toBe(false);
 	});
 });
 
@@ -274,6 +313,36 @@ describe("checkGameOver", () => {
 		checkGameOver(state);
 
 		expect(state.screen).toBe(originalScreen);
+	});
+});
+
+describe("applyDamageToEnemy - カード獲得条件", () => {
+	it("敵撃破時に撃破カウンターが更新される", () => {
+		const enemy = createTestEnemy("normal", { x: 4, y: 3 }, { hp: 1 });
+		const state = createTestState({ enemies: [enemy] });
+		const result = applyDamageToEnemy(state, enemy.id, PLAYER_ATTACK_DAMAGE);
+
+		expect(result.state.acquisitionCounters.defeatCounts.normal).toBe(1);
+	});
+
+	it("条件達成時にcardExchangeStateがセットされる", () => {
+		const enemy = createTestEnemy("miniboss", { x: 4, y: 3 }, { hp: 1 });
+		// minibossは1体撃破で条件達成
+		const state = createTestState({ enemies: [enemy] });
+		const result = applyDamageToEnemy(state, enemy.id, PLAYER_ATTACK_DAMAGE);
+
+		expect(result.state.cardExchangeState).not.toBeNull();
+		expect(result.state.cardExchangeState?.acquiredCardType).toBe("attack");
+		expect(result.state.cardExchangeState?.defeatedEnemyType).toBe("miniboss");
+	});
+
+	it("条件未達時にcardExchangeStateがnullのまま", () => {
+		const enemy = createTestEnemy("normal", { x: 4, y: 3 }, { hp: 1 });
+		// normalは3体撃破が必要、1体では未達
+		const state = createTestState({ enemies: [enemy] });
+		const result = applyDamageToEnemy(state, enemy.id, PLAYER_ATTACK_DAMAGE);
+
+		expect(result.state.cardExchangeState).toBeNull();
 	});
 });
 

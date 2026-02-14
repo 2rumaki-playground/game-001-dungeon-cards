@@ -212,9 +212,9 @@ function renderVictoryScreen(ctx: GameContext): void {
 }
 
 /**
- * 報酬画面の描画（ゲーム画面の上にオーバーレイ）
+ * 交換画面の描画（ゲーム画面の上にオーバーレイ）
  */
-function renderRewardScreen(ctx: GameContext): void {
+function renderExchangeScreen(ctx: GameContext): void {
 	// ゲーム画面を背景として描画（手札は非表示）
 	renderGameScreen(ctx, true);
 	ctx.ui.turnEndButton.hide();
@@ -248,8 +248,8 @@ export function render(
 		case "gameOver":
 			renderGameOverScreen(ctx);
 			break;
-		case "reward":
-			renderRewardScreen(ctx);
+		case "exchange":
+			renderExchangeScreen(ctx);
 			break;
 		case "victory":
 			renderVictoryScreen(ctx);

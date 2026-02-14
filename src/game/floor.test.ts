@@ -12,6 +12,7 @@ import { createTestEnemy } from "../test-utils/createTestFixtures";
 import type { GameMap, GameState, Tile } from "../types";
 import { RNG } from "../utils/rng";
 import * as storage from "../utils/storage"; // Import for mocking
+import { createInitialCounters } from "./cardAcquisition";
 import { createInitialDeckState } from "./deck";
 import { transitionFloor } from "./floor";
 
@@ -60,16 +61,17 @@ function createTestState(overrides?: Partial<GameState>): GameState {
 			maxAp: MAX_AP,
 		},
 		enemies: [createTestEnemy("normal", { x: 2, y: 2 })],
-		deck: createInitialDeckState(rng),
+		deck: createInitialDeckState(),
 		actionLog: [],
 		rng,
 		defeatedEnemyCount: 0,
-		rewardState: null,
 		isCleared: false,
 		remnants: {},
 		rooms: [],
 		visitedTiles: new Set<string>(),
 		lastAttackerEnemyType: null,
+		acquisitionCounters: createInitialCounters(),
+		cardExchangeState: null,
 		...overrides,
 	};
 }
@@ -125,11 +127,11 @@ describe("transitionFloor", () => {
 		}
 	});
 
-	it("デッキが全カード山札に戻りシャッフルされる", () => {
+	it("デッキが全カードdeckOrder順で山札に復元される", () => {
 		const state = createTestState();
 		const result = transitionFloor(state);
 
-		// 手札と捨て札は空
+		// 手札が補充され、捨て札は空
 		expect(result.deck.hand).toHaveLength(HAND_LIMIT);
 		expect(result.deck.discardPile).toHaveLength(0);
 		// 山札 + 手札 = 全カード数
