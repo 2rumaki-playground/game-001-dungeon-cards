@@ -47,6 +47,8 @@ export function createCardTooltip(
 	height: number;
 } {
 	const tooltip = new Container();
+	tooltip.eventMode = "none";
+	tooltip.interactiveChildren = false;
 
 	const rarity = CARD_RARITY[cardType];
 

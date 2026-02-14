@@ -92,6 +92,8 @@ export class RewardScreen {
 		this.container.visible = false;
 		this.tooltipContainer = new Container();
 		this.tooltipContainer.label = "tooltip";
+		this.tooltipContainer.eventMode = "none";
+		this.tooltipContainer.interactiveChildren = false;
 	}
 
 	setParticleSystem(particleSystem: ParticleSystem): void {

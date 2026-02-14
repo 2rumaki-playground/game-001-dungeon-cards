@@ -55,6 +55,8 @@ export class DeckViewer {
 		this.container.visible = false;
 		this.tooltipContainer = new Container();
 		this.tooltipContainer.label = "tooltip";
+		this.tooltipContainer.eventMode = "none";
+		this.tooltipContainer.interactiveChildren = false;
 
 		this.buttonContainer = new Container();
 		this.buttonContainer.visible = false;
