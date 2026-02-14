@@ -442,17 +442,10 @@ export class RewardScreen {
 	}
 
 	/**
-	 * 報酬カードを1枚生成
+	 * 報酬カードの描画部分を生成（共通ロジック）
 	 */
-	private createRewardCard(
-		cardType: CardType,
-		x: number,
-		y: number,
-		index: number,
-	): Container {
+	private createRewardCardView(cardType: CardType): Container {
 		const cardContainer = new Container();
-		cardContainer.x = x;
-		cardContainer.y = y;
 
 		const colors = CARD_COLORS[cardType];
 		const rarity = CARD_RARITY[cardType];
@@ -547,6 +540,22 @@ export class RewardScreen {
 		effect.x = REWARD_CARD_WIDTH / 2;
 		effect.y = 94;
 		cardContainer.addChild(effect);
+
+		return cardContainer;
+	}
+
+	/**
+	 * 報酬カードを1枚生成
+	 */
+	private createRewardCard(
+		cardType: CardType,
+		x: number,
+		y: number,
+		index: number,
+	): Container {
+		const cardContainer = this.createRewardCardView(cardType);
+		cardContainer.x = x;
+		cardContainer.y = y;
 
 		// カード全体をクリック可能にする
 		makeInteractive(cardContainer, () => {
@@ -688,106 +697,10 @@ export class RewardScreen {
 		x: number,
 		y: number,
 	): Container {
-		const cardContainer = new Container();
+		const cardContainer = this.createRewardCardView(cardType);
 		cardContainer.x = x;
 		cardContainer.y = y;
 		cardContainer.label = "acquiredCard";
-
-		const colors = CARD_COLORS[cardType];
-		const rarity = CARD_RARITY[cardType];
-		const rarityColor = RARITY_COLORS[rarity];
-
-		// 背景
-		const bg = new Graphics();
-		drawRoundedRect(
-			bg,
-			REWARD_CARD_WIDTH,
-			REWARD_CARD_HEIGHT,
-			REWARD_CARD_RADIUS,
-			colors.bg,
-			{ color: colors.border, width: 2 },
-		);
-		cardContainer.addChild(bg);
-
-		// レアリティバー
-		const rarityBar = new Graphics();
-		rarityBar.roundRect(10, 6, REWARD_CARD_WIDTH - 20, 3, 1);
-		rarityBar.fill(rarityColor);
-		cardContainer.addChild(rarityBar);
-
-		// シンボル
-		const symbol = new Text({
-			text: CARD_TYPE_SYMBOL[cardType],
-			style: {
-				fontSize: 22,
-				fontFamily: "sans-serif",
-				fill: 0xffffff,
-			},
-		});
-		symbol.anchor.set(0.5, 0);
-		symbol.x = REWARD_CARD_WIDTH / 2;
-		symbol.y = 16;
-		cardContainer.addChild(symbol);
-
-		// カード名
-		const name = new Text({
-			text: CARD_TYPE_NAME[cardType],
-			style: {
-				fontSize: 16,
-				fontFamily: "sans-serif",
-				fill: 0xffffff,
-				fontWeight: "bold",
-			},
-		});
-		name.anchor.set(0.5, 0);
-		name.x = REWARD_CARD_WIDTH / 2;
-		name.y = 42;
-		cardContainer.addChild(name);
-
-		// レアリティ
-		const rarityText = new Text({
-			text: RARITY_NAME[rarity],
-			style: {
-				fontSize: 11,
-				fontFamily: "sans-serif",
-				fill: rarityColor,
-			},
-		});
-		rarityText.anchor.set(0.5, 0);
-		rarityText.x = REWARD_CARD_WIDTH / 2;
-		rarityText.y = 62;
-		cardContainer.addChild(rarityText);
-
-		// APコスト
-		const cost = CARD_COST[cardType];
-		const costText = new Text({
-			text: cost > 0 ? `AP: ${cost}` : "",
-			style: {
-				fontSize: 12,
-				fontFamily: "sans-serif",
-				fill: 0xcccccc,
-			},
-		});
-		costText.anchor.set(0.5, 0);
-		costText.x = REWARD_CARD_WIDTH / 2;
-		costText.y = 78;
-		cardContainer.addChild(costText);
-
-		// 効果テキスト
-		const effect = new Text({
-			text: CARD_EFFECT_TEXT[cardType],
-			style: {
-				fontSize: 11,
-				fontFamily: "sans-serif",
-				fill: 0xaaaaaa,
-			},
-		});
-		effect.anchor.set(0.5, 0);
-		effect.x = REWARD_CARD_WIDTH / 2;
-		effect.y = 94;
-		cardContainer.addChild(effect);
-
-		// インタラクション無効
 		cardContainer.eventMode = "none";
 
 		return cardContainer;
