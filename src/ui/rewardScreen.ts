@@ -328,10 +328,7 @@ export class RewardScreen {
 			currentY += REWARD_CARD_HEIGHT + sectionGap;
 
 			// タイトルに同じ案内文が含まれていない場合のみサブタイトルを表示して重複を回避
-			const hasSubtitleInTitle =
-				typeof title.text === "string" &&
-				title.text.includes("交換するカードを選択");
-			if (!hasSubtitleInTitle) {
+			if (showSubtitle) {
 				const subtitle = new Text({
 					text: "交換するカードを選択",
 					style: {
