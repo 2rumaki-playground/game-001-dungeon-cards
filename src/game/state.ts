@@ -145,6 +145,7 @@ export function createTitleScreenState(seed?: number): GameState {
 		isCleared: false,
 		remnants: {},
 		visitedTiles: createEmptyVisitedTiles(),
+		lastAttackerEnemyType: null,
 	};
 }
 
@@ -184,6 +185,7 @@ export function createInitialGameState(
 			rooms,
 			map,
 		),
+		lastAttackerEnemyType: null,
 	};
 }
 

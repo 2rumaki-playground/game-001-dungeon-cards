@@ -6,8 +6,9 @@
  */
 
 import { Container, Graphics, Text } from "pixi.js";
+import { ENEMY_TYPE_LABEL } from "../constants";
 import { aggregateStats, formatDuration } from "../game/statsAggregator";
-import type { DeathCause, PlaySession } from "../types";
+import type { DeathCause, EnemyType, PlaySession } from "../types";
 import { CARD_TYPE_NAME, CARD_TYPE_SYMBOL } from "./cardConstants";
 import {
 	createOverlay,
@@ -128,6 +129,16 @@ export class StatsScreen {
 			currentY += SECTION_GAP;
 			currentY = this.renderDeathCauseRanking(
 				stats.deathCauseRanking,
+				contentX,
+				currentY,
+			);
+		}
+
+		// === 敵タイプ別死因内訳 ===
+		if (stats.enemyTypeDeathRanking.length > 0) {
+			currentY += SECTION_GAP;
+			currentY = this.renderEnemyTypeDeathRanking(
+				stats.enemyTypeDeathRanking,
 				contentX,
 				currentY,
 			);
@@ -298,6 +309,39 @@ export class StatsScreen {
 
 		for (const entry of ranking) {
 			const label = DEATH_CAUSE_LABEL[entry.cause] ?? entry.cause;
+			this.addText(`${label}: ${entry.count}回`, x + 8, y, itemStyle);
+			y += LINE_HEIGHT;
+		}
+
+		return y;
+	}
+
+	/**
+	 * 敵タイプ別死因ランキングを描画
+	 */
+	private renderEnemyTypeDeathRanking(
+		ranking: { enemyType: EnemyType; count: number }[],
+		x: number,
+		startY: number,
+	): number {
+		const headerStyle = {
+			fontSize: 14,
+			fontFamily: "sans-serif",
+			fill: UI_COLOR_GOLD,
+			fontWeight: "bold" as const,
+		};
+		const itemStyle = {
+			fontSize: 13,
+			fontFamily: "sans-serif",
+			fill: 0xdddddd,
+		};
+
+		let y = startY;
+		this.addText("敵タイプ別キル", x, y, headerStyle);
+		y += LINE_HEIGHT + 2;
+
+		for (const entry of ranking) {
+			const label = ENEMY_TYPE_LABEL[entry.enemyType] ?? entry.enemyType;
 			this.addText(`${label}: ${entry.count}回`, x + 8, y, itemStyle);
 			y += LINE_HEIGHT;
 		}

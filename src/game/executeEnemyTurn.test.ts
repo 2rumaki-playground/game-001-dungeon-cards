@@ -309,6 +309,39 @@ describe("executeEnemyTurn", () => {
 		expect(rngAfter).toBe(rngBefore);
 	});
 
+	it("隣接する敵が攻撃するとlastAttackerEnemyTypeが記録される", () => {
+		const enemies: Enemy[] = [
+			{
+				id: "enemy-1",
+				type: "normal",
+				position: { x: 4, y: 3 },
+				hp: ENEMY_HP,
+				maxHp: ENEMY_HP,
+			},
+		];
+		const state = createTestState({ turn: "enemy", enemies });
+		const { state: result } = executeEnemyTurn(state);
+
+		expect(result.lastAttackerEnemyType).toBe("normal");
+	});
+
+	it("heavy敵の攻撃でlastAttackerEnemyTypeにheavyが記録される", () => {
+		const heavyHp = ENEMY_PARAMS.heavy.hp;
+		const enemies: Enemy[] = [
+			{
+				id: "enemy-1",
+				type: "heavy",
+				position: { x: 4, y: 3 },
+				hp: heavyHp,
+				maxHp: heavyHp,
+			},
+		];
+		const state = createTestState({ turn: "enemy", enemies });
+		const { state: result } = executeEnemyTurn(state);
+
+		expect(result.lastAttackerEnemyType).toBe("heavy");
+	});
+
 	it("通常敵にはボススキルが適用されない", () => {
 		const enemies: Enemy[] = [
 			{

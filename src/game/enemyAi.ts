@@ -224,6 +224,10 @@ export function executeEnemyTurn(state: GameState): EnemyTurnResult {
 				: 0;
 			const damage = params.attackDamage + enrageBonus;
 			next = applyDamageToPlayer(next, damage);
+			next = {
+				...next,
+				lastAttackerEnemyType: currentEnemy.type,
+			};
 			const attackMsg = showAi
 				? `${ENEMY_TYPE_LABEL[currentEnemy.type]}が攻撃した（隣接, ATK:${damage}）`
 				: "敵が攻撃した";

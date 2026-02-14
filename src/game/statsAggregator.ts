@@ -4,7 +4,7 @@
  * PlaySession[]から統計を算出する純粋関数群。
  */
 
-import type { CardType, DeathCause, PlaySession } from "../types";
+import type { CardType, DeathCause, EnemyType, PlaySession } from "../types";
 
 /** 統計ダッシュボードの集計結果 */
 export type AggregatedStats = {
@@ -28,6 +28,8 @@ export type AggregatedStats = {
 	maxFloorReached: number;
 	/** 平均到達階層（セッション0件時はnull） */
 	averageMaxFloor: number | null;
+	/** 敵タイプ別死因ランキング（降順ソート済み） */
+	enemyTypeDeathRanking: { enemyType: EnemyType; count: number }[];
 };
 
 /**
@@ -46,6 +48,7 @@ export function aggregateStats(sessions: PlaySession[]): AggregatedStats {
 			averageRunTime: null,
 			maxFloorReached: 0,
 			averageMaxFloor: null,
+			enemyTypeDeathRanking: [],
 		};
 	}
 
@@ -78,6 +81,7 @@ export function aggregateStats(sessions: PlaySession[]): AggregatedStats {
 	// 死因ランキング
 	const deathCauseTotals = new Map<DeathCause, number>();
 	const deathFloorDistribution = new Map<number, number>();
+	const enemyTypeTotals = new Map<EnemyType, number>();
 	for (const s of sessions) {
 		if (s.result === "death") {
 			deathCauseTotals.set(
@@ -88,10 +92,19 @@ export function aggregateStats(sessions: PlaySession[]): AggregatedStats {
 				s.maxFloor,
 				(deathFloorDistribution.get(s.maxFloor) ?? 0) + 1,
 			);
+			if (s.killedByEnemyType) {
+				enemyTypeTotals.set(
+					s.killedByEnemyType,
+					(enemyTypeTotals.get(s.killedByEnemyType) ?? 0) + 1,
+				);
+			}
 		}
 	}
 	const deathCauseRanking = [...deathCauseTotals.entries()]
 		.map(([cause, count]) => ({ cause, count }))
+		.sort((a, b) => b.count - a.count);
+	const enemyTypeDeathRanking = [...enemyTypeTotals.entries()]
+		.map(([enemyType, count]) => ({ enemyType, count }))
 		.sort((a, b) => b.count - a.count);
 
 	// 平均ラン時間
@@ -117,6 +130,7 @@ export function aggregateStats(sessions: PlaySession[]): AggregatedStats {
 		averageRunTime,
 		maxFloorReached,
 		averageMaxFloor,
+		enemyTypeDeathRanking,
 	};
 }
 

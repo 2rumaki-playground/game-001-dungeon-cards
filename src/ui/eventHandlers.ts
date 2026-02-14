@@ -735,7 +735,11 @@ export function setupEventHandlers(ctx: GameContext): void {
 					next.deck.hand.length,
 				);
 			} else {
-				const session = endSession("death", "enemy_attack");
+				const session = endSession(
+					"death",
+					"enemy_attack",
+					next.lastAttackerEnemyType ?? undefined,
+				);
 				if (session) savePlaySession(session);
 				deleteSaveData();
 				await ctx.ui.screenTransition.fadeTransition(() => {

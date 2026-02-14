@@ -154,6 +154,37 @@ describe("statsStorage", () => {
 			expect(loadPlaySessions()).toHaveLength(0);
 		});
 
+		it("killedByEnemyTypeが有効なEnemyTypeの場合は読み込める", () => {
+			const session = createTestSession({ killedByEnemyType: "boss" });
+			localStorageMock.setItem(
+				"dungeon-cards-stats",
+				JSON.stringify([session]),
+			);
+			const loaded = loadPlaySessions();
+			expect(loaded).toHaveLength(1);
+		});
+
+		it("killedByEnemyTypeが省略された旧データも読み込める", () => {
+			const session = createTestSession();
+			localStorageMock.setItem(
+				"dungeon-cards-stats",
+				JSON.stringify([session]),
+			);
+			const loaded = loadPlaySessions();
+			expect(loaded).toHaveLength(1);
+		});
+
+		it("killedByEnemyTypeが不正な値の場合はフィルタリングされる", () => {
+			const session = createTestSession({
+				killedByEnemyType: "invalid_type",
+			});
+			localStorageMock.setItem(
+				"dungeon-cards-stats",
+				JSON.stringify([session]),
+			);
+			expect(loadPlaySessions()).toHaveLength(0);
+		});
+
 		it("cardUsageに必須キーが欠落している場合はフィルタリングされる", () => {
 			const session = createTestSession();
 			const raw = { ...session, cardUsage: { move: 1 } };

@@ -4,9 +4,17 @@
  */
 
 import { MAX_PLAY_SESSIONS } from "../constants";
-import type { CardType, PlaySession } from "../types";
+import type { CardType, EnemyType, PlaySession } from "../types";
 
 const STATS_KEY = "dungeon-cards-stats";
+
+const VALID_ENEMY_TYPES: EnemyType[] = [
+	"normal",
+	"heavy",
+	"scout",
+	"miniboss",
+	"boss",
+];
 
 const REQUIRED_CARD_TYPES: CardType[] = [
 	"move",
@@ -48,6 +56,13 @@ function isValidSession(value: unknown): value is PlaySession {
 			deathCause !== "enemy_attack" &&
 			deathCause !== "trap" &&
 			deathCause !== "unknown"
+		) {
+			return false;
+		}
+		// killedByEnemyTypeは省略可能だが、存在する場合は有効なEnemyTypeであること
+		if (
+			s.killedByEnemyType !== undefined &&
+			!VALID_ENEMY_TYPES.includes(s.killedByEnemyType as EnemyType)
 		) {
 			return false;
 		}
