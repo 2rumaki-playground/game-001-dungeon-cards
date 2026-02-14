@@ -19,17 +19,19 @@ done < <(find "$DIST_DIR" -type f \( -name '*.js' -o -name '*.css' -o -name '*.h
 # Per-chunk JS sizes
 chunks="{"
 first=true
-for f in "$DIST_DIR"/assets/*.js; do
-  [ -f "$f" ] || continue
-  name=$(basename "$f")
-  size=$(wc -c < "$f")
-  if [ "$first" = true ]; then
-    first=false
-  else
-    chunks="$chunks,"
-  fi
-  chunks="$chunks \"$name\": $size"
-done
+if [ -d "$DIST_DIR/assets" ]; then
+  for f in "$DIST_DIR"/assets/*.js; do
+    [ -f "$f" ] || continue
+    name=$(basename "$f")
+    size=$(wc -c < "$f")
+    if [ "$first" = true ]; then
+      first=false
+    else
+      chunks="$chunks,"
+    fi
+    chunks="$chunks \"$name\": $size"
+  done
+fi
 chunks="$chunks }"
 
 cat > "$OUTPUT" <<EOF
