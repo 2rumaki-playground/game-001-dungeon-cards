@@ -2,7 +2,7 @@ import type { Graphics } from "pixi.js";
 import { describe, expect, it, vi } from "vitest";
 import type { Card, DeckState } from "../types";
 import { CLOSE_BUTTON_HEIGHT, DeckViewer } from "./deckViewer";
-import { CARD_HEIGHT, CARD_WIDTH } from "./handRenderer";
+import { CARD_GAP, CARD_HEIGHT, CARD_WIDTH } from "./handRenderer";
 
 /** テスト用デッキ */
 function createTestDeck(): DeckState {
@@ -148,7 +148,6 @@ describe("DeckViewer", () => {
 			const container = viewer.getContainer();
 			// children[2]が最初のカード（overlay=0, title=1）
 			const firstCard = container.children[2];
-			const CARD_GAP = 8;
 			const gridWidth = 3 * CARD_WIDTH + 2 * CARD_GAP;
 			const expectedGridX = (gameAreaWidth - gridWidth) / 2;
 			expect(firstCard.x).toBe(expectedGridX);
@@ -170,7 +169,6 @@ describe("DeckViewer", () => {
 			// グリッドベースでコンテンツ高さを計算
 			const titleFontSize = 24;
 			const titleToGridGap = 12;
-			const CARD_GAP = 8;
 			const allCards = [...deck.drawPile, ...deck.hand, ...deck.discardPile];
 			const gridRows = Math.ceil(allCards.length / 3);
 			const gridHeight = gridRows * CARD_HEIGHT + (gridRows - 1) * CARD_GAP;
