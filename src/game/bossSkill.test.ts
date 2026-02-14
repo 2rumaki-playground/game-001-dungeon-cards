@@ -140,6 +140,7 @@ describe("executePendingSkill", () => {
 			expect(result.state.player.hp).toBe(state.player.hp - expectedDamage);
 			expect(result.damage).toBe(expectedDamage);
 			expect(result.executed).toBe(true);
+			expect(result.state.lastAttackerEnemyType).toBe("miniboss");
 		});
 
 		it("隣接していない場合はスキルを発動しない", () => {
@@ -191,6 +192,7 @@ describe("executePendingSkill", () => {
 			);
 			expect(result.damage).toBe(BOSS_SKILL.areaAttackDamage);
 			expect(result.executed).toBe(true);
+			expect(result.state.lastAttackerEnemyType).toBe("boss");
 		});
 
 		it("マンハッタン距離2以内のプレイヤーにダメージを与える", () => {
