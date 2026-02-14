@@ -141,7 +141,8 @@ export class DeckViewer {
 		// グリッドサイズ計算
 		const gridRows = Math.ceil(allCards.length / GRID_COLUMNS);
 		const gridWidth = GRID_COLUMNS * CARD_WIDTH + (GRID_COLUMNS - 1) * CARD_GAP;
-		const gridHeight = gridRows * CARD_HEIGHT + (gridRows - 1) * CARD_GAP;
+		const gridHeight =
+			gridRows > 0 ? gridRows * CARD_HEIGHT + (gridRows - 1) * CARD_GAP : 0;
 
 		// コンテンツ全体の高さを計算して上下センタリング
 		const titleFontSize = 24;
