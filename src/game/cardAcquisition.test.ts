@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { ENEMY_ACQUISITION_CONDITIONS } from "../constants";
 import { createTestState } from "../test-utils/createTestFixtures";
 import type { AcquisitionCounters, Card } from "../types";
 import {
@@ -106,6 +107,50 @@ describe("checkAcquisitionCondition", () => {
 			hitCounts: { normal: 0, heavy: 0, scout: 0, miniboss: 0, boss: 0 },
 		};
 		expect(checkAcquisitionCondition(counters, "miniboss")).toBe(true);
+	});
+
+	it("OR条件: いずれか満たす→true", () => {
+		const original = ENEMY_ACQUISITION_CONDITIONS.scout;
+		ENEMY_ACQUISITION_CONDITIONS.scout = {
+			cardType: "jump",
+			conditions: [
+				{ type: "defeat_count", threshold: 5 },
+				{ type: "hit_count", threshold: 1 },
+			],
+			conditionLogic: "or",
+		};
+		try {
+			const counters: AcquisitionCounters = {
+				defeatCounts: { normal: 0, heavy: 0, scout: 1, miniboss: 0, boss: 0 },
+				hitCounts: { normal: 0, heavy: 0, scout: 1, miniboss: 0, boss: 0 },
+			};
+			// defeat_count未達だがhit_count達成→OR条件なのでtrue
+			expect(checkAcquisitionCondition(counters, "scout")).toBe(true);
+		} finally {
+			ENEMY_ACQUISITION_CONDITIONS.scout = original;
+		}
+	});
+
+	it("OR条件: どちらも未達→false", () => {
+		const original = ENEMY_ACQUISITION_CONDITIONS.scout;
+		ENEMY_ACQUISITION_CONDITIONS.scout = {
+			cardType: "jump",
+			conditions: [
+				{ type: "defeat_count", threshold: 5 },
+				{ type: "hit_count", threshold: 3 },
+			],
+			conditionLogic: "or",
+		};
+		try {
+			const counters: AcquisitionCounters = {
+				defeatCounts: { normal: 0, heavy: 0, scout: 1, miniboss: 0, boss: 0 },
+				hitCounts: { normal: 0, heavy: 0, scout: 1, miniboss: 0, boss: 0 },
+			};
+			// どちらも未達→false
+			expect(checkAcquisitionCondition(counters, "scout")).toBe(false);
+		} finally {
+			ENEMY_ACQUISITION_CONDITIONS.scout = original;
+		}
 	});
 });
 
