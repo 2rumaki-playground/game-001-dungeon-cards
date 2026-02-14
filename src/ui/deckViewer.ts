@@ -18,7 +18,7 @@ import {
 	drawRoundedRect,
 	makeInteractive,
 } from "./graphicsHelpers";
-import { CARD_HEIGHT, CARD_WIDTH } from "./handRenderer";
+import { CARD_GAP, CARD_HEIGHT, CARD_RADIUS, CARD_WIDTH } from "./handRenderer";
 import { BUTTON_HEIGHT, DECK_BUTTON_WIDTH } from "./layout";
 import { UI_COLOR_GOLD, UI_COLORS_BUTTON_SECONDARY } from "./uiColors";
 
@@ -39,8 +39,6 @@ const DECK_BUTTON_COLORS = {
 
 /** グリッドレイアウト定数 */
 const GRID_COLUMNS = 3;
-const CARD_GAP = 8;
-const CARD_RADIUS = 8;
 
 /**
  * デッキ閲覧UIレンダラー
