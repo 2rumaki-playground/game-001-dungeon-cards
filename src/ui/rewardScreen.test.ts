@@ -27,6 +27,22 @@ function findByLabel(parent: Container, label: string): Container | null {
 	return null;
 }
 
+/** 再帰的にtextプロパティが一致するText要素を探す */
+function findTextByContent(parent: Container, content: string): Text | null {
+	for (const child of parent.children) {
+		if ("text" in child && (child as Text).text === content)
+			return child as Text;
+		if ("children" in child) {
+			const c = child as Container;
+			if (c.children?.length > 0) {
+				const found = findTextByContent(c, content);
+				if (found) return found;
+			}
+		}
+	}
+	return null;
+}
+
 describe("RewardScreen", () => {
 	describe("コンストラクタ", () => {
 		it("コンテナを作成する", () => {
@@ -321,6 +337,57 @@ describe("RewardScreen", () => {
 			const acquiredCard = findByLabel(container, "acquiredCard");
 			expect(acquiredCard).toBeDefined();
 			expect(acquiredCard?.eventMode).toBe("none");
+		});
+
+		it("acquiredCardType指定かつタイトルに案内文を含まない場合、サブタイトルが表示される", () => {
+			const screen = new RewardScreen();
+			screen.renderRemoveSelection(
+				testCards,
+				600,
+				800,
+				"テスト",
+				undefined,
+				undefined,
+				"jump",
+			);
+
+			const container = screen.getContainer();
+			const subtitle = findTextByContent(container, "交換するカードを選択");
+			expect(subtitle).not.toBeNull();
+		});
+
+		it("acquiredCardType指定かつタイトルに案内文を含む場合、サブタイトルが表示されない", () => {
+			const screen = new RewardScreen();
+			screen.renderRemoveSelection(
+				testCards,
+				600,
+				800,
+				"交換するカードを選択",
+				undefined,
+				undefined,
+				"jump",
+			);
+
+			const container = screen.getContainer();
+			// タイトル自体が「交換するカードを選択」なので、サブタイトルは非表示
+			// タイトルのText要素は存在するが、サブタイトルとしての2つ目は存在しない
+			const allTexts: Text[] = [];
+			function collectTexts(node: Container) {
+				for (const child of node.children) {
+					if (
+						"text" in child &&
+						(child as Text).text === "交換するカードを選択"
+					)
+						allTexts.push(child as Text);
+					if ("children" in child) {
+						const c = child as Container;
+						if (c.children?.length > 0) collectTexts(c);
+					}
+				}
+			}
+			collectTexts(container);
+			// タイトルの1つだけ存在し、サブタイトルとしての重複はない
+			expect(allTexts).toHaveLength(1);
 		});
 
 		it("acquiredCardType未指定時に獲得候補カードが表示されない", () => {
