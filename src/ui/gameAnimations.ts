@@ -168,12 +168,14 @@ export async function updateStateWithBumpAnimation(
 /**
  * プレイヤー攻撃ヒット時のアニメーション付きで状態を更新
  * @param cardType 使用したカードタイプ（ダメージ値算出・パーティクル演出に使用）
+ * @param overkill 超過ダメージ量（0で従来同等、正値で撃破演出が段階的に強化される）
  */
 export async function updateStateWithAttackAnimation(
 	ctx: GameContext,
 	newState: GameState,
 	hitEnemyId: string,
 	cardType: AttackCardType = "attack",
+	overkill = 0,
 ): Promise<void> {
 	if (ctx.isAnimating) return;
 	ctx.isAnimating = true;
@@ -234,7 +236,9 @@ export async function updateStateWithAttackAnimation(
 					ctx.ui.particleSystem.getContainer(),
 				);
 				defeatAnimations.push(
-					ctx.ui.particleSystem.emit(createDefeatParticleConfig(center)),
+					ctx.ui.particleSystem.emit(
+						createDefeatParticleConfig(center, overkill),
+					),
 				);
 			}
 			await Promise.all(defeatAnimations);
