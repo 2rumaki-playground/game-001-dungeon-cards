@@ -209,15 +209,23 @@ export function loadGame(): GameState | null {
 			remnants: sanitizeRemnants(data.remnants),
 		};
 
-		// 旧セーブデータ互換: deckOrderがない場合は全カードの現在順をデフォルトに
+		// 旧セーブデータ互換: deckOrderがない場合は全カードをID順でソートして生成
 		if (state.deck && !Array.isArray(state.deck.deckOrder)) {
+			const allCards = [
+				...state.deck.drawPile,
+				...state.deck.hand,
+				...state.deck.discardPile,
+			];
+			const sortedCards = [...allCards].sort((a, b) => {
+				const aMatch = a.id.match(/^card-(\d+)$/);
+				const bMatch = b.id.match(/^card-(\d+)$/);
+				const aId = aMatch ? Number(aMatch[1]) : Number.MAX_SAFE_INTEGER;
+				const bId = bMatch ? Number(bMatch[1]) : Number.MAX_SAFE_INTEGER;
+				return aId - bId;
+			});
 			state.deck = {
 				...state.deck,
-				deckOrder: [
-					...state.deck.drawPile,
-					...state.deck.hand,
-					...state.deck.discardPile,
-				],
+				deckOrder: sortedCards,
 			};
 		}
 
