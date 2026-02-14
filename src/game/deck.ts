@@ -181,6 +181,20 @@ export function resetDeck(deck: DeckState): DeckState {
 }
 
 /**
+ * deckOrderと3ゾーン（山札・手札・捨て札）のカード集合が一致するか検証
+ * デバッグ・テスト用
+ */
+export function validateDeckConsistency(deck: DeckState): boolean {
+	const orderIds = new Set(deck.deckOrder.map((c) => c.id));
+	const zoneIds = new Set(getAllCards(deck).map((c) => c.id));
+	if (orderIds.size !== zoneIds.size) return false;
+	for (const id of orderIds) {
+		if (!zoneIds.has(id)) return false;
+	}
+	return true;
+}
+
+/**
  * プレイヤーが設定した並び順をdeckOrderとdrawPileにセット
  * 階層開始時の並び替えUI用
  */
