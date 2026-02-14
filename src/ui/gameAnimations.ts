@@ -174,6 +174,7 @@ export async function updateStateWithAttackAnimation(
 	newState: GameState,
 	hitEnemyId: string,
 	cardType: AttackCardType = "attack",
+	overkill = 0,
 ): Promise<void> {
 	if (ctx.isAnimating) return;
 	ctx.isAnimating = true;
@@ -234,7 +235,9 @@ export async function updateStateWithAttackAnimation(
 					ctx.ui.particleSystem.getContainer(),
 				);
 				defeatAnimations.push(
-					ctx.ui.particleSystem.emit(createDefeatParticleConfig(center)),
+					ctx.ui.particleSystem.emit(
+						createDefeatParticleConfig(center, overkill),
+					),
 				);
 			}
 			await Promise.all(defeatAnimations);

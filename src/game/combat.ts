@@ -21,6 +21,15 @@ import {
 } from "./state";
 import { checkVictory } from "./victory";
 
+/** 敵ダメージ適用の結果 */
+export type DamageResult = {
+	state: GameState;
+	/** 超過ダメージ量（撃破時のみ、非撃破時は0） */
+	overkill: number;
+	/** 敵が撃破されたか */
+	defeated: boolean;
+};
+
 /**
  * HP0以下で撃破判定
  */
@@ -39,12 +48,14 @@ export function applyDamageToEnemy(
 	state: GameState,
 	enemyId: string,
 	damage: number,
-): GameState {
+): DamageResult {
 	// 対象の敵が存在しない場合は何もしない
 	const enemy = state.enemies.find((e) => e.id === enemyId);
 	if (!enemy) {
-		return state;
+		return { state, overkill: 0, defeated: false };
 	}
+
+	const overkill = Math.max(0, damage - enemy.hp);
 
 	recordDamageDealt(Math.min(damage, enemy.hp));
 
@@ -91,10 +102,14 @@ export function applyDamageToEnemy(
 		}
 
 		next = checkVictory(next, target.type);
-		return next;
+		return { state: next, overkill, defeated: true };
 	}
 
-	return addActionLog(next, "敵にダメージを与えた", "system");
+	return {
+		state: addActionLog(next, "敵にダメージを与えた", "system"),
+		overkill: 0,
+		defeated: false,
+	};
 }
 
 /**
