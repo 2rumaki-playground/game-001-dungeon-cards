@@ -4,7 +4,6 @@
  */
 
 import { Container, Graphics, Text } from "pixi.js";
-import { CARD_COST } from "../constants";
 import { getEffectiveCardCost } from "../game/debugCheats";
 import type { Card, CardType, Rarity } from "../types";
 import { Easing, tween } from "../utils/tween";
@@ -514,7 +513,7 @@ export class RewardScreen {
 		cardContainer.addChild(rarityText);
 
 		// APコスト
-		const cost = CARD_COST[cardType];
+		const cost = getEffectiveCardCost(cardType);
 		const costText = new Text({
 			text: cost > 0 ? `AP: ${cost}` : "",
 			style: {
