@@ -5,7 +5,7 @@
 
 import { Container, Graphics, Text } from "pixi.js";
 import { getEffectiveCardCost } from "../game/debugCheats";
-import type { Card, CardType, Direction } from "../types";
+import type { Card, CardType, ComboHistory, Direction } from "../types";
 import { Easing, tween } from "../utils/tween";
 import {
 	CARD_COLORS as BASE_CARD_COLORS,
@@ -18,9 +18,17 @@ import {
 	TOOLTIP_MARGIN,
 	TOOLTIP_WIDTH,
 } from "./cardTooltip";
-import { drawRoundedRect, makeInteractive } from "./graphicsHelpers";
+import {
+	drawEdgeLine,
+	drawRoundedRect,
+	makeInteractive,
+} from "./graphicsHelpers";
 import type { ParticleSystem } from "./particleSystem";
-import { UI_COLOR_GOLD, UI_COLORS_DISABLED } from "./uiColors";
+import {
+	UI_COLOR_COMBO_PREVIEW,
+	UI_COLOR_GOLD,
+	UI_COLORS_DISABLED,
+} from "./uiColors";
 
 /** カード描画定数 */
 export const CARD_WIDTH = 90;
@@ -102,7 +110,11 @@ const CARD_COLORS = {
 	disabled: UI_COLORS_DISABLED,
 	selectedBorder: UI_COLOR_GOLD,
 	hoveredBorder: 0x88ccff,
+	comboBorder: UI_COLOR_COMBO_PREVIEW,
 } as const;
+
+/** コンボ予告枠線の幅（px） */
+const COMBO_BORDER_WIDTH = 3;
 
 /**
  * 手札レンダラー
@@ -117,6 +129,7 @@ export class HandRenderer {
 	private currentHand: Card[] = [];
 	private currentAp = 0;
 	private currentQueuedCardIndexMap: ReadonlyMap<string, number> = new Map();
+	private currentComboHistory: ComboHistory | null = null;
 	private onCardSelect:
 		| ((
 				card: Card,
@@ -169,6 +182,13 @@ export class HandRenderer {
 	 */
 	setQueuedCards(map: ReadonlyMap<string, number>): void {
 		this.currentQueuedCardIndexMap = map;
+	}
+
+	/**
+	 * コンボ予告表示用のコンボ履歴を設定
+	 */
+	setComboHistory(history: ComboHistory | null): void {
+		this.currentComboHistory = history;
 	}
 
 	/**
@@ -329,6 +349,34 @@ export class HandRenderer {
 		});
 
 		cardContainer.addChild(bg);
+
+		// コンボ予告枠線（選択/キュー状態より低優先度）
+		if (enabled && !selected && !queued) {
+			const comboPreview = this.getComboPreviewType(card.type);
+			if (comboPreview !== null) {
+				const comboBorderGraphics = new Graphics();
+				if (comboPreview.type === "chain") {
+					drawRoundedRect(
+						comboBorderGraphics,
+						CARD_WIDTH,
+						CARD_HEIGHT,
+						CARD_RADIUS,
+						{ color: 0x000000, alpha: 0 },
+						{ color: CARD_COLORS.comboBorder, width: COMBO_BORDER_WIDTH },
+					);
+				} else if (comboPreview.direction !== undefined) {
+					drawEdgeLine(
+						comboBorderGraphics,
+						CARD_WIDTH,
+						CARD_HEIGHT,
+						CARD_RADIUS,
+						comboPreview.direction,
+						{ color: CARD_COLORS.comboBorder, width: COMBO_BORDER_WIDTH },
+					);
+				}
+				cardContainer.addChild(comboBorderGraphics);
+			}
+		}
 
 		// シンボル
 		const symbolText = new Text({
@@ -587,5 +635,29 @@ export class HandRenderer {
 		this.selectedCardId = null;
 		this.hoveredCardId = null;
 		this.currentQueuedCardIndexMap = new Map();
+		this.currentComboHistory = null;
+	}
+
+	/**
+	 * カードに対するコンボ予告表示の種別を判定
+	 */
+	private getComboPreviewType(cardType: CardType): {
+		type: "chain" | "charge";
+		direction?: Direction;
+	} | null {
+		if (this.currentComboHistory === null) return null;
+		if (cardType !== "attack") return null;
+
+		const { lastCardType, lastDirection } = this.currentComboHistory;
+
+		if (lastCardType === "attack") {
+			return { type: "chain" };
+		}
+
+		if (lastCardType === "move" && lastDirection !== null) {
+			return { type: "charge", direction: lastDirection };
+		}
+
+		return null;
 	}
 }

@@ -129,6 +129,7 @@ export function renderGameScreen(
 	);
 	applyCameraOffset(ctx);
 	if (!skipHand) {
+		ctx.ui.handRenderer.setComboHistory(ctx.state.comboHistory);
 		ctx.ui.handRenderer.render(ctx.state.deck.hand, ctx.state.player.ap);
 	}
 	ctx.ui.turnEndButton.show();

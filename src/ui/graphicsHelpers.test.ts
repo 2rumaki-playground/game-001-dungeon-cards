@@ -2,6 +2,7 @@ import type { Container, FederatedPointerEvent, Graphics } from "pixi.js";
 import { describe, expect, it, vi } from "vitest";
 import {
 	createOverlay,
+	drawEdgeLine,
 	drawRoundedRect,
 	makeInteractive,
 } from "./graphicsHelpers";
@@ -22,6 +23,12 @@ function createMockGraphics() {
 		}),
 		stroke: vi.fn((...args: unknown[]) => {
 			calls.push({ method: "stroke", args });
+		}),
+		moveTo: vi.fn((...args: unknown[]) => {
+			calls.push({ method: "moveTo", args });
+		}),
+		lineTo: vi.fn((...args: unknown[]) => {
+			calls.push({ method: "lineTo", args });
 		}),
 	} as unknown as Graphics & {
 		_calls: { method: string; args: unknown[] }[];
@@ -314,5 +321,55 @@ describe("makeInteractive", () => {
 		pointerout?.();
 
 		expect(container.alpha).toBe(0.5);
+	});
+});
+
+describe("drawEdgeLine", () => {
+	it("上辺を描画する", () => {
+		const g = createMockGraphics();
+
+		drawEdgeLine(g, 90, 120, 8, "up", { color: 0xff8c00, width: 3 });
+
+		expect(g._calls).toEqual([
+			{ method: "moveTo", args: [8, 0] },
+			{ method: "lineTo", args: [82, 0] },
+			{ method: "stroke", args: [{ color: 0xff8c00, width: 3 }] },
+		]);
+	});
+
+	it("下辺を描画する", () => {
+		const g = createMockGraphics();
+
+		drawEdgeLine(g, 90, 120, 8, "down", { color: 0xff8c00, width: 3 });
+
+		expect(g._calls).toEqual([
+			{ method: "moveTo", args: [8, 120] },
+			{ method: "lineTo", args: [82, 120] },
+			{ method: "stroke", args: [{ color: 0xff8c00, width: 3 }] },
+		]);
+	});
+
+	it("左辺を描画する", () => {
+		const g = createMockGraphics();
+
+		drawEdgeLine(g, 90, 120, 8, "left", { color: 0xff8c00, width: 3 });
+
+		expect(g._calls).toEqual([
+			{ method: "moveTo", args: [0, 8] },
+			{ method: "lineTo", args: [0, 112] },
+			{ method: "stroke", args: [{ color: 0xff8c00, width: 3 }] },
+		]);
+	});
+
+	it("右辺を描画する", () => {
+		const g = createMockGraphics();
+
+		drawEdgeLine(g, 90, 120, 8, "right", { color: 0xff8c00, width: 3 });
+
+		expect(g._calls).toEqual([
+			{ method: "moveTo", args: [90, 8] },
+			{ method: "lineTo", args: [90, 112] },
+			{ method: "stroke", args: [{ color: 0xff8c00, width: 3 }] },
+		]);
 	});
 });

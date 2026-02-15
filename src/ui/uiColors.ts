@@ -7,6 +7,9 @@
 /** ゴールド色（タイトル・選択強調） */
 export const UI_COLOR_GOLD = 0xffd700;
 
+/** コンボ予告表示の枠線色（オレンジ） */
+export const UI_COLOR_COMBO_PREVIEW = 0xff8c00;
+
 /** 無効状態の色 */
 export const UI_COLORS_DISABLED = {
 	bg: 0x2a2a2a,

@@ -899,3 +899,142 @@ describe("HandRenderer ツールチップ表示", () => {
 		expect(hasCost).toBe(false);
 	});
 });
+
+describe("HandRenderer コンボ予告表示", () => {
+	function createTestCards(): Card[] {
+		return [
+			{ id: "card-1", type: "move", keyword: "flame" },
+			{ id: "card-2", type: "attack", keyword: "flame" },
+			{ id: "card-3", type: "strong_attack", keyword: "flame" },
+			{ id: "card-4", type: "wait", keyword: "flame" },
+		];
+	}
+
+	function findCardContainer(renderer: HandRenderer, index: number): Container {
+		const cardsContainer = renderer
+			.getContainer()
+			.children.find((c) => c.label === "cards") as Container;
+		return cardsContainer.children[index] as Container;
+	}
+
+	/** コンボ予告なしの基準子要素数を取得 */
+	function getBaseChildCount(cardType: CardType): number {
+		const renderer = new HandRenderer();
+		renderer.setComboHistory(null);
+		renderer.render(
+			[{ id: "base-card", type: cardType, keyword: "flame" }],
+			10,
+		);
+		const cardsContainer = renderer
+			.getContainer()
+			.children.find((c) => c.label === "cards") as Container;
+		return (cardsContainer.children[0] as Container).children.length;
+	}
+
+	it("comboHistory=nullの場合、コンボ予告が表示されない", () => {
+		const baseCount = getBaseChildCount("attack");
+
+		const renderer = new HandRenderer();
+		renderer.setComboHistory(null);
+		renderer.render(createTestCards(), 10);
+
+		const attackCard = findCardContainer(renderer, 1);
+		expect(attackCard.children.length).toBe(baseCount);
+	});
+
+	it("chain予告: attack後のattackカードに追加Graphicsが描画される", () => {
+		const baseCount = getBaseChildCount("attack");
+
+		const renderer = new HandRenderer();
+		renderer.setComboHistory({ lastCardType: "attack", lastDirection: null });
+		renderer.render(createTestCards(), 10);
+
+		const attackCard = findCardContainer(renderer, 1);
+		expect(attackCard.children.length).toBe(baseCount + 1);
+	});
+
+	it("charge予告: move後のattackカードに追加Graphicsが描画される", () => {
+		const baseCount = getBaseChildCount("attack");
+
+		const renderer = new HandRenderer();
+		renderer.setComboHistory({ lastCardType: "move", lastDirection: "right" });
+		renderer.render(createTestCards(), 10);
+
+		const attackCard = findCardContainer(renderer, 1);
+		expect(attackCard.children.length).toBe(baseCount + 1);
+	});
+
+	it("moveカードにはコンボ予告が表示されない", () => {
+		const baseCount = getBaseChildCount("move");
+
+		const renderer = new HandRenderer();
+		renderer.setComboHistory({ lastCardType: "attack", lastDirection: null });
+		renderer.render(createTestCards(), 10);
+
+		const moveCard = findCardContainer(renderer, 0);
+		expect(moveCard.children.length).toBe(baseCount);
+	});
+
+	it("strong_attackカードにはコンボ予告が表示されない", () => {
+		const baseCount = getBaseChildCount("strong_attack");
+
+		const renderer = new HandRenderer();
+		renderer.setComboHistory({ lastCardType: "attack", lastDirection: null });
+		renderer.render(createTestCards(), 10);
+
+		const strongAttackCard = findCardContainer(renderer, 2);
+		expect(strongAttackCard.children.length).toBe(baseCount);
+	});
+
+	it("選択中のattackカードにはコンボ予告が表示されない（金枠が優先）", () => {
+		const baseCount = getBaseChildCount("attack");
+
+		const renderer = new HandRenderer();
+		renderer.setComboHistory({ lastCardType: "attack", lastDirection: null });
+		renderer.setSelectedCard("card-2");
+		renderer.render(createTestCards(), 10);
+
+		const attackCard = findCardContainer(renderer, 1);
+		expect(attackCard.children.length).toBe(baseCount);
+	});
+
+	it("キュー内のattackカードにはコンボ予告が表示されない（金枠が優先）", () => {
+		const renderer = new HandRenderer();
+		renderer.setComboHistory({ lastCardType: "attack", lastDirection: null });
+		renderer.setQueuedCards(new Map([["card-2", 1]]));
+		renderer.render(createTestCards(), 10);
+
+		const attackCard = findCardContainer(renderer, 1);
+
+		// キューバッジ(2要素)は追加されるが、コンボ予告は追加されない
+		renderer.setComboHistory(null);
+		renderer.setQueuedCards(new Map([["card-2", 1]]));
+		renderer.render(createTestCards(), 10);
+		const attackCardNoCombo = findCardContainer(renderer, 1);
+
+		expect(attackCard.children.length).toBe(attackCardNoCombo.children.length);
+	});
+
+	it("clear()でコンボ予告状態がリセットされる", () => {
+		const baseCount = getBaseChildCount("attack");
+
+		const renderer = new HandRenderer();
+		renderer.setComboHistory({ lastCardType: "attack", lastDirection: null });
+		renderer.clear();
+		renderer.render(createTestCards(), 10);
+
+		const attackCard = findCardContainer(renderer, 1);
+		expect(attackCard.children.length).toBe(baseCount);
+	});
+
+	it("lastCardType=waitの場合、コンボ予告が表示されない", () => {
+		const baseCount = getBaseChildCount("attack");
+
+		const renderer = new HandRenderer();
+		renderer.setComboHistory({ lastCardType: "wait", lastDirection: null });
+		renderer.render(createTestCards(), 10);
+
+		const attackCard = findCardContainer(renderer, 1);
+		expect(attackCard.children.length).toBe(baseCount);
+	});
+});
