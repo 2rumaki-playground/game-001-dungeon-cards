@@ -26,7 +26,7 @@
 ### 判定に使用するカードタイプ
 
 - 各コンボ条件に記載されたカードタイプ（CardType）のみが対象
-- 「攻撃」は `attack` のみを指す（`strong_attack`、`pierce` は含まない）
+- 「攻撃」は `attack` のみを指す（`strong_attack` は含まない）
 - 「移動」は `move` のみを指す（`jump` は含まない）
 
 ---
