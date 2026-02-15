@@ -272,6 +272,7 @@ export function loadGame(): GameState | null {
 				data.acquisitionCounters,
 			),
 			cardExchangeState: null,
+			comboHistory: null,
 		};
 
 		// 旧セーブデータ互換: deckOrderがない場合は全カードをID順でソートして生成

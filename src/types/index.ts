@@ -11,6 +11,7 @@ export type {
 	EnemyCardAcquisitionConfig,
 } from "./cardAcquisition";
 export type { Enemy, EnemyType, PendingSkillType, Player } from "./character";
+export type { ComboHistory, ComboType } from "./combo";
 export { DIRECTION_DELTA, type Direction, type Position } from "./direction";
 export type { ActionLogEntry, GameState, LogActor, Screen, Turn } from "./game";
 export type { GameMap, Room, SpecialTileType, Tile, TileType } from "./map";

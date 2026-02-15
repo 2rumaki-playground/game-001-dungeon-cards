@@ -7,7 +7,7 @@ import { TURN_START_AP } from "../constants";
 import type { GameState } from "../types";
 import { discardHand, drawCards } from "./deck";
 import { recordTurnEnd } from "./playStats";
-import { changeTurn, setDeck, updatePlayer } from "./state";
+import { changeTurn, setDeck, updateComboHistory, updatePlayer } from "./state";
 
 /**
  * プレイヤーターン開始処理
@@ -22,6 +22,9 @@ export function startPlayerTurn(state: GameState): GameState {
 		...p,
 		ap: TURN_START_AP,
 	}));
+
+	// コンボ履歴リセット
+	next = updateComboHistory(next, null);
 
 	// 手札補充
 	next = setDeck(next, drawCards(next.deck));

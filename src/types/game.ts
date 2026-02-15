@@ -7,6 +7,7 @@ import type { RNG } from "../utils/rng";
 import type { DeckState } from "./card";
 import type { AcquisitionCounters, CardExchangeState } from "./cardAcquisition";
 import type { Enemy, EnemyType, Player } from "./character";
+import type { ComboHistory } from "./combo";
 import type { GameMap, Room } from "./map";
 
 /**
@@ -72,4 +73,6 @@ export type GameState = {
 	acquisitionCounters: AcquisitionCounters;
 	/** カード交換の保留状態（敵撃破時に条件達成した場合にセット） */
 	cardExchangeState: CardExchangeState;
+	/** ターン内カード使用履歴（コンボ判定用、ターン開始時にnullリセット） */
+	comboHistory: ComboHistory | null;
 };
