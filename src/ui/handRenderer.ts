@@ -364,7 +364,10 @@ export class HandRenderer {
 						{ color: 0x000000, alpha: 0 },
 						{ color: CARD_COLORS.comboBorder, width: COMBO_BORDER_WIDTH },
 					);
-				} else if (comboPreview.direction !== undefined) {
+				} else if (
+					comboPreview.type === "charge" &&
+					comboPreview.direction !== undefined
+				) {
 					drawEdgeLine(
 						comboBorderGraphics,
 						CARD_WIDTH,
