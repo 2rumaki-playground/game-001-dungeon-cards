@@ -12,6 +12,7 @@ import {
 } from "../constants";
 import type {
 	ActionLogEntry,
+	ComboHistory,
 	DeckState,
 	Enemy,
 	EnemyType,
@@ -149,6 +150,7 @@ export function createTitleScreenState(seed?: number): GameState {
 		lastAttackerEnemyType: null,
 		acquisitionCounters: createInitialCounters(),
 		cardExchangeState: null,
+		comboHistory: null,
 	};
 }
 
@@ -190,6 +192,7 @@ export function createInitialGameState(
 		lastAttackerEnemyType: null,
 		acquisitionCounters: createInitialCounters(),
 		cardExchangeState: null,
+		comboHistory: null,
 	};
 }
 
@@ -324,6 +327,16 @@ export function setVisitedTiles(
 	visitedTiles: Set<string>,
 ): GameState {
 	return { ...state, visitedTiles, rng: cloneRng(state.rng) };
+}
+
+/**
+ * コンボ履歴を更新
+ */
+export function updateComboHistory(
+	state: GameState,
+	history: ComboHistory | null,
+): GameState {
+	return { ...state, comboHistory: history, rng: cloneRng(state.rng) };
 }
 
 /**

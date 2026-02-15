@@ -224,6 +224,12 @@ export const MAX_PLAY_SESSIONS = 50;
 export const FLOOR_AREA_SIZE = 5; // 5x5
 export const FLOOR_TILE_COUNT = FLOOR_AREA_SIZE * FLOOR_AREA_SIZE; // 25
 
+// コンボボーナス（v1.5）
+export const COMBO_BONUS = {
+	charge: 1,
+	chain: 1,
+} as const;
+
 // 特殊タイル効果（v1.3）
 export const TRAP_DAMAGE = 1;
 export const TREASURE_HEAL = 3;

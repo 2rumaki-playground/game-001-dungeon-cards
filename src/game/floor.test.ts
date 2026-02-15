@@ -72,6 +72,7 @@ function createTestState(overrides?: Partial<GameState>): GameState {
 		lastAttackerEnemyType: null,
 		acquisitionCounters: createInitialCounters(),
 		cardExchangeState: null,
+		comboHistory: null,
 		...overrides,
 	};
 }

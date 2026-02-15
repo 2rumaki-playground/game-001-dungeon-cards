@@ -11,12 +11,19 @@ import {
 import type { Direction, GameState, Position, SpecialTileType } from "../types";
 import { DIRECTION_DELTA } from "../types";
 import { applyDamageToEnemy } from "./combat";
+import { detectCombo, getComboBonus } from "./combo";
 import { getEffectiveCardCost } from "./debugCheats";
 import { playCard } from "./deck";
 import { revealAtPosition } from "./fogOfWar";
 import { isInBounds } from "./map";
 import { recordCardUsage } from "./playStats";
-import { addActionLog, setDeck, setVisitedTiles, updatePlayer } from "./state";
+import {
+	addActionLog,
+	setDeck,
+	setVisitedTiles,
+	updateComboHistory,
+	updatePlayer,
+} from "./state";
 import { applyTileEffect } from "./tileEffect";
 
 /**
@@ -87,6 +94,12 @@ export function executeMove(
 	// AP消費 + カードを捨て札へ
 	let next = consumeApAndPlayCard(state, cardId, getEffectiveCardCost("move"));
 	recordCardUsage("move");
+
+	// comboHistory更新
+	next = updateComboHistory(next, {
+		lastCardType: "move",
+		lastDirection: direction,
+	});
 
 	// 移動判定
 	if (!canMove(state, direction)) {
@@ -187,6 +200,7 @@ export type AttackResult = {
  *
  * 成功/失敗に関わらずAP消費・カード使用を行う。
  * 成功時は敵にダメージ、HP0以下で敵を削除。
+ * コンボ判定は呼び出し元（executeAttack等）で行い、comboBonus引数で渡す。
  */
 function executeAttackBase(
 	state: GameState,
@@ -195,9 +209,16 @@ function executeAttackBase(
 	apCost: number,
 	damage: number,
 	missLog: string,
+	comboBonus: number,
+	comboLog: string | null,
 ): AttackResult {
 	// AP消費 + カードを捨て札へ
-	const next = consumeApAndPlayCard(state, cardId, apCost);
+	let next = consumeApAndPlayCard(state, cardId, apCost);
+
+	// コンボ発動ログ
+	if (comboLog) {
+		next = addActionLog(next, comboLog, "system");
+	}
 
 	// 攻撃判定（AP消費・カード使用後の状態で判定）
 	const result = canAttack(next, direction);
@@ -210,7 +231,8 @@ function executeAttackBase(
 	}
 
 	// 敵にダメージ（HP0以下で自動除去）
-	const damageResult = applyDamageToEnemy(next, result.enemyId, damage);
+	const totalDamage = damage + comboBonus;
+	const damageResult = applyDamageToEnemy(next, result.enemyId, totalDamage);
 
 	return {
 		state: damageResult.state,
@@ -219,6 +241,14 @@ function executeAttackBase(
 		overkill: damageResult.overkill,
 	};
 }
+
+/**
+ * コンボ種別に対応するログメッセージ
+ */
+const COMBO_LOG_MESSAGE: Record<string, string> = {
+	charge: "突撃コンボ発動！",
+	chain: "連撃コンボ発動！",
+};
 
 /**
  * 攻撃カード使用時のプレイヤー攻撃処理
@@ -233,14 +263,31 @@ export function executeAttack(
 	direction: Direction,
 ): AttackResult {
 	recordCardUsage("attack");
-	return executeAttackBase(
+
+	// コンボ判定（comboHistory更新前に判定）
+	const combo = detectCombo(state.comboHistory, "attack", direction);
+	const comboBonus = combo ? getComboBonus(combo) : 0;
+	const comboLog = combo ? (COMBO_LOG_MESSAGE[combo] ?? null) : null;
+
+	const result = executeAttackBase(
 		state,
 		cardId,
 		direction,
 		getEffectiveCardCost("attack"),
 		PLAYER_ATTACK_DAMAGE,
 		"攻撃できなかった",
+		comboBonus,
+		comboLog,
 	);
+
+	// comboHistory更新
+	return {
+		...result,
+		state: updateComboHistory(result.state, {
+			lastCardType: "attack",
+			lastDirection: direction,
+		}),
+	};
 }
 
 /**
@@ -249,6 +296,7 @@ export function executeAttack(
  * 成功/失敗に関わらずAP消費・カード使用を行う。
  * 成功時は敵に大ダメージを与え、HP0以下で敵を削除。
  * 戻り値の hit でヒット情報を返す。
+ * strong_attackはコンボ対象外（トリガーにも判定対象にもならない）。
  */
 export function executeStrongAttack(
 	state: GameState,
@@ -256,14 +304,25 @@ export function executeStrongAttack(
 	direction: Direction,
 ): AttackResult {
 	recordCardUsage("strong_attack");
-	return executeAttackBase(
+	const result = executeAttackBase(
 		state,
 		cardId,
 		direction,
 		getEffectiveCardCost("strong_attack"),
 		PLAYER_STRONG_ATTACK_DAMAGE,
 		"強攻撃できなかった",
+		0,
+		null,
 	);
+
+	// comboHistory更新（コンボ対象外だが履歴には記録）
+	return {
+		...result,
+		state: updateComboHistory(result.state, {
+			lastCardType: "strong_attack",
+			lastDirection: direction,
+		}),
+	};
 }
 
 /** ジャンプ実行結果 */
@@ -299,6 +358,12 @@ export function executeJump(
 	// AP消費 + カードを捨て札へ
 	let next = consumeApAndPlayCard(state, cardId, getEffectiveCardCost("jump"));
 	recordCardUsage("jump");
+
+	// comboHistory更新
+	next = updateComboHistory(next, {
+		lastCardType: "jump",
+		lastDirection: direction,
+	});
 
 	// 着地先（2マス先）の座標を計算
 	const landX = next.player.position.x + delta.x * JUMP_DISTANCE;
@@ -403,12 +468,14 @@ export function executeJump(
  */
 export function executeWait(state: GameState, cardId: string): GameState {
 	// AP消費 + カードを捨て札へ
-	const next = consumeApAndPlayCard(
-		state,
-		cardId,
-		getEffectiveCardCost("wait"),
-	);
+	let next = consumeApAndPlayCard(state, cardId, getEffectiveCardCost("wait"));
 	recordCardUsage("wait");
+
+	// comboHistory更新
+	next = updateComboHistory(next, {
+		lastCardType: "wait",
+		lastDirection: null,
+	});
 
 	return addActionLog(next, "待機した", "player");
 }
