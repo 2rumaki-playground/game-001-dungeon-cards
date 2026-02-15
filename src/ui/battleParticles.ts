@@ -131,6 +131,38 @@ export function createTrapDamageParticleConfig(origin: Vec2): ParticleConfig {
 }
 
 /**
+ * 突撃コンボ用パーティクル設定を生成
+ * 黄色系の放射エフェクト
+ */
+export function createChargeComboParticleConfig(origin: Vec2): ParticleConfig {
+	return {
+		count: 15,
+		origin,
+		color: [0xffd700, 0xffaa00, 0xffee44],
+		speed: { min: 0.1, max: 0.25 },
+		life: { min: 250, max: 450 },
+		size: { min: 2, max: 5 },
+		pattern: { type: "radial" },
+	};
+}
+
+/**
+ * 連撃コンボ用パーティクル設定を生成
+ * シアン系の放射エフェクト
+ */
+export function createChainComboParticleConfig(origin: Vec2): ParticleConfig {
+	return {
+		count: 12,
+		origin,
+		color: [0x00ddff, 0x44eeff, 0x0099cc],
+		speed: { min: 0.08, max: 0.2 },
+		life: { min: 200, max: 400 },
+		size: { min: 2, max: 5 },
+		pattern: { type: "radial" },
+	};
+}
+
+/**
  * カードタイプからヒット時パーティクル設定を取得
  */
 export function getAttackParticleConfig(

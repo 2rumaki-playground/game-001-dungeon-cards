@@ -8,7 +8,13 @@ import {
 	PLAYER_ATTACK_DAMAGE,
 	PLAYER_STRONG_ATTACK_DAMAGE,
 } from "../constants";
-import type { Direction, GameState, Position, SpecialTileType } from "../types";
+import type {
+	ComboType,
+	Direction,
+	GameState,
+	Position,
+	SpecialTileType,
+} from "../types";
 import { DIRECTION_DELTA } from "../types";
 import { applyDamageToEnemy } from "./combat";
 import { detectCombo, getComboBonus } from "./combo";
@@ -193,6 +199,8 @@ export type AttackResult = {
 	enemyId?: string;
 	/** 超過ダメージ量（ミス時は0） */
 	overkill: number;
+	/** 発動したコンボ種別（未発動時はundefined） */
+	comboType?: ComboType;
 };
 
 /**
@@ -283,6 +291,7 @@ export function executeAttack(
 	// comboHistory更新
 	return {
 		...result,
+		comboType: combo ?? undefined,
 		state: updateComboHistory(result.state, {
 			lastCardType: "attack",
 			lastDirection: direction,

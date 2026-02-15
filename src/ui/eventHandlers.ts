@@ -37,10 +37,13 @@ import {
 } from "../utils/statsStorage";
 import { deleteSaveData, hasSaveData, loadGame } from "../utils/storage";
 import {
+	createChainComboParticleConfig,
+	createChargeComboParticleConfig,
 	createHealParticleConfig,
 	createJumpParticleConfig,
 	createTrapDamageParticleConfig,
 } from "./battleParticles";
+import { animateComboPopup } from "./comboPopup";
 import {
 	calculateCameraOffset,
 	clampCameraOffset,
@@ -184,6 +187,35 @@ async function handleMoveCardExecution(
 }
 
 /**
+ * コンボ発動時の演出（ポップアップ + パーティクル）を発火
+ * 攻撃アニメーションと並列で実行するためPromiseを返す
+ */
+function emitComboEffects(
+	ctx: GameContext,
+	comboType: "charge" | "chain",
+): Promise<void> {
+	const playerPos = ctx.state.player.position;
+	const mapContainer = ctx.ui.mapRenderer.getContainer();
+
+	// ポップアップ（マップコンテナ上）
+	const popupPromise = animateComboPopup(mapContainer, playerPos, comboType);
+
+	// パーティクル
+	const particleOrigin = gridToParticlePosition(
+		playerPos,
+		mapContainer,
+		ctx.ui.particleSystem.getContainer(),
+	);
+	const particleConfig =
+		comboType === "charge"
+			? createChargeComboParticleConfig(particleOrigin)
+			: createChainComboParticleConfig(particleOrigin);
+	const particlePromise = ctx.ui.particleSystem.emit(particleConfig);
+
+	return Promise.all([popupPromise, particlePromise]).then(() => {});
+}
+
+/**
  * 攻撃カードの実行と対応するアニメーション
  */
 async function handleAttackCardExecution(
@@ -196,9 +228,16 @@ async function handleAttackCardExecution(
 		hit,
 		enemyId,
 		overkill,
+		comboType,
 	} = executeAttack(ctx.state, cardId, direction);
 	ctx.ui.directionSelector.hide();
 	ctx.pendingCard = null;
+
+	// コンボ演出（攻撃アニメーションと並列で発火、awaitしない）
+	const comboEffectPromise = comboType
+		? emitComboEffects(ctx, comboType)
+		: undefined;
+
 	if (hit && enemyId) {
 		await updateStateWithAttackAnimation(
 			ctx,
@@ -210,6 +249,9 @@ async function handleAttackCardExecution(
 	} else {
 		await updateStateWithMissAnimation(ctx, next, direction);
 	}
+
+	// コンボ演出の完了を待機
+	await comboEffectPromise;
 }
 
 /**
