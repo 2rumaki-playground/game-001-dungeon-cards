@@ -28,6 +28,39 @@ export function drawRoundedRect(
 }
 
 /**
+ * 矩形の指定された1辺をストロークで描画する
+ * コンボ予告表示（charge）の1辺ハイライトに使用
+ */
+export function drawEdgeLine(
+	graphics: Graphics,
+	width: number,
+	height: number,
+	radius: number,
+	edge: "up" | "down" | "left" | "right",
+	stroke: { color: number; width: number },
+): void {
+	switch (edge) {
+		case "up":
+			graphics.moveTo(radius, 0);
+			graphics.lineTo(width - radius, 0);
+			break;
+		case "down":
+			graphics.moveTo(radius, height);
+			graphics.lineTo(width - radius, height);
+			break;
+		case "left":
+			graphics.moveTo(0, radius);
+			graphics.lineTo(0, height - radius);
+			break;
+		case "right":
+			graphics.moveTo(width, radius);
+			graphics.lineTo(width, height - radius);
+			break;
+	}
+	graphics.stroke(stroke);
+}
+
+/**
  * 半透明オーバーレイを設定する（背面UIへのポインタ入力を吸収）
  * 呼び出し側で new Graphics() を渡す
  */

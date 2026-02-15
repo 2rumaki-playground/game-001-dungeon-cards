@@ -121,6 +121,7 @@ async function showTileEffectPopup(
 function clearCardQueue(ctx: GameContext): void {
 	ctx.cardQueue = [];
 	ctx.ui.handRenderer.setQueuedCards(new Map());
+	ctx.ui.handRenderer.setComboHistory(ctx.state.comboHistory);
 	ctx.ui.handRenderer.render(ctx.state.deck.hand, ctx.state.player.ap);
 }
 
