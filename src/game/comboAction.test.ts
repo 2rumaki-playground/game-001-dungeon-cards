@@ -43,6 +43,7 @@ describe("コンボ発動（統合テスト）", () => {
 		const afterAttack = attackResult.state;
 
 		expect(attackResult.hit).toBe(true);
+		expect(attackResult.comboType).toBe("charge");
 
 		// 敵のHP: 初期HP - (基本ダメージ + コンボボーナス)
 		const expectedDamage = PLAYER_ATTACK_DAMAGE + COMBO_BONUS.charge;
@@ -83,6 +84,7 @@ describe("コンボ発動（統合テスト）", () => {
 			"right",
 		);
 		expect(attackResult.hit).toBe(true);
+		expect(attackResult.comboType).toBeUndefined();
 
 		// 敵のHP: 初期HP - 基本ダメージのみ（コンボなし）
 		const enemyAfter = attackResult.state.enemies.find(
@@ -123,6 +125,7 @@ describe("コンボ発動（統合テスト）", () => {
 		// 2枚目: 右方向攻撃→連撃コンボ
 		const attack2 = executeAttack(attack1.state, "test-card-1", "right");
 		expect(attack2.hit).toBe(true);
+		expect(attack2.comboType).toBe("chain");
 
 		// enemy2のHP: 初期HP - (基本ダメージ + コンボボーナス)
 		const expectedDamage = PLAYER_ATTACK_DAMAGE + COMBO_BONUS.chain;
@@ -144,6 +147,7 @@ describe("コンボ発動（統合テスト）", () => {
 
 		const attackResult = executeAttack(state, "test-card-1", "up");
 		expect(attackResult.hit).toBe(true);
+		expect(attackResult.comboType).toBeUndefined();
 
 		// 敵のHP: 初期HP - 基本ダメージのみ
 		const enemy = attackResult.state.enemies.find((e) => e.id === "enemy-1");

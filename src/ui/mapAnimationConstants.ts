@@ -5,6 +5,7 @@
 import type { Graphics } from "pixi.js";
 import { CELL_SIZE } from "../constants";
 import type { EnemyType } from "../types/character";
+import type { ComboType } from "../types/combo";
 
 /** プレイヤー移動アニメーションの時間（ms） */
 export const PLAYER_MOVE_DURATION = 150;
@@ -93,6 +94,33 @@ export const HP_BAR_HEIGHT = 6;
 
 /** HPバー背景色 */
 export const HP_BAR_BG_COLOR = 0x333333;
+
+/** コンボポップアップのフォントサイズ */
+export const COMBO_POPUP_FONT_SIZE = 20;
+
+/** コンボポップアップの上昇距離（px） */
+export const COMBO_POPUP_RISE = 32;
+
+/** コンボポップアップのアニメーション時間（ms） */
+export const COMBO_POPUP_DURATION = 700;
+
+/** コンボポップアップのアウトライン幅 */
+export const COMBO_POPUP_STROKE_WIDTH = 3;
+
+/** コンボポップアップのアウトライン色 */
+export const COMBO_POPUP_STROKE_COLOR = 0x000000;
+
+/** コンボ種別ごとの表示テキスト */
+export const COMBO_POPUP_TEXT: Record<ComboType, string> = {
+	charge: "突撃!",
+	chain: "連撃!",
+};
+
+/** コンボ種別ごとの色 */
+export const COMBO_POPUP_COLORS: Record<ComboType, number> = {
+	charge: 0xffd700,
+	chain: 0x00ddff,
+};
 
 /** 残骸パーティクルの色 */
 const REMNANT_COLOR = 0x999999;

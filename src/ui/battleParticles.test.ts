@@ -6,6 +6,8 @@ import { describe, expect, it } from "vitest";
 import {
 	calculateDefeatEffectScale,
 	createAttackParticleConfig,
+	createChainComboParticleConfig,
+	createChargeComboParticleConfig,
 	createDefeatParticleConfig,
 	createHealParticleConfig,
 	createJumpParticleConfig,
@@ -218,6 +220,50 @@ describe("createTrapDamageParticleConfig", () => {
 
 	it("radialパターンが使用される", () => {
 		const config = createTrapDamageParticleConfig({ x: 0, y: 0 });
+		expect(config.pattern.type).toBe("radial");
+	});
+});
+
+describe("createChargeComboParticleConfig", () => {
+	it("originが設定される", () => {
+		const config = createChargeComboParticleConfig({ x: 100, y: 200 });
+		expect(config.origin).toEqual({ x: 100, y: 200 });
+	});
+
+	it("黄色系の色が使用される", () => {
+		const config = createChargeComboParticleConfig({ x: 0, y: 0 });
+		const colors = Array.isArray(config.color) ? config.color : [config.color];
+		for (const c of colors) {
+			// 黄色系: 赤成分が高い
+			const r = (c >> 16) & 0xff;
+			expect(r).toBeGreaterThan(0x80);
+		}
+	});
+
+	it("radialパターンが使用される", () => {
+		const config = createChargeComboParticleConfig({ x: 0, y: 0 });
+		expect(config.pattern.type).toBe("radial");
+	});
+});
+
+describe("createChainComboParticleConfig", () => {
+	it("originが設定される", () => {
+		const config = createChainComboParticleConfig({ x: 150, y: 250 });
+		expect(config.origin).toEqual({ x: 150, y: 250 });
+	});
+
+	it("シアン系の色が使用される", () => {
+		const config = createChainComboParticleConfig({ x: 0, y: 0 });
+		const colors = Array.isArray(config.color) ? config.color : [config.color];
+		for (const c of colors) {
+			// シアン系: 青成分が高い
+			const b = c & 0xff;
+			expect(b).toBeGreaterThan(0x80);
+		}
+	});
+
+	it("radialパターンが使用される", () => {
+		const config = createChainComboParticleConfig({ x: 0, y: 0 });
 		expect(config.pattern.type).toBe("radial");
 	});
 });
