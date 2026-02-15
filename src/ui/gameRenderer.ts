@@ -128,8 +128,8 @@ export function renderGameScreen(
 		visitedTiles,
 	);
 	applyCameraOffset(ctx);
+	ctx.ui.handRenderer.setComboHistory(ctx.state.comboHistory);
 	if (!skipHand) {
-		ctx.ui.handRenderer.setComboHistory(ctx.state.comboHistory);
 		ctx.ui.handRenderer.render(ctx.state.deck.hand, ctx.state.player.ap);
 	}
 	ctx.ui.turnEndButton.show();
