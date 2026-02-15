@@ -28,7 +28,13 @@ import { buildQueuedCardIndexMap, canEnqueueCard } from "../game/cardQueue";
 import { getEffectiveCardCost, resetDebugCheats } from "../game/debugCheats";
 import { endSession, startSession } from "../game/playStats";
 import type { GameContext } from "../gameContext";
-import type { Card, Direction, Position, SpecialTileType } from "../types";
+import type {
+	Card,
+	ComboType,
+	Direction,
+	Position,
+	SpecialTileType,
+} from "../types";
 import { DIRECTION_DELTA } from "../types";
 import {
 	clearPlaySessions,
@@ -192,7 +198,7 @@ async function handleMoveCardExecution(
  */
 function emitComboEffects(
 	ctx: GameContext,
-	comboType: "charge" | "chain",
+	comboType: ComboType,
 ): Promise<void> {
 	const playerPos = ctx.state.player.position;
 	const mapContainer = ctx.ui.mapRenderer.getContainer();
