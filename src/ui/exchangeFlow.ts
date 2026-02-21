@@ -74,11 +74,7 @@ function showExchangeSelection(
 	acquiredCardType: CardType,
 ): Promise<string | null> {
 	return new Promise((resolve) => {
-		const allCards = [
-			...state.deck.drawPile,
-			...state.deck.hand,
-			...state.deck.discardPile,
-		];
+		const allCards = [...state.deck.hand];
 
 		// exchange画面状態に遷移
 		const exchangeState: GameState = {

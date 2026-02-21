@@ -113,13 +113,11 @@ describe("executeDebugOneshotKill", () => {
 				},
 			],
 			deck: {
-				deckOrder: [],
-				drawPile: [],
 				hand: [
 					{ id: "card-1", type: "move", keyword: "flame" },
 					{ id: "card-2", type: "attack", keyword: "flame" },
 				],
-				discardPile: [],
+				usedCardIds: [],
 			},
 		});
 
@@ -150,13 +148,11 @@ describe("executeDebugTeleport", () => {
 	it("手札が消費されない", () => {
 		const state = createTestState({
 			deck: {
-				deckOrder: [],
-				drawPile: [],
 				hand: [
 					{ id: "card-1", type: "move", keyword: "flame" },
 					{ id: "card-2", type: "attack", keyword: "flame" },
 				],
-				discardPile: [],
+				usedCardIds: [],
 			},
 		});
 

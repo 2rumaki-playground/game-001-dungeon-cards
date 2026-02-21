@@ -6,7 +6,6 @@
 import { ENEMY_ACQUISITION_CONDITIONS } from "../constants";
 import type {
 	AcquisitionCounters,
-	Card,
 	CardType,
 	DeckState,
 	EnemyType,
@@ -94,8 +93,8 @@ export function checkAcquisitionCondition(
 }
 
 /**
- * デッキ内のカード交換
- * 指定カードを除去し、新カードをdeckOrderの同位置に挿入、drawPile末尾に追加
+ * 手札内のカード交換
+ * 指定カードを除去し、新カードを同位置に挿入
  */
 export function exchangeCardInDeck(
 	state: GameState,
@@ -105,27 +104,19 @@ export function exchangeCardInDeck(
 	const rng = state.rng.clone();
 	const newCard = createCard(newCardType, assignRandomKeyword(rng));
 
-	// deckOrderから除去対象のインデックスを取得
-	const orderIndex = state.deck.deckOrder.findIndex(
-		(c) => c.id === removeCardId,
-	);
-	if (orderIndex < 0) {
+	// 手札から除去対象のインデックスを取得
+	const handIndex = state.deck.hand.findIndex((c) => c.id === removeCardId);
+	if (handIndex < 0) {
 		throw new Error(
-			`exchangeCardInDeck: removeCardId "${removeCardId}" not found in deckOrder`,
+			`exchangeCardInDeck: removeCardId "${removeCardId}" not found in hand`,
 		);
 	}
-	const newDeckOrder = [...state.deck.deckOrder];
-	newDeckOrder.splice(orderIndex, 1, newCard);
-
-	// 3ゾーンから除去
-	const removeFromZone = (zone: Card[]): Card[] =>
-		zone.filter((c) => c.id !== removeCardId);
+	const newHand = [...state.deck.hand];
+	newHand.splice(handIndex, 1, newCard);
 
 	const newDeck: DeckState = {
-		deckOrder: newDeckOrder,
-		drawPile: [...removeFromZone(state.deck.drawPile), newCard],
-		hand: removeFromZone(state.deck.hand),
-		discardPile: removeFromZone(state.deck.discardPile),
+		hand: newHand,
+		usedCardIds: state.deck.usedCardIds.filter((id) => id !== removeCardId),
 	};
 
 	return {

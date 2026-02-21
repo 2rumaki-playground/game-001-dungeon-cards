@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { HAND_LIMIT, TURN_START_AP } from "../constants";
+import { TURN_START_AP } from "../constants";
 import type { GameState } from "../types";
 import { RNG } from "../utils/rng";
 import { createInitialDeckState } from "./deck";
@@ -37,14 +37,19 @@ describe("turn", () => {
 			expect(next.player.ap).toBe(TURN_START_AP);
 		});
 
-		it("手札を上限まで補充する", () => {
-			const state = createGameState();
-			// 手札が空の状態
-			expect(state.deck.hand.length).toBe(0);
+		it("使用済みカードIDリストをリセットする", () => {
+			const deck = createInitialDeckState(new RNG(12345));
+			// 使用済みカードがある状態
+			const usedCardIds = [deck.hand[0].id, deck.hand[1].id];
+			const state = createGameState({
+				deck: { ...deck, usedCardIds },
+			});
+
+			expect(state.deck.usedCardIds.length).toBe(2);
 
 			const next = startPlayerTurn(state);
 
-			expect(next.deck.hand.length).toBe(HAND_LIMIT);
+			expect(next.deck.usedCardIds.length).toBe(0);
 		});
 
 		it("ターンをplayerに設定する", () => {
@@ -57,48 +62,43 @@ describe("turn", () => {
 			expect(next.turn).toBe("player");
 		});
 
-		it("既に手札がある場合は上限まで補充する", () => {
+		it("手札はそのまま保持される", () => {
 			const deck = createInitialDeckState(new RNG(12345));
-			// 手札に1枚ある状態を作る
-			const hand = deck.drawPile.slice(0, 1);
-			const drawPile = deck.drawPile.slice(1);
-			const state = createGameState({
-				deck: { ...deck, hand, drawPile },
-			});
+			const state = createGameState({ deck });
+			const originalHand = state.deck.hand;
 
 			const next = startPlayerTurn(state);
 
-			expect(next.deck.hand.length).toBe(HAND_LIMIT);
+			expect(next.deck.hand).toEqual(originalHand);
 		});
 
 		it("元の状態を変更しない（イミュータブル）", () => {
+			const deck = createInitialDeckState(new RNG(12345));
+			const usedCardIds = [deck.hand[0].id];
 			const state = createGameState({
 				player: { ...createInitialPlayer(), ap: 1 },
+				deck: { ...deck, usedCardIds },
 			});
 			const originalAp = state.player.ap;
-			const originalHandLength = state.deck.hand.length;
+			const originalUsedCardIds = state.deck.usedCardIds.length;
 
 			startPlayerTurn(state);
 
 			expect(state.player.ap).toBe(originalAp);
-			expect(state.deck.hand.length).toBe(originalHandLength);
+			expect(state.deck.usedCardIds.length).toBe(originalUsedCardIds);
 		});
 	});
 
 	describe("endPlayerTurn", () => {
-		it("手札をすべて捨て札に移動する", () => {
+		it("手札はそのまま保持される", () => {
 			const deck = createInitialDeckState(new RNG(12345));
-			// 手札に3枚ある状態
-			const hand = deck.drawPile.slice(0, 3);
-			const drawPile = deck.drawPile.slice(3);
-			const state = createGameState({
-				deck: { ...deck, hand, drawPile, discardPile: [] },
-			});
+			const state = createGameState({ deck });
+			const originalHandLength = state.deck.hand.length;
 
 			const next = endPlayerTurn(state);
 
-			expect(next.deck.hand.length).toBe(0);
-			expect(next.deck.discardPile.length).toBe(3);
+			expect(next.deck.hand.length).toBe(originalHandLength);
+			expect(next.deck.hand).toEqual(state.deck.hand);
 		});
 
 		it("ターンをplayerからenemyに遷移する", () => {
@@ -115,11 +115,7 @@ describe("turn", () => {
 
 		it("元の状態を変更しない（イミュータブル）", () => {
 			const deck = createInitialDeckState(new RNG(12345));
-			const hand = deck.drawPile.slice(0, 3);
-			const drawPile = deck.drawPile.slice(3);
-			const state = createGameState({
-				deck: { ...deck, hand, drawPile },
-			});
+			const state = createGameState({ deck });
 			const originalHandLength = state.deck.hand.length;
 			const originalTurn = state.turn;
 

@@ -21,14 +21,13 @@ import {
 	assignRandomKeyword,
 	createCard,
 	createInitialDeckState,
-	drawCards,
 } from "./deck";
 import { createInitialGameState } from "./state";
 
 /**
  * デバッグ用デッキを生成
  *
- * compositionで指定されたカード種別・枚数に基づいてデッキを構築し、シャッフルして返す。
+ * compositionで指定されたカード種別・枚数に基づいて手札を構築する。
  */
 export function createDebugDeckState(
 	composition: DebugDeckComposition,
@@ -51,13 +50,9 @@ export function createDebugDeckState(
 			createCard(type as CardType, assignRandomKeyword(rng)),
 		);
 	});
-	// デバッグ用: シャッフルした順序をdeckOrderとする（本番は固定順）
-	const shuffled = rng.shuffle(cards);
 	return {
-		deckOrder: [...shuffled],
-		drawPile: [...shuffled],
-		hand: [],
-		discardPile: [],
+		hand: cards,
+		usedCardIds: [],
 	};
 }
 
@@ -167,13 +162,10 @@ export function startNewGameWithDebugParams(
 		maxAp,
 	};
 
-	// 手札を補充
-	const deckWithHand = drawCards(deck);
-
 	return {
 		...base,
 		enemies,
-		deck: deckWithHand,
+		deck,
 		player,
 	};
 }

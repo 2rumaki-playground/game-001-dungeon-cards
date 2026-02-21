@@ -238,11 +238,11 @@ describe("state", () => {
 			}
 		});
 
-		it("デッキが生成され手札がドローされる", () => {
+		it("デッキが生成され手札がHAND_LIMIT枚ある", () => {
 			const titleState = createTitleScreenState(12345);
 			const gameState = startNewGame(titleState);
 			expect(gameState.deck.hand.length).toBe(HAND_LIMIT);
-			expect(gameState.deck.drawPile.length).toBeGreaterThan(0);
+			expect(gameState.deck.usedCardIds).toEqual([]);
 		});
 
 		it("プレイヤーのHP/APが初期値", () => {
@@ -281,11 +281,11 @@ describe("state", () => {
 			expect(boss).toBeDefined();
 		});
 
-		it("デッキが生成され手札がドローされる", () => {
+		it("デッキが生成され手札がHAND_LIMIT枚ある", () => {
 			const titleState = createTitleScreenState(12345);
 			const gameState = startNewGameAtFloor(titleState, 5);
 			expect(gameState.deck.hand.length).toBe(HAND_LIMIT);
-			expect(gameState.deck.drawPile.length).toBeGreaterThan(0);
+			expect(gameState.deck.usedCardIds).toEqual([]);
 		});
 
 		it("CLEAR_FLOOR以上の階層も指定できる", () => {
@@ -379,8 +379,7 @@ describe("state", () => {
 			expect(titleState.player.ap).toBe(MAX_AP);
 			expect(titleState.enemies).toEqual([]);
 			expect(titleState.deck.hand).toEqual([]);
-			expect(titleState.deck.drawPile).toEqual([]);
-			expect(titleState.deck.discardPile).toEqual([]);
+			expect(titleState.deck.usedCardIds).toEqual([]);
 			expect(titleState.actionLog).toEqual([]);
 		});
 	});

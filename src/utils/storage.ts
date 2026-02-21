@@ -6,7 +6,7 @@
 import { getEnemyCount, INITIAL_FLOOR, KEYWORDS } from "../constants";
 import { createInitialCounters } from "../game/cardAcquisition";
 import { initCardIdCounterFromDeck } from "../game/deck";
-import type { AcquisitionCounters, GameState, Room } from "../types";
+import type { AcquisitionCounters, DeckState, GameState, Room } from "../types";
 import { RNG } from "./rng";
 
 const SAVE_KEY = "dungeon-cards-save";
@@ -207,15 +207,17 @@ export function loadGame(): GameState | null {
 
 		// 旧セーブデータの後方互換: keyword未設定のカードに"flame"を補完
 		if (data.deck && typeof data.deck === "object") {
-			for (const zone of ["deckOrder", "drawPile", "hand", "discardPile"]) {
-				const cards = data.deck[zone];
-				if (Array.isArray(cards)) {
-					for (const card of cards) {
-						if (card && typeof card === "object" && !card.keyword) {
-							card.keyword = KEYWORDS[0];
-						}
+			const cards = data.deck.hand;
+			if (Array.isArray(cards)) {
+				for (const card of cards) {
+					if (card && typeof card === "object" && !card.keyword) {
+						card.keyword = KEYWORDS[0];
 					}
 				}
+			}
+			// usedCardIdsが未設定の場合は空配列を補完
+			if (!Array.isArray(data.deck.usedCardIds)) {
+				data.deck.usedCardIds = [];
 			}
 		}
 
@@ -275,24 +277,22 @@ export function loadGame(): GameState | null {
 			comboHistory: null,
 		};
 
-		// 旧セーブデータ互換: deckOrderがない場合は全カードをID順でソートして生成
-		if (state.deck && !Array.isArray(state.deck.deckOrder)) {
-			const allCards = [
-				...state.deck.drawPile,
-				...state.deck.hand,
-				...state.deck.discardPile,
-			];
-			const sortedCards = [...allCards].sort((a, b) => {
-				const aMatch = a.id.match(/^card-(\d+)$/);
-				const bMatch = b.id.match(/^card-(\d+)$/);
-				const aId = aMatch ? Number(aMatch[1]) : Number.MAX_SAFE_INTEGER;
-				const bId = bMatch ? Number(bMatch[1]) : Number.MAX_SAFE_INTEGER;
-				return aId - bId;
-			});
+		// 旧セーブデータ互換: 3ゾーン形式のデッキを手札形式に変換
+		if (
+			state.deck &&
+			(Array.isArray((state.deck as Record<string, unknown>).drawPile) ||
+				Array.isArray((state.deck as Record<string, unknown>).discardPile))
+		) {
+			const oldDeck = state.deck as Record<string, unknown>;
+			const drawPile = Array.isArray(oldDeck.drawPile) ? oldDeck.drawPile : [];
+			const hand = Array.isArray(oldDeck.hand) ? oldDeck.hand : [];
+			const discardPile = Array.isArray(oldDeck.discardPile)
+				? oldDeck.discardPile
+				: [];
 			state.deck = {
-				...state.deck,
-				deckOrder: sortedCards,
-			};
+				hand: [...drawPile, ...hand, ...discardPile],
+				usedCardIds: [],
+			} as DeckState;
 		}
 
 		// カードIDカウンターをデッキの最大IDで初期化

@@ -9,7 +9,6 @@ import {
 	updateDefeatCounter,
 	updateHitCounter,
 } from "./cardAcquisition";
-import { validateDeckConsistency } from "./deck";
 
 describe("createInitialCounters", () => {
 	it("全カウンターが0で初期化される", () => {
@@ -166,104 +165,72 @@ describe("exchangeCardInDeck", () => {
 		];
 	}
 
-	it("drawPileからカードを除去して新カードを追加", () => {
+	it("手札からカードを除去して新カードを追加", () => {
 		const cards = createTestCards();
 		const state = createTestState({
 			deck: {
-				deckOrder: [...cards],
-				drawPile: [cards[0], cards[1], cards[2]],
-				hand: [cards[3], cards[4]],
-				discardPile: [cards[5]],
+				hand: [...cards],
+				usedCardIds: [],
 			},
 		});
 
 		const result = exchangeCardInDeck(state, "test-card-1", "strong_attack");
-		expect(result.deck.drawPile.some((c) => c.id === "test-card-1")).toBe(
-			false,
-		);
-		expect(result.deck.drawPile.some((c) => c.type === "strong_attack")).toBe(
-			true,
-		);
+		expect(result.deck.hand.some((c) => c.id === "test-card-1")).toBe(false);
+		expect(result.deck.hand.some((c) => c.type === "strong_attack")).toBe(true);
 	});
 
-	it("handからカードを除去して新カードをdrawPile末尾に追加", () => {
+	it("handの同位置に新カードを挿入", () => {
 		const cards = createTestCards();
 		const state = createTestState({
 			deck: {
-				deckOrder: [...cards],
-				drawPile: [cards[0], cards[1], cards[2]],
-				hand: [cards[3], cards[4]],
-				discardPile: [cards[5]],
-			},
-		});
-
-		const result = exchangeCardInDeck(state, "test-card-4", "jump");
-		expect(result.deck.hand.some((c) => c.id === "test-card-4")).toBe(false);
-		const lastDrawCard = result.deck.drawPile[result.deck.drawPile.length - 1];
-		expect(lastDrawCard.type).toBe("jump");
-	});
-
-	it("discardPileからカードを除去", () => {
-		const cards = createTestCards();
-		const state = createTestState({
-			deck: {
-				deckOrder: [...cards],
-				drawPile: [cards[0], cards[1], cards[2]],
-				hand: [cards[3], cards[4]],
-				discardPile: [cards[5]],
-			},
-		});
-
-		const result = exchangeCardInDeck(state, "test-card-6", "move");
-		expect(result.deck.discardPile.some((c) => c.id === "test-card-6")).toBe(
-			false,
-		);
-	});
-
-	it("deckOrderの同位置に新カードを挿入", () => {
-		const cards = createTestCards();
-		const state = createTestState({
-			deck: {
-				deckOrder: [...cards],
-				drawPile: [cards[0], cards[1], cards[2]],
-				hand: [cards[3], cards[4]],
-				discardPile: [cards[5]],
+				hand: [...cards],
+				usedCardIds: [],
 			},
 		});
 
 		const result = exchangeCardInDeck(state, "test-card-3", "jump");
-		expect(result.deck.deckOrder[2].type).toBe("jump");
-		expect(result.deck.deckOrder.length).toBe(6);
+		expect(result.deck.hand[2].type).toBe("jump");
+		expect(result.deck.hand.length).toBe(6);
 	});
 
-	it("デッキ整合性が維持される", () => {
+	it("手札の枚数が維持される", () => {
 		const cards = createTestCards();
 		const state = createTestState({
 			deck: {
-				deckOrder: [...cards],
-				drawPile: [cards[0], cards[1], cards[2]],
-				hand: [cards[3], cards[4]],
-				discardPile: [cards[5]],
+				hand: [...cards],
+				usedCardIds: [],
 			},
 		});
 
 		const result = exchangeCardInDeck(state, "test-card-2", "strong_attack");
-		expect(validateDeckConsistency(result.deck)).toBe(true);
+		expect(result.deck.hand.length).toBe(cards.length);
+	});
+
+	it("usedCardIdsから除去対象のIDが取り除かれる", () => {
+		const cards = createTestCards();
+		const state = createTestState({
+			deck: {
+				hand: [...cards],
+				usedCardIds: ["test-card-2", "test-card-4"],
+			},
+		});
+
+		const result = exchangeCardInDeck(state, "test-card-2", "strong_attack");
+		expect(result.deck.usedCardIds).not.toContain("test-card-2");
+		expect(result.deck.usedCardIds).toContain("test-card-4");
 	});
 
 	it("存在しないカードIDでエラーをthrow", () => {
 		const cards = createTestCards();
 		const state = createTestState({
 			deck: {
-				deckOrder: [...cards],
-				drawPile: [cards[0], cards[1], cards[2]],
-				hand: [cards[3], cards[4]],
-				discardPile: [cards[5]],
+				hand: [...cards],
+				usedCardIds: [],
 			},
 		});
 
 		expect(() =>
 			exchangeCardInDeck(state, "nonexistent-id", "strong_attack"),
-		).toThrow('removeCardId "nonexistent-id" not found in deckOrder');
+		).toThrow('removeCardId "nonexistent-id" not found in hand');
 	});
 });

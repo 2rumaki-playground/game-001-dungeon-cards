@@ -28,15 +28,11 @@ export type Card = {
 };
 
 /**
- * デッキ状態
+ * デッキ状態（固定手札方式）
  */
 export type DeckState = {
-	/** プレイヤーが設定した山札の順番 */
-	deckOrder: Card[];
-	/** 山札 */
-	drawPile: Card[];
-	/** 手札 */
+	/** 手札（固定4枚、交換のみで変化） */
 	hand: Card[];
-	/** 捨て札 */
-	discardPile: Card[];
+	/** ターン内使用済みカードID（ターン開始時にリセット） */
+	usedCardIds: string[];
 };

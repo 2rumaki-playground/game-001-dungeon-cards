@@ -1,10 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-	ENEMY_PARAMS,
-	HAND_LIMIT,
-	MAX_AP,
-	PLAYER_INITIAL_HP,
-} from "../constants";
+import { ENEMY_PARAMS, MAX_AP, PLAYER_INITIAL_HP } from "../constants";
 import { createTestState } from "../test-utils/createTestFixtures";
 import type {
 	DebugDeckComposition,
@@ -23,7 +18,7 @@ describe("debugStart", () => {
 			const rng = new RNG(42);
 			const deck = createDebugDeckState({ attack: 5, move: 3, jump: 2 }, rng);
 
-			const allCards = deck.drawPile;
+			const allCards = deck.hand;
 			expect(allCards.filter((c) => c.type === "attack")).toHaveLength(5);
 			expect(allCards.filter((c) => c.type === "move")).toHaveLength(3);
 			expect(allCards.filter((c) => c.type === "jump")).toHaveLength(2);
@@ -33,12 +28,11 @@ describe("debugStart", () => {
 		it("空のcompositionでは空デッキを返す", () => {
 			const rng = new RNG(42);
 			const deck = createDebugDeckState({}, rng);
-			expect(deck.drawPile).toHaveLength(0);
 			expect(deck.hand).toHaveLength(0);
-			expect(deck.discardPile).toHaveLength(0);
+			expect(deck.usedCardIds).toHaveLength(0);
 		});
 
-		it("カードがシャッフルされる", () => {
+		it("キーワードがRNGに基づいてランダムに割り当てられる", () => {
 			const rng1 = new RNG(42);
 			const rng2 = new RNG(99);
 			const composition = { attack: 5, move: 5 };
@@ -46,17 +40,16 @@ describe("debugStart", () => {
 			const deck1 = createDebugDeckState(composition, rng1);
 			const deck2 = createDebugDeckState(composition, rng2);
 
-			const types1 = deck1.drawPile.map((c) => c.type);
-			const types2 = deck2.drawPile.map((c) => c.type);
-			// 異なるシードでは並び順が異なる（確率的だが10枚あればほぼ確実）
-			expect(types1).not.toEqual(types2);
+			const keywords1 = deck1.hand.map((c) => c.keyword);
+			const keywords2 = deck2.hand.map((c) => c.keyword);
+			// 異なるシードではキーワードの並びが異なる（確率的だが10枚あればほぼ確実）
+			expect(keywords1).not.toEqual(keywords2);
 		});
 
-		it("手札と捨て札は空", () => {
+		it("usedCardIdsが空", () => {
 			const rng = new RNG(42);
 			const deck = createDebugDeckState({ attack: 3 }, rng);
-			expect(deck.hand).toHaveLength(0);
-			expect(deck.discardPile).toHaveLength(0);
+			expect(deck.usedCardIds).toHaveLength(0);
 		});
 
 		it("不正なカードタイプを指定した場合はエラーになる", () => {
@@ -264,13 +257,8 @@ describe("debugStart", () => {
 				deck: { attack: 10 },
 			});
 
-			const allCards = [
-				...result.deck.drawPile,
-				...result.deck.hand,
-				...result.deck.discardPile,
-			];
-			expect(allCards.every((c) => c.type === "attack")).toBe(true);
-			expect(allCards).toHaveLength(10);
+			expect(result.deck.hand.every((c) => c.type === "attack")).toBe(true);
+			expect(result.deck.hand).toHaveLength(10);
 		});
 
 		it("enemiesが反映される", () => {
@@ -309,23 +297,13 @@ describe("debugStart", () => {
 			expect(state.floor).toBe(originalFloor);
 		});
 
-		it("手札がHAND_LIMITまで補充される", () => {
+		it("全カードが手札に入る", () => {
 			const state = createTestState();
 			const result = startNewGameWithDebugParams(state, {
-				deck: { attack: 20 },
+				deck: { attack: 5 },
 			});
 
-			expect(result.deck.hand).toHaveLength(HAND_LIMIT);
-		});
-
-		it("デッキ枚数がHAND_LIMIT未満のとき全カードが手札に入る", () => {
-			const state = createTestState();
-			const result = startNewGameWithDebugParams(state, {
-				deck: { attack: 2 },
-			});
-
-			expect(result.deck.hand).toHaveLength(2);
-			expect(result.deck.drawPile).toHaveLength(0);
+			expect(result.deck.hand).toHaveLength(5);
 		});
 
 		it("NaN の seed を指定した場合にエラーを投げる", () => {
