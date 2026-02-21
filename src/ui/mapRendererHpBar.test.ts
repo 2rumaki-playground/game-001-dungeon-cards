@@ -5,6 +5,7 @@
 import "../test-utils/mapRendererTestSetup";
 import { type FederatedPointerEvent, Graphics } from "pixi.js";
 import { describe, expect, it, vi } from "vitest";
+import { CELL_SIZE } from "../constants";
 import { createRendererTestMap } from "../test-utils/mapRendererTestSetup";
 import { MapRenderer } from "./mapRenderer";
 
@@ -180,11 +181,12 @@ describe("MapRenderer HPゲージ", () => {
 		renderer.render(map, player, fullHpEnemies);
 
 		// HPゲージ描画: タイル全面のrect（幅=CELL_SIZE, 高さ=CELL_SIZE）
+		// プレイヤー + 敵 = 2つの満タンゲージ
 		const fullHpCalls = rectSpy.mock.calls.filter(
-			(args) => args[2] === 64 && args[3] === 64,
+			(args) => args[2] === CELL_SIZE && args[3] === CELL_SIZE,
 		);
-		expect(fullHpCalls).toHaveLength(1);
-		const fullGaugeHeight = fullHpCalls[0][3] as number;
+		expect(fullHpCalls).toHaveLength(2);
+		const fullGaugeHeight = CELL_SIZE;
 
 		// HP減少して再描画
 		rectSpy.mockClear();
@@ -199,13 +201,15 @@ describe("MapRenderer HPゲージ", () => {
 		];
 		renderer.render(map, player, damagedEnemies);
 
-		// ゲージの高さが HP比率 に応じて縮小
-		const damagedCalls = rectSpy.mock.calls.filter((args) => args[2] === 64);
+		// ゲージの高さが HP比率 に応じて縮小（プレイヤーの満タンゲージを除外）
+		const damagedCalls = rectSpy.mock.calls.filter(
+			(args) => args[2] === CELL_SIZE && (args[3] as number) < CELL_SIZE,
+		);
 		expect(damagedCalls).toHaveLength(1);
 		const damagedGaugeHeight = damagedCalls[0][3] as number;
 
 		expect(damagedGaugeHeight).toBeLessThan(fullGaugeHeight);
-		expect(damagedGaugeHeight).toBeCloseTo(64 * (1 / 3), 5);
+		expect(damagedGaugeHeight).toBeCloseTo(CELL_SIZE * (1 / 3), 5);
 
 		rectSpy.mockRestore();
 	});
@@ -235,6 +239,74 @@ describe("MapRenderer HPゲージ", () => {
 		const container = renderer.getContainer();
 		const enemiesContainer = container.children[4];
 		expect(enemiesContainer.children.length).toBe(0);
+	});
+});
+
+describe("MapRenderer プレイヤーHPゲージ", () => {
+	it("render後にプレイヤーコンテナにHPゲージとスプライトが含まれる", () => {
+		const renderer = new MapRenderer();
+		const map = createRendererTestMap();
+		const player = {
+			position: { x: 0, y: 0 },
+			hp: 10,
+			maxHp: 10,
+			ap: 3,
+			maxAp: 3,
+		};
+		renderer.render(map, player, []);
+
+		const playerContainer = renderer.getPlayerContainer();
+		// HPゲージ(Graphics) + スプライト(Sprite) = 2
+		expect(playerContainer.children.length).toBe(2);
+		expect(playerContainer.children[0]).toBeInstanceOf(Graphics);
+	});
+
+	it("updatePlayerHpGaugeでプレイヤーゲージが更新される", () => {
+		const renderer = new MapRenderer();
+		const map = createRendererTestMap();
+		const player = {
+			position: { x: 0, y: 0 },
+			hp: 10,
+			maxHp: 10,
+			ap: 3,
+			maxAp: 3,
+		};
+		renderer.render(map, player, []);
+
+		const playerContainer = renderer.getPlayerContainer();
+		const gauge = playerContainer.children[0] as Graphics;
+
+		const rectSpy = vi.spyOn(gauge, "rect");
+		const fillSpy = vi.spyOn(gauge, "fill");
+
+		renderer.updatePlayerHpGauge(0.5);
+
+		const expectedHeight = CELL_SIZE * 0.5;
+		const expectedY = CELL_SIZE - expectedHeight;
+		expect(rectSpy).toHaveBeenCalledWith(
+			0,
+			expectedY,
+			CELL_SIZE,
+			expectedHeight,
+		);
+		expect(fillSpy).toHaveBeenCalled();
+	});
+
+	it("clear後にプレイヤーコンテナの子が全て除去される", () => {
+		const renderer = new MapRenderer();
+		const map = createRendererTestMap();
+		const player = {
+			position: { x: 0, y: 0 },
+			hp: 10,
+			maxHp: 10,
+			ap: 3,
+			maxAp: 3,
+		};
+		renderer.render(map, player, []);
+		renderer.clear();
+
+		const playerContainer = renderer.getPlayerContainer();
+		expect(playerContainer.children.length).toBe(0);
 	});
 });
 

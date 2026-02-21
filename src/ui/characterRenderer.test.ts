@@ -74,16 +74,16 @@ function spyOnGraphics(g: Graphics) {
 
 // --- tests ---
 
-describe("CharacterRenderer HPゲージ", () => {
+describe("CharacterRenderer 敵HPゲージ", () => {
 	let renderer: CharacterRenderer;
 	let enemiesContainer: Container;
 
 	beforeEach(() => {
 		tickerMock.reset();
-		const playerSprite = new Sprite();
+		const playerContainer = new Container();
 		enemiesContainer = new Container();
 		renderer = new CharacterRenderer(
-			playerSprite,
+			playerContainer,
 			enemiesContainer,
 			createCallbacks(),
 		);
@@ -173,5 +173,143 @@ describe("CharacterRenderer HPゲージ", () => {
 		renderer.renderEnemies([]);
 
 		expect(renderer.getEnemyContainer("e1")).toBeUndefined();
+	});
+});
+
+describe("CharacterRenderer プレイヤーHPゲージ", () => {
+	let renderer: CharacterRenderer;
+	let playerContainer: Container;
+
+	beforeEach(() => {
+		tickerMock.reset();
+		playerContainer = new Container();
+		const enemiesContainer = new Container();
+		renderer = new CharacterRenderer(
+			playerContainer,
+			enemiesContainer,
+			createCallbacks(),
+		);
+	});
+
+	it("renderPlayer後にコンテナにHPゲージ(index 0)とスプライト(index 1)が追加される", () => {
+		const player = {
+			position: { x: 3, y: 3 },
+			hp: 10,
+			maxHp: 10,
+			ap: 3,
+			maxAp: 3,
+		};
+		renderer.renderPlayer(player);
+
+		expect(playerContainer.children[0]).toBeInstanceOf(Graphics);
+		expect(playerContainer.children[1]).toBeInstanceOf(Sprite);
+	});
+
+	it("HP満タン時: ゲージがタイル全面を覆う", () => {
+		const player = {
+			position: { x: 3, y: 3 },
+			hp: 10,
+			maxHp: 10,
+			ap: 3,
+			maxAp: 3,
+		};
+		renderer.renderPlayer(player);
+
+		const gauge = playerContainer.children[0] as Graphics;
+		const { rectSpy, fillSpy } = spyOnGraphics(gauge);
+
+		renderer.renderPlayer(player);
+
+		expect(rectSpy).toHaveBeenCalledWith(0, 0, CELL_SIZE, CELL_SIZE);
+		expect(fillSpy).toHaveBeenCalledWith(HP_GAUGE_BRIGHT_COLOR);
+	});
+
+	it("HP半分時: ゲージ高さ = CELL_SIZE * 0.5", () => {
+		const player = {
+			position: { x: 3, y: 3 },
+			hp: 5,
+			maxHp: 10,
+			ap: 3,
+			maxAp: 3,
+		};
+		renderer.renderPlayer(player);
+
+		const gauge = playerContainer.children[0] as Graphics;
+		const { rectSpy, fillSpy } = spyOnGraphics(gauge);
+
+		renderer.renderPlayer(player);
+
+		const expectedHeight = CELL_SIZE * 0.5;
+		const expectedY = CELL_SIZE - expectedHeight;
+		expect(rectSpy).toHaveBeenCalledWith(
+			0,
+			expectedY,
+			CELL_SIZE,
+			expectedHeight,
+		);
+		expect(fillSpy).toHaveBeenCalledWith(HP_GAUGE_BRIGHT_COLOR);
+	});
+
+	it("HP 0時: clearのみで矩形描画なし", () => {
+		const player = {
+			position: { x: 3, y: 3 },
+			hp: 0,
+			maxHp: 10,
+			ap: 3,
+			maxAp: 3,
+		};
+		renderer.renderPlayer(player);
+
+		const gauge = playerContainer.children[0] as Graphics;
+		const { rectSpy, fillSpy, clearSpy } = spyOnGraphics(gauge);
+
+		renderer.renderPlayer(player);
+
+		expect(clearSpy).toHaveBeenCalled();
+		expect(rectSpy).not.toHaveBeenCalled();
+		expect(fillSpy).not.toHaveBeenCalled();
+	});
+
+	it("updatePlayerHpGaugeでゲージが更新される", () => {
+		const player = {
+			position: { x: 3, y: 3 },
+			hp: 10,
+			maxHp: 10,
+			ap: 3,
+			maxAp: 3,
+		};
+		renderer.renderPlayer(player);
+
+		const gauge = playerContainer.children[0] as Graphics;
+		const { rectSpy, fillSpy } = spyOnGraphics(gauge);
+
+		renderer.updatePlayerHpGauge(0.3);
+
+		const expectedHeight = CELL_SIZE * 0.3;
+		const expectedY = CELL_SIZE - expectedHeight;
+		expect(rectSpy).toHaveBeenCalledWith(
+			0,
+			expectedY,
+			CELL_SIZE,
+			expectedHeight,
+		);
+		expect(fillSpy).toHaveBeenCalledWith(HP_GAUGE_BRIGHT_COLOR);
+	});
+
+	it("clear後にコンテナの子が全て除去される", () => {
+		const player = {
+			position: { x: 3, y: 3 },
+			hp: 10,
+			maxHp: 10,
+			ap: 3,
+			maxAp: 3,
+		};
+		renderer.renderPlayer(player);
+
+		expect(playerContainer.children.length).toBe(2);
+
+		renderer.clear();
+
+		expect(playerContainer.children.length).toBe(0);
 	});
 });

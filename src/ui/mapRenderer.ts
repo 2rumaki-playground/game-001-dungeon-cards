@@ -3,7 +3,7 @@
  * 各サブモジュールへの委譲を通じてマップ・キャラクター描画を管理
  */
 
-import { Container, Graphics, Sprite, Texture } from "pixi.js";
+import { Container, Graphics } from "pixi.js";
 import type { EnemyAiAnalysis } from "../game/enemyAiAnalysis";
 import type {
 	Direction,
@@ -42,7 +42,7 @@ export class MapRenderer {
 	private container: Container;
 	private tilesContainer: Container;
 	private remnantsGraphics: Graphics;
-	private playerSprite: Sprite;
+	private playerContainer: Container;
 	private fogGraphics: Graphics;
 	private lastRenderedMap: GameMap | null = null;
 	private enemyTooltip: EnemyTooltip;
@@ -62,7 +62,7 @@ export class MapRenderer {
 		this.container = new Container();
 		this.tilesContainer = new Container();
 		this.remnantsGraphics = new Graphics();
-		this.playerSprite = new Sprite();
+		this.playerContainer = new Container();
 		this.enemiesContainer = new Container();
 		const enemiesContainer = this.enemiesContainer;
 		this.fogGraphics = new Graphics();
@@ -71,7 +71,7 @@ export class MapRenderer {
 		this.skillForecastEffectManager = new SkillForecastEffectManager();
 
 		this.characterRenderer = new CharacterRenderer(
-			this.playerSprite,
+			this.playerContainer,
 			enemiesContainer,
 			{
 				onEnemyPointerOver: (enemyId) => this.showEnemyTooltip(enemyId),
@@ -93,7 +93,7 @@ export class MapRenderer {
 		this.container.addChild(enemiesContainer);
 		this.container.addChild(this.skillForecastEffectManager.getIconContainer());
 		this.container.addChild(this.fogGraphics);
-		this.container.addChild(this.playerSprite);
+		this.container.addChild(this.playerContainer);
 		this.container.addChild(this.enemyTooltip.getContainer());
 	}
 
@@ -102,6 +102,13 @@ export class MapRenderer {
 	 */
 	getContainer(): Container {
 		return this.container;
+	}
+
+	/**
+	 * プレイヤーコンテナを取得
+	 */
+	getPlayerContainer(): Container {
+		return this.playerContainer;
 	}
 
 	/**
@@ -229,11 +236,11 @@ export class MapRenderer {
 		const shakeIntensity = calcScreenShakeIntensity(damage);
 		const playerGridPos = this.characterRenderer.getPlayerGridPos();
 		await Promise.all([
-			animateFlash(this.playerSprite),
+			animateFlash(this.playerContainer),
 			animateScreenShake(this.container, shakeIntensity),
 			animateDamagePopupImpl(this.container, playerGridPos, damage),
 		]);
-		await animatePlayerBlink(this.playerSprite);
+		await animatePlayerBlink(this.playerContainer);
 	}
 
 	/**
@@ -308,6 +315,13 @@ export class MapRenderer {
 	}
 
 	/**
+	 * プレイヤーHPゲージを更新
+	 */
+	updatePlayerHpGauge(ratio: number): void {
+		this.characterRenderer.updatePlayerHpGauge(ratio);
+	}
+
+	/**
 	 * クリア
 	 */
 	clear(): void {
@@ -318,7 +332,6 @@ export class MapRenderer {
 		this.lastRenderedMap = null;
 		this.remnantsGraphics.clear();
 		this.fogGraphics.clear();
-		this.playerSprite.texture = Texture.EMPTY;
 		this.characterRenderer.clear();
 		this.hideEnemyTooltip();
 		this.specialTileEffectManager.clear();
