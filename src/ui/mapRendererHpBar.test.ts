@@ -254,9 +254,7 @@ describe("MapRenderer プレイヤーHPゲージ", () => {
 		};
 		renderer.render(map, player, []);
 
-		const container = renderer.getContainer();
-		// playerContainer は index 7
-		const playerContainer = container.children[7];
+		const playerContainer = renderer.getPlayerContainer();
 		// HPゲージ(Graphics) + スプライト(Sprite) = 2
 		expect(playerContainer.children.length).toBe(2);
 		expect(playerContainer.children[0]).toBeInstanceOf(Graphics);
@@ -274,8 +272,7 @@ describe("MapRenderer プレイヤーHPゲージ", () => {
 		};
 		renderer.render(map, player, []);
 
-		const container = renderer.getContainer();
-		const playerContainer = container.children[7];
+		const playerContainer = renderer.getPlayerContainer();
 		const gauge = playerContainer.children[0] as Graphics;
 
 		const rectSpy = vi.spyOn(gauge, "rect");
@@ -302,8 +299,7 @@ describe("MapRenderer プレイヤーHPゲージ", () => {
 		renderer.render(map, player, []);
 		renderer.clear();
 
-		const container = renderer.getContainer();
-		const playerContainer = container.children[7];
+		const playerContainer = renderer.getPlayerContainer();
 		expect(playerContainer.children.length).toBe(0);
 	});
 });
