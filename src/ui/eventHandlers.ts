@@ -480,11 +480,7 @@ export function setupEventHandlers(ctx: GameContext): void {
 			if (card.type !== "wait" && !direction) {
 				return false;
 			}
-			// 既に同一カードがキューに存在する場合は重複予約しない
-			if (ctx.cardQueue.some((entry) => entry.card.id === card.id)) {
-				return false;
-			}
-			// 使用済みカード検証
+			// 使用済み・重複カード検証
 			if (!canEnqueueCard(ctx.cardQueue, card, ctx.state.deck)) {
 				return false;
 			}
