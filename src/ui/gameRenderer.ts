@@ -87,6 +87,7 @@ export function applyCameraOffset(ctx: GameContext): void {
 	mapContainer.scale.set(zoomLevel);
 	ctx.ui.mapRenderer.repositionEnemyTooltip();
 	ctx.ui.mapRenderer.repositionPlayerTooltip();
+	ctx.ui.mapRenderer.repositionTileTooltip();
 
 	const isCameraMoved =
 		offset.x !== baseOffset.x ||
