@@ -146,6 +146,7 @@ export class HandRenderer {
 	// ドラッグ状態
 	private isDragging = false;
 	private dragCardIndex = -1;
+	private dragCardContainer: Container | null = null;
 	private dragStartX = 0;
 	private dragStartY = 0;
 	private dragConfirmed = false;
@@ -371,6 +372,7 @@ export class HandRenderer {
 		queueIndex?: number,
 	): Container {
 		const cardContainer = new Container();
+		cardContainer.label = `card-${this.currentHand.indexOf(card)}`;
 		cardContainer.x = x;
 		cardContainer.y = y;
 
@@ -525,6 +527,7 @@ export class HandRenderer {
 				this.isDragging = true;
 				this.dragConfirmed = false;
 				this.dragCardIndex = cardIndex;
+				this.dragCardContainer = cardContainer;
 				this.dragStartX = event.global.x;
 				this.dragStartY = event.global.y;
 				this.dragCurrentX = event.global.x;
@@ -688,6 +691,7 @@ export class HandRenderer {
 		this.isDragging = false;
 		this.dragConfirmed = false;
 		this.dragCardIndex = -1;
+		this.dragCardContainer = null;
 		this.dragInsertIndex = -1;
 
 		if (wasDragConfirmed) {
@@ -777,12 +781,12 @@ export class HandRenderer {
 		const totalWidth = hand.length * CARD_WIDTH + (hand.length - 1) * CARD_GAP;
 		const startX = -totalWidth / 2;
 
+		// children配列はsortChildren()で並び替わるため、
+		// 各カードの実インデックスをrender()時の追加順で特定する
 		for (let i = 0; i < this.cardsContainer.children.length; i++) {
 			const child = this.cardsContainer.children[i] as Container;
-			const visualIndex = this.getVisualIndex(i);
-			const targetX = startX + visualIndex * (CARD_WIDTH + CARD_GAP);
 
-			if (i === this.dragCardIndex) {
+			if (child === this.dragCardContainer) {
 				// ドラッグ中カード: ポインタ追従
 				const containerGlobalPos = this.container.getGlobalPosition();
 				child.x = this.dragCurrentX - containerGlobalPos.x - CARD_WIDTH / 2;
@@ -791,6 +795,9 @@ export class HandRenderer {
 				child.alpha = 0.8;
 			} else {
 				// 他のカード: 挿入位置に応じてスライド
+				const actualIndex = this.getActualIndex(child);
+				const visualIndex = this.getVisualIndex(actualIndex);
+				const targetX = startX + visualIndex * (CARD_WIDTH + CARD_GAP);
 				child.x = targetX;
 				child.y = 0;
 				child.zIndex = 0;
@@ -825,6 +832,14 @@ export class HandRenderer {
 			}
 		}
 		return hand.length - 1;
+	}
+
+	/**
+	 * コンテナのラベルから実インデックスを取得
+	 */
+	private getActualIndex(child: Container): number {
+		const match = child.label?.match(/^card-(\d+)$/);
+		return match ? Number(match[1]) : -1;
 	}
 
 	/**
@@ -872,6 +887,7 @@ export class HandRenderer {
 		this.isDragging = false;
 		this.dragConfirmed = false;
 		this.dragCardIndex = -1;
+		this.dragCardContainer = null;
 		this.dragInsertIndex = -1;
 	}
 
