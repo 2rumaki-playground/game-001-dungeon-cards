@@ -121,3 +121,28 @@ export function resetUsedCards(deck: DeckState): DeckState {
 export function isCardUsed(deck: DeckState, cardId: string): boolean {
 	return deck.usedCardIds.includes(cardId);
 }
+
+/**
+ * 手札のカードを並べ替える
+ * fromIndex のカードを toIndex の位置に移動し、間のカードをシフトする
+ * 同一インデックスまたは範囲外の場合は元の deck をそのまま返す
+ */
+export function reorderHand(
+	deck: DeckState,
+	fromIndex: number,
+	toIndex: number,
+): DeckState {
+	if (fromIndex === toIndex) return deck;
+	if (
+		fromIndex < 0 ||
+		fromIndex >= deck.hand.length ||
+		toIndex < 0 ||
+		toIndex >= deck.hand.length
+	) {
+		return deck;
+	}
+	const newHand = [...deck.hand];
+	const [card] = newHand.splice(fromIndex, 1);
+	newHand.splice(toIndex, 0, card);
+	return { ...deck, hand: newHand };
+}

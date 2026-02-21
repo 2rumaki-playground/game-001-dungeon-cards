@@ -26,7 +26,9 @@ import {
 } from "../game";
 import { buildQueuedCardIndexMap, canEnqueueCard } from "../game/cardQueue";
 import { getEffectiveCardCost, resetDebugCheats } from "../game/debugCheats";
+import { reorderHand } from "../game/deck";
 import { endSession, startSession } from "../game/playStats";
+import { setDeck } from "../game/state";
 import type { GameContext } from "../gameContext";
 import type {
 	Card,
@@ -463,6 +465,12 @@ export function setupEventHandlers(ctx: GameContext): void {
 		if (ctx.isAnimating) return; // アニメーション中は無効
 		ctx.ui.directionSelector.hide();
 		ctx.pendingCard = null;
+	});
+
+	// 手札並べ替えのコールバック設定
+	ctx.ui.handRenderer.setOnReorder((fromIndex, toIndex) => {
+		const newDeck = reorderHand(ctx.state.deck, fromIndex, toIndex);
+		updateState(ctx, setDeck(ctx.state, newDeck));
 	});
 
 	// 手札選択のコールバック設定

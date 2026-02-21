@@ -186,13 +186,14 @@ describe("HandRenderer ホバー・選択演出", () => {
 		expect(card0After.y).toBe(0);
 	});
 
-	it("無効カード（AP不足）は eventMode が static でない", () => {
+	it("無効カード（AP不足）でもドラッグ用にeventModeがstaticになる", () => {
 		const renderer = new HandRenderer();
 		// AP=0 なので move / attack は無効（wait は有効のまま）
 		renderer.render(createTestCards(), 0);
 
 		const card0 = findCardContainer(renderer, 0);
-		expect(card0.eventMode).not.toBe("static");
+		// ドラッグ並べ替えのため全カードがインタラクティブ
+		expect(card0.eventMode).toBe("static");
 	});
 
 	it("ホバー中に render() を再呼び出ししてもホバー状態が維持される", () => {
@@ -210,7 +211,7 @@ describe("HandRenderer ホバー・選択演出", () => {
 		expect(card0After.y).toBeLessThan(0);
 	});
 
-	it("pointerdown でカード選択コールバックが呼ばれる", async () => {
+	it("クリック（pointerdown+pointerup）でカード選択コールバックが呼ばれる", async () => {
 		const renderer = new HandRenderer();
 		const cards = createTestCards();
 		const callback = vi.fn();
@@ -219,10 +220,12 @@ describe("HandRenderer ホバー・選択演出", () => {
 
 		// waitカード（方向なし）をクリック
 		const card2 = findCardContainer(renderer, 2);
-		card2.emit("pointerdown", {
+		const event = {
 			button: 0,
 			global: { x: 0, y: 0 },
-		} as FederatedPointerEvent);
+		} as FederatedPointerEvent;
+		card2.emit("pointerdown", event);
+		renderer.getContainer().emit("globalpointerup", event);
 
 		// コールバックが呼ばれ、その後に消費アニメーションが実行される
 		await vi.waitFor(() => {
@@ -242,10 +245,12 @@ describe("HandRenderer ホバー・選択演出", () => {
 		mockedTween.mockClear();
 
 		const card2 = findCardContainer(renderer, 2);
-		card2.emit("pointerdown", {
+		const event = {
 			button: 0,
 			global: { x: 0, y: 0 },
-		} as FederatedPointerEvent);
+		} as FederatedPointerEvent;
+		card2.emit("pointerdown", event);
+		renderer.getContainer().emit("globalpointerup", event);
 
 		// コールバックは呼ばれる
 		await vi.waitFor(() => {
@@ -256,7 +261,7 @@ describe("HandRenderer ホバー・選択演出", () => {
 		expect(mockedTween).not.toHaveBeenCalled();
 	});
 
-	it("pointerdown で消費アニメーション（パルス拡大→飛行+縮小+フェード）が実行される", async () => {
+	it("クリックで消費アニメーション（パルス拡大→飛行+縮小+フェード）が実行される", async () => {
 		const renderer = new HandRenderer();
 		const cards = createTestCards();
 		renderer.setOnCardSelect(vi.fn());
@@ -266,10 +271,12 @@ describe("HandRenderer ホバー・選択演出", () => {
 		mockedTween.mockClear();
 
 		const card2 = findCardContainer(renderer, 2);
-		card2.emit("pointerdown", {
+		const event = {
 			button: 0,
 			global: { x: 0, y: 0 },
-		} as FederatedPointerEvent);
+		} as FederatedPointerEvent;
+		card2.emit("pointerdown", event);
+		renderer.getContainer().emit("globalpointerup", event);
 
 		await vi.waitFor(() => {
 			expect(mockedTween).toHaveBeenCalledTimes(2);
@@ -305,11 +312,13 @@ describe("HandRenderer ホバー・選択演出", () => {
 		});
 
 		const card2 = findCardContainer(renderer, 2);
-		// 1回目のクリック
-		card2.emit("pointerdown", {
+		const event = {
 			button: 0,
 			global: { x: 0, y: 0 },
-		} as FederatedPointerEvent);
+		} as FederatedPointerEvent;
+		// 1回目のクリック
+		card2.emit("pointerdown", event);
+		renderer.getContainer().emit("globalpointerup", event);
 
 		// コールバック→tweenの順で呼ばれるので、tweenが呼ばれるまで待機
 		await vi.waitFor(() => {
@@ -319,10 +328,8 @@ describe("HandRenderer ホバー・選択演出", () => {
 		const tweenCallCountAfterFirst = mockedTween.mock.calls.length;
 
 		// 2回目のクリックを試行（isInputLockedガードで早期return）
-		card2.emit("pointerdown", {
-			button: 0,
-			global: { x: 0, y: 0 },
-		} as FederatedPointerEvent);
+		card2.emit("pointerdown", event);
+		renderer.getContainer().emit("globalpointerup", event);
 
 		// tween呼び出し回数が増えていない（2回目は無視された）
 		expect(mockedTween.mock.calls.length).toBe(tweenCallCountAfterFirst);
@@ -357,12 +364,15 @@ describe("HandRenderer ホバー・選択演出", () => {
 			});
 		});
 
-		// 1回目のクリックで入力ロック
-		const card0 = findCardContainer(renderer, 0);
-		card0.emit("pointerdown", {
+		const event = {
 			button: 0,
 			global: { x: 0, y: 0 },
-		} as FederatedPointerEvent);
+		} as FederatedPointerEvent;
+
+		// 1回目のクリックで入力ロック
+		const card0 = findCardContainer(renderer, 0);
+		card0.emit("pointerdown", event);
+		renderer.getContainer().emit("globalpointerup", event);
 
 		// コールバック→tweenの順で呼ばれるので、tweenが呼ばれるまで待機
 		await vi.waitFor(() => {
@@ -376,10 +386,8 @@ describe("HandRenderer ホバー・選択演出", () => {
 
 		// クリックしてもtweenは増えない（ロック維持）
 		const card0After = findCardContainer(renderer, 0);
-		card0After.emit("pointerdown", {
-			button: 0,
-			global: { x: 0, y: 0 },
-		} as FederatedPointerEvent);
+		card0After.emit("pointerdown", event);
+		renderer.getContainer().emit("globalpointerup", event);
 		expect(mockedTween.mock.calls.length).toBe(tweenCountAfterFirst);
 
 		// cleanup
@@ -404,11 +412,14 @@ describe("HandRenderer ホバー・選択演出", () => {
 			});
 		});
 
-		const card2 = findCardContainer(renderer, 2);
-		card2.emit("pointerdown", {
+		const event = {
 			button: 0,
 			global: { x: 0, y: 0 },
-		} as FederatedPointerEvent);
+		} as FederatedPointerEvent;
+
+		const card2 = findCardContainer(renderer, 2);
+		card2.emit("pointerdown", event);
+		renderer.getContainer().emit("globalpointerup", event);
 
 		// コールバック→tweenの順で呼ばれるので、tweenが呼ばれるまで待機
 		await vi.waitFor(() => {
@@ -418,10 +429,8 @@ describe("HandRenderer ホバー・選択演出", () => {
 		const tweenCountAfterFirst = mockedTween.mock.calls.length;
 
 		// アニメーション中は2回目のクリックが無視される
-		card2.emit("pointerdown", {
-			button: 0,
-			global: { x: 0, y: 0 },
-		} as FederatedPointerEvent);
+		card2.emit("pointerdown", event);
+		renderer.getContainer().emit("globalpointerup", event);
 		expect(mockedTween.mock.calls.length).toBe(tweenCountAfterFirst);
 
 		// アニメーション完了
@@ -434,10 +443,8 @@ describe("HandRenderer ホバー・選択演出", () => {
 
 		// render()で再描画されるので新しいカードコンテナを取得
 		const card2After = findCardContainer(renderer, 2);
-		card2After.emit("pointerdown", {
-			button: 0,
-			global: { x: 0, y: 0 },
-		} as FederatedPointerEvent);
+		card2After.emit("pointerdown", event);
+		renderer.getContainer().emit("globalpointerup", event);
 		expect(mockedTween.mock.calls.length).toBeGreaterThan(tweenCountAfterFirst);
 	});
 
@@ -458,13 +465,16 @@ describe("HandRenderer ホバー・選択演出", () => {
 		renderer.setOnCardSelect(asyncCallback);
 		renderer.render(cards, 10);
 
+		const event = {
+			button: 0,
+			global: { x: 0, y: 0 },
+		} as FederatedPointerEvent;
+
 		// tweenの1回目（パルス拡大）を即座に解決、2回目（飛行）も即座に解決
 		// → animateCardConsume完了 → invokeCallback呼び出し → 非同期コールバック保留
 		const card2 = findCardContainer(renderer, 2);
-		card2.emit("pointerdown", {
-			button: 0,
-			global: { x: 0, y: 0 },
-		} as FederatedPointerEvent);
+		card2.emit("pointerdown", event);
+		renderer.getContainer().emit("globalpointerup", event);
 
 		// コールバックが呼ばれるまで待機（tweenモックは即座に解決）
 		await vi.waitFor(() => {
@@ -474,10 +484,8 @@ describe("HandRenderer ホバー・選択演出", () => {
 		const tweenCountAfterFirst = mockedTween.mock.calls.length;
 
 		// コールバックのPromise未解決中は入力ロックが維持される
-		card2.emit("pointerdown", {
-			button: 0,
-			global: { x: 0, y: 0 },
-		} as FederatedPointerEvent);
+		card2.emit("pointerdown", event);
+		renderer.getContainer().emit("globalpointerup", event);
 		expect(mockedTween.mock.calls.length).toBe(tweenCountAfterFirst);
 
 		// コールバックのPromiseを解決
@@ -492,10 +500,8 @@ describe("HandRenderer ホバー・選択演出", () => {
 
 		// 再描画完了後に、改めて新しいカードコンテナを取得してクリック
 		const card2After = findCardContainer(renderer, 2);
-		card2After.emit("pointerdown", {
-			button: 0,
-			global: { x: 0, y: 0 },
-		} as FederatedPointerEvent);
+		card2After.emit("pointerdown", event);
+		renderer.getContainer().emit("globalpointerup", event);
 		expect(mockedTween.mock.calls.length).toBeGreaterThan(tweenCountAfterFirst);
 	});
 
@@ -517,10 +523,12 @@ describe("HandRenderer ホバー・選択演出", () => {
 		renderer.render(cards, 10);
 
 		const card2 = findCardContainer(renderer, 2);
-		card2.emit("pointerdown", {
+		const event = {
 			button: 0,
 			global: { x: 0, y: 0 },
-		} as FederatedPointerEvent);
+		} as FederatedPointerEvent;
+		card2.emit("pointerdown", event);
+		renderer.getContainer().emit("globalpointerup", event);
 
 		await vi.waitFor(() => {
 			expect(mockParticleSystem.emit).toHaveBeenCalledTimes(1);
@@ -1036,5 +1044,254 @@ describe("HandRenderer コンボ予告表示", () => {
 
 		const attackCard = findCardContainer(renderer, 1);
 		expect(attackCard.children.length).toBe(baseCount);
+	});
+});
+
+describe("HandRenderer ドラッグ＆ドロップ", () => {
+	function createTestCards(): Card[] {
+		return [
+			{ id: "card-1", type: "move", keyword: "flame" },
+			{ id: "card-2", type: "attack", keyword: "flame" },
+			{ id: "card-3", type: "wait", keyword: "flame" },
+			{ id: "card-4", type: "move", keyword: "water" },
+		];
+	}
+
+	function findCardContainer(renderer: HandRenderer, index: number): Container {
+		const cardsContainer = renderer
+			.getContainer()
+			.children.find((c) => c.label === "cards") as Container;
+		return cardsContainer.children[index] as Container;
+	}
+
+	it("DRAG_THRESHOLD未満のポインタ移動はクリック扱いになる", async () => {
+		const renderer = new HandRenderer();
+		const cards = createTestCards();
+		const callback = vi.fn();
+		renderer.setOnCardSelect(callback);
+		renderer.render(cards, 10);
+
+		const card2 = findCardContainer(renderer, 2);
+		// pointerdown
+		card2.emit("pointerdown", {
+			button: 0,
+			global: { x: 100, y: 50 },
+		} as FederatedPointerEvent);
+
+		// 閾値未満の微小移動
+		renderer.getContainer().emit("globalpointermove", {
+			global: { x: 102, y: 51 },
+		} as FederatedPointerEvent);
+
+		// pointerup（クリック扱い）
+		renderer.getContainer().emit("globalpointerup", {
+			button: 0,
+			global: { x: 102, y: 51 },
+		} as FederatedPointerEvent);
+
+		await vi.waitFor(() => {
+			expect(callback).toHaveBeenCalledTimes(1);
+			expect(callback).toHaveBeenCalledWith(cards[2]);
+		});
+	});
+
+	it("DRAG_THRESHOLD以上のポインタ移動はドラッグ扱いになり、onReorderが呼ばれる", () => {
+		const renderer = new HandRenderer();
+		const cards = createTestCards();
+		const reorderCallback = vi.fn();
+		const clickCallback = vi.fn();
+		renderer.setOnCardSelect(clickCallback);
+		renderer.setOnReorder(reorderCallback);
+		renderer.render(cards, 10);
+
+		const card0 = findCardContainer(renderer, 0);
+		// pointerdown
+		card0.emit("pointerdown", {
+			button: 0,
+			global: { x: 100, y: 50 },
+		} as FederatedPointerEvent);
+
+		// 閾値以上の移動（ドラッグ確定）
+		renderer.getContainer().emit("globalpointermove", {
+			global: { x: 300, y: 50 },
+		} as FederatedPointerEvent);
+
+		// pointerup（ドロップ扱い）
+		renderer.getContainer().emit("globalpointerup", {
+			button: 0,
+			global: { x: 300, y: 50 },
+		} as FederatedPointerEvent);
+
+		// クリックコールバックは呼ばれない
+		expect(clickCallback).not.toHaveBeenCalled();
+		// リオーダーコールバックが呼ばれる
+		expect(reorderCallback).toHaveBeenCalledTimes(1);
+		expect(reorderCallback).toHaveBeenCalledWith(0, expect.any(Number));
+	});
+
+	it("ドラッグ確定後、同じ位置にドロップした場合はonReorderが呼ばれない", () => {
+		const renderer = new HandRenderer();
+		const cards = createTestCards();
+		const reorderCallback = vi.fn();
+		renderer.setOnReorder(reorderCallback);
+		renderer.render(cards, 10);
+
+		const card0 = findCardContainer(renderer, 0);
+		const containerPos = renderer.getContainer().getGlobalPosition();
+
+		// 手札の中心付近の座標を計算（card0の位置にドロップ）
+		const totalWidth =
+			cards.length * CARD_WIDTH + (cards.length - 1) * (CARD_WIDTH / 90) * 8;
+		const startX = -totalWidth / 2 + containerPos.x;
+		const card0CenterX = startX + CARD_WIDTH / 2;
+
+		card0.emit("pointerdown", {
+			button: 0,
+			global: { x: card0CenterX, y: 50 },
+		} as FederatedPointerEvent);
+
+		// 垂直に大きく動かす（DRAG_THRESHOLD超え）が、水平位置はcard0のまま
+		renderer.getContainer().emit("globalpointermove", {
+			global: { x: card0CenterX, y: 100 },
+		} as FederatedPointerEvent);
+
+		renderer.getContainer().emit("globalpointerup", {
+			button: 0,
+			global: { x: card0CenterX, y: 100 },
+		} as FederatedPointerEvent);
+
+		// 同じ位置なのでonReorderは呼ばれない
+		expect(reorderCallback).not.toHaveBeenCalled();
+	});
+
+	it("ドラッグ確定中のrender()呼び出しは再描画をスキップする", () => {
+		const renderer = new HandRenderer();
+		const cards = createTestCards();
+		renderer.render(cards, 10);
+
+		const card0 = findCardContainer(renderer, 0);
+		const card0InitialX = card0.x;
+
+		// ドラッグ開始
+		card0.emit("pointerdown", {
+			button: 0,
+			global: { x: 100, y: 50 },
+		} as FederatedPointerEvent);
+
+		// 閾値以上の移動（ドラッグ確定）
+		renderer.getContainer().emit("globalpointermove", {
+			global: { x: 200, y: 50 },
+		} as FederatedPointerEvent);
+
+		// ドラッグ中のカード位置を記録
+		const card0DragX = card0.x;
+		expect(card0DragX).not.toBe(card0InitialX);
+
+		// 外部からrender()を呼んでもドラッグ状態が維持される
+		renderer.render(cards, 10);
+		expect(card0.x).toBe(card0DragX);
+	});
+
+	it("isInputLocked中はドラッグ開始しない", async () => {
+		const renderer = new HandRenderer();
+		const cards = createTestCards();
+		const reorderCallback = vi.fn();
+		renderer.setOnReorder(reorderCallback);
+
+		const mockedTween = vi.mocked(tween);
+		const tweenCountBefore = mockedTween.mock.calls.length;
+
+		// 未解決Promiseで入力ロック
+		let resolveTween!: () => void;
+		mockedTween.mockImplementationOnce(() => {
+			return new Promise<void>((resolve) => {
+				resolveTween = resolve;
+			});
+		});
+		renderer.setOnCardSelect(vi.fn());
+		renderer.render(cards, 10);
+
+		// 最初のクリックで入力ロック
+		const card2 = findCardContainer(renderer, 2);
+		const clickEvent = {
+			button: 0,
+			global: { x: 0, y: 0 },
+		} as FederatedPointerEvent;
+		card2.emit("pointerdown", clickEvent);
+		renderer.getContainer().emit("globalpointerup", clickEvent);
+
+		await vi.waitFor(() => {
+			expect(mockedTween.mock.calls.length).toBeGreaterThan(tweenCountBefore);
+		});
+
+		// 入力ロック中にドラッグを試行
+		const card0 = findCardContainer(renderer, 0);
+		card0.emit("pointerdown", {
+			button: 0,
+			global: { x: 100, y: 50 },
+		} as FederatedPointerEvent);
+
+		renderer.getContainer().emit("globalpointermove", {
+			global: { x: 300, y: 50 },
+		} as FederatedPointerEvent);
+
+		renderer.getContainer().emit("globalpointerup", {
+			button: 0,
+			global: { x: 300, y: 50 },
+		} as FederatedPointerEvent);
+
+		// ドラッグは開始されていないのでonReorderは呼ばれない
+		expect(reorderCallback).not.toHaveBeenCalled();
+
+		// cleanup
+		resolveTween();
+	});
+
+	it("無効カード（AP不足）でもドラッグによる並べ替えが可能", () => {
+		const renderer = new HandRenderer();
+		const cards = createTestCards();
+		const reorderCallback = vi.fn();
+		renderer.setOnReorder(reorderCallback);
+		// AP=0 なので move/attack は無効
+		renderer.render(cards, 0);
+
+		const card0 = findCardContainer(renderer, 0);
+		card0.emit("pointerdown", {
+			button: 0,
+			global: { x: 100, y: 50 },
+		} as FederatedPointerEvent);
+
+		renderer.getContainer().emit("globalpointermove", {
+			global: { x: 300, y: 50 },
+		} as FederatedPointerEvent);
+
+		renderer.getContainer().emit("globalpointerup", {
+			button: 0,
+			global: { x: 300, y: 50 },
+		} as FederatedPointerEvent);
+
+		// 無効カードでもドラッグ並べ替えは動作する
+		expect(reorderCallback).toHaveBeenCalledTimes(1);
+	});
+
+	it("無効カード（AP不足）のクリックはコールバックを呼ばない", async () => {
+		const renderer = new HandRenderer();
+		const cards = createTestCards();
+		const clickCallback = vi.fn();
+		renderer.setOnCardSelect(clickCallback);
+		// AP=0 なので move は無効
+		renderer.render(cards, 0);
+
+		const card0 = findCardContainer(renderer, 0);
+		const event = {
+			button: 0,
+			global: { x: 100, y: 50 },
+		} as FederatedPointerEvent;
+		card0.emit("pointerdown", event);
+		renderer.getContainer().emit("globalpointerup", event);
+
+		// 少し待ってもコールバックは呼ばれない
+		await new Promise((r) => setTimeout(r, 50));
+		expect(clickCallback).not.toHaveBeenCalled();
 	});
 });
