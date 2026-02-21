@@ -15,6 +15,7 @@ import {
 	RARITY_NAME,
 } from "./cardConstants";
 import {
+	CARD_GAP,
 	CARD_HEIGHT,
 	CARD_WIDTH,
 	getDirectionFromClickPosition,
@@ -1141,7 +1142,7 @@ describe("HandRenderer ドラッグ＆ドロップ", () => {
 
 		// 手札の中心付近の座標を計算（card0の位置にドロップ）
 		const totalWidth =
-			cards.length * CARD_WIDTH + (cards.length - 1) * (CARD_WIDTH / 90) * 8;
+			cards.length * CARD_WIDTH + (cards.length - 1) * CARD_GAP;
 		const startX = -totalWidth / 2 + containerPos.x;
 		const card0CenterX = startX + CARD_WIDTH / 2;
 
