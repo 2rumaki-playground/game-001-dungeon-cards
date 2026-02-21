@@ -38,36 +38,59 @@ export interface CharacterRendererCallbacks {
  * プレイヤー・敵の描画とアニメーションを管理
  */
 export class CharacterRenderer {
-	private playerSprite: Sprite;
+	private playerContainer: Container;
+	private playerHpGauge: Graphics | null = null;
 	private enemiesContainer: Container;
 	private isPlayerInitialized = false;
 	private enemyContainerMap: Map<string, Container> = new Map();
 	private enemyHpGaugeMap: Map<string, Graphics> = new Map();
 	private enemyTypeMap: Map<string, EnemyType> = new Map();
 	private playerGridPos: Position = { x: 0, y: 0 };
+	private playerHpRatio = 1;
 	private enemyGridPosMap: Map<string, Position> = new Map();
 	private enemyDataMap: Map<string, Enemy> = new Map();
 	private callbacks: CharacterRendererCallbacks;
 
 	constructor(
-		playerSprite: Sprite,
+		playerContainer: Container,
 		enemiesContainer: Container,
 		callbacks: CharacterRendererCallbacks,
 	) {
-		this.playerSprite = playerSprite;
+		this.playerContainer = playerContainer;
 		this.enemiesContainer = enemiesContainer;
 		this.callbacks = callbacks;
 	}
 
 	/**
-	 * プレイヤースプライトを初期化（1回だけ）
+	 * HPゲージ矩形を描画（敵・プレイヤー共用）
 	 */
-	private initPlayerSprite(): void {
+	private drawHpGaugeRect(gauge: Graphics, hpRatio: number): void {
+		const ratio = Math.min(1, Math.max(0, hpRatio));
+		const gaugeHeight = ratio * CELL_SIZE;
+		const gaugeY = CELL_SIZE - gaugeHeight;
+
+		gauge.clear();
+		if (ratio > 0) {
+			gauge.rect(0, gaugeY, CELL_SIZE, gaugeHeight);
+			gauge.fill(HP_GAUGE_BRIGHT_COLOR);
+		}
+	}
+
+	/**
+	 * プレイヤーコンテナを初期化（HPゲージ＋スプライト、1回だけ）
+	 */
+	private initPlayerContainer(): void {
 		if (this.isPlayerInitialized) return;
 
-		this.playerSprite.texture = getPlayerTexture();
-		this.playerSprite.width = CELL_SIZE;
-		this.playerSprite.height = CELL_SIZE;
+		const gauge = new Graphics();
+		this.playerHpGauge = gauge;
+		this.playerContainer.addChild(gauge);
+
+		const sprite = new Sprite(getPlayerTexture());
+		sprite.width = CELL_SIZE;
+		sprite.height = CELL_SIZE;
+		this.playerContainer.addChild(sprite);
+
 		this.isPlayerInitialized = true;
 	}
 
@@ -75,23 +98,38 @@ export class CharacterRenderer {
 	 * プレイヤーを描画
 	 */
 	renderPlayer(player: Player): void {
-		this.initPlayerSprite();
+		this.initPlayerContainer();
 
 		this.playerGridPos = player.position;
+		this.playerHpRatio = player.maxHp > 0 ? player.hp / player.maxHp : 0;
 		const pixelPos = gridToPixel(player.position);
-		this.playerSprite.x = pixelPos.x;
-		this.playerSprite.y = pixelPos.y;
+		this.playerContainer.x = pixelPos.x;
+		this.playerContainer.y = pixelPos.y;
+
+		if (this.playerHpGauge) {
+			this.drawHpGaugeRect(this.playerHpGauge, this.playerHpRatio);
+		}
+	}
+
+	/**
+	 * プレイヤーHPゲージを更新（StatusBarアニメーションから呼ばれる）
+	 */
+	updatePlayerHpGauge(ratio: number): void {
+		this.playerHpRatio = ratio;
+		if (this.playerHpGauge) {
+			this.drawHpGaugeRect(this.playerHpGauge, ratio);
+		}
 	}
 
 	/**
 	 * プレイヤー移動アニメーション
 	 */
 	async animatePlayerMove(targetGridPos: Position): Promise<void> {
-		this.initPlayerSprite();
+		this.initPlayerContainer();
 
 		const targetPixel = gridToPixel(targetGridPos);
 		await tween(
-			this.playerSprite,
+			this.playerContainer,
 			{ x: targetPixel.x, y: targetPixel.y },
 			{ duration: PLAYER_MOVE_DURATION, easing: Easing.easeOutCubic },
 		);
@@ -101,14 +139,14 @@ export class CharacterRenderer {
 	 * 壁にぶつかった時のバンプアニメーション
 	 */
 	async animatePlayerBump(direction: Direction): Promise<void> {
-		this.initPlayerSprite();
+		this.initPlayerContainer();
 
 		const delta = DIRECTION_DELTA[direction];
-		const originX = this.playerSprite.x;
-		const originY = this.playerSprite.y;
+		const originX = this.playerContainer.x;
+		const originY = this.playerContainer.y;
 
 		await tween(
-			this.playerSprite,
+			this.playerContainer,
 			{
 				x: originX + delta.x * BUMP_DISTANCE,
 				y: originY + delta.y * BUMP_DISTANCE,
@@ -116,7 +154,7 @@ export class CharacterRenderer {
 			{ duration: BUMP_FORWARD_DURATION, easing: Easing.easeOut },
 		);
 		await tween(
-			this.playerSprite,
+			this.playerContainer,
 			{ x: originX, y: originY },
 			{ duration: BUMP_BACK_DURATION, easing: Easing.easeOutCubic },
 		);
@@ -169,15 +207,8 @@ export class CharacterRenderer {
 			enemyContainer.addChildAt(gauge, 0);
 		}
 
-		const hpRatio = Math.max(0, enemy.hp / enemy.maxHp);
-		const gaugeHeight = hpRatio * CELL_SIZE;
-		const gaugeY = CELL_SIZE - gaugeHeight;
-
-		gauge.clear();
-		if (hpRatio > 0) {
-			gauge.rect(0, gaugeY, CELL_SIZE, gaugeHeight);
-			gauge.fill(HP_GAUGE_BRIGHT_COLOR);
-		}
+		const hpRatio = enemy.maxHp > 0 ? enemy.hp / enemy.maxHp : 0;
+		this.drawHpGaugeRect(gauge, hpRatio);
 	}
 
 	/**
@@ -321,12 +352,25 @@ export class CharacterRenderer {
 	}
 
 	/**
+	 * プレイヤーコンテナを取得
+	 */
+	getPlayerContainer(): Container {
+		return this.playerContainer;
+	}
+
+	/**
 	 * 全キャラクター状態をクリア
 	 */
 	clear(): void {
-		this.playerSprite.alpha = 1;
+		this.playerContainer.alpha = 1;
+		const removed = this.playerContainer.removeChildren();
+		for (const child of removed) {
+			child.destroy();
+		}
+		this.playerHpGauge = null;
 		this.isPlayerInitialized = false;
 		this.playerGridPos = { x: 0, y: 0 };
+		this.playerHpRatio = 1;
 		this.enemiesContainer.removeChildren();
 		for (const container of this.enemyContainerMap.values()) {
 			container.destroy({ children: true });
