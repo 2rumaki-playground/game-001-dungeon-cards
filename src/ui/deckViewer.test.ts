@@ -146,7 +146,7 @@ describe("DeckViewer", () => {
 			const container = viewer.getContainer();
 			// children[2]が最初のカード（overlay=0, title=1）
 			const firstCard = container.children[2];
-			const gridWidth = 3 * CARD_WIDTH + 2 * CARD_GAP;
+			const gridWidth = 4 * CARD_WIDTH + 3 * CARD_GAP;
 			const expectedGridX = (gameAreaWidth - gridWidth) / 2;
 			expect(firstCard.x).toBe(expectedGridX);
 		});
@@ -168,7 +168,7 @@ describe("DeckViewer", () => {
 			const titleFontSize = 24;
 			const titleToGridGap = 12;
 			const allCards = deck.hand;
-			const gridRows = Math.ceil(allCards.length / 3);
+			const gridRows = Math.ceil(allCards.length / 4);
 			const gridHeight = gridRows * CARD_HEIGHT + (gridRows - 1) * CARD_GAP;
 			const gridToCloseGap = 10;
 			const contentHeight =

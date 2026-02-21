@@ -38,7 +38,7 @@ const DECK_BUTTON_COLORS = {
 } as const;
 
 /** グリッドレイアウト定数 */
-const GRID_COLUMNS = 3;
+const GRID_COLUMNS = 4;
 
 /**
  * デッキ閲覧UIレンダラー

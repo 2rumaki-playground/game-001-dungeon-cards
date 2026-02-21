@@ -287,7 +287,7 @@ describe("RewardScreen", () => {
 			expect(container.children.length).toBeGreaterThan(0);
 		});
 
-		it("グリッドコンテナにカードが3列で配置される", () => {
+		it("グリッドコンテナにカードが4列で配置される", () => {
 			const sixCards: Card[] = [
 				{ id: "c1", type: "move", keyword: "flame" },
 				{ id: "c2", type: "attack", keyword: "flame" },
@@ -304,21 +304,24 @@ describe("RewardScreen", () => {
 			expect(gridContainer).toBeDefined();
 			expect(gridContainer?.children.length).toBe(6);
 
-			// 1行目: 0,1,2 → col=0,1,2
+			// 1行目: 0,1,2,3 → col=0,1,2,3
 			const card0 = gridContainer?.children[0] as Container;
 			const card1 = gridContainer?.children[1] as Container;
 			const card2 = gridContainer?.children[2] as Container;
+			const card3 = gridContainer?.children[3] as Container;
 			expect(card0.x).toBe(0);
 			expect(card1.x).toBe(CARD_WIDTH + CARD_GAP);
 			expect(card2.x).toBe(2 * (CARD_WIDTH + CARD_GAP));
+			expect(card3.x).toBe(3 * (CARD_WIDTH + CARD_GAP));
 			expect(card0.y).toBe(0);
 			expect(card1.y).toBe(0);
 			expect(card2.y).toBe(0);
+			expect(card3.y).toBe(0);
 
-			// 2行目: 3,4,5 → row=1
-			const card3 = gridContainer?.children[3] as Container;
-			expect(card3.x).toBe(0);
-			expect(card3.y).toBe(CARD_HEIGHT + CARD_GAP);
+			// 2行目: 4,5 → row=1
+			const card4 = gridContainer?.children[4] as Container;
+			expect(card4.x).toBe(0);
+			expect(card4.y).toBe(CARD_HEIGHT + CARD_GAP);
 		});
 
 		it("acquiredCardType指定時に獲得候補カードが表示される", () => {
