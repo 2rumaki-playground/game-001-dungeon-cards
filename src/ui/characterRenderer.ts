@@ -65,7 +65,7 @@ export class CharacterRenderer {
 	 * HPゲージ矩形を描画（敵・プレイヤー共用）
 	 */
 	private drawHpGaugeRect(gauge: Graphics, hpRatio: number): void {
-		const ratio = Math.max(0, hpRatio);
+		const ratio = Math.min(1, Math.max(0, hpRatio));
 		const gaugeHeight = ratio * CELL_SIZE;
 		const gaugeY = CELL_SIZE - gaugeHeight;
 
