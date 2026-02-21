@@ -5,6 +5,7 @@
 import "../test-utils/mapRendererTestSetup";
 import { type FederatedPointerEvent, Graphics } from "pixi.js";
 import { describe, expect, it, vi } from "vitest";
+import { CELL_SIZE } from "../constants";
 import { createRendererTestMap } from "../test-utils/mapRendererTestSetup";
 import { MapRenderer } from "./mapRenderer";
 
@@ -182,10 +183,10 @@ describe("MapRenderer HPゲージ", () => {
 		// HPゲージ描画: タイル全面のrect（幅=CELL_SIZE, 高さ=CELL_SIZE）
 		// プレイヤー + 敵 = 2つの満タンゲージ
 		const fullHpCalls = rectSpy.mock.calls.filter(
-			(args) => args[2] === 64 && args[3] === 64,
+			(args) => args[2] === CELL_SIZE && args[3] === CELL_SIZE,
 		);
 		expect(fullHpCalls).toHaveLength(2);
-		const fullGaugeHeight = 64;
+		const fullGaugeHeight = CELL_SIZE;
 
 		// HP減少して再描画
 		rectSpy.mockClear();
@@ -202,13 +203,13 @@ describe("MapRenderer HPゲージ", () => {
 
 		// ゲージの高さが HP比率 に応じて縮小（プレイヤーの満タンゲージを除外）
 		const damagedCalls = rectSpy.mock.calls.filter(
-			(args) => args[2] === 64 && (args[3] as number) < 64,
+			(args) => args[2] === CELL_SIZE && (args[3] as number) < CELL_SIZE,
 		);
 		expect(damagedCalls).toHaveLength(1);
 		const damagedGaugeHeight = damagedCalls[0][3] as number;
 
 		expect(damagedGaugeHeight).toBeLessThan(fullGaugeHeight);
-		expect(damagedGaugeHeight).toBeCloseTo(64 * (1 / 3), 5);
+		expect(damagedGaugeHeight).toBeCloseTo(CELL_SIZE * (1 / 3), 5);
 
 		rectSpy.mockRestore();
 	});
@@ -280,9 +281,14 @@ describe("MapRenderer プレイヤーHPゲージ", () => {
 
 		renderer.updatePlayerHpGauge(0.5);
 
-		const expectedHeight = 64 * 0.5;
-		const expectedY = 64 - expectedHeight;
-		expect(rectSpy).toHaveBeenCalledWith(0, expectedY, 64, expectedHeight);
+		const expectedHeight = CELL_SIZE * 0.5;
+		const expectedY = CELL_SIZE - expectedHeight;
+		expect(rectSpy).toHaveBeenCalledWith(
+			0,
+			expectedY,
+			CELL_SIZE,
+			expectedHeight,
+		);
 		expect(fillSpy).toHaveBeenCalled();
 	});
 
