@@ -88,7 +88,7 @@ jobs:
             --output report.md
 
       - name: Post PR comment
-        uses: peter-evans/create-or-update-comment@v4
+        uses: ./.github/actions/pr-comment
         with:
           issue-number: ${{ github.event.pull_request.number }}
           body-path: report.md
