@@ -21,13 +21,13 @@ describe("StatusBar", () => {
 		const statusBar = new StatusBar();
 		const container = statusBar.getContainer();
 		expect(container).toBeDefined();
-		// 2テキスト（階層 + ターン）
-		expect(container.children.length).toBe(2);
+		// 1テキスト（階層のみ）
+		expect(container.children.length).toBe(1);
 	});
 
 	it("renderで階層が正しく表示される", () => {
 		const statusBar = new StatusBar();
-		statusBar.render(5, "player");
+		statusBar.render(5);
 
 		const container = statusBar.getContainer();
 
@@ -36,34 +36,16 @@ describe("StatusBar", () => {
 
 	it("renderでisCleared=trueの場合に階層に★が付与される", () => {
 		const statusBar = new StatusBar();
-		statusBar.render(20, "player", true);
+		statusBar.render(20, true);
 
 		const container = statusBar.getContainer();
 
 		expect(findTextByPrefix(container, "階層:").text).toBe("階層: 20 ★");
 	});
 
-	it("renderでプレイヤーターン表示が正しい", () => {
-		const statusBar = new StatusBar();
-		statusBar.render(1, "player");
-
-		const container = statusBar.getContainer();
-		const turnText = findTextByPrefix(container, "あなた");
-		expect(turnText.text).toBe("あなたのターン");
-	});
-
-	it("renderで敵ターン表示が正しい", () => {
-		const statusBar = new StatusBar();
-		statusBar.render(1, "enemy");
-
-		const container = statusBar.getContainer();
-		const turnText = findTextByPrefix(container, "敵");
-		expect(turnText.text).toBe("敵のターン");
-	});
-
 	it("clearでテキストがクリアされる", () => {
 		const statusBar = new StatusBar();
-		statusBar.render(5, "player");
+		statusBar.render(5);
 		statusBar.clear();
 
 		const container = statusBar.getContainer();
@@ -91,7 +73,6 @@ describe("StatusBar", () => {
 		it("アニメーション完了後にHP比率が最終値に一致する", async () => {
 			vi.useFakeTimers();
 			const statusBar = new StatusBar();
-			statusBar.render(1, "player");
 
 			const promise = statusBar.animateHpChange(10, 7, 10);
 			await vi.advanceTimersByTimeAsync(1000);
@@ -104,7 +85,6 @@ describe("StatusBar", () => {
 		it("HP増加時もHP比率が変化する", async () => {
 			vi.useFakeTimers();
 			const statusBar = new StatusBar();
-			statusBar.render(1, "player");
 
 			const promise = statusBar.animateHpChange(5, 8, 10);
 			await vi.advanceTimersByTimeAsync(1000);
@@ -116,7 +96,6 @@ describe("StatusBar", () => {
 
 		it("値が変化しない場合は即座に完了する", async () => {
 			const statusBar = new StatusBar();
-			statusBar.render(1, "player");
 
 			await statusBar.animateHpChange(10, 10, 10);
 
@@ -126,7 +105,6 @@ describe("StatusBar", () => {
 		it("onHpUpdateコールバックが呼ばれる", async () => {
 			vi.useFakeTimers();
 			const statusBar = new StatusBar();
-			statusBar.render(1, "player");
 
 			const onHpUpdate = vi.fn();
 			const promise = statusBar.animateHpChange(10, 7, 10, onHpUpdate);
@@ -143,7 +121,6 @@ describe("StatusBar", () => {
 		it("tweenValueが1回だけ呼ばれる", async () => {
 			vi.useFakeTimers();
 			const statusBar = new StatusBar();
-			statusBar.render(1, "player");
 
 			mockTweenValue.mockClear();
 

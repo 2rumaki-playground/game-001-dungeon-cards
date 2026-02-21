@@ -108,7 +108,7 @@ export function renderGameScreen(
 	ctx.ui.gameOverScreen.hide();
 	ctx.ui.victoryScreen.hide();
 	ctx.ui.statusBar.show();
-	ctx.ui.statusBar.render(ctx.state.floor, ctx.state.turn, ctx.state.isCleared);
+	ctx.ui.statusBar.render(ctx.state.floor, ctx.state.isCleared);
 	const visitedTiles =
 		import.meta.env.DEV && getDebugCheats().fullMapVisible
 			? undefined
