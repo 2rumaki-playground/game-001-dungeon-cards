@@ -8,7 +8,7 @@ import {
 	CharacterRenderer,
 	type CharacterRendererCallbacks,
 } from "./characterRenderer";
-import { HP_GAUGE_BRIGHT_COLOR } from "./mapAnimationConstants";
+import { HP_GAUGE_BRIGHT_COLOR, PLAYER_PADDING } from "./mapAnimationConstants";
 
 // --- mocks ---
 
@@ -205,6 +205,24 @@ describe("CharacterRenderer プレイヤーHPゲージ", () => {
 
 		expect(playerContainer.children[0]).toBeInstanceOf(Graphics);
 		expect(playerContainer.children[1]).toBeInstanceOf(Sprite);
+	});
+
+	it("プレイヤースプライトにパディングが適用されタイルが視認可能", () => {
+		const player = {
+			position: { x: 3, y: 3 },
+			hp: 10,
+			maxHp: 10,
+			ap: 3,
+			maxAp: 3,
+		};
+		renderer.renderPlayer(player);
+
+		const sprite = playerContainer.children[1] as Sprite;
+		const expectedSize = CELL_SIZE - PLAYER_PADDING * 2;
+		expect(sprite.width).toBe(expectedSize);
+		expect(sprite.height).toBe(expectedSize);
+		expect(sprite.x).toBe(PLAYER_PADDING);
+		expect(sprite.y).toBe(PLAYER_PADDING);
 	});
 
 	it("HP満タン時: ゲージがタイル全面を覆う", () => {

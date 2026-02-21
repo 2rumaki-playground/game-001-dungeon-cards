@@ -22,6 +22,7 @@ import {
 	ENEMY_PADDING,
 	HP_GAUGE_BRIGHT_COLOR,
 	PLAYER_MOVE_DURATION,
+	PLAYER_PADDING,
 } from "./mapAnimationConstants";
 
 /**
@@ -89,8 +90,11 @@ export class CharacterRenderer {
 		this.playerContainer.addChild(gauge);
 
 		const sprite = new Sprite(getPlayerTexture());
-		sprite.width = CELL_SIZE;
-		sprite.height = CELL_SIZE;
+		const playerSize = CELL_SIZE - PLAYER_PADDING * 2;
+		sprite.x = PLAYER_PADDING;
+		sprite.y = PLAYER_PADDING;
+		sprite.width = playerSize;
+		sprite.height = playerSize;
 		this.playerContainer.addChild(sprite);
 
 		this.playerContainer.eventMode = "static";

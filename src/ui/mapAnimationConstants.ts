@@ -89,6 +89,9 @@ export const ENEMY_PADDING: Record<EnemyType, number> = {
 	boss: 4, // 最大サイズ
 };
 
+/** プレイヤーアイコンのパディング（セルサイズからの余白） */
+export const PLAYER_PADDING = 8;
+
 /** HPゲージ明部の色（床タイル 0x3a3a3a より明るいグレー） */
 export const HP_GAUGE_BRIGHT_COLOR = 0x5a5a5a;
 
