@@ -65,7 +65,7 @@ const REMOVE_PARTICLE_COLORS = [0xff4444, 0xff6644, 0xcc2222];
 const REMOVE_PARTICLE_COUNT = 15;
 
 /** グリッドレイアウト定数 */
-const GRID_COLUMNS = 3;
+const GRID_COLUMNS = 4;
 
 /**
  * 報酬画面レンダラー
