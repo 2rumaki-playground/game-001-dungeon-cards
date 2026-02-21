@@ -5,7 +5,6 @@
 export { ActionLogRenderer } from "./actionLogRenderer";
 export { CameraDragController } from "./cameraDragController";
 export { getViewportPixelSize } from "./coordinates";
-export { DeckViewer } from "./deckViewer";
 export { DirectionSelector } from "./directionSelector";
 export { FloorBanner } from "./floorBanner";
 export { GameOverScreen } from "./gameOverScreen";

@@ -11,7 +11,6 @@ import type { GameState } from "./types";
 import {
 	ActionLogRenderer,
 	CameraDragController,
-	DeckViewer,
 	DirectionSelector,
 	FloorBanner,
 	GameOverScreen,
@@ -38,7 +37,6 @@ import {
 	BUTTON_GAP,
 	BUTTON_HEIGHT,
 	BUTTON_RIGHT_MARGIN,
-	DECK_BUTTON_WIDTH,
 	HAND_AREA_HEIGHT,
 	HAND_AREA_TOP_PADDING,
 	NEXT_FLOOR_BUTTON_WIDTH,
@@ -109,12 +107,6 @@ async function initializeUIComponents(
 	nextFloorContainer.y = totalHeight - BUTTON_HEIGHT - BUTTON_BOTTOM_MARGIN;
 	app.stage.addChild(nextFloorContainer);
 
-	const deckViewer = new DeckViewer();
-	const deckButtonContainer = deckViewer.getButtonContainer();
-	deckButtonContainer.x = nextFloorContainer.x - DECK_BUTTON_WIDTH - BUTTON_GAP;
-	deckButtonContainer.y = totalHeight - BUTTON_HEIGHT - BUTTON_BOTTOM_MARGIN;
-	app.stage.addChild(deckButtonContainer);
-
 	// カメラドラッグ制御
 	const cameraDragController = new CameraDragController();
 
@@ -143,8 +135,6 @@ async function initializeUIComponents(
 		STATUS_BAR_HEIGHT + viewportSize.height + HAND_AREA_TOP_PADDING;
 	app.stage.addChild(directionContainer);
 
-	app.stage.addChild(deckViewer.getContainer());
-
 	const rewardScreen = new RewardScreen();
 	rewardScreen.setParticleSystem(particleSystem);
 	app.stage.addChild(rewardScreen.getContainer());
@@ -156,7 +146,7 @@ async function initializeUIComponents(
 	const statsScreen = new StatsScreen();
 	app.stage.addChild(statsScreen.getContainer());
 
-	// ターンバナー（directionSelector・deckViewer・rewardScreen等の上に描画）
+	// ターンバナー（directionSelector・rewardScreen等の上に描画）
 	app.stage.addChild(turnBanner.getContainer());
 
 	const totalWidth =
@@ -185,13 +175,13 @@ async function initializeUIComponents(
 		debugCardRenderer = new DebugCardRenderer();
 		const debugCardContainer = debugCardRenderer.getContainer();
 		debugCardContainer.x =
-			deckButtonContainer.x -
-			BUTTON_GAP -
-			debugCardRenderer.getTotalWidth() / 2;
+			nextFloorContainer.x - BUTTON_GAP - debugCardRenderer.getTotalWidth() / 2;
 		debugCardContainer.y =
 			totalHeight - debugCardRenderer.getTotalHeight() - BUTTON_BOTTOM_MARGIN;
-		const deckViewerIndex = app.stage.getChildIndex(deckViewer.getContainer());
-		app.stage.addChildAt(debugCardContainer, deckViewerIndex);
+		const rewardScreenIndex = app.stage.getChildIndex(
+			rewardScreen.getContainer(),
+		);
+		app.stage.addChildAt(debugCardContainer, rewardScreenIndex);
 
 		debugCheatPanel = new DebugCheatPanel();
 		const cheatPanelContainer = debugCheatPanel.getContainer();
@@ -216,7 +206,6 @@ async function initializeUIComponents(
 		directionSelector,
 		turnEndButton,
 		nextFloorButton,
-		deckViewer,
 		actionLogRenderer,
 		turnBanner,
 		rewardScreen,

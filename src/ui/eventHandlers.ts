@@ -62,7 +62,6 @@ import {
 	updateStateWithStairsAnimation,
 } from "./floorTransition";
 import {
-	getGameAreaSize,
 	getScreenSize,
 	updateStateWithAttackAnimation,
 	updateStateWithBumpAnimation,
@@ -588,24 +587,6 @@ export function setupEventHandlers(ctx: GameContext): void {
 		} finally {
 			ctx.isAnimating = false;
 		}
-	});
-
-	// デッキ閲覧UIのコールバック設定
-	ctx.ui.deckViewer.setOnOpen(() => {
-		if (ctx.isAnimating) return;
-		const screen = getScreenSize(ctx);
-		const gameArea = getGameAreaSize(ctx);
-		ctx.ui.deckViewer.render(
-			ctx.state.deck,
-			screen.width,
-			screen.height,
-			gameArea,
-		);
-		ctx.ui.deckViewer.show();
-	});
-
-	ctx.ui.deckViewer.setOnClose(() => {
-		ctx.ui.deckViewer.hide();
 	});
 
 	// 統計画面のコールバック設定

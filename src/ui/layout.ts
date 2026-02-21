@@ -13,9 +13,6 @@ export const BUTTON_BOTTOM_MARGIN = 12;
 /** ターン終了ボタンの幅 */
 export const TURN_END_BUTTON_WIDTH = 120;
 
-/** デッキ閲覧ボタンの幅 */
-export const DECK_BUTTON_WIDTH = 80;
-
 /** ボタンエリアの右マージン */
 export const BUTTON_RIGHT_MARGIN = 16;
 

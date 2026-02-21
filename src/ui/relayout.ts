@@ -12,7 +12,6 @@ import {
 	BUTTON_GAP,
 	BUTTON_HEIGHT,
 	BUTTON_RIGHT_MARGIN,
-	DECK_BUTTON_WIDTH,
 	HAND_AREA_HEIGHT,
 	HAND_AREA_TOP_PADDING,
 	NEXT_FLOOR_BUTTON_WIDTH,
@@ -53,12 +52,6 @@ export function relayoutUI(ctx: GameContext): void {
 	ctx.ui.nextFloorButton.getContainer().y =
 		totalHeight - BUTTON_HEIGHT - BUTTON_BOTTOM_MARGIN;
 
-	// デッキ閲覧ボタン
-	ctx.ui.deckViewer.getButtonContainer().x =
-		ctx.ui.nextFloorButton.getContainer().x - DECK_BUTTON_WIDTH - BUTTON_GAP;
-	ctx.ui.deckViewer.getButtonContainer().y =
-		totalHeight - BUTTON_HEIGHT - BUTTON_BOTTOM_MARGIN;
-
 	// 行動ログ
 	ctx.ui.actionLogRenderer.getContainer().x = viewportSize.width + LOG_AREA_GAP;
 	ctx.ui.actionLogRenderer.resize(totalHeight);
@@ -72,11 +65,11 @@ export function relayoutUI(ctx: GameContext): void {
 	// 階層バナー
 	ctx.ui.floorBanner.resize(totalWidth, totalHeight);
 
-	// デバッグカードレンダラー（デッキボタンの左に配置）
+	// デバッグカードレンダラー（次階層ボタンの左に配置）
 	if (ctx.ui.debugCardRenderer) {
 		const debugContainer = ctx.ui.debugCardRenderer.getContainer();
 		debugContainer.x =
-			ctx.ui.deckViewer.getButtonContainer().x -
+			ctx.ui.nextFloorButton.getContainer().x -
 			BUTTON_GAP -
 			ctx.ui.debugCardRenderer.getTotalWidth() / 2;
 		debugContainer.y =
