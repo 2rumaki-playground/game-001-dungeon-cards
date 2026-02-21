@@ -142,6 +142,7 @@ export class HandRenderer {
 	private onReorder: ((fromIndex: number, toIndex: number) => void) | null =
 		null;
 	private isInputLocked = false;
+	private isInteractionEnabled = true;
 
 	// ドラッグ状態
 	private isDragging = false;
@@ -284,6 +285,7 @@ export class HandRenderer {
 		currentAp: number,
 		newCardCount: number,
 	): Promise<void> {
+		this.isInteractionEnabled = false;
 		this.currentHand = hand;
 		this.currentAp = currentAp;
 		this.cardsContainer.removeChildren();
@@ -356,6 +358,7 @@ export class HandRenderer {
 		await Promise.all(animationPromises);
 
 		// アニメーション完了後、インタラクションを有効化して再描画
+		this.isInteractionEnabled = true;
 		this.render(hand, currentAp);
 	}
 
@@ -522,6 +525,7 @@ export class HandRenderer {
 			cardContainer.on("pointerdown", (event: FederatedPointerEvent) => {
 				if (event.button !== 0) return;
 				if (this.isInputLocked) return;
+				if (!this.isInteractionEnabled) return;
 
 				// ドラッグ準備開始
 				this.isDragging = true;
