@@ -3,7 +3,7 @@
  */
 
 import { Container, Graphics, Sprite } from "pixi.js";
-import { CELL_SIZE, COLORS } from "../constants";
+import { CELL_SIZE } from "../constants";
 import type { Direction, Enemy, Player, Position } from "../types";
 import { DIRECTION_DELTA } from "../types";
 import type { EnemyType } from "../types/character";
@@ -20,8 +20,7 @@ import {
 	ENEMY_MOVE_DURATION,
 	ENEMY_MOVE_STAGGER_DELAY,
 	ENEMY_PADDING,
-	HP_BAR_BG_COLOR,
-	HP_BAR_HEIGHT,
+	HP_GAUGE_BRIGHT_COLOR,
 	PLAYER_MOVE_DURATION,
 } from "./mapAnimationConstants";
 
@@ -43,7 +42,7 @@ export class CharacterRenderer {
 	private enemiesContainer: Container;
 	private isPlayerInitialized = false;
 	private enemyContainerMap: Map<string, Container> = new Map();
-	private enemyHpBarMap: Map<string, Graphics> = new Map();
+	private enemyHpGaugeMap: Map<string, Graphics> = new Map();
 	private enemyTypeMap: Map<string, EnemyType> = new Map();
 	private playerGridPos: Position = { x: 0, y: 0 };
 	private enemyGridPosMap: Map<string, Position> = new Map();
@@ -131,26 +130,6 @@ export class CharacterRenderer {
 	}
 
 	/**
-	 * 敵タイプに応じた色を取得（HPバー描画用）
-	 */
-	private getEnemyColor(type: EnemyType): number {
-		switch (type) {
-			case "normal":
-				return COLORS.enemyNormal;
-			case "heavy":
-				return COLORS.enemyHeavy;
-			case "scout":
-				return COLORS.enemyScout;
-			case "miniboss":
-				return COLORS.enemyMiniboss;
-			case "boss":
-				return COLORS.enemyBoss;
-			default:
-				return COLORS.enemyNormal;
-		}
-	}
-
-	/**
 	 * 敵1体分のコンテナを作成
 	 */
 	private createEnemyContainer(type: EnemyType, enemyId: string): Container {
@@ -177,31 +156,27 @@ export class CharacterRenderer {
 	}
 
 	/**
-	 * 敵のHPバーを描画・更新
+	 * 敵HPゲージを描画・更新（タイル全体を使った液体ゲージ）
 	 */
-	private renderHpBar(enemy: Enemy): void {
-		let hpBar = this.enemyHpBarMap.get(enemy.id);
+	private renderHpGauge(enemy: Enemy): void {
+		let gauge = this.enemyHpGaugeMap.get(enemy.id);
 		const enemyContainer = this.enemyContainerMap.get(enemy.id);
 		if (!enemyContainer) return;
 
-		if (!hpBar) {
-			hpBar = new Graphics();
-			this.enemyHpBarMap.set(enemy.id, hpBar);
-			enemyContainer.addChild(hpBar);
+		if (!gauge) {
+			gauge = new Graphics();
+			this.enemyHpGaugeMap.set(enemy.id, gauge);
+			enemyContainer.addChildAt(gauge, 0);
 		}
 
-		const padding = ENEMY_PADDING[enemy.type];
-		const barWidth = CELL_SIZE - padding * 2;
 		const hpRatio = Math.max(0, enemy.hp / enemy.maxHp);
-		const barY = padding - HP_BAR_HEIGHT - 2;
+		const gaugeHeight = hpRatio * CELL_SIZE;
+		const gaugeY = CELL_SIZE - gaugeHeight;
 
-		hpBar.clear();
-		hpBar.rect(padding, barY, barWidth, HP_BAR_HEIGHT);
-		hpBar.fill(HP_BAR_BG_COLOR);
+		gauge.clear();
 		if (hpRatio > 0) {
-			const color = this.getEnemyColor(enemy.type);
-			hpBar.rect(padding, barY, barWidth * hpRatio, HP_BAR_HEIGHT);
-			hpBar.fill(color);
+			gauge.rect(0, gaugeY, CELL_SIZE, gaugeHeight);
+			gauge.fill(HP_GAUGE_BRIGHT_COLOR);
 		}
 	}
 
@@ -216,7 +191,7 @@ export class CharacterRenderer {
 			enemyContainer.destroy({ children: true });
 		}
 		this.enemyContainerMap.delete(id);
-		this.enemyHpBarMap.delete(id);
+		this.enemyHpGaugeMap.delete(id);
 		this.enemyTypeMap.delete(id);
 		this.enemyGridPosMap.delete(id);
 		this.enemyDataMap.delete(id);
@@ -260,7 +235,7 @@ export class CharacterRenderer {
 			enemyContainer.x = pixelPos.x;
 			enemyContainer.y = pixelPos.y;
 
-			this.renderHpBar(enemy);
+			this.renderHpGauge(enemy);
 		}
 
 		return visibleEnemies;
@@ -351,7 +326,7 @@ export class CharacterRenderer {
 			container.destroy({ children: true });
 		}
 		this.enemyContainerMap.clear();
-		this.enemyHpBarMap.clear();
+		this.enemyHpGaugeMap.clear();
 		this.enemyTypeMap.clear();
 		this.enemyGridPosMap.clear();
 		this.enemyDataMap.clear();

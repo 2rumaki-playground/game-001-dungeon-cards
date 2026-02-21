@@ -1,5 +1,5 @@
 /**
- * マップレンダラーのテスト（HPバー・ツールチップ）
+ * マップレンダラーのテスト（HPゲージ・ツールチップ）
  */
 
 import "../test-utils/mapRendererTestSetup";
@@ -8,8 +8,8 @@ import { describe, expect, it, vi } from "vitest";
 import { createRendererTestMap } from "../test-utils/mapRendererTestSetup";
 import { MapRenderer } from "./mapRenderer";
 
-describe("MapRenderer HPバー", () => {
-	it("miniboss敵のコンテナにHPバーが含まれる", () => {
+describe("MapRenderer HPゲージ", () => {
+	it("miniboss敵のコンテナにHPゲージが含まれる", () => {
 		const renderer = new MapRenderer();
 		const map = createRendererTestMap();
 		const enemies = [
@@ -34,12 +34,12 @@ describe("MapRenderer HPバー", () => {
 		const enemiesContainer = container.children[4];
 		// 敵コンテナ1つ
 		expect(enemiesContainer.children.length).toBe(1);
-		// 敵コンテナ内にSprite(1) + HPバー(1) = 2
+		// 敵コンテナ内にSprite(1) + HPゲージ(1) = 2
 		const enemyContainer = enemiesContainer.children[0];
 		expect(enemyContainer.children.length).toBe(2);
 	});
 
-	it("boss敵のコンテナにHPバーが含まれる", () => {
+	it("boss敵のコンテナにHPゲージが含まれる", () => {
 		const renderer = new MapRenderer();
 		const map = createRendererTestMap();
 		const enemies = [
@@ -63,12 +63,12 @@ describe("MapRenderer HPバー", () => {
 		const container = renderer.getContainer();
 		const enemiesContainer = container.children[4];
 		expect(enemiesContainer.children.length).toBe(1);
-		// 敵コンテナ内にSprite(1) + HPバー(1) = 2
+		// 敵コンテナ内にSprite(1) + HPゲージ(1) = 2
 		const enemyContainer = enemiesContainer.children[0];
 		expect(enemyContainer.children.length).toBe(2);
 	});
 
-	it("normal敵のコンテナにもHPバーが含まれる", () => {
+	it("normal敵のコンテナにもHPゲージが含まれる", () => {
 		const renderer = new MapRenderer();
 		const map = createRendererTestMap();
 		const enemies = [
@@ -92,12 +92,12 @@ describe("MapRenderer HPバー", () => {
 		const container = renderer.getContainer();
 		const enemiesContainer = container.children[4];
 		expect(enemiesContainer.children.length).toBe(1);
-		// 敵コンテナ内にSprite(1) + HPバー(1) = 2
+		// 敵コンテナ内にSprite(1) + HPゲージ(1) = 2
 		const enemyContainer = enemiesContainer.children[0];
 		expect(enemyContainer.children.length).toBe(2);
 	});
 
-	it("heavy敵のコンテナにもHPバーが含まれる", () => {
+	it("heavy敵のコンテナにもHPゲージが含まれる", () => {
 		const renderer = new MapRenderer();
 		const map = createRendererTestMap();
 		const enemies = [
@@ -121,12 +121,12 @@ describe("MapRenderer HPバー", () => {
 		const container = renderer.getContainer();
 		const enemiesContainer = container.children[4];
 		expect(enemiesContainer.children.length).toBe(1);
-		// 敵コンテナ内にSprite(1) + HPバー(1) = 2
+		// 敵コンテナ内にSprite(1) + HPゲージ(1) = 2
 		const enemyContainer = enemiesContainer.children[0];
 		expect(enemyContainer.children.length).toBe(2);
 	});
 
-	it("scout敵のコンテナにもHPバーが含まれる", () => {
+	it("scout敵のコンテナにもHPゲージが含まれる", () => {
 		const renderer = new MapRenderer();
 		const map = createRendererTestMap();
 		const enemies = [
@@ -150,12 +150,12 @@ describe("MapRenderer HPバー", () => {
 		const container = renderer.getContainer();
 		const enemiesContainer = container.children[4];
 		expect(enemiesContainer.children.length).toBe(1);
-		// 敵コンテナ内にSprite(1) + HPバー(1) = 2
+		// 敵コンテナ内にSprite(1) + HPゲージ(1) = 2
 		const enemyContainer = enemiesContainer.children[0];
 		expect(enemyContainer.children.length).toBe(2);
 	});
 
-	it("HP減少が通常敵のHPバーに反映される", () => {
+	it("HP減少が通常敵のHPゲージに反映される", () => {
 		const renderer = new MapRenderer();
 		const map = createRendererTestMap();
 		const player = {
@@ -179,13 +179,12 @@ describe("MapRenderer HPバー", () => {
 		const rectSpy = vi.spyOn(Graphics.prototype, "rect");
 		renderer.render(map, player, fullHpEnemies);
 
-		// HPバー描画: 背景rect + HP部分rect
+		// HPゲージ描画: タイル全面のrect（幅=CELL_SIZE, 高さ=CELL_SIZE）
 		const fullHpCalls = rectSpy.mock.calls.filter(
-			(args) => args[2] !== undefined && args[3] === 6,
+			(args) => args[2] === 64 && args[3] === 64,
 		);
-		// 背景(幅40) + HP部分(幅40)
-		expect(fullHpCalls).toHaveLength(2);
-		const fullBarWidth = fullHpCalls[1][2] as number;
+		expect(fullHpCalls).toHaveLength(1);
+		const fullGaugeHeight = fullHpCalls[0][3] as number;
 
 		// HP減少して再描画
 		rectSpy.mockClear();
@@ -200,15 +199,13 @@ describe("MapRenderer HPバー", () => {
 		];
 		renderer.render(map, player, damagedEnemies);
 
-		const damagedHpCalls = rectSpy.mock.calls.filter(
-			(args) => args[2] !== undefined && args[3] === 6,
-		);
-		expect(damagedHpCalls).toHaveLength(2);
-		const damagedBarWidth = damagedHpCalls[1][2] as number;
+		// ゲージの高さが HP比率 に応じて縮小
+		const damagedCalls = rectSpy.mock.calls.filter((args) => args[2] === 64);
+		expect(damagedCalls).toHaveLength(1);
+		const damagedGaugeHeight = damagedCalls[0][3] as number;
 
-		// HP比率に応じてバー幅が縮小していること
-		expect(damagedBarWidth).toBeLessThan(fullBarWidth);
-		expect(damagedBarWidth).toBeCloseTo(fullBarWidth * (1 / 3), 5);
+		expect(damagedGaugeHeight).toBeLessThan(fullGaugeHeight);
+		expect(damagedGaugeHeight).toBeCloseTo(64 * (1 / 3), 5);
 
 		rectSpy.mockRestore();
 	});
