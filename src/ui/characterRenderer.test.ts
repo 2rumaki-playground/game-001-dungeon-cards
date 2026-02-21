@@ -148,6 +148,24 @@ describe("CharacterRenderer HPゲージ", () => {
 		expect(fillSpy).not.toHaveBeenCalled();
 	});
 
+	it("撃破アニメーション開始時にHPゲージがクリアされる", async () => {
+		const enemy = createEnemy({ id: "e1", hp: 3, maxHp: 5 });
+		renderer.renderEnemies([enemy]);
+
+		const gauge = renderer.getEnemyContainer("e1")?.children[0] as Graphics;
+		const { clearSpy, rectSpy } = spyOnGraphics(gauge);
+
+		// clearSpy の初期呼び出しをリセット（renderHpGauge内でのclearを除外）
+		clearSpy.mockClear();
+		rectSpy.mockClear();
+
+		await renderer.animateEnemyDefeat("e1");
+
+		// ゲージの clear が呼ばれ、rect（再描画）は呼ばれない
+		expect(clearSpy).toHaveBeenCalled();
+		expect(rectSpy).not.toHaveBeenCalled();
+	});
+
 	it("敵破棄時にゲージMapからも削除される", () => {
 		const enemy = createEnemy({ id: "e1", hp: 3, maxHp: 3 });
 		renderer.renderEnemies([enemy]);
