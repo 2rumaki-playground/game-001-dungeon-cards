@@ -1,6 +1,6 @@
 /**
  * ステータスバーUI
- * プレイヤーHP数値、APゲージバー、階層番号を表示
+ * プレイヤーHP数値、APゲージバー、階層番号、ターンを表示
  */
 
 import { Container, Graphics, Text } from "pixi.js";
