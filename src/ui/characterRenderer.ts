@@ -77,9 +77,9 @@ export class CharacterRenderer {
 	}
 
 	/**
-	 * プレイヤースプライトを初期化（1回だけ）
+	 * プレイヤーコンテナを初期化（HPゲージ＋スプライト、1回だけ）
 	 */
-	private initPlayerSprite(): void {
+	private initPlayerContainer(): void {
 		if (this.isPlayerInitialized) return;
 
 		const gauge = new Graphics();
@@ -98,7 +98,7 @@ export class CharacterRenderer {
 	 * プレイヤーを描画
 	 */
 	renderPlayer(player: Player): void {
-		this.initPlayerSprite();
+		this.initPlayerContainer();
 
 		this.playerGridPos = player.position;
 		this.playerHpRatio = player.maxHp > 0 ? player.hp / player.maxHp : 0;
@@ -125,7 +125,7 @@ export class CharacterRenderer {
 	 * プレイヤー移動アニメーション
 	 */
 	async animatePlayerMove(targetGridPos: Position): Promise<void> {
-		this.initPlayerSprite();
+		this.initPlayerContainer();
 
 		const targetPixel = gridToPixel(targetGridPos);
 		await tween(
@@ -139,7 +139,7 @@ export class CharacterRenderer {
 	 * 壁にぶつかった時のバンプアニメーション
 	 */
 	async animatePlayerBump(direction: Direction): Promise<void> {
-		this.initPlayerSprite();
+		this.initPlayerContainer();
 
 		const delta = DIRECTION_DELTA[direction];
 		const originX = this.playerContainer.x;
