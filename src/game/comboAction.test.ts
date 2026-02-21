@@ -174,8 +174,6 @@ describe("コンボ発動（統合テスト）", () => {
 				position: { x: 3, y: 3 },
 				hp: 10,
 				maxHp: 10,
-				ap: 3,
-				maxAp: 3,
 			},
 		});
 

@@ -2,7 +2,7 @@
  * デバッグ用のカスタムゲーム開始機能
  */
 
-import { CARD_COST, ENEMY_PARAMS } from "../constants";
+import { ENEMY_PARAMS } from "../constants";
 import type {
 	CardType,
 	DeckState,
@@ -24,6 +24,15 @@ import {
 } from "./deck";
 import { createInitialGameState } from "./state";
 
+/** デバッグデッキで使用可能なカードタイプ */
+const VALID_CARD_TYPES: CardType[] = [
+	"move",
+	"attack",
+	"strong_attack",
+	"jump",
+	"wait",
+];
+
 /**
  * デバッグ用デッキを生成
  *
@@ -33,9 +42,8 @@ export function createDebugDeckState(
 	composition: DebugDeckComposition,
 	rng: RNG,
 ): DeckState {
-	const validCardTypes = Object.keys(CARD_COST);
 	const cards = Object.entries(composition).flatMap(([type, count]) => {
-		if (!validCardTypes.includes(type)) {
+		if (!VALID_CARD_TYPES.includes(type as CardType)) {
 			throw new Error(
 				`createDebugDeckState: 不正なカードタイプが指定されました: "${type}"`,
 			);
@@ -147,19 +155,11 @@ export function startNewGameWithDebugParams(
 	const rawHp = params.playerHp;
 	const hpBase = Number.isFinite(rawHp) ? Math.trunc(rawHp as number) : maxHp;
 	const hp = Math.max(0, Math.min(hpBase, maxHp));
-	const maxAp = base.player.maxAp;
-	const rawAp = params.playerAp;
-	const apBase = Number.isFinite(rawAp)
-		? Math.trunc(rawAp as number)
-		: base.player.ap;
-	const ap = Math.max(0, Math.min(apBase, maxAp));
 
 	const player = {
 		...base.player,
 		hp,
 		maxHp,
-		ap,
-		maxAp,
 	};
 
 	return {

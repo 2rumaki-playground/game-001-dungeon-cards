@@ -23,8 +23,6 @@ describe("analyzeEnemy", () => {
 					position: { x: 3, y: 3 },
 					hp: 10,
 					maxHp: 10,
-					ap: 3,
-					maxAp: 3,
 				},
 			});
 			const enemy = createEnemy({ position: { x: 3, y: 2 } });
@@ -41,8 +39,6 @@ describe("analyzeEnemy", () => {
 					position: { x: 3, y: 3 },
 					hp: 10,
 					maxHp: 10,
-					ap: 3,
-					maxAp: 3,
 				},
 			});
 			// 距離3（senseRange=5以内）
@@ -60,8 +56,6 @@ describe("analyzeEnemy", () => {
 					position: { x: 1, y: 1 },
 					hp: 10,
 					maxHp: 10,
-					ap: 3,
-					maxAp: 3,
 				},
 			});
 			// senseRange=5, 距離8（壁の中以外の場所で離す）
@@ -81,8 +75,6 @@ describe("analyzeEnemy", () => {
 					position: { x: 1, y: 1 },
 					hp: 10,
 					maxHp: 10,
-					ap: 3,
-					maxAp: 3,
 				},
 				rooms: [{ x: 3, y: 3, width: 3, height: 3 }],
 			});
@@ -99,8 +91,6 @@ describe("analyzeEnemy", () => {
 					position: { x: 3, y: 3 },
 					hp: 10,
 					maxHp: 10,
-					ap: 3,
-					maxAp: 3,
 				},
 			});
 			const enemy = createEnemy({
@@ -122,8 +112,6 @@ describe("analyzeEnemy", () => {
 					position: { x: 3, y: 3 },
 					hp: 10,
 					maxHp: 10,
-					ap: 3,
-					maxAp: 3,
 				},
 			});
 			// heavy: moveDistance=0, senseRange=3, 距離2（索敵範囲内だが動けない）
@@ -147,8 +135,6 @@ describe("analyzeEnemy", () => {
 					position: { x: 3, y: 5 },
 					hp: 10,
 					maxHp: 10,
-					ap: 3,
-					maxAp: 3,
 				},
 			});
 			const enemy = createEnemy({ position: { x: 3, y: 3 } });
@@ -164,8 +150,6 @@ describe("analyzeEnemy", () => {
 					position: { x: 3, y: 5 },
 					hp: 10,
 					maxHp: 10,
-					ap: 3,
-					maxAp: 3,
 				},
 			});
 			const enemy = createEnemy({ position: { x: 3, y: 3 } });
@@ -182,8 +166,6 @@ describe("analyzeEnemy", () => {
 					position: { x: 3, y: 5 },
 					hp: 10,
 					maxHp: 10,
-					ap: 3,
-					maxAp: 3,
 				},
 			});
 			const enemy1 = createEnemy({
@@ -242,8 +224,6 @@ describe("analyzeEnemy", () => {
 					position: { x: 3, y: 3 },
 					hp: 10,
 					maxHp: 10,
-					ap: 3,
-					maxAp: 3,
 				},
 			});
 			const enemy = createEnemy({ position: { x: 3, y: 2 } });
@@ -259,8 +239,6 @@ describe("analyzeEnemy", () => {
 					position: { x: 3, y: 3 },
 					hp: 10,
 					maxHp: 10,
-					ap: 3,
-					maxAp: 3,
 				},
 			});
 			const enemy = createEnemy({ position: { x: 3, y: 1 } });
@@ -279,8 +257,6 @@ describe("analyzeAllEnemies", () => {
 				position: { x: 3, y: 3 },
 				hp: 10,
 				maxHp: 10,
-				ap: 3,
-				maxAp: 3,
 			},
 		});
 		state.enemies = [

@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 import {
-	CARD_COST,
 	ENEMY_ATTACK_DAMAGE,
 	ENEMY_COMPOSITION_TABLE,
 	ENEMY_COUNT,
@@ -32,16 +31,8 @@ describe("constants", () => {
 		expect(INITIAL_DECK.waitCards).toBe(1);
 	});
 
-	it("ジャンプカードのAPコストが2", () => {
-		expect(CARD_COST.jump).toBe(2);
-	});
-
 	it("ジャンプカードの着地距離が2", () => {
 		expect(JUMP_DISTANCE).toBe(2);
-	});
-
-	it("強攻撃カードのAPコストが2", () => {
-		expect(CARD_COST.strong_attack).toBe(2);
 	});
 
 	it("強攻撃カードのダメージが3", () => {

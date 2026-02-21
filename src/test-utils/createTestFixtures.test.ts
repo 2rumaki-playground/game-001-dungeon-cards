@@ -3,7 +3,6 @@ import {
 	ENEMY_PARAMS,
 	MAP_HEIGHT,
 	MAP_WIDTH,
-	MAX_AP,
 	PLAYER_INITIAL_HP,
 } from "../constants";
 import {
@@ -51,7 +50,6 @@ describe("createTestState", () => {
 		expect(state.floor).toBe(1);
 		expect(state.player.hp).toBe(PLAYER_INITIAL_HP);
 		expect(state.player.maxHp).toBe(PLAYER_INITIAL_HP);
-		expect(state.player.ap).toBe(MAX_AP);
 		expect(state.player.position).toEqual({ x: 3, y: 3 });
 		expect(state.enemies).toEqual([]);
 		expect(state.deck.hand).toEqual([]);

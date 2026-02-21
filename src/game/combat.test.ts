@@ -3,7 +3,6 @@ import {
 	CLEAR_FLOOR,
 	ENEMY_ATTACK_DAMAGE,
 	ENEMY_HP,
-	MAX_AP,
 	PLAYER_ATTACK_DAMAGE,
 	PLAYER_INITIAL_HP,
 } from "../constants";
@@ -233,8 +232,6 @@ describe("applyDamageToPlayer", () => {
 				position: { x: 3, y: 3 },
 				hp: 1,
 				maxHp: PLAYER_INITIAL_HP,
-				ap: MAX_AP,
-				maxAp: MAX_AP,
 			},
 		});
 		const result = applyDamageToPlayer(state, ENEMY_ATTACK_DAMAGE);
@@ -265,8 +262,6 @@ describe("checkGameOver", () => {
 				position: { x: 3, y: 3 },
 				hp,
 				maxHp: PLAYER_INITIAL_HP,
-				ap: MAX_AP,
-				maxAp: MAX_AP,
 			},
 		});
 		const result = checkGameOver(state);
@@ -280,8 +275,6 @@ describe("checkGameOver", () => {
 				position: { x: 3, y: 3 },
 				hp: 0,
 				maxHp: PLAYER_INITIAL_HP,
-				ap: MAX_AP,
-				maxAp: MAX_AP,
 			},
 		});
 		const result = checkGameOver(state);
@@ -304,8 +297,6 @@ describe("checkGameOver", () => {
 				position: { x: 3, y: 3 },
 				hp: 0,
 				maxHp: PLAYER_INITIAL_HP,
-				ap: MAX_AP,
-				maxAp: MAX_AP,
 			},
 		});
 		const originalScreen = state.screen;

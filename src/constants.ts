@@ -5,9 +5,7 @@
 
 import type { EnemyCardAcquisitionConfig, EnemyType, Keyword } from "./types";
 
-// 行動関連
-export const MAX_AP = 3;
-export const TURN_START_AP = 3;
+// 手札関連
 export const HAND_LIMIT = 4;
 
 // 手札構成
@@ -25,15 +23,6 @@ export const KEYWORDS = [
 	"flame",
 	"water",
 ] as const satisfies readonly Keyword[];
-
-// カードAPコスト
-export const CARD_COST = {
-	move: 1,
-	attack: 1,
-	strong_attack: 2,
-	jump: 2,
-	wait: 0,
-} as const;
 
 // ジャンプ
 export const JUMP_DISTANCE = 2;

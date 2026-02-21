@@ -4,7 +4,6 @@
  */
 
 import { Container, Graphics, Text } from "pixi.js";
-import { getEffectiveCardCost } from "../game/debugCheats";
 import type { CardType } from "../types";
 import { CARD_COLORS, CARD_TYPE_NAME, CARD_TYPE_SYMBOL } from "./cardConstants";
 import { drawRoundedRect } from "./graphicsHelpers";
@@ -13,7 +12,7 @@ import { CARD_HEIGHT, CARD_RADIUS, CARD_WIDTH } from "./handRenderer";
 /**
  * グリッド表示用のカードビューを生成（インタラクションなし）
  *
- * 背景・シンボル・カード名・APコストを描画する。
+ * 背景・シンボル・カード名を描画する。
  * インタラクション（タップ、ツールチップ等）は呼び出し側で追加すること。
  */
 export function createGridCardView(cardType: CardType): Container {
@@ -56,23 +55,6 @@ export function createGridCardView(cardType: CardType): Container {
 	nameText.x = CARD_WIDTH / 2;
 	nameText.y = 34;
 	cardContainer.addChild(nameText);
-
-	// APコスト
-	const cost = getEffectiveCardCost(cardType);
-	const costFill = cost >= 2 ? 0xffaa44 : cost === 0 ? 0x666666 : 0xcccccc;
-	const costText = new Text({
-		text: cost > 0 ? `AP: ${cost}` : "",
-		style: {
-			fontSize: 13,
-			fontFamily: "sans-serif",
-			fill: costFill,
-			fontWeight: cost >= 2 ? "bold" : "normal",
-		},
-	});
-	costText.anchor.set(0.5, 0);
-	costText.x = CARD_WIDTH / 2;
-	costText.y = 56;
-	cardContainer.addChild(costText);
 
 	return cardContainer;
 }

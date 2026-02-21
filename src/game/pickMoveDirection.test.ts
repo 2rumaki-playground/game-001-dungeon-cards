@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ENEMY_HP, MAX_AP, PLAYER_INITIAL_HP } from "../constants";
+import { ENEMY_HP, PLAYER_INITIAL_HP } from "../constants";
 import {
 	createTestMap,
 	createTestState,
@@ -22,8 +22,6 @@ describe("pickMoveDirection", () => {
 				position: playerPos,
 				hp: PLAYER_INITIAL_HP,
 				maxHp: PLAYER_INITIAL_HP,
-				ap: MAX_AP,
-				maxAp: MAX_AP,
 			},
 		});
 		const enemy: Enemy = {
@@ -43,8 +41,6 @@ describe("pickMoveDirection", () => {
 				position: { x: 2, y: 2 },
 				hp: PLAYER_INITIAL_HP,
 				maxHp: PLAYER_INITIAL_HP,
-				ap: MAX_AP,
-				maxAp: MAX_AP,
 			},
 		});
 		const enemy: Enemy = {
@@ -65,8 +61,6 @@ describe("pickMoveDirection", () => {
 				position: { x: 1, y: 3 },
 				hp: PLAYER_INITIAL_HP,
 				maxHp: PLAYER_INITIAL_HP,
-				ap: MAX_AP,
-				maxAp: MAX_AP,
 			},
 		});
 		const enemy: Enemy = {
@@ -96,8 +90,6 @@ describe("pickMoveDirection", () => {
 				position: { x: 3, y: 1 },
 				hp: PLAYER_INITIAL_HP,
 				maxHp: PLAYER_INITIAL_HP,
-				ap: MAX_AP,
-				maxAp: MAX_AP,
 			},
 			enemies,
 		});
@@ -122,8 +114,6 @@ describe("pickMoveDirection", () => {
 				position: { x: 3, y: 1 },
 				hp: PLAYER_INITIAL_HP,
 				maxHp: PLAYER_INITIAL_HP,
-				ap: MAX_AP,
-				maxAp: MAX_AP,
 			},
 		});
 		const enemy: Enemy = {
@@ -174,8 +164,6 @@ describe("pickMoveDirection", () => {
 				position: { x: 1, y: 1 },
 				hp: PLAYER_INITIAL_HP,
 				maxHp: PLAYER_INITIAL_HP,
-				ap: MAX_AP,
-				maxAp: MAX_AP,
 			},
 			enemies,
 		});
@@ -199,8 +187,6 @@ describe("pickMoveDirection", () => {
 				position: { x: 3, y: 1 },
 				hp: PLAYER_INITIAL_HP,
 				maxHp: PLAYER_INITIAL_HP,
-				ap: MAX_AP,
-				maxAp: MAX_AP,
 			},
 		});
 		const enemy: Enemy = {
@@ -227,8 +213,6 @@ describe("pickMoveDirection", () => {
 				position: { x: 1, y: 1 },
 				hp: PLAYER_INITIAL_HP,
 				maxHp: PLAYER_INITIAL_HP,
-				ap: MAX_AP,
-				maxAp: MAX_AP,
 			},
 		});
 		const enemy: Enemy = {

@@ -23,8 +23,6 @@ export type DebugStartParams = {
 	playerHp?: number;
 	/** プレイヤー最大HP */
 	playerMaxHp?: number;
-	/** プレイヤーAP */
-	playerAp?: number;
 	/** 乱数シード */
 	seed?: number;
 };

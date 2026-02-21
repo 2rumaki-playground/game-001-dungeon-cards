@@ -1,4 +1,4 @@
-import { ENEMY_PARAMS, MAX_AP, PLAYER_INITIAL_HP } from "../constants";
+import { ENEMY_PARAMS, PLAYER_INITIAL_HP } from "../constants";
 import { createInitialCounters } from "../game/cardAcquisition";
 import { createFixedLayoutMap } from "../game/map";
 import type {
@@ -34,8 +34,6 @@ export function createTestState(overrides?: Partial<GameState>): GameState {
 			position: { x: 3, y: 3 },
 			hp: PLAYER_INITIAL_HP,
 			maxHp: PLAYER_INITIAL_HP,
-			ap: MAX_AP,
-			maxAp: MAX_AP,
 		},
 		enemies: [],
 		deck: {

@@ -3,7 +3,6 @@ import {
 	ENEMY_ATTACK_DAMAGE,
 	ENEMY_HP,
 	ENEMY_PARAMS,
-	MAX_AP,
 	PLAYER_INITIAL_HP,
 } from "../constants";
 import {
@@ -156,8 +155,6 @@ describe("executeEnemyTurn", () => {
 				position: { x: 1, y: 1 },
 				hp: PLAYER_INITIAL_HP,
 				maxHp: PLAYER_INITIAL_HP,
-				ap: MAX_AP,
-				maxAp: MAX_AP,
 			},
 			enemies,
 		});
@@ -237,8 +234,6 @@ describe("executeEnemyTurn", () => {
 				position: { x: 3, y: 3 },
 				hp: startHp,
 				maxHp: PLAYER_INITIAL_HP,
-				ap: MAX_AP,
-				maxAp: MAX_AP,
 			},
 		});
 		const { state: result } = executeEnemyTurn(state);
@@ -272,8 +267,6 @@ describe("executeEnemyTurn", () => {
 				position: { x: 3, y: 3 },
 				hp: 1,
 				maxHp: PLAYER_INITIAL_HP,
-				ap: MAX_AP,
-				maxAp: MAX_AP,
 			},
 		});
 		const { state: result } = executeEnemyTurn(state);
@@ -382,8 +375,6 @@ describe("executeEnemyTurn", () => {
 				position: { x: 3, y: 1 },
 				hp: PLAYER_INITIAL_HP,
 				maxHp: PLAYER_INITIAL_HP,
-				ap: MAX_AP,
-				maxAp: MAX_AP,
 			},
 		});
 		const { state: result } = executeEnemyTurn(state);

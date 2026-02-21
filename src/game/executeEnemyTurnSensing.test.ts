@@ -1,10 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-	ENEMY_HP,
-	ENEMY_PARAMS,
-	MAX_AP,
-	PLAYER_INITIAL_HP,
-} from "../constants";
+import { ENEMY_HP, ENEMY_PARAMS, PLAYER_INITIAL_HP } from "../constants";
 import {
 	createTestMap,
 	createTestState,
@@ -50,8 +45,6 @@ describe("executeEnemyTurn - 索敵範囲", () => {
 				position: { x: 1, y: 1 },
 				hp: PLAYER_INITIAL_HP,
 				maxHp: PLAYER_INITIAL_HP,
-				ap: MAX_AP,
-				maxAp: MAX_AP,
 			},
 		});
 		const { state: result } = executeEnemyTurn(state);
@@ -106,8 +99,6 @@ describe("executeEnemyTurn - 索敵範囲", () => {
 			position: { x: 1, y: 1 },
 			hp: PLAYER_INITIAL_HP,
 			maxHp: PLAYER_INITIAL_HP,
-			ap: MAX_AP,
-			maxAp: MAX_AP,
 		};
 
 		const scoutState = createTestState({
@@ -151,8 +142,6 @@ describe("executeEnemyTurn - 索敵範囲", () => {
 			position: { x: 1, y: 1 },
 			hp: PLAYER_INITIAL_HP,
 			maxHp: PLAYER_INITIAL_HP,
-			ap: MAX_AP,
-			maxAp: MAX_AP,
 		};
 
 		const inRangeState = createTestState({
@@ -200,8 +189,6 @@ describe("executeEnemyTurn - 部屋境界", () => {
 				position: { x: 1, y: 1 },
 				hp: PLAYER_INITIAL_HP,
 				maxHp: PLAYER_INITIAL_HP,
-				ap: MAX_AP,
-				maxAp: MAX_AP,
 			},
 		});
 		const { state: result } = executeEnemyTurn(state);
@@ -231,8 +218,6 @@ describe("executeEnemyTurn - 部屋境界", () => {
 				position: { x: 5, y: 5 },
 				hp: PLAYER_INITIAL_HP,
 				maxHp: PLAYER_INITIAL_HP,
-				ap: MAX_AP,
-				maxAp: MAX_AP,
 			},
 		});
 		const { state: result } = executeEnemyTurn(state);
@@ -283,8 +268,6 @@ describe("executeEnemyTurn - 部屋境界", () => {
 				position: { x: 4, y: 2 },
 				hp: PLAYER_INITIAL_HP,
 				maxHp: PLAYER_INITIAL_HP,
-				ap: MAX_AP,
-				maxAp: MAX_AP,
 			},
 		});
 		const { state: result, totalDamage } = executeEnemyTurn(state);
@@ -337,8 +320,6 @@ describe("executeEnemyTurn - 部屋境界", () => {
 				position: { x: 5, y: 5 },
 				hp: PLAYER_INITIAL_HP,
 				maxHp: PLAYER_INITIAL_HP,
-				ap: MAX_AP,
-				maxAp: MAX_AP,
 			},
 		});
 		const { state: result } = executeEnemyTurn(state);

@@ -4,7 +4,6 @@
  */
 
 import { Container, Graphics, Text } from "pixi.js";
-import { CARD_COST } from "../constants";
 import type { CardType } from "../types";
 import {
 	CARD_COLORS,
@@ -38,9 +37,7 @@ const RARITY_BAR_RADIUS = 1;
 
 /** フォント設定 */
 const NAME_FONT_SIZE = 15;
-const EFFECT_FONT_SIZE = 11;
 const NAME_Y = 8;
-const EFFECT_Y = 30;
 
 type CardListRowOptions = {
 	/** カード種別 */
@@ -54,7 +51,7 @@ type CardListRowOptions = {
 /**
  * カード一覧の1行を生成する共通ヘルパー
  *
- * 背景 + レアリティバー + カード名（シンボル付き） + APコスト を描画する。
+ * 背景 + レアリティバー + カード名（シンボル付き）を描画する。
  * 追加のUI要素（除去ボタン等）は呼び出し側でコンテナに追加する。
  */
 export function createCardListRow(options: CardListRowOptions): Container {
@@ -102,21 +99,6 @@ export function createCardListRow(options: CardListRowOptions): Container {
 	nameText.x = CARD_ROW_TEXT_X;
 	nameText.y = NAME_Y;
 	row.addChild(nameText);
-
-	// APコスト
-	const cost = CARD_COST[cardType];
-	const costStr = cost > 0 ? `AP: ${cost}` : "";
-	const effectText = new Text({
-		text: costStr,
-		style: {
-			fontSize: EFFECT_FONT_SIZE,
-			fontFamily: "sans-serif",
-			fill: 0xaaaaaa,
-		},
-	});
-	effectText.x = CARD_ROW_TEXT_X;
-	effectText.y = EFFECT_Y;
-	row.addChild(effectText);
 
 	return row;
 }

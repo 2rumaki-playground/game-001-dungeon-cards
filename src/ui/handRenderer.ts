@@ -4,7 +4,6 @@
  */
 
 import { Container, type FederatedPointerEvent, Graphics, Text } from "pixi.js";
-import { getEffectiveCardCost } from "../game/debugCheats";
 import type { Card, CardType, ComboHistory, Direction } from "../types";
 import { Easing, tween } from "../utils/tween";
 import {
@@ -129,7 +128,6 @@ export class HandRenderer {
 	private selectedCardId: string | null = null;
 	private hoveredCardId: string | null = null;
 	private currentHand: Card[] = [];
-	private currentAp = 0;
 	private currentUsedCardIds: ReadonlySet<string> = new Set();
 	private currentQueuedCardIndexMap: ReadonlyMap<string, number> = new Map();
 	private currentComboHistory: ComboHistory | null = null;
@@ -233,12 +231,11 @@ export class HandRenderer {
 	/**
 	 * 手札を描画
 	 */
-	render(hand: Card[], currentAp: number): void {
+	render(hand: Card[]): void {
 		// ドラッグ確定中は再描画をスキップ（ドラッグ状態が破壊されるため）
 		if (this.isDragging && this.dragConfirmed) return;
 
 		this.currentHand = hand;
-		this.currentAp = currentAp;
 
 		this.cardsContainer.removeChildren();
 
@@ -248,9 +245,8 @@ export class HandRenderer {
 		for (let i = 0; i < hand.length; i++) {
 			const card = hand[i];
 			const x = startX + i * (CARD_WIDTH + CARD_GAP);
-			const cost = getEffectiveCardCost(card.type);
 			const used = this.currentUsedCardIds.has(card.id);
-			const enabled = !used && currentAp >= cost;
+			const enabled = !used;
 			const selected = card.id === this.selectedCardId;
 			const hovered = enabled && card.id === this.hoveredCardId;
 			const y = hovered ? -HOVER_LIFT : 0;
@@ -275,18 +271,12 @@ export class HandRenderer {
 	 * アニメーション付きで手札を描画
 	 * 山札の位置から手札の位置にカードが飛んでくる演出
 	 * @param hand 手札のカード配列
-	 * @param currentAp 現在のAP
 	 * @param newCardCount 新しく引いたカードの枚数（アニメーション対象）
 	 * @returns アニメーション完了時にresolveするPromise
 	 */
-	async renderWithAnimation(
-		hand: Card[],
-		currentAp: number,
-		newCardCount: number,
-	): Promise<void> {
+	async renderWithAnimation(hand: Card[], newCardCount: number): Promise<void> {
 		this.isInteractionEnabled = false;
 		this.currentHand = hand;
-		this.currentAp = currentAp;
 		this.cardsContainer.removeChildren();
 		this.tooltipContainer.removeChildren();
 		this.hoveredCardId = null;
@@ -309,7 +299,7 @@ export class HandRenderer {
 			const targetY = 0;
 			const selected = card.id === this.selectedCardId;
 
-			// アニメーション完了後に this.render(hand, currentAp) で enabled を再計算して有効化するため、
+			// アニメーション完了後に this.render(hand) で enabled を再計算して有効化するため、
 			// ここでは一時的にインタラクションを無効（false 固定）でカードを生成する
 			const cardContainer = this.createCardView(
 				card,
@@ -358,7 +348,7 @@ export class HandRenderer {
 
 		// アニメーション完了後、インタラクションを有効化して再描画
 		this.isInteractionEnabled = true;
-		this.render(hand, currentAp);
+		this.render(hand);
 	}
 
 	/**
@@ -457,29 +447,6 @@ export class HandRenderer {
 		nameText.y = 34;
 		cardContainer.addChild(nameText);
 
-		// APコスト
-		const cost = getEffectiveCardCost(card.type);
-		const costFill = !enabled
-			? 0x666666
-			: cost >= 2
-				? 0xffaa44
-				: cost === 0
-					? 0x666666
-					: 0xcccccc;
-		const costText = new Text({
-			text: cost > 0 ? `AP: ${cost}` : "",
-			style: {
-				fontSize: 13,
-				fontFamily: "sans-serif",
-				fill: costFill,
-				fontWeight: cost >= 2 ? "bold" : "normal",
-			},
-		});
-		costText.anchor.set(0.5, 0);
-		costText.x = CARD_WIDTH / 2;
-		costText.y = 56;
-		cardContainer.addChild(costText);
-
 		// 方向カードには方向ヒントを表示
 		if (
 			card.type === "move" ||
@@ -551,14 +518,14 @@ export class HandRenderer {
 					if (this.isDragging) return;
 					if (this.hoveredCardId === card.id) return;
 					this.hoveredCardId = card.id;
-					this.render(this.currentHand, this.currentAp);
+					this.render(this.currentHand);
 				});
 
 				cardContainer.on("pointerout", () => {
 					if (this.isDragging) return;
 					if (this.hoveredCardId !== card.id) return;
 					this.hoveredCardId = null;
-					this.render(this.currentHand, this.currentAp);
+					this.render(this.currentHand);
 				});
 			}
 		}
@@ -646,8 +613,8 @@ export class HandRenderer {
 		const hoveredCard = hand.find((c) => c.id === this.hoveredCardId);
 		if (!hoveredCard) return;
 
-		const cost = getEffectiveCardCost(hoveredCard.type);
-		if (this.currentAp < cost) return;
+		// 使用済みカードにはツールチップを表示しない
+		if (this.currentUsedCardIds.has(hoveredCard.id)) return;
 
 		const cardIndex = hand.findIndex((c) => c.id === this.hoveredCardId);
 		const totalWidth = hand.length * CARD_WIDTH + (hand.length - 1) * CARD_GAP;
@@ -657,7 +624,6 @@ export class HandRenderer {
 
 		const { container: tooltip, height: tooltipHeight } = createCardTooltip(
 			hoveredCard.type,
-			cost,
 		);
 		tooltip.x = cardCenterX - TOOLTIP_WIDTH / 2;
 		tooltip.y = -HOVER_LIFT - tooltipHeight - TOOLTIP_MARGIN;
@@ -712,7 +678,7 @@ export class HandRenderer {
 				this.onReorder?.(fromIndex, toIndex);
 			} else {
 				// 同じ位置にドロップした場合は再描画のみ
-				this.render(this.currentHand, this.currentAp);
+				this.render(this.currentHand);
 			}
 		} else {
 			// クリック: 既存のクリック処理を実行
@@ -730,9 +696,8 @@ export class HandRenderer {
 		if (cardIndex < 0 || cardIndex >= this.currentHand.length) return;
 
 		const card = this.currentHand[cardIndex];
-		const cost = getEffectiveCardCost(card.type);
 		const used = this.currentUsedCardIds.has(card.id);
-		const enabled = !used && this.currentAp >= cost;
+		const enabled = !used;
 
 		if (!enabled) return;
 
@@ -779,7 +744,7 @@ export class HandRenderer {
 			})
 			.finally(() => {
 				this.isInputLocked = false;
-				this.render(this.currentHand, this.currentAp);
+				this.render(this.currentHand);
 			});
 	}
 

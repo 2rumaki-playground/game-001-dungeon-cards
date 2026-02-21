@@ -4,23 +4,12 @@
  */
 
 import type { Card, DeckState, Direction } from "../types";
-import { getEffectiveCardCost } from "./debugCheats";
 
 /** 予約済みカードエントリ */
 export type QueuedCard = {
 	card: Card;
 	direction?: Direction;
 };
-
-/**
- * キュー内カードの合計APコストを計算
- */
-export function getQueuedApCost(queue: QueuedCard[]): number {
-	return queue.reduce(
-		(sum, entry) => sum + getEffectiveCardCost(entry.card.type),
-		0,
-	);
-}
 
 /**
  * キューからカードID→実行順序番号(1始まり)のMapを構築
@@ -39,14 +28,12 @@ export function buildQueuedCardIndexMap(
 
 /**
  * カードを予約キューに追加可能か判定
- * @param currentAp 現在のAP（先行カード消費分は反映済みの状態AP）
  * @param queue 現在のキュー
  * @param card 予約したいカード
  * @param deck デッキ状態（使用済みカード判定用）
  * @returns 予約可能ならtrue
  */
 export function canEnqueueCard(
-	currentAp: number,
 	queue: QueuedCard[],
 	card: Card,
 	deck?: DeckState,
@@ -55,7 +42,9 @@ export function canEnqueueCard(
 	if (deck?.usedCardIds.includes(card.id)) {
 		return false;
 	}
-	const pendingCost = getQueuedApCost(queue);
-	const availableAp = currentAp - pendingCost;
-	return availableAp >= getEffectiveCardCost(card.type);
+	// キュー内に同じカードがあれば予約不可
+	if (queue.some((entry) => entry.card.id === card.id)) {
+		return false;
+	}
+	return true;
 }

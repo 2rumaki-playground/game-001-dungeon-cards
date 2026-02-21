@@ -268,7 +268,6 @@ function setupDebugGlobals(): void {
 				});
 				await ctx.ui.handRenderer.renderWithAnimation(
 					ctx.state.deck.hand,
-					ctx.state.player.ap,
 					newState.deck.hand.length,
 				);
 			} finally {

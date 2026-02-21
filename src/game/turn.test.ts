@@ -1,9 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { TURN_START_AP } from "../constants";
 import type { GameState } from "../types";
 import { RNG } from "../utils/rng";
 import { createInitialDeckState } from "./deck";
-import { createInitialPlayer, createTitleScreenState } from "./state";
+import { createTitleScreenState } from "./state";
 import { endPlayerTurn, startPlayerTurn } from "./turn";
 
 /**
@@ -24,19 +23,6 @@ function createGameState(overrides?: Partial<GameState>): GameState {
 
 describe("turn", () => {
 	describe("startPlayerTurn", () => {
-		it("APを最大値にリセットする", () => {
-			const state = createGameState();
-			// APを消費した状態にする
-			const depleted: GameState = {
-				...state,
-				player: { ...state.player, ap: 0 },
-			};
-
-			const next = startPlayerTurn(depleted);
-
-			expect(next.player.ap).toBe(TURN_START_AP);
-		});
-
 		it("使用済みカードIDリストをリセットする", () => {
 			const deck = createInitialDeckState(new RNG(12345));
 			// 使用済みカードがある状態
@@ -76,15 +62,12 @@ describe("turn", () => {
 			const deck = createInitialDeckState(new RNG(12345));
 			const usedCardIds = [deck.hand[0].id];
 			const state = createGameState({
-				player: { ...createInitialPlayer(), ap: 1 },
 				deck: { ...deck, usedCardIds },
 			});
-			const originalAp = state.player.ap;
 			const originalUsedCardIds = state.deck.usedCardIds.length;
 
 			startPlayerTurn(state);
 
-			expect(state.player.ap).toBe(originalAp);
 			expect(state.deck.usedCardIds.length).toBe(originalUsedCardIds);
 		});
 	});

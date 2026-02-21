@@ -68,8 +68,6 @@ export async function updateStateWithMoveAnimation(
 	// ドラッグオフセットをリセット（カメラをプレイヤー中心に復帰、ズームは維持）
 	ctx.ui.cameraDragController.reset(false);
 
-	const prevAp = ctx.state.player.ap;
-
 	// render前にカメラ位置を保存
 	const mapContainer = ctx.ui.mapRenderer.getContainer();
 	const savedCameraX = mapContainer.x;
@@ -91,20 +89,8 @@ export async function updateStateWithMoveAnimation(
 		mapContainer.x = savedCameraX;
 		mapContainer.y = savedCameraY;
 
-		// プレイヤー移動アニメーション（AP変化があればバーアニメーションも並列実行）
-		const animations: Promise<void>[] = [
-			ctx.ui.mapRenderer.animatePlayerMove(targetGridPos),
-		];
-		if (prevAp !== newState.player.ap) {
-			animations.push(
-				ctx.ui.statusBar.animateApChange(
-					prevAp,
-					newState.player.ap,
-					newState.player.maxAp,
-				),
-			);
-		}
-		await Promise.all(animations);
+		// プレイヤー移動アニメーション
+		await ctx.ui.mapRenderer.animatePlayerMove(targetGridPos);
 
 		// カメラ追従アニメーション（位置が変わっている場合のみ）
 		if (savedCameraX !== newCameraX || savedCameraY !== newCameraY) {
@@ -141,25 +127,12 @@ export async function updateStateWithBumpAnimation(
 	// ドラッグオフセットをリセット（ズームは維持）
 	ctx.ui.cameraDragController.reset(false);
 
-	const prevAp = ctx.state.player.ap;
 	applyState(ctx, newState);
 
 	try {
 		render(ctx, false, true);
 
-		const animations: Promise<void>[] = [
-			ctx.ui.mapRenderer.animatePlayerBump(direction),
-		];
-		if (prevAp !== newState.player.ap) {
-			animations.push(
-				ctx.ui.statusBar.animateApChange(
-					prevAp,
-					newState.player.ap,
-					newState.player.maxAp,
-				),
-			);
-		}
-		await Promise.all(animations);
+		await ctx.ui.mapRenderer.animatePlayerBump(direction);
 	} finally {
 		ctx.isAnimating = false;
 	}
@@ -183,7 +156,6 @@ export async function updateStateWithAttackAnimation(
 	// ドラッグオフセットをリセット（ズームは維持）
 	ctx.ui.cameraDragController.reset(false);
 
-	const prevAp = ctx.state.player.ap;
 	const hitEnemy = ctx.state.enemies.find((e) => e.id === hitEnemyId);
 	const defeated = !newState.enemies.some((e) => e.id === hitEnemyId);
 	applyState(ctx, newState);
@@ -192,7 +164,7 @@ export async function updateStateWithAttackAnimation(
 		// 撃破時は敵の再描画をスキップ（アニメーション用にGraphicsを保持）
 		render(ctx, false, false, defeated);
 
-		// ヒットエフェクト（AP変化があればバーアニメーションも並列実行）
+		// ヒットエフェクト
 		const damage =
 			cardType === "strong_attack"
 				? PLAYER_STRONG_ATTACK_DAMAGE
@@ -200,15 +172,6 @@ export async function updateStateWithAttackAnimation(
 		const hitAnimations: Promise<void>[] = [
 			ctx.ui.mapRenderer.animateAttackHit(hitEnemyId, damage),
 		];
-		if (prevAp !== newState.player.ap) {
-			hitAnimations.push(
-				ctx.ui.statusBar.animateApChange(
-					prevAp,
-					newState.player.ap,
-					newState.player.maxAp,
-				),
-			);
-		}
 
 		// カードタイプ別パーティクル
 		if (hitEnemy) {
@@ -271,7 +234,6 @@ export async function updateStateWithMissAnimation(
 	// ドラッグオフセットをリセット（ズームは維持）
 	ctx.ui.cameraDragController.reset(false);
 
-	const prevAp = ctx.state.player.ap;
 	const delta = DIRECTION_DELTA[direction];
 	const rawTargetX = ctx.state.player.position.x + delta.x;
 	const rawTargetY = ctx.state.player.position.y + delta.y;
@@ -286,19 +248,7 @@ export async function updateStateWithMissAnimation(
 	try {
 		render(ctx);
 
-		const animations: Promise<void>[] = [
-			ctx.ui.mapRenderer.animateMissPopup(targetGridPos),
-		];
-		if (prevAp !== newState.player.ap) {
-			animations.push(
-				ctx.ui.statusBar.animateApChange(
-					prevAp,
-					newState.player.ap,
-					newState.player.maxAp,
-				),
-			);
-		}
-		await Promise.all(animations);
+		await ctx.ui.mapRenderer.animateMissPopup(targetGridPos);
 	} finally {
 		ctx.isAnimating = false;
 	}
