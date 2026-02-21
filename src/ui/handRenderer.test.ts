@@ -226,7 +226,7 @@ describe("HandRenderer ホバー・選択演出", () => {
 			global: { x: 0, y: 0 },
 		} as FederatedPointerEvent;
 		card2.emit("pointerdown", event);
-		renderer.getContainer().emit("globalpointerup", event);
+		card2.emit("pointerup", event);
 
 		// コールバックが呼ばれ、その後に消費アニメーションが実行される
 		await vi.waitFor(() => {
@@ -251,7 +251,7 @@ describe("HandRenderer ホバー・選択演出", () => {
 			global: { x: 0, y: 0 },
 		} as FederatedPointerEvent;
 		card2.emit("pointerdown", event);
-		renderer.getContainer().emit("globalpointerup", event);
+		card2.emit("pointerup", event);
 
 		// コールバックは呼ばれる
 		await vi.waitFor(() => {
@@ -277,7 +277,7 @@ describe("HandRenderer ホバー・選択演出", () => {
 			global: { x: 0, y: 0 },
 		} as FederatedPointerEvent;
 		card2.emit("pointerdown", event);
-		renderer.getContainer().emit("globalpointerup", event);
+		card2.emit("pointerup", event);
 
 		await vi.waitFor(() => {
 			expect(mockedTween).toHaveBeenCalledTimes(2);
@@ -319,7 +319,7 @@ describe("HandRenderer ホバー・選択演出", () => {
 		} as FederatedPointerEvent;
 		// 1回目のクリック
 		card2.emit("pointerdown", event);
-		renderer.getContainer().emit("globalpointerup", event);
+		card2.emit("pointerup", event);
 
 		// コールバック→tweenの順で呼ばれるので、tweenが呼ばれるまで待機
 		await vi.waitFor(() => {
@@ -330,7 +330,7 @@ describe("HandRenderer ホバー・選択演出", () => {
 
 		// 2回目のクリックを試行（isInputLockedガードで早期return）
 		card2.emit("pointerdown", event);
-		renderer.getContainer().emit("globalpointerup", event);
+		card2.emit("pointerup", event);
 
 		// tween呼び出し回数が増えていない（2回目は無視された）
 		expect(mockedTween.mock.calls.length).toBe(tweenCallCountAfterFirst);
@@ -373,7 +373,7 @@ describe("HandRenderer ホバー・選択演出", () => {
 		// 1回目のクリックで入力ロック
 		const card0 = findCardContainer(renderer, 0);
 		card0.emit("pointerdown", event);
-		renderer.getContainer().emit("globalpointerup", event);
+		card0.emit("pointerup", event);
 
 		// コールバック→tweenの順で呼ばれるので、tweenが呼ばれるまで待機
 		await vi.waitFor(() => {
@@ -388,7 +388,7 @@ describe("HandRenderer ホバー・選択演出", () => {
 		// クリックしてもtweenは増えない（ロック維持）
 		const card0After = findCardContainer(renderer, 0);
 		card0After.emit("pointerdown", event);
-		renderer.getContainer().emit("globalpointerup", event);
+		card0After.emit("pointerup", event);
 		expect(mockedTween.mock.calls.length).toBe(tweenCountAfterFirst);
 
 		// cleanup
@@ -420,7 +420,7 @@ describe("HandRenderer ホバー・選択演出", () => {
 
 		const card2 = findCardContainer(renderer, 2);
 		card2.emit("pointerdown", event);
-		renderer.getContainer().emit("globalpointerup", event);
+		card2.emit("pointerup", event);
 
 		// コールバック→tweenの順で呼ばれるので、tweenが呼ばれるまで待機
 		await vi.waitFor(() => {
@@ -431,7 +431,7 @@ describe("HandRenderer ホバー・選択演出", () => {
 
 		// アニメーション中は2回目のクリックが無視される
 		card2.emit("pointerdown", event);
-		renderer.getContainer().emit("globalpointerup", event);
+		card2.emit("pointerup", event);
 		expect(mockedTween.mock.calls.length).toBe(tweenCountAfterFirst);
 
 		// アニメーション完了
@@ -445,7 +445,7 @@ describe("HandRenderer ホバー・選択演出", () => {
 		// render()で再描画されるので新しいカードコンテナを取得
 		const card2After = findCardContainer(renderer, 2);
 		card2After.emit("pointerdown", event);
-		renderer.getContainer().emit("globalpointerup", event);
+		card2After.emit("pointerup", event);
 		expect(mockedTween.mock.calls.length).toBeGreaterThan(tweenCountAfterFirst);
 	});
 
@@ -475,7 +475,7 @@ describe("HandRenderer ホバー・選択演出", () => {
 		// → animateCardConsume完了 → invokeCallback呼び出し → 非同期コールバック保留
 		const card2 = findCardContainer(renderer, 2);
 		card2.emit("pointerdown", event);
-		renderer.getContainer().emit("globalpointerup", event);
+		card2.emit("pointerup", event);
 
 		// コールバックが呼ばれるまで待機（tweenモックは即座に解決）
 		await vi.waitFor(() => {
@@ -486,7 +486,7 @@ describe("HandRenderer ホバー・選択演出", () => {
 
 		// コールバックのPromise未解決中は入力ロックが維持される
 		card2.emit("pointerdown", event);
-		renderer.getContainer().emit("globalpointerup", event);
+		card2.emit("pointerup", event);
 		expect(mockedTween.mock.calls.length).toBe(tweenCountAfterFirst);
 
 		// コールバックのPromiseを解決
@@ -502,7 +502,7 @@ describe("HandRenderer ホバー・選択演出", () => {
 		// 再描画完了後に、改めて新しいカードコンテナを取得してクリック
 		const card2After = findCardContainer(renderer, 2);
 		card2After.emit("pointerdown", event);
-		renderer.getContainer().emit("globalpointerup", event);
+		card2After.emit("pointerup", event);
 		expect(mockedTween.mock.calls.length).toBeGreaterThan(tweenCountAfterFirst);
 	});
 
@@ -529,7 +529,7 @@ describe("HandRenderer ホバー・選択演出", () => {
 			global: { x: 0, y: 0 },
 		} as FederatedPointerEvent;
 		card2.emit("pointerdown", event);
-		renderer.getContainer().emit("globalpointerup", event);
+		card2.emit("pointerup", event);
 
 		await vi.waitFor(() => {
 			expect(mockParticleSystem.emit).toHaveBeenCalledTimes(1);
@@ -1085,7 +1085,7 @@ describe("HandRenderer ドラッグ＆ドロップ", () => {
 		} as FederatedPointerEvent);
 
 		// pointerup（クリック扱い）
-		renderer.getContainer().emit("globalpointerup", {
+		card2.emit("pointerup", {
 			button: 0,
 			global: { x: 102, y: 51 },
 		} as FederatedPointerEvent);
@@ -1118,7 +1118,7 @@ describe("HandRenderer ドラッグ＆ドロップ", () => {
 		} as FederatedPointerEvent);
 
 		// pointerup（ドロップ扱い）
-		renderer.getContainer().emit("globalpointerup", {
+		card0.emit("pointerupoutside", {
 			button: 0,
 			global: { x: 300, y: 50 },
 		} as FederatedPointerEvent);
@@ -1156,7 +1156,7 @@ describe("HandRenderer ドラッグ＆ドロップ", () => {
 			global: { x: card0CenterX, y: 100 },
 		} as FederatedPointerEvent);
 
-		renderer.getContainer().emit("globalpointerup", {
+		card0.emit("pointerupoutside", {
 			button: 0,
 			global: { x: card0CenterX, y: 100 },
 		} as FederatedPointerEvent);
@@ -1219,7 +1219,7 @@ describe("HandRenderer ドラッグ＆ドロップ", () => {
 			global: { x: 0, y: 0 },
 		} as FederatedPointerEvent;
 		card2.emit("pointerdown", clickEvent);
-		renderer.getContainer().emit("globalpointerup", clickEvent);
+		card2.emit("pointerup", clickEvent);
 
 		await vi.waitFor(() => {
 			expect(mockedTween.mock.calls.length).toBeGreaterThan(tweenCountBefore);
@@ -1236,7 +1236,7 @@ describe("HandRenderer ドラッグ＆ドロップ", () => {
 			global: { x: 300, y: 50 },
 		} as FederatedPointerEvent);
 
-		renderer.getContainer().emit("globalpointerup", {
+		card0.emit("pointerup", {
 			button: 0,
 			global: { x: 300, y: 50 },
 		} as FederatedPointerEvent);
@@ -1266,7 +1266,7 @@ describe("HandRenderer ドラッグ＆ドロップ", () => {
 			global: { x: 300, y: 50 },
 		} as FederatedPointerEvent);
 
-		renderer.getContainer().emit("globalpointerup", {
+		card0.emit("pointerupoutside", {
 			button: 0,
 			global: { x: 300, y: 50 },
 		} as FederatedPointerEvent);
@@ -1289,7 +1289,7 @@ describe("HandRenderer ドラッグ＆ドロップ", () => {
 			global: { x: 100, y: 50 },
 		} as FederatedPointerEvent;
 		card0.emit("pointerdown", event);
-		renderer.getContainer().emit("globalpointerup", event);
+		card0.emit("pointerup", event);
 
 		// 少し待ってもコールバックは呼ばれない
 		await new Promise((r) => setTimeout(r, 50));

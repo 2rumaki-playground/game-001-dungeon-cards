@@ -165,13 +165,12 @@ export class HandRenderer {
 		this.container.addChild(this.tooltipContainer);
 		this.particleSystem = particleSystem ?? null;
 
-		// グローバルポインタイベント（ドラッグ中の追従・ドロップ）
+		// グローバルポインタイベント（ドラッグ中の追従）
+		// PixiJS v8はglobalpointermoveのみサポート（globalpointerupは存在しない）
+		// ドロップ検知はカードコンテナのpointerup/pointerupoutsideで行う
 		this.container.eventMode = "static";
 		this.container.on("globalpointermove", (e) => {
 			this.handleDragMove(e.global.x, e.global.y);
-		});
-		this.container.on("globalpointerup", (e) => {
-			this.handleDragEnd(e);
 		});
 	}
 
@@ -536,6 +535,15 @@ export class HandRenderer {
 				this.dragStartY = event.global.y;
 				this.dragCurrentX = event.global.x;
 				this.dragInsertIndex = cardIndex;
+			});
+
+			// ドロップ検知: pointerup（カード上でリリース）+ pointerupoutside（カード外でリリース）
+			// PixiJS v8にはglobalpointerupが存在しないため、各カードで検知する
+			cardContainer.on("pointerup", (e: FederatedPointerEvent) => {
+				this.handleDragEnd(e);
+			});
+			cardContainer.on("pointerupoutside", (e: FederatedPointerEvent) => {
+				this.handleDragEnd(e);
 			});
 
 			if (enabled) {
