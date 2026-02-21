@@ -89,6 +89,14 @@ describe("cardQueue", () => {
 			expect(canEnqueueCard(0, [], card)).toBe(true);
 		});
 
+		it("キュー内に同じカードが存在する場合は予約不可", () => {
+			const card: Card = { id: "c1", type: "move", keyword: "flame" };
+			const queue: QueuedCard[] = [
+				{ card: { id: "c1", type: "move", keyword: "flame" }, direction: "up" },
+			];
+			expect(canEnqueueCard(3, queue, card)).toBe(false);
+		});
+
 		it("AP=コストちょうどで予約可能", () => {
 			const card: Card = { id: "c1", type: "jump", keyword: "flame" };
 			// AP=2, jump costs 2 → OK

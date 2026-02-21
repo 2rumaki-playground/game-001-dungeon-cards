@@ -55,6 +55,10 @@ export function canEnqueueCard(
 	if (deck?.usedCardIds.includes(card.id)) {
 		return false;
 	}
+	// キュー内に同じカードが既に存在する場合は予約不可
+	if (queue.some((entry) => entry.card.id === card.id)) {
+		return false;
+	}
 	const pendingCost = getQueuedApCost(queue);
 	const availableAp = currentAp - pendingCost;
 	return availableAp >= getEffectiveCardCost(card.type);
