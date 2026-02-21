@@ -2,7 +2,7 @@
  * 画面シェイク・フラッシュ・点滅エフェクト関数
  */
 
-import { type Container, Graphics, type Sprite, Ticker } from "pixi.js";
+import { type Container, Graphics, Ticker } from "pixi.js";
 import { CELL_SIZE } from "../constants";
 import { tween } from "../utils/tween";
 import {
@@ -74,21 +74,17 @@ export function animateScreenShake(
 
 /**
  * プレイヤー被ダメージ時の点滅エフェクト
- * spriteのalphaを複数回点滅させる
- * @param playerSprite 点滅させるスプライト
+ * コンテナのalphaを複数回点滅させる
+ * @param target 点滅させるコンテナ
  */
-export async function animatePlayerBlink(playerSprite: Sprite): Promise<void> {
+export async function animatePlayerBlink(target: Container): Promise<void> {
 	for (let i = 0; i < PLAYER_BLINK_COUNT; i++) {
 		await tween(
-			playerSprite,
+			target,
 			{ alpha: 0.2 },
 			{ duration: PLAYER_BLINK_INTERVAL / 2 },
 		);
-		await tween(
-			playerSprite,
-			{ alpha: 1 },
-			{ duration: PLAYER_BLINK_INTERVAL / 2 },
-		);
+		await tween(target, { alpha: 1 }, { duration: PLAYER_BLINK_INTERVAL / 2 });
 	}
-	playerSprite.alpha = 1;
+	target.alpha = 1;
 }

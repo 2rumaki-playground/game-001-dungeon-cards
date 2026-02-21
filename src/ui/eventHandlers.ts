@@ -758,6 +758,7 @@ export function setupEventHandlers(ctx: GameContext): void {
 						prevHp,
 						next.player.hp,
 						next.player.maxHp,
+						(ratio) => ctx.ui.mapRenderer.updatePlayerHpGauge(ratio),
 					),
 				]);
 			}
