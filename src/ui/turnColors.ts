@@ -1,6 +1,6 @@
 /**
  * ターン別の共通配色定数
- * TurnBanner / StatusBar で共有する
+ * TurnBanner で使用
  */
 
 import type { Turn } from "../types";

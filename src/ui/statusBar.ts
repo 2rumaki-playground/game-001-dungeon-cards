@@ -1,25 +1,13 @@
 /**
  * ステータスバーUI
- * 階層番号、ターン表示
+ * 階層番号表示
  */
 
 import { Container, Text } from "pixi.js";
-import type { Turn } from "../types";
 import { Easing, tweenValue } from "../utils/tween";
-import { TURN_TEXT_COLORS } from "./turnColors";
 
 /** テキスト配置のX座標 */
 const FLOOR_TEXT_X = 16;
-const TURN_TEXT_X = 160;
-
-/** ターン別の表示テキスト */
-const TURN_TEXT: Record<Turn, string> = {
-	player: "あなたのターン",
-	enemy: "敵のターン",
-};
-
-/** ターン別のテキスト色（共通定数から参照） */
-const TURN_TEXT_COLOR = TURN_TEXT_COLORS;
 
 /** テキストのY座標 */
 const TEXT_Y = 12;
@@ -33,7 +21,6 @@ const TWEEN_DURATION = 300;
 export class StatusBar {
 	private container: Container;
 	private floorText: Text;
-	private turnText: Text;
 	private currentHpRatio = 0;
 
 	constructor() {
@@ -50,12 +37,6 @@ export class StatusBar {
 		this.floorText.y = TEXT_Y;
 		this.floorText.anchor.set(0, 0.5);
 		this.container.addChild(this.floorText);
-
-		this.turnText = new Text({ text: "", style: textStyle });
-		this.turnText.x = TURN_TEXT_X;
-		this.turnText.y = TEXT_Y;
-		this.turnText.anchor.set(0, 0.5);
-		this.container.addChild(this.turnText);
 	}
 
 	/**
@@ -75,11 +56,8 @@ export class StatusBar {
 	/**
 	 * ステータスバーを描画（即座にスナップ更新）
 	 */
-	render(floor: number, turn: Turn, isCleared = false): void {
+	render(floor: number, isCleared = false): void {
 		this.floorText.text = isCleared ? `階層: ${floor} ★` : `階層: ${floor}`;
-
-		this.turnText.text = TURN_TEXT[turn];
-		this.turnText.style.fill = TURN_TEXT_COLOR[turn];
 	}
 
 	/**
@@ -87,7 +65,6 @@ export class StatusBar {
 	 */
 	clear(): void {
 		this.floorText.text = "";
-		this.turnText.text = "";
 
 		this.currentHpRatio = 0;
 	}
