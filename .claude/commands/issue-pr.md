@@ -25,45 +25,16 @@ $![gh issue list]
 
 ## 並列処理モード（複数Issue）
 
-複数のIssue番号が指定された場合、agent teamとgit worktreeを使って並列に作業を進める。
+複数のIssue番号が指定された場合、Task toolの `isolation: "worktree"` を使って並列に作業を進める。
 
 ### P-1. 事前準備
 
 1. 各Issueの詳細を `gh issue view <番号>` で取得し、内容を把握する
 2. 対応方針の一覧をユーザーに提示し、承認を得る
 
-### P-2. チームの作成
+### P-2. エージェントの並列起動
 
-TeamCreateでチームを作成する:
-- チーム名: `issue-pr-batch`
-
-### P-3. タスクの作成
-
-各Issueに対してTaskCreateでタスクを作成する。タスクの説明には以下を含める:
-- Issue番号とタイトル
-- Issueの本文（受け入れ条件）
-- worktreeパスとブランチ名
-
-### P-4. git worktreeのセットアップ
-
-各Issueについて以下を実行する:
-
-```bash
-# mainから対象ブランチを作成
-git branch <ブランチ名> main
-
-# worktreeを作成（/tmp配下に作成し、メインリポジトリを汚さない）
-git worktree add /tmp/wt-issue-<番号> <ブランチ名>
-
-# worktreeで依存関係をインストール（サブシェルで実行し、カレントディレクトリを維持）
-(cd /tmp/wt-issue-<番号> && pnpm install)
-```
-
-- ブランチ名の規則は [単一処理モードのステップ3](#3-ブランチの作成) と同じ
-
-### P-5. エージェントの並列起動
-
-各Issueに対して、Taskツールで `general-purpose` エージェントを**並列に**起動する。
+各Issueに対して、Taskツールで `general-purpose` エージェントを **`isolation: "worktree"`** で**並列に**起動する。
 
 **重要**: 全エージェントを**1つのメッセージ内で同時に**起動すること（逐次起動しない）。
 
@@ -72,40 +43,39 @@ git worktree add /tmp/wt-issue-<番号> <ブランチ名>
 ```
 あなたはIssue #<番号> の実装担当です。
 
-## 作業ディレクトリ
-/tmp/wt-issue-<番号>
-
 ## リポジトリ情報
 - owner/repo: <owner>/<repo>
 - ベースブランチ: main
-- 作業ブランチ: <ブランチ名>（作成済み）
 
 ## Issue内容
 <gh issue viewの出力>
 
+## ブランチ名の規則
+<prefix>/<issue番号>-<簡潔な英語の説明>（例: feat/42-add-card-effect）
+プレフィックス: feat/ fix/ docs/ refactor/ chore/（Issueの内容に応じて選択）
+
 ## 実装手順
 
-以下のすべての作業を /tmp/wt-issue-<番号> ディレクトリ内で行うこと。
-メインリポジトリのファイルは絶対に変更しないこと。
-
-1. **設計**: Issueが複数ファイルにまたがる変更や設計判断を伴う場合はプランモードで方針を決定
-2. **実装（TDD）**:
+1. **ブランチ作成**: mainから上記規則でブランチを作成し、チェックアウトする
+2. **依存関係インストール**: `pnpm install`
+3. **設計**: Issueが複数ファイルにまたがる変更や設計判断を伴う場合はプランモードで方針を決定
+4. **実装（TDD）**:
    - Red: 失敗するテストを先に書く
    - Green: テストが通る最小限の実装
    - Refactor: 必要に応じてリファクタリング
-3. **コミット前チェック**（各コミットの前に必ず実行）:
-   - `cd /tmp/wt-issue-<番号> && pnpm format`
-   - `cd /tmp/wt-issue-<番号> && pnpm lint`
-   - `cd /tmp/wt-issue-<番号> && pnpm build`（ビルドエラー時は [vite skill](.claude/skills/vite/SKILL.md) を参照）
-   - `cd /tmp/wt-issue-<番号> && pnpm test:run`（テスト失敗時は [vitest skill](.claude/skills/vitest/SKILL.md) を参照）
-   - `cd /tmp/wt-issue-<番号> && pnpm test:e2e`
-4. **コミット**: Conventional Commits形式、日本語、50文字以内
-   - `git -C /tmp/wt-issue-<番号> add <files>`
-   - `git -C /tmp/wt-issue-<番号> commit -m "<message>"`
-5. **push**: `git -C /tmp/wt-issue-<番号> push -u origin <ブランチ名>`
-6. **PR作成**（worktreeディレクトリで実行すること）:
+5. **コミット前チェック**（各コミットの前に必ず実行）:
+   - `pnpm format`
+   - `pnpm lint`
+   - `pnpm build`（ビルドエラー時は vite skill を参照）
+   - `pnpm test:run`（テスト失敗時は vitest skill を参照）
+   - `pnpm test:e2e`
+6. **コミット**: Conventional Commits形式、日本語、50文字以内
+   - `git add <files>`（対象ファイルを個別指定、`git add .` は使わない）
+   - `git commit -m "<message>"`
+7. **push**: `git push -u origin <ブランチ名>`
+8. **PR作成**:
    ```
-   cd /tmp/wt-issue-<番号> && gh pr create --base main --head <ブランチ名> --title "<type>: <日本語の説明>" --body "$(cat <<'EOF'
+   gh pr create --base main --head <ブランチ名> --title "<type>: <日本語の説明>" --body "$(cat <<'EOF'
    ## 概要
    <変更内容の箇条書き>
 
@@ -133,17 +103,11 @@ git worktree add /tmp/wt-issue-<番号> <ブランチ名>
 完了したら、作成したPRのURLを報告してください。
 ```
 
-### P-6. 完了待機と後片付け
+### P-3. 完了待機・結果報告
 
-全エージェントの完了を待ち、以下を行う:
+全エージェントの完了を待ち、各エージェントの結果（PRのURL等）をまとめてユーザーに報告する。
 
-1. 各エージェントの結果（PRのURL等）をまとめてユーザーに報告する
-2. git worktreeを削除する:
-   ```bash
-   git worktree remove /tmp/wt-issue-<番号>
-   git branch -d <ブランチ名>  # push -u でupstream設定済みのため -d で削除可能
-   ```
-3. チームを削除する（TeamDelete）
+**注意**: worktreeは `isolation: "worktree"` により自動管理される（変更なしなら自動削除、変更ありなら保持）。手動での削除は不要。
 
 ---
 
@@ -178,7 +142,7 @@ Issue の内容に従い、TDD（テスト駆動開発）で実装を行って�
 
 テストとプロダクションコードは必ずこの順序で作成すること。
 
-**スキル参照**: テストの書き方・API・モック・カバレッジ等で迷った場合は [vitest skill](.claude/skills/vitest/SKILL.md) のreferencesを参照すること。
+**スキル参照**: テストの書き方・API・モック・カバレッジ等で迷った場合は vitest skill のreferencesを参照すること。
 
 ### 6. コミット
 
@@ -188,8 +152,8 @@ Issue の内容に従い、TDD（テスト駆動開発）で実装を行って�
 - **コミット前チェック**: 各コミットの前に以下を実行し、問題があれば修正してからコミットする
   1. `pnpm format` — フォーマット適用
   2. `pnpm lint` — リントチェック
-  3. `pnpm build` — TypeScriptビルド確認（ビルドエラー時は [vite skill](.claude/skills/vite/SKILL.md) を参照）
-  4. `pnpm test:run` — ユニットテスト全通過を確認（テスト失敗時は [vitest skill](.claude/skills/vitest/SKILL.md) を参照）
+  3. `pnpm build` — TypeScriptビルド確認（ビルドエラー時は vite skill を参照）
+  4. `pnpm test:run` — ユニットテスト全通過を確認（テスト失敗時は vitest skill を参照）
   5. `pnpm test:e2e` — E2Eテスト全通過を確認
 
 ### 7. 仕様の曖昧さへの対応
