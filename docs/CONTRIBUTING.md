@@ -71,14 +71,14 @@ PR作成時にGitHub Pagesへプレビューサイトが自動デプロイされ
 | コマンド | 説明 |
 |----------|------|
 | `/ship` | 現在の変更をcommit・push・PR作成まで一括実行 |
-| `/issue-pr` | 指定Issueの対応ブランチ作成からTDD実装・PR作成まで実行（複数Issue並列対応可） |
+| `/create-pr-from-issue` | 指定Issueの対応ブランチ作成からTDD実装・PR作成まで実行（複数Issue並列対応可） |
 | `/resolve-pr-review` | PRのレビューコメントを解決してpush（複数PR並列対応可） |
 | `/refactor-issues` | コードベースのリファクタリング候補を調査しIssue起票 |
 | `/playwright-cli` | Playwright CLIでブラウザを対話操作しE2Eテストを作成 |
 
 ### 前提スキル
 
-`/ship`、`/issue-pr`、`/resolve-pr-review` はビルド・テスト工程で [antfu/skills](https://github.com/antfu/skills) のリファレンスドキュメントを参照します。スキルはフルエージェント権限で実行されるため、`.gitignore` でリポジトリから除外しています。各開発者が内容を確認のうえ手動でインストールしてください。
+`/ship`、`/create-pr-from-issue`、`/resolve-pr-review` はビルド・テスト工程で [antfu/skills](https://github.com/antfu/skills) のリファレンスドキュメントを参照します。スキルはフルエージェント権限で実行されるため、`.gitignore` でリポジトリから除外しています。各開発者が内容を確認のうえ手動でインストールしてください。
 
 ```bash
 npx skills add antfu/skills@vite -y    # Vite設定・プラグインAPIのリファレンス
