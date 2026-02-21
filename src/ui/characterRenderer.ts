@@ -280,6 +280,12 @@ export class CharacterRenderer {
 		const enemyContainer = this.enemyContainerMap.get(enemyId);
 		if (!enemyContainer) return;
 
+		// HPゲージをクリア（撃破演出前に暗転させる）
+		const gauge = this.enemyHpGaugeMap.get(enemyId);
+		if (gauge) {
+			gauge.clear();
+		}
+
 		enemyContainer.pivot.set(CELL_SIZE / 2, CELL_SIZE / 2);
 		enemyContainer.x += CELL_SIZE / 2;
 		enemyContainer.y += CELL_SIZE / 2;
