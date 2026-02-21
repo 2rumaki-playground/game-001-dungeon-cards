@@ -31,6 +31,8 @@ export interface CharacterRendererCallbacks {
 	onEnemyPointerOver: (enemyId: string) => void;
 	onEnemyPointerOut: () => void;
 	onBeforeEnemyDestroy: (enemyId: string) => void;
+	onPlayerPointerOver: () => void;
+	onPlayerPointerOut: () => void;
 }
 
 /**
@@ -90,6 +92,14 @@ export class CharacterRenderer {
 		sprite.width = CELL_SIZE;
 		sprite.height = CELL_SIZE;
 		this.playerContainer.addChild(sprite);
+
+		this.playerContainer.eventMode = "static";
+		this.playerContainer.on("pointerover", () => {
+			this.callbacks.onPlayerPointerOver();
+		});
+		this.playerContainer.on("pointerout", () => {
+			this.callbacks.onPlayerPointerOut();
+		});
 
 		this.isPlayerInitialized = true;
 	}

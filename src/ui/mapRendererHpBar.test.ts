@@ -390,8 +390,8 @@ describe("MapRenderer 敵ホバーツールチップ", () => {
 		const container = renderer.getContainer();
 		const enemiesContainer = container.children[4];
 		const enemyContainer = enemiesContainer.children[0];
-		// ルートコンテナの最上位に追加されたツールチップ
-		const tooltipContainer = container.children.at(-1);
+		// 敵ツールチップは最上位から2番目（プレイヤーツールチップが最上位）
+		const tooltipContainer = container.children.at(-2);
 
 		expect(tooltipContainer?.visible).toBe(false);
 		enemyContainer.emit("pointerover", {} as FederatedPointerEvent);
@@ -400,13 +400,68 @@ describe("MapRenderer 敵ホバーツールチップ", () => {
 		expect(tooltipContainer?.visible).toBe(false);
 	});
 
-	it("ツールチップコンテナがルートコンテナの最上位に追加される", () => {
+	it("ツールチップコンテナがルートコンテナの上位に追加される", () => {
 		const renderer = new MapRenderer();
 		const container = renderer.getContainer();
-		const lastChild = container.children.at(-1);
-		// ツールチップは初期状態で非表示
-		expect(lastChild?.visible).toBe(false);
-		// ツールチップコンテナはイベントを受け取らない
-		expect(lastChild?.eventMode).toBe("none");
+		// 敵ツールチップ
+		const enemyTooltip = container.children.at(-2);
+		expect(enemyTooltip?.visible).toBe(false);
+		expect(enemyTooltip?.eventMode).toBe("none");
+		// プレイヤーツールチップ
+		const playerTooltip = container.children.at(-1);
+		expect(playerTooltip?.visible).toBe(false);
+		expect(playerTooltip?.eventMode).toBe("none");
+	});
+});
+
+describe("MapRenderer プレイヤーホバーツールチップ", () => {
+	it("render後にプレイヤーコンテナのeventModeがstaticに設定される", () => {
+		const renderer = new MapRenderer();
+		const map = createRendererTestMap();
+		const player = {
+			position: { x: 0, y: 0 },
+			hp: 10,
+			maxHp: 10,
+		};
+		renderer.render(map, player, []);
+
+		const playerContainer = renderer.getPlayerContainer();
+		expect(playerContainer.eventMode).toBe("static");
+	});
+
+	it("プレイヤーコンテナにpointerover/pointeroutリスナーが登録される", () => {
+		const renderer = new MapRenderer();
+		const map = createRendererTestMap();
+		const player = {
+			position: { x: 0, y: 0 },
+			hp: 10,
+			maxHp: 10,
+		};
+		renderer.render(map, player, []);
+
+		const playerContainer = renderer.getPlayerContainer();
+		expect(playerContainer.listenerCount("pointerover")).toBe(1);
+		expect(playerContainer.listenerCount("pointerout")).toBe(1);
+	});
+
+	it("pointeroverでプレイヤーツールチップが表示されpointeroutで非表示になる", () => {
+		const renderer = new MapRenderer();
+		const map = createRendererTestMap();
+		const player = {
+			position: { x: 0, y: 0 },
+			hp: 7,
+			maxHp: 10,
+		};
+		renderer.render(map, player, []);
+
+		const container = renderer.getContainer();
+		const playerContainer = renderer.getPlayerContainer();
+		const tooltipContainer = container.children.at(-1);
+
+		expect(tooltipContainer?.visible).toBe(false);
+		playerContainer.emit("pointerover", {} as FederatedPointerEvent);
+		expect(tooltipContainer?.visible).toBe(true);
+		playerContainer.emit("pointerout", {} as FederatedPointerEvent);
+		expect(tooltipContainer?.visible).toBe(false);
 	});
 });
