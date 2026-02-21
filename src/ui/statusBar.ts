@@ -44,8 +44,8 @@ const AP_BAR_COLOR = 0x4488cc;
 /** AP消費時のフラッシュ色（明るい青） */
 const AP_FLASH_COLOR = 0x88ccff;
 
-/** バーアニメーション時間（ms） */
-const BAR_TWEEN_DURATION = 300;
+/** HP/APアニメーション時間（ms） */
+const TWEEN_DURATION = 300;
 
 /** APフラッシュの回数 */
 const AP_FLASH_COUNT = 1;
@@ -214,7 +214,7 @@ export class StatusBar {
 
 		// テキストとHP比率のtweenアニメーション
 		await tweenValue({
-			duration: BAR_TWEEN_DURATION,
+			duration: TWEEN_DURATION,
 			easing: Easing.easeOut,
 			onUpdate: (progress) => {
 				const ratio = fromRatio + (toRatio - fromRatio) * progress;
@@ -265,7 +265,7 @@ export class StatusBar {
 		}
 
 		const barPromise = tweenValue({
-			duration: BAR_TWEEN_DURATION,
+			duration: TWEEN_DURATION,
 			easing: Easing.easeOut,
 			onUpdate: (progress) => {
 				const ratio = fromRatio + (toRatio - fromRatio) * progress;
