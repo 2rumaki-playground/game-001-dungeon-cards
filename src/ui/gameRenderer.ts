@@ -86,6 +86,7 @@ export function applyCameraOffset(ctx: GameContext): void {
 	mapContainer.y = offset.y;
 	mapContainer.scale.set(zoomLevel);
 	ctx.ui.mapRenderer.repositionEnemyTooltip();
+	ctx.ui.mapRenderer.repositionPlayerTooltip();
 
 	const isCameraMoved =
 		offset.x !== baseOffset.x ||
@@ -107,12 +108,7 @@ export function renderGameScreen(
 	ctx.ui.gameOverScreen.hide();
 	ctx.ui.victoryScreen.hide();
 	ctx.ui.statusBar.show();
-	ctx.ui.statusBar.render(
-		ctx.state.player,
-		ctx.state.floor,
-		ctx.state.turn,
-		ctx.state.isCleared,
-	);
+	ctx.ui.statusBar.render(ctx.state.floor, ctx.state.turn, ctx.state.isCleared);
 	const visitedTiles =
 		import.meta.env.DEV && getDebugCheats().fullMapVisible
 			? undefined

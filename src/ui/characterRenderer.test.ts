@@ -51,6 +51,8 @@ function createCallbacks(): CharacterRendererCallbacks {
 		onEnemyPointerOver: vi.fn(),
 		onEnemyPointerOut: vi.fn(),
 		onBeforeEnemyDestroy: vi.fn(),
+		onPlayerPointerOver: vi.fn(),
+		onPlayerPointerOut: vi.fn(),
 	};
 }
 

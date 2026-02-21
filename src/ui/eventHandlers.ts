@@ -700,7 +700,6 @@ export function setupEventHandlers(ctx: GameContext): void {
 			// 敵ターン状態を即座に反映（StatusBar/TurnEndButtonに反映）
 			applyState(ctx, next);
 			ctx.ui.statusBar.render(
-				ctx.state.player,
 				ctx.state.floor,
 				ctx.state.turn,
 				ctx.state.isCleared,
@@ -752,7 +751,6 @@ export function setupEventHandlers(ctx: GameContext): void {
 				// バナー表示前にターン状態を反映（StatusBar/TurnEndButtonに即座に反映）
 				applyState(ctx, next);
 				ctx.ui.statusBar.render(
-					ctx.state.player,
 					ctx.state.floor,
 					ctx.state.turn,
 					ctx.state.isCleared,

@@ -28,6 +28,7 @@ import {
 	animateScreenShake,
 } from "./mapEffects";
 import { renderFog, renderRemnants, renderTiles } from "./mapTileRenderer";
+import { PlayerTooltip } from "./playerTooltip";
 import { calcScreenShakeIntensity } from "./popupLogic";
 import { SkillForecastEffectManager } from "./skillForecastEffect";
 import { SpecialTileEffectManager } from "./specialTileEffect";
@@ -46,7 +47,9 @@ export class MapRenderer {
 	private fogGraphics: Graphics;
 	private lastRenderedMap: GameMap | null = null;
 	private enemyTooltip: EnemyTooltip;
+	private playerTooltip: PlayerTooltip;
 	private tooltipEnemyId: string | null = null;
+	private lastPlayer: Player | null = null;
 	private specialTileEffectManager: SpecialTileEffectManager;
 	private skillForecastEffectManager: SkillForecastEffectManager;
 	private characterRenderer: CharacterRenderer;
@@ -67,6 +70,7 @@ export class MapRenderer {
 		const enemiesContainer = this.enemiesContainer;
 		this.fogGraphics = new Graphics();
 		this.enemyTooltip = new EnemyTooltip();
+		this.playerTooltip = new PlayerTooltip();
 		this.specialTileEffectManager = new SpecialTileEffectManager();
 		this.skillForecastEffectManager = new SkillForecastEffectManager();
 
@@ -81,6 +85,8 @@ export class MapRenderer {
 						this.hideEnemyTooltip();
 					}
 				},
+				onPlayerPointerOver: () => this.showPlayerTooltip(),
+				onPlayerPointerOut: () => this.hidePlayerTooltip(),
 			},
 		);
 
@@ -95,6 +101,7 @@ export class MapRenderer {
 		this.container.addChild(this.fogGraphics);
 		this.container.addChild(this.playerContainer);
 		this.container.addChild(this.enemyTooltip.getContainer());
+		this.container.addChild(this.playerTooltip.getContainer());
 	}
 
 	/**
@@ -138,6 +145,7 @@ export class MapRenderer {
 	 * プレイヤーを描画
 	 */
 	renderPlayer(player: Player): void {
+		this.lastPlayer = player;
 		this.characterRenderer.renderPlayer(player);
 	}
 
@@ -146,6 +154,7 @@ export class MapRenderer {
 	 * @param targetGridPos 移動先のグリッド座標
 	 */
 	async animatePlayerMove(targetGridPos: Position): Promise<void> {
+		this.hidePlayerTooltip();
 		await this.characterRenderer.animatePlayerMove(targetGridPos);
 	}
 
@@ -330,10 +339,12 @@ export class MapRenderer {
 			child.destroy();
 		}
 		this.lastRenderedMap = null;
+		this.lastPlayer = null;
 		this.remnantsGraphics.clear();
 		this.fogGraphics.clear();
 		this.characterRenderer.clear();
 		this.hideEnemyTooltip();
+		this.hidePlayerTooltip();
 		this.specialTileEffectManager.clear();
 		this.skillForecastEffectManager.clear();
 		this.enemyAiOverlayManager?.clear();
@@ -399,6 +410,56 @@ export class MapRenderer {
 	private hideEnemyTooltip(): void {
 		this.tooltipEnemyId = null;
 		this.enemyTooltip.hide();
+	}
+
+	/**
+	 * プレイヤーツールチップを表示
+	 */
+	private showPlayerTooltip(): void {
+		if (!this.lastPlayer) return;
+
+		const viewport = getViewportPixelSize();
+		const containerTransform = {
+			x: this.container.x,
+			y: this.container.y,
+			scale: this.container.scale.x,
+		};
+		this.playerTooltip.show(
+			this.lastPlayer,
+			this.playerContainer.x,
+			this.playerContainer.y,
+			viewport,
+			containerTransform,
+		);
+	}
+
+	/**
+	 * 表示中のプレイヤーツールチップを現在のコンテナ変換で再配置
+	 * カメラオフセット/ズーム変更後に呼び出す
+	 */
+	repositionPlayerTooltip(): void {
+		if (!this.playerTooltip.isVisible()) return;
+
+		const viewport = getViewportPixelSize();
+		const containerTransform = {
+			x: this.container.x,
+			y: this.container.y,
+			scale: this.container.scale.x,
+		};
+
+		this.playerTooltip.updatePosition(
+			this.playerContainer.x,
+			this.playerContainer.y,
+			viewport,
+			containerTransform,
+		);
+	}
+
+	/**
+	 * プレイヤーツールチップを非表示
+	 */
+	private hidePlayerTooltip(): void {
+		this.playerTooltip.hide();
 	}
 
 	/**
