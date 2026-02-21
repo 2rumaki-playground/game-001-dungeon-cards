@@ -171,7 +171,7 @@ describe("StatusBar", () => {
 			vi.useRealTimers();
 		});
 
-		it("HP増加時もバーが変化する", async () => {
+		it("HP増加時もHP比率が変化する", async () => {
 			vi.useFakeTimers();
 			const statusBar = new StatusBar();
 			statusBar.render(
