@@ -54,7 +54,6 @@ function renderTitleScreen(ctx: GameContext): void {
 	ctx.ui.nextFloorButton.hide();
 	ctx.ui.returnToPlayerButton.hide();
 	ctx.ui.cameraDragController.reset();
-	ctx.ui.deckViewer.hideButton();
 	ctx.ui.actionLogRenderer.hide();
 	ctx.ui.mapRenderer.clear();
 	ctx.ui.handRenderer.clear();
@@ -136,7 +135,6 @@ export function renderGameScreen(
 	ctx.ui.turnEndButton.show();
 	ctx.ui.turnEndButton.render(ctx.state.turn);
 	ctx.ui.nextFloorButton.render(ctx.state.enemies.length);
-	ctx.ui.deckViewer.showButton();
 	ctx.ui.actionLogRenderer.show();
 	ctx.ui.actionLogRenderer.render(ctx.state.actionLog);
 
@@ -176,7 +174,6 @@ function renderGameOverScreen(ctx: GameContext): void {
 	ctx.ui.nextFloorButton.hide();
 	ctx.ui.returnToPlayerButton.hide();
 	ctx.ui.cameraDragController.reset();
-	ctx.ui.deckViewer.hideButton();
 	ctx.ui.actionLogRenderer.hide();
 	ctx.ui.mapRenderer.clear();
 	ctx.ui.handRenderer.clear();
@@ -200,7 +197,6 @@ function renderVictoryScreen(ctx: GameContext): void {
 	ctx.ui.nextFloorButton.hide();
 	ctx.ui.returnToPlayerButton.hide();
 	ctx.ui.cameraDragController.reset();
-	ctx.ui.deckViewer.hideButton();
 	ctx.ui.actionLogRenderer.hide();
 	ctx.ui.mapRenderer.clear();
 	ctx.ui.handRenderer.clear();
@@ -221,7 +217,6 @@ function renderExchangeScreen(ctx: GameContext): void {
 	renderGameScreen(ctx, true);
 	ctx.ui.turnEndButton.hide();
 	ctx.ui.nextFloorButton.hide();
-	ctx.ui.deckViewer.hideButton();
 	ctx.ui.handRenderer.clear();
 	// 報酬画面をオーバーレイ
 	ctx.ui.rewardScreen.show();
@@ -237,7 +232,6 @@ export function render(
 	skipEnemies = false,
 ): void {
 	ctx.ui.rewardScreen.hide();
-	ctx.ui.deckViewer.hide();
 	ctx.ui.victoryScreen.hide();
 	ctx.ui.statsScreen.hide();
 	switch (ctx.state.screen) {

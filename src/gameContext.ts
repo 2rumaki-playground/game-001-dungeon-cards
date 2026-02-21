@@ -8,7 +8,6 @@ import type { Card, GameState } from "./types";
 import type {
 	ActionLogRenderer,
 	CameraDragController,
-	DeckViewer,
 	DirectionSelector,
 	FloorBanner,
 	GameOverScreen,
@@ -40,7 +39,6 @@ export interface UIComponents {
 	directionSelector: DirectionSelector;
 	turnEndButton: TurnEndButton;
 	nextFloorButton: NextFloorButton;
-	deckViewer: DeckViewer;
 	actionLogRenderer: ActionLogRenderer;
 	turnBanner: TurnBanner;
 	rewardScreen: RewardScreen;
