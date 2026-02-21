@@ -234,11 +234,11 @@ export class HandRenderer {
 	 * 手札を描画
 	 */
 	render(hand: Card[], currentAp: number): void {
-		this.currentHand = hand;
-		this.currentAp = currentAp;
-
 		// ドラッグ確定中は再描画をスキップ（ドラッグ状態が破壊されるため）
 		if (this.isDragging && this.dragConfirmed) return;
+
+		this.currentHand = hand;
+		this.currentAp = currentAp;
 
 		this.cardsContainer.removeChildren();
 
