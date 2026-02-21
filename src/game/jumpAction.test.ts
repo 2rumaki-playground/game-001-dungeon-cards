@@ -24,10 +24,8 @@ describe("executeJump", () => {
 				maxAp: MAX_AP,
 			},
 			deck: {
-				deckOrder: [],
-				drawPile: [],
 				hand: [{ id: "jump-1", type: "jump", keyword: "flame" }],
-				discardPile: [],
+				usedCardIds: [],
 			},
 		});
 		const {
@@ -38,9 +36,9 @@ describe("executeJump", () => {
 
 		expect(result.player.position).toEqual({ x: 5, y: 3 });
 		expect(result.player.ap).toBe(MAX_AP - CARD_COST.jump);
-		expect(result.deck.hand).toHaveLength(0);
-		expect(result.deck.discardPile).toHaveLength(1);
-		expect(result.deck.discardPile[0].id).toBe("jump-1");
+		expect(result.deck.hand).toHaveLength(1);
+		expect(result.deck.usedCardIds).toHaveLength(1);
+		expect(result.deck.usedCardIds[0]).toBe("jump-1");
 		expect(jumped).toBe(true);
 		expect(reachedStairs).toBe(false);
 	});
@@ -92,10 +90,8 @@ describe("executeJump", () => {
 			},
 			...createOverrides(),
 			deck: {
-				deckOrder: [],
-				drawPile: [],
 				hand: [{ id: "jump-1", type: "jump", keyword: "flame" }],
-				discardPile: [],
+				usedCardIds: [],
 			},
 		});
 		const { state: result, jumped } = executeJump(state, "jump-1", direction);
@@ -103,11 +99,9 @@ describe("executeJump", () => {
 		expect(result.player.position).toEqual(expectedPos);
 		expect(result.player.ap).toBe(MAX_AP - CARD_COST.jump);
 		expect(jumped).toBe(false);
-		expect(result.deck.hand).toHaveLength(0);
-		expect(result.deck.discardPile).toHaveLength(1);
-		expect(result.deck.discardPile[0]).toEqual(
-			expect.objectContaining({ id: "jump-1", type: "jump", keyword: "flame" }),
-		);
+		expect(result.deck.hand).toHaveLength(1);
+		expect(result.deck.usedCardIds).toHaveLength(1);
+		expect(result.deck.usedCardIds).toContain("jump-1");
 	});
 
 	it.each([
@@ -152,10 +146,8 @@ describe("executeJump", () => {
 				maxAp: MAX_AP,
 			},
 			deck: {
-				deckOrder: [],
-				drawPile: [],
 				hand: [{ id: "jump-1", type: "jump", keyword: "flame" }],
-				discardPile: [],
+				usedCardIds: [],
 			},
 		});
 		const {
@@ -185,10 +177,8 @@ describe("executeJump", () => {
 				maxAp: MAX_AP,
 			},
 			deck: {
-				deckOrder: [],
-				drawPile: [],
 				hand: [{ id: "jump-1", type: "jump", keyword: "flame" }],
-				discardPile: [],
+				usedCardIds: [],
 			},
 		});
 		const {
@@ -216,10 +206,8 @@ describe("executeJump", () => {
 				maxAp: MAX_AP,
 			},
 			deck: {
-				deckOrder: [],
-				drawPile: [],
 				hand: [{ id: "jump-1", type: "jump", keyword: "flame" }],
-				discardPile: [],
+				usedCardIds: [],
 			},
 		});
 		const result = executeJump(state, "jump-1", "right");
@@ -243,10 +231,8 @@ describe("executeJump", () => {
 				maxAp: MAX_AP,
 			},
 			deck: {
-				deckOrder: [],
-				drawPile: [],
 				hand: [{ id: "jump-1", type: "jump", keyword: "flame" }],
-				discardPile: [],
+				usedCardIds: [],
 			},
 		});
 		const result = executeJump(state, "jump-1", "right");
@@ -272,10 +258,8 @@ describe("executeJump", () => {
 				maxAp: MAX_AP,
 			},
 			deck: {
-				deckOrder: [],
-				drawPile: [],
 				hand: [{ id: "jump-1", type: "jump", keyword: "flame" }],
-				discardPile: [],
+				usedCardIds: [],
 			},
 		});
 		const result = executeJump(state, "jump-1", "right");
@@ -301,10 +285,8 @@ describe("executeJump", () => {
 				maxAp: MAX_AP,
 			},
 			deck: {
-				deckOrder: [],
-				drawPile: [],
 				hand: [{ id: "jump-1", type: "jump", keyword: "flame" }],
-				discardPile: [],
+				usedCardIds: [],
 			},
 		});
 		const result = executeJump(state, "jump-1", "right");
@@ -326,10 +308,8 @@ describe("executeJump", () => {
 				maxAp: MAX_AP,
 			},
 			deck: {
-				deckOrder: [],
-				drawPile: [],
 				hand: [{ id: "jump-1", type: "jump", keyword: "flame" }],
-				discardPile: [],
+				usedCardIds: [],
 			},
 		});
 		const result = executeJump(state, "jump-1", "right");
@@ -341,10 +321,8 @@ describe("executeJump", () => {
 	it("元のGameStateが変更されない（イミュータブル）", () => {
 		const state = createTestState({
 			deck: {
-				deckOrder: [],
-				drawPile: [],
 				hand: [{ id: "jump-1", type: "jump", keyword: "flame" }],
-				discardPile: [],
+				usedCardIds: [],
 			},
 		});
 		const originalPosition = { ...state.player.position };
@@ -362,10 +340,8 @@ describe("executeJump - visitedTiles", () => {
 	it("ジャンプ着地時に着地先が訪問済みに追加される", () => {
 		const state = createTestState({
 			deck: {
-				deckOrder: [],
-				drawPile: [],
 				hand: [{ id: "jump-1", type: "jump", keyword: "flame" }],
-				discardPile: [],
+				usedCardIds: [],
 			},
 		});
 		const result = executeJump(state, "jump-1", "right");
@@ -382,10 +358,8 @@ describe("executeJump - visitedTiles", () => {
 				maxAp: MAX_AP,
 			},
 			deck: {
-				deckOrder: [],
-				drawPile: [],
 				hand: [{ id: "jump-1", type: "jump", keyword: "flame" }],
-				discardPile: [],
+				usedCardIds: [],
 			},
 		});
 		// (1,1)からupは(1,-1)=マップ外なので失敗

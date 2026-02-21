@@ -1,27 +1,24 @@
 import type { Container, FederatedPointerEvent, Graphics, Text } from "pixi.js";
 import { describe, expect, it, vi } from "vitest";
-import type { Card, DeckState } from "../types";
+import type { DeckState } from "../types";
 import { CARD_DESCRIPTION, CARD_TYPE_NAME } from "./cardConstants";
 import { CLOSE_BUTTON_HEIGHT, DeckViewer } from "./deckViewer";
 import { CARD_GAP, CARD_HEIGHT, CARD_WIDTH } from "./handRenderer";
 
 /** テスト用デッキ */
 function createTestDeck(): DeckState {
-	const cards: Card[] = [
-		{ id: "m1", type: "move", keyword: "flame" },
-		{ id: "m2", type: "move", keyword: "flame" },
-		{ id: "m3", type: "move", keyword: "flame" },
-		{ id: "a1", type: "attack", keyword: "flame" },
-		{ id: "a2", type: "attack", keyword: "flame" },
-		{ id: "sa1", type: "strong_attack", keyword: "flame" },
-		{ id: "r1", type: "jump", keyword: "flame" },
-		{ id: "w1", type: "wait", keyword: "flame" },
-	];
 	return {
-		deckOrder: cards,
-		drawPile: cards.slice(0, 4),
-		hand: cards.slice(4, 6),
-		discardPile: cards.slice(6),
+		hand: [
+			{ id: "m1", type: "move", keyword: "flame" },
+			{ id: "m2", type: "move", keyword: "flame" },
+			{ id: "m3", type: "move", keyword: "flame" },
+			{ id: "a1", type: "attack", keyword: "flame" },
+			{ id: "a2", type: "attack", keyword: "flame" },
+			{ id: "sa1", type: "strong_attack", keyword: "flame" },
+			{ id: "r1", type: "jump", keyword: "flame" },
+			{ id: "w1", type: "wait", keyword: "flame" },
+		],
+		usedCardIds: [],
 	};
 }
 
@@ -170,7 +167,7 @@ describe("DeckViewer", () => {
 			// グリッドベースでコンテンツ高さを計算
 			const titleFontSize = 24;
 			const titleToGridGap = 12;
-			const allCards = [...deck.drawPile, ...deck.hand, ...deck.discardPile];
+			const allCards = deck.hand;
 			const gridRows = Math.ceil(allCards.length / 3);
 			const gridHeight = gridRows * CARD_HEIGHT + (gridRows - 1) * CARD_GAP;
 			const gridToCloseGap = 10;
@@ -198,10 +195,8 @@ describe("DeckViewer", () => {
 		it("空デッキでも描画できる", () => {
 			const viewer = new DeckViewer();
 			const emptyDeck: DeckState = {
-				deckOrder: [],
-				drawPile: [],
 				hand: [],
-				discardPile: [],
+				usedCardIds: [],
 			};
 			viewer.render(emptyDeck, 600, 400);
 

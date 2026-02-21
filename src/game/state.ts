@@ -27,7 +27,7 @@ import type {
 } from "../types";
 import { RNG } from "../utils/rng";
 import { createInitialCounters } from "./cardAcquisition";
-import { createInitialDeckState, drawCards } from "./deck";
+import { createInitialDeckState } from "./deck";
 import { createEmptyVisitedTiles, revealAtPosition } from "./fogOfWar";
 import { generateMapPlacement } from "./map";
 import { positionToKey } from "./positionUtils";
@@ -114,10 +114,8 @@ export function createInitialPlayer(): Player {
  */
 export function createEmptyDeckState(): DeckState {
 	return {
-		deckOrder: [],
-		drawPile: [],
 		hand: [],
-		discardPile: [],
+		usedCardIds: [],
 	};
 }
 
@@ -202,8 +200,7 @@ export function createInitialGameState(
 export function startNewGame(state: GameState): GameState {
 	const gameState = createInitialGameState(state.rng.seed);
 	const deck = createInitialDeckState(gameState.rng);
-	const deckWithHand = drawCards(deck);
-	return { ...gameState, deck: deckWithHand };
+	return { ...gameState, deck };
 }
 
 /**
@@ -215,8 +212,7 @@ export function startNewGameAtFloor(
 ): GameState {
 	const gameState = createInitialGameState(state.rng.seed, floor);
 	const deck = createInitialDeckState(gameState.rng);
-	const deckWithHand = drawCards(deck);
-	return { ...gameState, deck: deckWithHand };
+	return { ...gameState, deck };
 }
 
 /**

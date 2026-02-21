@@ -35,10 +35,8 @@ describe("executeAttack", () => {
 		const state = createTestState({
 			enemies,
 			deck: {
-				deckOrder: [],
-				drawPile: [],
 				hand: [{ id: "attack-1", type: "attack", keyword: "flame" }],
-				discardPile: [],
+				usedCardIds: [],
 			},
 		});
 		const { state: result, hit } = executeAttack(state, "attack-1", "right");
@@ -50,10 +48,10 @@ describe("executeAttack", () => {
 		expect(result.enemies[0].hp).toBe(ENEMY_HP - PLAYER_ATTACK_DAMAGE);
 		// AP消費
 		expect(result.player.ap).toBe(MAX_AP - CARD_COST.attack);
-		// カードが捨て札に移動
-		expect(result.deck.hand).toHaveLength(0);
-		expect(result.deck.discardPile).toHaveLength(1);
-		expect(result.deck.discardPile[0].id).toBe("attack-1");
+		// カードが使用済みに記録
+		expect(result.deck.hand).toHaveLength(1);
+		expect(result.deck.usedCardIds).toHaveLength(1);
+		expect(result.deck.usedCardIds[0]).toBe("attack-1");
 		// 行動ログに記録
 		expect(result.actionLog.length).toBeGreaterThan(0);
 		expect(result.actionLog[0].message).toBe("敵にダメージを与えた");
@@ -72,10 +70,8 @@ describe("executeAttack", () => {
 		const state = createTestState({
 			enemies,
 			deck: {
-				deckOrder: [],
-				drawPile: [],
 				hand: [{ id: "attack-1", type: "attack", keyword: "flame" }],
-				discardPile: [],
+				usedCardIds: [],
 			},
 		});
 		const { state: result, hit } = executeAttack(state, "attack-1", "right");
@@ -113,18 +109,16 @@ describe("executeAttack", () => {
 					}
 				: {}),
 			deck: {
-				deckOrder: [],
-				drawPile: [],
 				hand: [{ id: "attack-1", type: "attack", keyword: "flame" }],
-				discardPile: [],
+				usedCardIds: [],
 			},
 		});
 		const { state: result, hit } = executeAttack(state, "attack-1", direction);
 
 		expect(hit).toBe(false);
 		expect(result.player.ap).toBe(MAX_AP - CARD_COST.attack);
-		expect(result.deck.hand).toHaveLength(0);
-		expect(result.deck.discardPile).toHaveLength(1);
+		expect(result.deck.hand).toHaveLength(1);
+		expect(result.deck.usedCardIds).toHaveLength(1);
 		expect(result.actionLog[0].message).toBe("攻撃できなかった");
 	});
 
@@ -141,10 +135,8 @@ describe("executeAttack", () => {
 		const state = createTestState({
 			enemies,
 			deck: {
-				deckOrder: [],
-				drawPile: [],
 				hand: [{ id: "attack-1", type: "attack", keyword: "flame" }],
-				discardPile: [],
+				usedCardIds: [],
 			},
 		});
 		const originalEnemyHp = state.enemies[0].hp;
@@ -159,13 +151,11 @@ describe("executeAttack", () => {
 });
 
 describe("executeWait", () => {
-	it("待機成功: AP消費なし・カード捨て札移動・行動ログ", () => {
+	it("待機成功: AP消費なし・カード使用済み記録・行動ログ", () => {
 		const state = createTestState({
 			deck: {
-				deckOrder: [],
-				drawPile: [],
 				hand: [{ id: "wait-1", type: "wait", keyword: "flame" }],
-				discardPile: [],
+				usedCardIds: [],
 			},
 		});
 		const result = executeWait(state, "wait-1");
@@ -173,10 +163,10 @@ describe("executeWait", () => {
 		// APが減らない（コスト0）
 		expect(result.player.ap).toBe(MAX_AP - CARD_COST.wait);
 		expect(result.player.ap).toBe(MAX_AP);
-		// カードが捨て札に移動
-		expect(result.deck.hand).toHaveLength(0);
-		expect(result.deck.discardPile).toHaveLength(1);
-		expect(result.deck.discardPile[0].id).toBe("wait-1");
+		// カードが使用済みに記録
+		expect(result.deck.hand).toHaveLength(1);
+		expect(result.deck.usedCardIds).toHaveLength(1);
+		expect(result.deck.usedCardIds[0]).toBe("wait-1");
 		// 行動ログに記録
 		expect(result.actionLog).toHaveLength(1);
 		expect(result.actionLog[0].message).toBe("待機した");
@@ -185,10 +175,8 @@ describe("executeWait", () => {
 	it("元のGameStateが変更されない（イミュータブル）", () => {
 		const state = createTestState({
 			deck: {
-				deckOrder: [],
-				drawPile: [],
 				hand: [{ id: "wait-1", type: "wait", keyword: "flame" }],
-				discardPile: [],
+				usedCardIds: [],
 			},
 		});
 		const originalAp = state.player.ap;
@@ -197,12 +185,12 @@ describe("executeWait", () => {
 
 		expect(state.player.ap).toBe(originalAp);
 		expect(state.deck.hand).toHaveLength(1);
-		expect(state.deck.discardPile).toHaveLength(0);
+		expect(state.deck.usedCardIds).toHaveLength(0);
 	});
 });
 
 describe("executeStrongAttack", () => {
-	it("攻撃成功: 敵HP3が0になり倒される・AP2消費・カード捨て札移動", () => {
+	it("攻撃成功: 敵HP3が0になり倒される・AP2消費・カード使用済み記録", () => {
 		const enemies: Enemy[] = [
 			{
 				id: "enemy-1",
@@ -215,10 +203,8 @@ describe("executeStrongAttack", () => {
 		const state = createTestState({
 			enemies,
 			deck: {
-				deckOrder: [],
-				drawPile: [],
 				hand: [{ id: "strong-1", type: "strong_attack", keyword: "flame" }],
-				discardPile: [],
+				usedCardIds: [],
 			},
 		});
 		const { state: result, hit } = executeStrongAttack(
@@ -231,9 +217,9 @@ describe("executeStrongAttack", () => {
 		// ENEMY_HP(3) - PLAYER_STRONG_ATTACK_DAMAGE(3) = 0 → 敵は倒される
 		expect(result.enemies).toHaveLength(0);
 		expect(result.player.ap).toBe(MAX_AP - CARD_COST.strong_attack);
-		expect(result.deck.hand).toHaveLength(0);
-		expect(result.deck.discardPile).toHaveLength(1);
-		expect(result.deck.discardPile[0].id).toBe("strong-1");
+		expect(result.deck.hand).toHaveLength(1);
+		expect(result.deck.usedCardIds).toHaveLength(1);
+		expect(result.deck.usedCardIds[0]).toBe("strong-1");
 		expect(result.actionLog[0].message).toBe("敵を倒した");
 	});
 
@@ -250,10 +236,8 @@ describe("executeStrongAttack", () => {
 		const state = createTestState({
 			enemies,
 			deck: {
-				deckOrder: [],
-				drawPile: [],
 				hand: [{ id: "strong-1", type: "strong_attack", keyword: "flame" }],
-				discardPile: [],
+				usedCardIds: [],
 			},
 		});
 		const { state: result, hit } = executeStrongAttack(
@@ -275,7 +259,7 @@ describe("executeStrongAttack", () => {
 		string,
 		{ x: number; y: number } | undefined,
 		Direction,
-	][])("攻撃不成立（%s）: AP2消費・カード捨て札移動・失敗ログ", (_, playerPos, direction) => {
+	][])("攻撃不成立（%s）: AP2消費・カード使用済み記録・失敗ログ", (_, playerPos, direction) => {
 		const state = createTestState({
 			enemies: [],
 			...(playerPos
@@ -290,10 +274,8 @@ describe("executeStrongAttack", () => {
 					}
 				: {}),
 			deck: {
-				deckOrder: [],
-				drawPile: [],
 				hand: [{ id: "strong-1", type: "strong_attack", keyword: "flame" }],
-				discardPile: [],
+				usedCardIds: [],
 			},
 		});
 		const { state: result, hit } = executeStrongAttack(
@@ -304,8 +286,8 @@ describe("executeStrongAttack", () => {
 
 		expect(hit).toBe(false);
 		expect(result.player.ap).toBe(MAX_AP - CARD_COST.strong_attack);
-		expect(result.deck.hand).toHaveLength(0);
-		expect(result.deck.discardPile).toHaveLength(1);
+		expect(result.deck.hand).toHaveLength(1);
+		expect(result.deck.usedCardIds).toHaveLength(1);
 		expect(result.actionLog[0].message).toBe("強攻撃できなかった");
 	});
 
@@ -322,10 +304,8 @@ describe("executeStrongAttack", () => {
 		const state = createTestState({
 			enemies,
 			deck: {
-				deckOrder: [],
-				drawPile: [],
 				hand: [{ id: "strong-1", type: "strong_attack", keyword: "flame" }],
-				discardPile: [],
+				usedCardIds: [],
 			},
 		});
 		const originalEnemyHp = state.enemies[0].hp;
@@ -348,10 +328,8 @@ describe("consumeApAndPlayCard - AP無限チート", () => {
 		toggleDebugCheat("infiniteAp");
 		const state = createTestState({
 			deck: {
-				deckOrder: [],
-				drawPile: [],
 				hand: [{ id: "move-1", type: "move", keyword: "flame" }],
-				discardPile: [],
+				usedCardIds: [],
 			},
 		});
 		const cost = getEffectiveCardCost("move");
@@ -364,10 +342,8 @@ describe("consumeApAndPlayCard - AP無限チート", () => {
 	it("AP無限OFFの場合、通常通りAPが減る", () => {
 		const state = createTestState({
 			deck: {
-				deckOrder: [],
-				drawPile: [],
 				hand: [{ id: "move-1", type: "move", keyword: "flame" }],
-				discardPile: [],
+				usedCardIds: [],
 			},
 		});
 		const cost = getEffectiveCardCost("move");

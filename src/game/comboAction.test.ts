@@ -19,10 +19,8 @@ describe("コンボ発動（統合テスト）", () => {
 		state = createTestState({
 			enemies: [enemy],
 			deck: {
-				deckOrder: [],
-				drawPile: [],
 				hand: createTestHand(["move", "attack", "attack"]),
-				discardPile: [],
+				usedCardIds: [],
 			},
 		});
 	});
@@ -67,10 +65,8 @@ describe("コンボ発動（統合テスト）", () => {
 		const s = createTestState({
 			enemies: [enemyUp, enemyRight],
 			deck: {
-				deckOrder: [],
-				drawPile: [],
 				hand: createTestHand(["move", "attack", "attack"]),
-				discardPile: [],
+				usedCardIds: [],
 			},
 		});
 
@@ -111,10 +107,8 @@ describe("コンボ発動（統合テスト）", () => {
 		const s = createTestState({
 			enemies: [enemy1, enemy2],
 			deck: {
-				deckOrder: [],
-				drawPile: [],
 				hand: createTestHand(["attack", "attack", "attack"]),
-				discardPile: [],
+				usedCardIds: [],
 			},
 		});
 
@@ -173,10 +167,8 @@ describe("コンボ発動（統合テスト）", () => {
 		const s = createTestState({
 			enemies: [enemy1, enemy2, enemy3],
 			deck: {
-				deckOrder: [],
-				drawPile: [],
 				hand: createTestHand(["attack", "attack", "attack"]),
-				discardPile: [],
+				usedCardIds: [],
 			},
 			player: {
 				position: { x: 3, y: 3 },

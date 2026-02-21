@@ -17,10 +17,8 @@ describe("consumeApAndPlayCard", () => {
 	it("APが指定コスト分減少する", () => {
 		const state = createTestState({
 			deck: {
-				deckOrder: [],
-				drawPile: [],
 				hand: [{ id: "move-1", type: "move", keyword: "flame" }],
-				discardPile: [],
+				usedCardIds: [],
 			},
 		});
 		const result = consumeApAndPlayCard(state, "move-1", CARD_COST.move);
@@ -28,45 +26,39 @@ describe("consumeApAndPlayCard", () => {
 		expect(result.player.ap).toBe(MAX_AP - CARD_COST.move);
 	});
 
-	it("カードが手札から捨て札に移動する", () => {
+	it("カードが使用済みに記録される", () => {
 		const state = createTestState({
 			deck: {
-				deckOrder: [],
-				drawPile: [],
 				hand: [{ id: "attack-1", type: "attack", keyword: "flame" }],
-				discardPile: [],
+				usedCardIds: [],
 			},
 		});
 		const result = consumeApAndPlayCard(state, "attack-1", CARD_COST.attack);
 
-		expect(result.deck.hand).toHaveLength(0);
-		expect(result.deck.discardPile).toHaveLength(1);
-		expect(result.deck.discardPile[0].id).toBe("attack-1");
+		expect(result.deck.hand).toHaveLength(1);
+		expect(result.deck.usedCardIds).toHaveLength(1);
+		expect(result.deck.usedCardIds).toContain("attack-1");
 	});
 
 	it("コスト0の場合APが変化しない", () => {
 		const state = createTestState({
 			deck: {
-				deckOrder: [],
-				drawPile: [],
 				hand: [{ id: "wait-1", type: "wait", keyword: "flame" }],
-				discardPile: [],
+				usedCardIds: [],
 			},
 		});
 		const result = consumeApAndPlayCard(state, "wait-1", CARD_COST.wait);
 
 		expect(result.player.ap).toBe(MAX_AP);
-		expect(result.deck.hand).toHaveLength(0);
-		expect(result.deck.discardPile).toHaveLength(1);
+		expect(result.deck.hand).toHaveLength(1);
+		expect(result.deck.usedCardIds).toHaveLength(1);
 	});
 
 	it("元のGameStateが変更されない（イミュータブル）", () => {
 		const state = createTestState({
 			deck: {
-				deckOrder: [],
-				drawPile: [],
 				hand: [{ id: "move-1", type: "move", keyword: "flame" }],
-				discardPile: [],
+				usedCardIds: [],
 			},
 		});
 		const originalAp = state.player.ap;
@@ -75,18 +67,16 @@ describe("consumeApAndPlayCard", () => {
 
 		expect(state.player.ap).toBe(originalAp);
 		expect(state.deck.hand).toHaveLength(1);
-		expect(state.deck.discardPile).toHaveLength(0);
+		expect(state.deck.usedCardIds).toHaveLength(0);
 	});
 });
 
 describe("executeMove", () => {
-	it("床タイルへの移動成功: 位置更新・AP消費・カード捨て札移動・行動ログ", () => {
+	it("床タイルへの移動成功: 位置更新・AP消費・カード使用済み記録・行動ログ", () => {
 		const state = createTestState({
 			deck: {
-				deckOrder: [],
-				drawPile: [],
 				hand: [{ id: "move-1", type: "move", keyword: "flame" }],
-				discardPile: [],
+				usedCardIds: [],
 			},
 		});
 		const { state: result, reachedStairs } = executeMove(
@@ -99,17 +89,17 @@ describe("executeMove", () => {
 		expect(result.player.position).toEqual({ x: 4, y: 3 });
 		// AP消費
 		expect(result.player.ap).toBe(MAX_AP - CARD_COST.move);
-		// カードが捨て札に移動
-		expect(result.deck.hand).toHaveLength(0);
-		expect(result.deck.discardPile).toHaveLength(1);
-		expect(result.deck.discardPile[0].id).toBe("move-1");
+		// カードが使用済みに記録
+		expect(result.deck.hand).toHaveLength(1);
+		expect(result.deck.usedCardIds).toHaveLength(1);
+		expect(result.deck.usedCardIds).toContain("move-1");
 		// 行動ログに記録
 		expect(result.actionLog.length).toBeGreaterThan(0);
 		// 階段ではない
 		expect(reachedStairs).toBe(false);
 	});
 
-	it("壁タイルへの移動失敗: 位置変更なし・AP消費・カード捨て札移動・失敗ログ", () => {
+	it("壁タイルへの移動失敗: 位置変更なし・AP消費・カード使用済み記録・失敗ログ", () => {
 		// プレイヤーを壁の隣に配置（1,1から上は壁）
 		const state = createTestState({
 			player: {
@@ -120,10 +110,8 @@ describe("executeMove", () => {
 				maxAp: MAX_AP,
 			},
 			deck: {
-				deckOrder: [],
-				drawPile: [],
 				hand: [{ id: "move-1", type: "move", keyword: "flame" }],
-				discardPile: [],
+				usedCardIds: [],
 			},
 		});
 		const { state: result } = executeMove(state, "move-1", "up");
@@ -132,9 +120,9 @@ describe("executeMove", () => {
 		expect(result.player.position).toEqual({ x: 1, y: 1 });
 		// AP消費
 		expect(result.player.ap).toBe(MAX_AP - CARD_COST.move);
-		// カードが捨て札に移動
-		expect(result.deck.hand).toHaveLength(0);
-		expect(result.deck.discardPile).toHaveLength(1);
+		// カードが使用済みに記録
+		expect(result.deck.hand).toHaveLength(1);
+		expect(result.deck.usedCardIds).toHaveLength(1);
 		// 行動ログに失敗が記録
 		expect(result.actionLog.length).toBeGreaterThan(0);
 	});
@@ -152,10 +140,8 @@ describe("executeMove", () => {
 		const state = createTestState({
 			enemies,
 			deck: {
-				deckOrder: [],
-				drawPile: [],
 				hand: [{ id: "move-1", type: "move", keyword: "flame" }],
-				discardPile: [],
+				usedCardIds: [],
 			},
 		});
 		const { state: result } = executeMove(state, "move-1", "right");
@@ -164,9 +150,9 @@ describe("executeMove", () => {
 		expect(result.player.position).toEqual({ x: 3, y: 3 });
 		// AP消費
 		expect(result.player.ap).toBe(MAX_AP - CARD_COST.move);
-		// カードが捨て札に移動
-		expect(result.deck.hand).toHaveLength(0);
-		expect(result.deck.discardPile).toHaveLength(1);
+		// カードが使用済みに記録
+		expect(result.deck.hand).toHaveLength(1);
+		expect(result.deck.usedCardIds).toHaveLength(1);
 	});
 
 	it("階段タイルへの移動成功: reachedStairsがtrueで階層遷移は行わない", () => {
@@ -178,10 +164,8 @@ describe("executeMove", () => {
 			map,
 			floor: 1,
 			deck: {
-				deckOrder: [],
-				drawPile: [],
 				hand: [{ id: "move-1", type: "move", keyword: "flame" }],
-				discardPile: [],
+				usedCardIds: [],
 			},
 		});
 		const { state: result, reachedStairs } = executeMove(
@@ -204,10 +188,8 @@ describe("executeMove", () => {
 		const state = createTestState({
 			map,
 			deck: {
-				deckOrder: [],
-				drawPile: [],
 				hand: [{ id: "move-1", type: "move", keyword: "flame" }],
-				discardPile: [],
+				usedCardIds: [],
 			},
 		});
 		const {
@@ -236,10 +218,8 @@ describe("executeMove", () => {
 				maxAp: MAX_AP,
 			},
 			deck: {
-				deckOrder: [],
-				drawPile: [],
 				hand: [{ id: "move-1", type: "move", keyword: "flame" }],
-				discardPile: [],
+				usedCardIds: [],
 			},
 		});
 		const { state: result, tileEffect } = executeMove(state, "move-1", "right");
@@ -261,10 +241,8 @@ describe("executeMove", () => {
 				maxAp: MAX_AP,
 			},
 			deck: {
-				deckOrder: [],
-				drawPile: [],
 				hand: [{ id: "move-1", type: "move", keyword: "flame" }],
-				discardPile: [],
+				usedCardIds: [],
 			},
 		});
 		const { gameOver } = executeMove(state, "move-1", "right");
@@ -275,10 +253,8 @@ describe("executeMove", () => {
 	it("床タイルへの移動: tileEffectがnull", () => {
 		const state = createTestState({
 			deck: {
-				deckOrder: [],
-				drawPile: [],
 				hand: [{ id: "move-1", type: "move", keyword: "flame" }],
-				discardPile: [],
+				usedCardIds: [],
 			},
 		});
 		const { tileEffect, gameOver } = executeMove(state, "move-1", "right");
@@ -290,10 +266,8 @@ describe("executeMove", () => {
 	it("元のGameStateが変更されない（イミュータブル）", () => {
 		const state = createTestState({
 			deck: {
-				deckOrder: [],
-				drawPile: [],
 				hand: [{ id: "move-1", type: "move", keyword: "flame" }],
-				discardPile: [],
+				usedCardIds: [],
 			},
 		});
 		const originalPosition = { ...state.player.position };
@@ -311,10 +285,8 @@ describe("executeMove - visitedTiles", () => {
 	it("移動成功時に移動先が訪問済みに追加される", () => {
 		const state = createTestState({
 			deck: {
-				deckOrder: [],
-				drawPile: [],
 				hand: [{ id: "move-1", type: "move", keyword: "flame" }],
-				discardPile: [],
+				usedCardIds: [],
 			},
 		});
 		const result = executeMove(state, "move-1", "right");
@@ -331,10 +303,8 @@ describe("executeMove - visitedTiles", () => {
 				maxAp: MAX_AP,
 			},
 			deck: {
-				deckOrder: [],
-				drawPile: [],
 				hand: [{ id: "move-1", type: "move", keyword: "flame" }],
-				discardPile: [],
+				usedCardIds: [],
 			},
 		});
 		// (1,1)からupは(1,0)=壁なので失敗
@@ -347,10 +317,8 @@ describe("executeMove - visitedTiles", () => {
 		const state = createTestState({
 			rooms: [room],
 			deck: {
-				deckOrder: [],
-				drawPile: [],
 				hand: [{ id: "move-1", type: "move", keyword: "flame" }],
-				discardPile: [],
+				usedCardIds: [],
 			},
 		});
 		// (3,3)から右に移動→(4,3)は部屋内

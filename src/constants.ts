@@ -8,12 +8,12 @@ import type { EnemyCardAcquisitionConfig, EnemyType, Keyword } from "./types";
 // 行動関連
 export const MAX_AP = 3;
 export const TURN_START_AP = 3;
-export const HAND_LIMIT = 3;
+export const HAND_LIMIT = 4;
 
-// デッキ構成
+// 手札構成
 export const INITIAL_DECK = {
-	moveCards: 3,
-	attackCards: 2,
+	moveCards: 2,
+	attackCards: 1,
 	waitCards: 1,
 } as const;
 
@@ -175,9 +175,9 @@ export function getBossType(floor: number): "miniboss" | "boss" | null {
 	return null;
 }
 
-// デッキ構築（v1.2）
-export const DECK_MAX_SIZE = 6;
-export const DECK_MIN_SIZE = 6;
+// カード交換（v1.2）
+export const DECK_MAX_SIZE = 4;
+export const DECK_MIN_SIZE = 4;
 // 敵撃破時カード獲得条件（正典: docs/spec/constants.md）
 // カードマッピングは各エントリの cardType を参照
 export const ENEMY_ACQUISITION_CONDITIONS: Record<

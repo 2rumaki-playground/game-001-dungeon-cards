@@ -5,7 +5,7 @@
 
 import type { GameState } from "../types";
 import { saveGame } from "../utils/storage";
-import { resetDeck } from "./deck";
+import { resetUsedCards } from "./deck";
 import { createEmptyVisitedTiles, revealAtPosition } from "./fogOfWar";
 import { generateMapPlacement } from "./map";
 import { recordFloorReached } from "./playStats";
@@ -57,10 +57,10 @@ export function transitionFloor(state: GameState): GameState {
 	// 4. 敵を新マップの配置で初期化（階層に応じたタイプ構成）
 	next = setEnemies(next, createEnemiesForFloor(enemies, next.floor));
 
-	// 5. デッキをリセット（deckOrderの順番で山札に復元）
-	next = setDeck(next, resetDeck(next.deck));
+	// 5. 使用済みカードIDリストをリセット
+	next = setDeck(next, resetUsedCards(next.deck));
 
-	// 6. プレイヤーターン開始処理（AP リセット + 手札補充）
+	// 6. プレイヤーターン開始処理（AP リセット + 使用済みリセット）
 	next = startPlayerTurn(next);
 
 	// 7. 撃破カウント・残骸・訪問済みタイル・交換状態をリセット

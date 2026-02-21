@@ -122,6 +122,7 @@ function clearCardQueue(ctx: GameContext): void {
 	ctx.cardQueue = [];
 	ctx.ui.handRenderer.setQueuedCards(new Map());
 	ctx.ui.handRenderer.setComboHistory(ctx.state.comboHistory);
+	ctx.ui.handRenderer.setUsedCardIds(new Set(ctx.state.deck.usedCardIds));
 	ctx.ui.handRenderer.render(ctx.state.deck.hand, ctx.state.player.ap);
 }
 
@@ -420,8 +421,11 @@ async function processCardQueue(ctx: GameContext): Promise<void> {
 			return;
 		}
 
-		// 手札に該当カードが存在するか検証
-		if (!ctx.state.deck.hand.some((c) => c.id === entry.card.id)) {
+		// 手札に該当カードが存在し、使用済みでないか検証
+		if (
+			!ctx.state.deck.hand.some((c) => c.id === entry.card.id) ||
+			ctx.state.deck.usedCardIds.includes(entry.card.id)
+		) {
 			clearCardQueue(ctx);
 			return;
 		}
@@ -479,8 +483,15 @@ export function setupEventHandlers(ctx: GameContext): void {
 			if (ctx.cardQueue.some((entry) => entry.card.id === card.id)) {
 				return false;
 			}
-			// AP検証（キュー内の合計コストを考慮）
-			if (!canEnqueueCard(ctx.state.player.ap, ctx.cardQueue, card)) {
+			// AP検証（キュー内の合計コストを考慮）+ 使用済みカード検証
+			if (
+				!canEnqueueCard(
+					ctx.state.player.ap,
+					ctx.cardQueue,
+					card,
+					ctx.state.deck,
+				)
+			) {
 				return false;
 			}
 			// キューに追加
@@ -518,15 +529,8 @@ export function setupEventHandlers(ctx: GameContext): void {
 			await ctx.ui.screenTransition.fadeTransition(() => {
 				applyState(ctx, newState);
 				relayoutUI(ctx);
-				// 手札はフェードイン後に配布アニメーションで表示するためスキップ
-				render(ctx, true);
+				render(ctx);
 			});
-			// フェードイン後に手札配布アニメーション
-			await ctx.ui.handRenderer.renderWithAnimation(
-				ctx.state.deck.hand,
-				ctx.state.player.ap,
-				newState.deck.hand.length,
-			);
 		} finally {
 			ctx.isAnimating = false;
 		}
@@ -541,13 +545,8 @@ export function setupEventHandlers(ctx: GameContext): void {
 			await ctx.ui.screenTransition.fadeTransition(() => {
 				applyState(ctx, newState);
 				relayoutUI(ctx);
-				render(ctx, true);
+				render(ctx);
 			});
-			await ctx.ui.handRenderer.renderWithAnimation(
-				ctx.state.deck.hand,
-				ctx.state.player.ap,
-				newState.deck.hand.length,
-			);
 		} finally {
 			ctx.isAnimating = false;
 		}
@@ -790,13 +789,7 @@ export function setupEventHandlers(ctx: GameContext): void {
 				// プレイヤーターンバナー表示
 				await ctx.ui.turnBanner.showBanner("player");
 
-				render(ctx, true);
-
-				await ctx.ui.handRenderer.renderWithAnimation(
-					ctx.state.deck.hand,
-					ctx.state.player.ap,
-					next.deck.hand.length,
-				);
+				render(ctx);
 			} else {
 				const session = endSession(
 					"death",

@@ -128,6 +128,7 @@ export class HandRenderer {
 	private hoveredCardId: string | null = null;
 	private currentHand: Card[] = [];
 	private currentAp = 0;
+	private currentUsedCardIds: ReadonlySet<string> = new Set();
 	private currentQueuedCardIndexMap: ReadonlyMap<string, number> = new Map();
 	private currentComboHistory: ComboHistory | null = null;
 	private onCardSelect:
@@ -185,6 +186,13 @@ export class HandRenderer {
 	}
 
 	/**
+	 * 使用済みカードIDを設定
+	 */
+	setUsedCardIds(ids: ReadonlySet<string>): void {
+		this.currentUsedCardIds = ids;
+	}
+
+	/**
 	 * コンボ予告表示用のコンボ履歴を設定
 	 */
 	setComboHistory(history: ComboHistory | null): void {
@@ -206,7 +214,8 @@ export class HandRenderer {
 			const card = hand[i];
 			const x = startX + i * (CARD_WIDTH + CARD_GAP);
 			const cost = getEffectiveCardCost(card.type);
-			const enabled = currentAp >= cost;
+			const used = this.currentUsedCardIds.has(card.id);
+			const enabled = !used && currentAp >= cost;
 			const selected = card.id === this.selectedCardId;
 			const hovered = enabled && card.id === this.hoveredCardId;
 			const y = hovered ? -HOVER_LIFT : 0;
@@ -637,6 +646,7 @@ export class HandRenderer {
 		this.tooltipContainer.removeChildren();
 		this.selectedCardId = null;
 		this.hoveredCardId = null;
+		this.currentUsedCardIds = new Set();
 		this.currentQueuedCardIndexMap = new Map();
 		this.currentComboHistory = null;
 	}

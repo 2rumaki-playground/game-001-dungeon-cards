@@ -1,11 +1,11 @@
 /**
  * ターン管理
- * @see docs/spec/mvp/rules.md
+ * @see docs/spec/rules.md
  */
 
 import { TURN_START_AP } from "../constants";
 import type { GameState } from "../types";
-import { discardHand, drawCards } from "./deck";
+import { resetUsedCards } from "./deck";
 import { recordTurnEnd } from "./playStats";
 import { changeTurn, setDeck, updateComboHistory, updatePlayer } from "./state";
 
@@ -13,7 +13,7 @@ import { changeTurn, setDeck, updateComboHistory, updatePlayer } from "./state";
  * プレイヤーターン開始処理
  *
  * 1. APを最大値にリセット
- * 2. 手札を上限まで補充
+ * 2. 使用済みカードIDリストをリセット
  * 3. ターンをplayerに設定
  */
 export function startPlayerTurn(state: GameState): GameState {
@@ -26,8 +26,8 @@ export function startPlayerTurn(state: GameState): GameState {
 	// コンボ履歴リセット
 	next = updateComboHistory(next, null);
 
-	// 手札補充
-	next = setDeck(next, drawCards(next.deck));
+	// 使用済みカードIDリストをリセット
+	next = setDeck(next, resetUsedCards(next.deck));
 
 	// ターンをplayerに設定
 	next = changeTurn(next, "player");
@@ -38,17 +38,13 @@ export function startPlayerTurn(state: GameState): GameState {
 /**
  * プレイヤーターン終了処理
  *
- * 1. 手札をすべて捨て札へ移動
- * 2. 敵ターンへ遷移
+ * 1. 敵ターンへ遷移（手札はそのまま保持）
  */
 export function endPlayerTurn(state: GameState): GameState {
 	recordTurnEnd();
 
-	// 手札を捨て札へ
-	let next = setDeck(state, discardHand(state.deck));
-
 	// 敵ターンへ遷移
-	next = changeTurn(next, "enemy");
+	const next = changeTurn(state, "enemy");
 
 	return next;
 }

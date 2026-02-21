@@ -19,7 +19,7 @@ import { DIRECTION_DELTA } from "../types";
 import { applyDamageToEnemy } from "./combat";
 import { detectCombo, getComboBonus } from "./combo";
 import { getEffectiveCardCost } from "./debugCheats";
-import { playCard } from "./deck";
+import { markCardUsed } from "./deck";
 import { revealAtPosition } from "./fogOfWar";
 import { isInBounds } from "./map";
 import { recordCardUsage } from "./playStats";
@@ -33,7 +33,7 @@ import {
 import { applyTileEffect } from "./tileEffect";
 
 /**
- * AP消費 + カードを捨て札へ移動する共通ヘルパー
+ * AP消費 + カードを使用済みにする共通ヘルパー
  */
 export function consumeApAndPlayCard(
 	state: GameState,
@@ -44,7 +44,7 @@ export function consumeApAndPlayCard(
 		...p,
 		ap: p.ap - apCost,
 	}));
-	next = setDeck(next, playCard(next.deck, cardId));
+	next = setDeck(next, markCardUsed(next.deck, cardId));
 	return next;
 }
 

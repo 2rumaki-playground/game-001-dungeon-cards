@@ -31,16 +31,9 @@ async function executeFloorTransitionFlow(
 		await ctx.ui.floorBanner.show(transitioned.floor);
 		applyState(ctx, transitioned);
 		relayoutUI(ctx);
-		render(ctx, true);
+		render(ctx);
 		await ctx.ui.floorBanner.hide();
 	});
-
-	// 6. フェードイン後に手札配布アニメーション
-	await ctx.ui.handRenderer.renderWithAnimation(
-		ctx.state.deck.hand,
-		ctx.state.player.ap,
-		transitioned.deck.hand.length,
-	);
 }
 
 /**

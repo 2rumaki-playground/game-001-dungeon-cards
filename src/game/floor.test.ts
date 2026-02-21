@@ -4,9 +4,7 @@ import {
 	ENEMY_PARAMS,
 	getEnemyCount,
 	getMapSize,
-	HAND_LIMIT,
 	MAX_AP,
-	TOTAL_DECK_SIZE,
 } from "../constants";
 import { createTestEnemy } from "../test-utils/createTestFixtures";
 import type { GameMap, GameState, Tile } from "../types";
@@ -128,17 +126,19 @@ describe("transitionFloor", () => {
 		}
 	});
 
-	it("デッキが全カードdeckOrder順で山札に復元される", () => {
+	it("使用済みカードIDリストがリセットされる", () => {
 		const state = createTestState();
+		// 事前に使用済みIDを設定
+		state.deck = {
+			...state.deck,
+			usedCardIds: ["card-1", "card-2"],
+		};
 		const result = transitionFloor(state);
 
-		// 手札が補充され、捨て札は空
-		expect(result.deck.hand).toHaveLength(HAND_LIMIT);
-		expect(result.deck.discardPile).toHaveLength(0);
-		// 山札 + 手札 = 全カード数
-		expect(result.deck.drawPile.length + result.deck.hand.length).toBe(
-			TOTAL_DECK_SIZE,
-		);
+		// 使用済みIDリストが空になっている
+		expect(result.deck.usedCardIds).toHaveLength(0);
+		// 手札は維持されている
+		expect(result.deck.hand.length).toBeGreaterThan(0);
 	});
 
 	it("ターンが player に設定される", () => {
@@ -163,12 +163,16 @@ describe("transitionFloor", () => {
 		expect(result.player.ap).toBe(MAX_AP);
 	});
 
-	it("手札が補充される", () => {
+	it("手札が維持される", () => {
 		const state = createTestState();
+		const handBefore = state.deck.hand;
 		const result = transitionFloor(state);
 
-		expect(result.deck.hand.length).toBeGreaterThan(0);
-		expect(result.deck.hand).toHaveLength(HAND_LIMIT);
+		// 手札は固定で変化しない
+		expect(result.deck.hand).toHaveLength(handBefore.length);
+		expect(result.deck.hand.map((c) => c.id)).toEqual(
+			handBefore.map((c) => c.id),
+		);
 	});
 
 	it("行動ログに記録される", () => {

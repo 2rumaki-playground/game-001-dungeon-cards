@@ -39,10 +39,8 @@ export function createTestState(overrides?: Partial<GameState>): GameState {
 		},
 		enemies: [],
 		deck: {
-			deckOrder: [],
-			drawPile: [],
 			hand: [],
-			discardPile: [],
+			usedCardIds: [],
 		},
 		actionLog: [],
 		rng: new RNG(12345),

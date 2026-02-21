@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { HAND_LIMIT, INITIAL_DECK, TOTAL_DECK_SIZE } from "../constants";
+import { INITIAL_DECK, TOTAL_DECK_SIZE } from "../constants";
 import type { DeckState } from "../types";
 import { RNG } from "../utils/rng";
 import {
@@ -7,15 +7,12 @@ import {
 	createCard,
 	createInitialDeck,
 	createInitialDeckState,
-	discardHand,
-	drawCards,
 	getAllCards,
 	getTotalDeckSize,
-	playCard,
+	isCardUsed,
+	markCardUsed,
 	resetCardIdCounter,
-	resetDeck,
-	setDeckOrder,
-	willRecycle,
+	resetUsedCards,
 } from "./deck";
 
 describe("deck", () => {
@@ -27,12 +24,12 @@ describe("deck", () => {
 	});
 
 	describe("createInitialDeck", () => {
-		it("合計6枚のカードを生成する", () => {
+		it("合計4枚のカードを生成する", () => {
 			const deck = createInitialDeck(rng);
 			expect(deck).toHaveLength(TOTAL_DECK_SIZE);
 		});
 
-		it("移動カード3枚、攻撃カード2枚、待機カード1枚を含む", () => {
+		it("移動カード2枚、攻撃カード1枚、待機カード1枚を含む", () => {
 			const deck = createInitialDeck(rng);
 			const moveCards = deck.filter((c) => c.type === "move");
 			const attackCards = deck.filter((c) => c.type === "attack");
@@ -48,13 +45,11 @@ describe("deck", () => {
 			expect(new Set(ids).size).toBe(ids.length);
 		});
 
-		it("固定順で生成される（move, move, move, attack, attack, wait）", () => {
+		it("固定順で生成される（move, move, attack, wait）", () => {
 			const deck = createInitialDeck(rng);
 			expect(deck.map((c) => c.type)).toEqual([
 				"move",
 				"move",
-				"move",
-				"attack",
 				"attack",
 				"wait",
 			]);
@@ -62,357 +57,110 @@ describe("deck", () => {
 	});
 
 	describe("createInitialDeckState", () => {
-		it("山札にデッキをセットし、手札・捨て札は空", () => {
+		it("手札に4枚セットし、使用済みIDは空", () => {
 			const state = createInitialDeckState(rng);
-			expect(state.drawPile).toHaveLength(TOTAL_DECK_SIZE);
-			expect(state.hand).toHaveLength(0);
-			expect(state.discardPile).toHaveLength(0);
-		});
-
-		it("deckOrderが設定される", () => {
-			const state = createInitialDeckState(rng);
-			expect(state.deckOrder).toHaveLength(TOTAL_DECK_SIZE);
-			expect(state.deckOrder.map((c) => c.type)).toEqual(
-				state.drawPile.map((c) => c.type),
-			);
+			expect(state.hand).toHaveLength(TOTAL_DECK_SIZE);
+			expect(state.usedCardIds).toHaveLength(0);
 		});
 	});
 
-	describe("drawCards", () => {
-		it("手札上限まで山札からカードを引く", () => {
-			const deck = createInitialDeckState(rng);
-			const result = drawCards(deck);
-			expect(result.hand).toHaveLength(HAND_LIMIT);
-			expect(result.drawPile).toHaveLength(TOTAL_DECK_SIZE - HAND_LIMIT);
-		});
-
-		it("指定枚数だけカードを引く", () => {
-			const deck = createInitialDeckState(rng);
-			const result = drawCards(deck, 2);
-			expect(result.hand).toHaveLength(2);
-			expect(result.drawPile).toHaveLength(TOTAL_DECK_SIZE - 2);
-		});
-
-		it("山札が不足する場合は捨て札をdeckOrder順で復元して山札に戻す", () => {
-			const deckOrder = [
-				{ id: "card-1", type: "move" as const, keyword: "flame" as const },
-				{ id: "card-2", type: "attack" as const, keyword: "flame" as const },
-				{ id: "card-3", type: "attack" as const, keyword: "flame" as const },
-				{ id: "card-4", type: "wait" as const, keyword: "flame" as const },
-			];
+	describe("markCardUsed", () => {
+		it("カードを使用済みにする", () => {
 			const deck: DeckState = {
-				deckOrder,
-				drawPile: [{ id: "card-1", type: "move", keyword: "flame" }],
-				hand: [],
-				discardPile: [
-					{ id: "card-2", type: "attack", keyword: "flame" },
-					{ id: "card-3", type: "attack", keyword: "flame" },
-					{ id: "card-4", type: "wait", keyword: "flame" },
-				],
-			};
-			const result = drawCards(deck, 3);
-			expect(result.hand).toHaveLength(3);
-			expect(result.drawPile).toHaveLength(1);
-			expect(result.discardPile).toHaveLength(0);
-		});
-
-		it("捨て札復元時にdeckOrderの順番が維持される", () => {
-			const deckOrder = [
-				{ id: "card-1", type: "move" as const, keyword: "flame" as const },
-				{ id: "card-2", type: "attack" as const, keyword: "flame" as const },
-				{ id: "card-3", type: "wait" as const, keyword: "flame" as const },
-			];
-			const deck: DeckState = {
-				deckOrder,
-				drawPile: [],
-				hand: [],
-				discardPile: [
-					{ id: "card-3", type: "wait", keyword: "flame" },
-					{ id: "card-1", type: "move", keyword: "flame" },
-					{ id: "card-2", type: "attack", keyword: "flame" },
-				],
-			};
-			const result = drawCards(deck, 3);
-			// deckOrderの順番（card-1, card-2, card-3）で復元される
-			expect(result.hand.map((c) => c.id)).toEqual([
-				"card-1",
-				"card-2",
-				"card-3",
-			]);
-		});
-
-		it("山札・捨て札の合計が引く枚数に満たない場合は引ける枚数だけ引く", () => {
-			const deck: DeckState = {
-				deckOrder: [
-					{ id: "card-1", type: "move", keyword: "flame" },
-					{ id: "card-2", type: "attack", keyword: "flame" },
-				],
-				drawPile: [{ id: "card-1", type: "move", keyword: "flame" }],
-				hand: [],
-				discardPile: [{ id: "card-2", type: "attack", keyword: "flame" }],
-			};
-			const result = drawCards(deck, 5);
-			expect(result.hand).toHaveLength(2);
-		});
-
-		it("手札が既にある場合は上限まで補充する", () => {
-			const deck = createInitialDeckState(rng);
-			// 手札に1枚ある状態を作る
-			const hand = deck.drawPile.slice(0, 1);
-			const drawPile = deck.drawPile.slice(1);
-			const deckWithHand: DeckState = {
-				...deck,
-				hand,
-				drawPile,
-			};
-			const result = drawCards(deckWithHand);
-			expect(result.hand).toHaveLength(HAND_LIMIT);
-		});
-
-		it("deckOrderが維持される", () => {
-			const deck = createInitialDeckState(rng);
-			const result = drawCards(deck);
-			expect(result.deckOrder).toEqual(deck.deckOrder);
-		});
-	});
-
-	describe("playCard", () => {
-		it("手札からカードを捨て札に移動する", () => {
-			const card = {
-				id: "card-1",
-				type: "move" as const,
-				keyword: "flame" as const,
-			};
-			const deck: DeckState = {
-				deckOrder: [card, { id: "card-2", type: "attack", keyword: "flame" }],
-				drawPile: [],
-				hand: [card, { id: "card-2", type: "attack", keyword: "flame" }],
-				discardPile: [],
-			};
-			const result = playCard(deck, "card-1");
-			expect(result.hand).toHaveLength(1);
-			expect(result.hand[0].id).toBe("card-2");
-			expect(result.discardPile).toHaveLength(1);
-			expect(result.discardPile[0].id).toBe("card-1");
-		});
-
-		it("存在しないカードIDを指定した場合はデッキを変更しない", () => {
-			const deck: DeckState = {
-				deckOrder: [{ id: "card-1", type: "move", keyword: "flame" }],
-				drawPile: [],
-				hand: [{ id: "card-1", type: "move", keyword: "flame" }],
-				discardPile: [],
-			};
-			const result = playCard(deck, "nonexistent");
-			expect(result).toBe(deck);
-		});
-	});
-
-	describe("discardHand", () => {
-		it("手札をすべて捨て札に移動する", () => {
-			const deck: DeckState = {
-				deckOrder: [
-					{ id: "card-1", type: "move", keyword: "flame" },
-					{ id: "card-2", type: "attack", keyword: "flame" },
-					{ id: "card-3", type: "wait", keyword: "flame" },
-				],
-				drawPile: [{ id: "card-3", type: "wait", keyword: "flame" }],
 				hand: [
 					{ id: "card-1", type: "move", keyword: "flame" },
 					{ id: "card-2", type: "attack", keyword: "flame" },
 				],
-				discardPile: [],
+				usedCardIds: [],
 			};
-			const result = discardHand(deck);
-			expect(result.hand).toHaveLength(0);
-			expect(result.discardPile).toHaveLength(2);
-			expect(result.drawPile).toHaveLength(1);
+			const result = markCardUsed(deck, "card-1");
+			expect(result.usedCardIds).toContain("card-1");
+			expect(result.hand).toHaveLength(2);
+		});
+
+		it("既に使用済みのカードを再度マークしても変化しない", () => {
+			const deck: DeckState = {
+				hand: [{ id: "card-1", type: "move", keyword: "flame" }],
+				usedCardIds: ["card-1"],
+			};
+			const result = markCardUsed(deck, "card-1");
+			expect(result).toBe(deck);
 		});
 	});
 
-	describe("resetDeck", () => {
-		it("全カードをdeckOrderの順番で山札に復元する", () => {
-			const deckOrder = [
-				{ id: "card-1", type: "move" as const, keyword: "flame" as const },
-				{ id: "card-2", type: "attack" as const, keyword: "flame" as const },
-				{ id: "card-3", type: "wait" as const, keyword: "flame" as const },
-			];
+	describe("resetUsedCards", () => {
+		it("使用済みカードIDリストをリセットする", () => {
 			const deck: DeckState = {
-				deckOrder,
-				drawPile: [{ id: "card-1", type: "move", keyword: "flame" }],
-				hand: [{ id: "card-2", type: "attack", keyword: "flame" }],
-				discardPile: [{ id: "card-3", type: "wait", keyword: "flame" }],
-			};
-			const result = resetDeck(deck);
-			expect(result.drawPile).toHaveLength(3);
-			expect(result.hand).toHaveLength(0);
-			expect(result.discardPile).toHaveLength(0);
-			expect(result.drawPile.map((c) => c.id)).toEqual([
-				"card-1",
-				"card-2",
-				"card-3",
-			]);
-		});
-
-		it("deckOrderが維持される", () => {
-			const deckOrder = [
-				{ id: "card-1", type: "move" as const, keyword: "flame" as const },
-				{ id: "card-2", type: "attack" as const, keyword: "flame" as const },
-			];
-			const deck: DeckState = {
-				deckOrder,
-				drawPile: [],
-				hand: [],
-				discardPile: [
+				hand: [
 					{ id: "card-1", type: "move", keyword: "flame" },
 					{ id: "card-2", type: "attack", keyword: "flame" },
 				],
+				usedCardIds: ["card-1", "card-2"],
 			};
-			const result = resetDeck(deck);
-			expect(result.deckOrder).toEqual(deckOrder);
+			const result = resetUsedCards(deck);
+			expect(result.usedCardIds).toHaveLength(0);
+			expect(result.hand).toHaveLength(2);
 		});
 	});
 
-	describe("setDeckOrder", () => {
-		it("新しい並び順をdeckOrderとdrawPileにセットする", () => {
-			const originalOrder = [
-				{ id: "card-1", type: "move" as const, keyword: "flame" as const },
-				{ id: "card-2", type: "attack" as const, keyword: "flame" as const },
-				{ id: "card-3", type: "wait" as const, keyword: "flame" as const },
-			];
+	describe("isCardUsed", () => {
+		it("使用済みカードの場合trueを返す", () => {
 			const deck: DeckState = {
-				deckOrder: originalOrder,
-				drawPile: originalOrder,
-				hand: [],
-				discardPile: [],
+				hand: [{ id: "card-1", type: "move", keyword: "flame" }],
+				usedCardIds: ["card-1"],
 			};
-			const newOrder = [
-				{ id: "card-3", type: "wait" as const, keyword: "flame" as const },
-				{ id: "card-1", type: "move" as const, keyword: "flame" as const },
-				{ id: "card-2", type: "attack" as const, keyword: "flame" as const },
-			];
-			const result = setDeckOrder(deck, newOrder);
-			expect(result.deckOrder.map((c) => c.id)).toEqual([
-				"card-3",
-				"card-1",
-				"card-2",
-			]);
-			expect(result.drawPile.map((c) => c.id)).toEqual([
-				"card-3",
-				"card-1",
-				"card-2",
-			]);
-			expect(result.hand).toHaveLength(0);
-			expect(result.discardPile).toHaveLength(0);
+			expect(isCardUsed(deck, "card-1")).toBe(true);
+		});
+
+		it("未使用カードの場合falseを返す", () => {
+			const deck: DeckState = {
+				hand: [{ id: "card-1", type: "move", keyword: "flame" }],
+				usedCardIds: [],
+			};
+			expect(isCardUsed(deck, "card-1")).toBe(false);
 		});
 	});
 
 	describe("getAllCards", () => {
-		it("3ゾーンの全カードを結合した配列を返す", () => {
+		it("手札の全カードを返す", () => {
 			const deck: DeckState = {
-				deckOrder: [],
-				drawPile: [{ id: "card-1", type: "move", keyword: "flame" }],
-				hand: [{ id: "card-2", type: "attack", keyword: "flame" }],
-				discardPile: [{ id: "card-3", type: "wait", keyword: "flame" }],
+				hand: [
+					{ id: "card-1", type: "move", keyword: "flame" },
+					{ id: "card-2", type: "attack", keyword: "flame" },
+				],
+				usedCardIds: [],
 			};
 			const result = getAllCards(deck);
-			expect(result).toHaveLength(3);
-			expect(result.map((c) => c.id)).toEqual(["card-1", "card-2", "card-3"]);
+			expect(result).toHaveLength(2);
+			expect(result.map((c) => c.id)).toEqual(["card-1", "card-2"]);
 		});
 
 		it("空デッキで空配列を返す", () => {
 			const deck: DeckState = {
-				deckOrder: [],
-				drawPile: [],
 				hand: [],
-				discardPile: [],
+				usedCardIds: [],
 			};
 			expect(getAllCards(deck)).toHaveLength(0);
 		});
 	});
 
-	describe("willRecycle", () => {
-		it("山札がドロー枚数より少なく捨て札がある場合はtrueを返す", () => {
-			const deck: DeckState = {
-				deckOrder: [],
-				drawPile: [
-					{ id: "card-1", type: "move" as const, keyword: "flame" as const },
-				],
-				hand: [],
-				discardPile: [
-					{ id: "card-2", type: "attack" as const, keyword: "flame" as const },
-					{ id: "card-3", type: "wait" as const, keyword: "flame" as const },
-				],
-			};
-			expect(willRecycle(deck)).toBe(true);
-		});
-
-		it("山札がドロー枚数以上の場合はfalseを返す", () => {
-			const deck: DeckState = {
-				deckOrder: [],
-				drawPile: Array.from({ length: HAND_LIMIT }, (_, i) => ({
-					id: `card-${i + 1}`,
-					type: "move" as const,
-					keyword: "flame" as const,
-				})),
-				hand: [],
-				discardPile: [],
-			};
-			expect(willRecycle(deck)).toBe(false);
-		});
-
-		it("捨て札が空の場合はfalseを返す", () => {
-			const deck: DeckState = {
-				deckOrder: [],
-				drawPile: [
-					{ id: "card-1", type: "move" as const, keyword: "flame" as const },
-				],
-				hand: [],
-				discardPile: [],
-			};
-			expect(willRecycle(deck)).toBe(false);
-		});
-
-		it("手札が上限の場合はfalseを返す", () => {
-			const deck: DeckState = {
-				deckOrder: [],
-				drawPile: [],
-				hand: Array.from({ length: HAND_LIMIT }, (_, i) => ({
-					id: `card-${i + 1}`,
-					type: "move" as const,
-					keyword: "flame" as const,
-				})),
-				discardPile: [
-					{ id: "card-99", type: "attack" as const, keyword: "flame" as const },
-				],
-			};
-			expect(willRecycle(deck)).toBe(false);
-		});
-	});
-
 	describe("getTotalDeckSize", () => {
-		it("3ゾーンの合計枚数を返す", () => {
+		it("手札の枚数を返す", () => {
 			const deck: DeckState = {
-				deckOrder: [],
-				drawPile: [
+				hand: [
 					{ id: "card-1", type: "move", keyword: "flame" },
 					{ id: "card-2", type: "attack", keyword: "flame" },
+					{ id: "card-3", type: "wait", keyword: "flame" },
 				],
-				hand: [{ id: "card-3", type: "move", keyword: "flame" }],
-				discardPile: [
-					{ id: "card-4", type: "wait", keyword: "flame" },
-					{ id: "card-5", type: "move", keyword: "flame" },
-				],
+				usedCardIds: [],
 			};
-			expect(getTotalDeckSize(deck)).toBe(5);
+			expect(getTotalDeckSize(deck)).toBe(3);
 		});
 
 		it("空デッキで0を返す", () => {
 			const deck: DeckState = {
-				deckOrder: [],
-				drawPile: [],
 				hand: [],
-				discardPile: [],
+				usedCardIds: [],
 			};
 			expect(getTotalDeckSize(deck)).toBe(0);
 		});

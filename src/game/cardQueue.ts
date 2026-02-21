@@ -3,7 +3,7 @@
  * @see https://github.com/2rumaki-playground/game-001-dungeon-cards/issues/263
  */
 
-import type { Card, Direction } from "../types";
+import type { Card, DeckState, Direction } from "../types";
 import { getEffectiveCardCost } from "./debugCheats";
 
 /** 予約済みカードエントリ */
@@ -42,13 +42,19 @@ export function buildQueuedCardIndexMap(
  * @param currentAp 現在のAP（先行カード消費分は反映済みの状態AP）
  * @param queue 現在のキュー
  * @param card 予約したいカード
+ * @param deck デッキ状態（使用済みカード判定用）
  * @returns 予約可能ならtrue
  */
 export function canEnqueueCard(
 	currentAp: number,
 	queue: QueuedCard[],
 	card: Card,
+	deck?: DeckState,
 ): boolean {
+	// 使用済みカードは予約不可
+	if (deck?.usedCardIds.includes(card.id)) {
+		return false;
+	}
 	const pendingCost = getQueuedApCost(queue);
 	const availableAp = currentAp - pendingCost;
 	return availableAp >= getEffectiveCardCost(card.type);
