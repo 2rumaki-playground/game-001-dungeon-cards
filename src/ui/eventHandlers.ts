@@ -25,7 +25,7 @@ import {
 	startPlayerTurn,
 } from "../game";
 import { buildQueuedCardIndexMap, canEnqueueCard } from "../game/cardQueue";
-import { getEffectiveCardCost, resetDebugCheats } from "../game/debugCheats";
+import { resetDebugCheats } from "../game/debugCheats";
 import { reorderHand } from "../game/deck";
 import { endSession, startSession } from "../game/playStats";
 import { setDeck } from "../game/state";
@@ -124,7 +124,7 @@ function clearCardQueue(ctx: GameContext): void {
 	ctx.ui.handRenderer.setQueuedCards(new Map());
 	ctx.ui.handRenderer.setComboHistory(ctx.state.comboHistory);
 	ctx.ui.handRenderer.setUsedCardIds(new Set(ctx.state.deck.usedCardIds));
-	ctx.ui.handRenderer.render(ctx.state.deck.hand, ctx.state.player.ap);
+	ctx.ui.handRenderer.render(ctx.state.deck.hand);
 }
 
 /**
@@ -416,12 +416,6 @@ async function processCardQueue(ctx: GameContext): Promise<void> {
 		if (!entry) break;
 		ctx.ui.handRenderer.setQueuedCards(buildQueuedCardIndexMap(ctx.cardQueue));
 
-		// 予約時点と状態が変わっている可能性があるため、AP再検証
-		if (ctx.state.player.ap < getEffectiveCardCost(entry.card.type)) {
-			clearCardQueue(ctx);
-			return;
-		}
-
 		// 手札に該当カードが存在し、使用済みでないか検証
 		if (
 			!ctx.state.deck.hand.some((c) => c.id === entry.card.id) ||
@@ -486,19 +480,8 @@ export function setupEventHandlers(ctx: GameContext): void {
 			if (card.type !== "wait" && !direction) {
 				return false;
 			}
-			// 既に同一カードがキューに存在する場合は重複予約しない
-			if (ctx.cardQueue.some((entry) => entry.card.id === card.id)) {
-				return false;
-			}
-			// AP検証（キュー内の合計コストを考慮）+ 使用済みカード検証
-			if (
-				!canEnqueueCard(
-					ctx.state.player.ap,
-					ctx.cardQueue,
-					card,
-					ctx.state.deck,
-				)
-			) {
+			// 使用済み・重複カード検証
+			if (!canEnqueueCard(ctx.cardQueue, card, ctx.state.deck)) {
 				return false;
 			}
 			// キューに追加

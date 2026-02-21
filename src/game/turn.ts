@@ -3,28 +3,20 @@
  * @see docs/spec/rules.md
  */
 
-import { TURN_START_AP } from "../constants";
 import type { GameState } from "../types";
 import { resetUsedCards } from "./deck";
 import { recordTurnEnd } from "./playStats";
-import { changeTurn, setDeck, updateComboHistory, updatePlayer } from "./state";
+import { changeTurn, setDeck, updateComboHistory } from "./state";
 
 /**
  * プレイヤーターン開始処理
  *
- * 1. APを最大値にリセット
- * 2. 使用済みカードIDリストをリセット
- * 3. ターンをplayerに設定
+ * 1. 使用済みカードIDリストをリセット
+ * 2. ターンをplayerに設定
  */
 export function startPlayerTurn(state: GameState): GameState {
-	// APリセット
-	let next = updatePlayer(state, (p) => ({
-		...p,
-		ap: TURN_START_AP,
-	}));
-
 	// コンボ履歴リセット
-	next = updateComboHistory(next, null);
+	let next = updateComboHistory(state, null);
 
 	// 使用済みカードIDリストをリセット
 	next = setDeck(next, resetUsedCards(next.deck));

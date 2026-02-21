@@ -46,21 +46,6 @@ describe("cardRowRenderer", () => {
 			expect(nameText?.style.fontWeight).toBe("bold");
 		});
 
-		it("APコストが表示される", () => {
-			const row = createCardListRow({ cardType: "move" });
-			const texts = row.children.filter((c) => c instanceof Text) as Text[];
-			const costText = texts.find((t) => t.text.includes("AP:"));
-			expect(costText).toBeDefined();
-			expect(costText?.style.fontSize).toBe(11);
-		});
-
-		it("APコスト0のカードはコストテキストが空", () => {
-			const row = createCardListRow({ cardType: "wait" });
-			const texts = row.children.filter((c) => c instanceof Text) as Text[];
-			const costText = texts.find((t) => t.text.includes("AP:"));
-			expect(costText).toBeUndefined();
-		});
-
 		it("枚数を指定すると名前行に枚数が表示される", () => {
 			const row = createCardListRow({ cardType: "move", count: 3 });
 			const texts = row.children.filter((c) => c instanceof Text) as Text[];
@@ -77,8 +62,8 @@ describe("cardRowRenderer", () => {
 
 		it("レアリティバーが描画される", () => {
 			const row = createCardListRow({ cardType: "jump" });
-			// 背景 + レアリティバー + 名前テキスト + 効果テキスト = 最低4つの子要素
-			expect(row.children.length).toBeGreaterThanOrEqual(4);
+			// 背景 + レアリティバー + 名前テキスト = 最低3つの子要素
+			expect(row.children.length).toBeGreaterThanOrEqual(3);
 		});
 
 		it("幅を指定できる", () => {

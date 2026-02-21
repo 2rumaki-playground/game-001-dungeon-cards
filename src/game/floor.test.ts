@@ -4,7 +4,6 @@ import {
 	ENEMY_PARAMS,
 	getEnemyCount,
 	getMapSize,
-	MAX_AP,
 } from "../constants";
 import { createTestEnemy } from "../test-utils/createTestFixtures";
 import type { GameMap, GameState, Tile } from "../types";
@@ -55,8 +54,6 @@ function createTestState(overrides?: Partial<GameState>): GameState {
 			position: { x: 3, y: 3 },
 			hp: 7,
 			maxHp: 10,
-			ap: 1,
-			maxAp: MAX_AP,
 		},
 		enemies: [createTestEnemy("normal", { x: 2, y: 2 })],
 		deck: createInitialDeckState(rng),
@@ -104,8 +101,6 @@ describe("transitionFloor", () => {
 				position: { x: 3, y: 3 },
 				hp: 7,
 				maxHp: 10,
-				ap: 1,
-				maxAp: MAX_AP,
 			},
 		});
 		const result = transitionFloor(state);
@@ -146,21 +141,6 @@ describe("transitionFloor", () => {
 		const result = transitionFloor(state);
 
 		expect(result.turn).toBe("player");
-	});
-
-	it("APが最大値にリセットされる", () => {
-		const state = createTestState({
-			player: {
-				position: { x: 3, y: 3 },
-				hp: 7,
-				maxHp: 10,
-				ap: 0,
-				maxAp: MAX_AP,
-			},
-		});
-		const result = transitionFloor(state);
-
-		expect(result.player.ap).toBe(MAX_AP);
 	});
 
 	it("手札が維持される", () => {

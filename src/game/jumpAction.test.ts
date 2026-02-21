@@ -1,11 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-	CARD_COST,
-	ENEMY_HP,
-	MAX_AP,
-	PLAYER_INITIAL_HP,
-	TREASURE_HEAL,
-} from "../constants";
+import { ENEMY_HP, PLAYER_INITIAL_HP, TREASURE_HEAL } from "../constants";
 import {
 	createTestMap,
 	createTestState,
@@ -14,14 +8,12 @@ import type { Direction } from "../types";
 import { executeJump } from "./action";
 
 describe("executeJump", () => {
-	it("ジャンプ成功（2マス先が床）: 位置2マス先・AP消費・カード捨て札移動", () => {
+	it("ジャンプ成功（2マス先が床）: 位置2マス先・カード使用済み記録", () => {
 		const state = createTestState({
 			player: {
 				position: { x: 3, y: 3 },
 				hp: PLAYER_INITIAL_HP,
 				maxHp: PLAYER_INITIAL_HP,
-				ap: MAX_AP,
-				maxAp: MAX_AP,
 			},
 			deck: {
 				hand: [{ id: "jump-1", type: "jump", keyword: "flame" }],
@@ -35,7 +27,6 @@ describe("executeJump", () => {
 		} = executeJump(state, "jump-1", "right");
 
 		expect(result.player.position).toEqual({ x: 5, y: 3 });
-		expect(result.player.ap).toBe(MAX_AP - CARD_COST.jump);
 		expect(result.deck.hand).toHaveLength(1);
 		expect(result.deck.usedCardIds).toHaveLength(1);
 		expect(result.deck.usedCardIds[0]).toBe("jump-1");
@@ -79,14 +70,12 @@ describe("executeJump", () => {
 			{ x: 3, y: 3 },
 			{ x: 3, y: 3 },
 		],
-	])("%s: 移動なし・AP消費", (_, createOverrides, direction, startPos, expectedPos) => {
+	])("%s: 移動なし・カード使用済み", (_, createOverrides, direction, startPos, expectedPos) => {
 		const state = createTestState({
 			player: {
 				position: startPos,
 				hp: PLAYER_INITIAL_HP,
 				maxHp: PLAYER_INITIAL_HP,
-				ap: MAX_AP,
-				maxAp: MAX_AP,
 			},
 			...createOverrides(),
 			deck: {
@@ -97,7 +86,6 @@ describe("executeJump", () => {
 		const { state: result, jumped } = executeJump(state, "jump-1", direction);
 
 		expect(result.player.position).toEqual(expectedPos);
-		expect(result.player.ap).toBe(MAX_AP - CARD_COST.jump);
 		expect(jumped).toBe(false);
 		expect(result.deck.hand).toHaveLength(1);
 		expect(result.deck.usedCardIds).toHaveLength(1);
@@ -142,8 +130,6 @@ describe("executeJump", () => {
 				position: { x: 3, y: 3 },
 				hp: PLAYER_INITIAL_HP,
 				maxHp: PLAYER_INITIAL_HP,
-				ap: MAX_AP,
-				maxAp: MAX_AP,
 			},
 			deck: {
 				hand: [{ id: "jump-1", type: "jump", keyword: "flame" }],
@@ -173,8 +159,6 @@ describe("executeJump", () => {
 				position: { x: 3, y: 3 },
 				hp: PLAYER_INITIAL_HP,
 				maxHp: PLAYER_INITIAL_HP,
-				ap: MAX_AP,
-				maxAp: MAX_AP,
 			},
 			deck: {
 				hand: [{ id: "jump-1", type: "jump", keyword: "flame" }],
@@ -202,8 +186,6 @@ describe("executeJump", () => {
 				position: { x: 3, y: 3 },
 				hp: PLAYER_INITIAL_HP,
 				maxHp: PLAYER_INITIAL_HP,
-				ap: MAX_AP,
-				maxAp: MAX_AP,
 			},
 			deck: {
 				hand: [{ id: "jump-1", type: "jump", keyword: "flame" }],
@@ -227,8 +209,6 @@ describe("executeJump", () => {
 				position: { x: 3, y: 3 },
 				hp: 1,
 				maxHp: PLAYER_INITIAL_HP,
-				ap: MAX_AP,
-				maxAp: MAX_AP,
 			},
 			deck: {
 				hand: [{ id: "jump-1", type: "jump", keyword: "flame" }],
@@ -254,8 +234,6 @@ describe("executeJump", () => {
 				position: { x: 3, y: 3 },
 				hp: PLAYER_INITIAL_HP - 5,
 				maxHp: PLAYER_INITIAL_HP,
-				ap: MAX_AP,
-				maxAp: MAX_AP,
 			},
 			deck: {
 				hand: [{ id: "jump-1", type: "jump", keyword: "flame" }],
@@ -281,8 +259,6 @@ describe("executeJump", () => {
 				position: { x: 3, y: 3 },
 				hp: PLAYER_INITIAL_HP - 5,
 				maxHp: PLAYER_INITIAL_HP,
-				ap: MAX_AP,
-				maxAp: MAX_AP,
 			},
 			deck: {
 				hand: [{ id: "jump-1", type: "jump", keyword: "flame" }],
@@ -304,8 +280,6 @@ describe("executeJump", () => {
 				position: { x: 3, y: 3 },
 				hp: PLAYER_INITIAL_HP,
 				maxHp: PLAYER_INITIAL_HP,
-				ap: MAX_AP,
-				maxAp: MAX_AP,
 			},
 			deck: {
 				hand: [{ id: "jump-1", type: "jump", keyword: "flame" }],
@@ -326,12 +300,10 @@ describe("executeJump", () => {
 			},
 		});
 		const originalPosition = { ...state.player.position };
-		const originalAp = state.player.ap;
 
 		executeJump(state, "jump-1", "right");
 
 		expect(state.player.position).toEqual(originalPosition);
-		expect(state.player.ap).toBe(originalAp);
 		expect(state.deck.hand).toHaveLength(1);
 	});
 });
@@ -354,8 +326,6 @@ describe("executeJump - visitedTiles", () => {
 				position: { x: 1, y: 1 },
 				hp: PLAYER_INITIAL_HP,
 				maxHp: PLAYER_INITIAL_HP,
-				ap: MAX_AP,
-				maxAp: MAX_AP,
 			},
 			deck: {
 				hand: [{ id: "jump-1", type: "jump", keyword: "flame" }],

@@ -44,25 +44,6 @@ describe("executeDebugOneshotKill", () => {
 		expect(result.defeatedEnemyCount).toBe(3);
 	});
 
-	it("APが消費されない", () => {
-		const state = createTestState({
-			enemies: [
-				{
-					id: "enemy-1",
-					type: "normal",
-					position: { x: 4, y: 3 },
-					hp: 3,
-					maxHp: 3,
-				},
-			],
-		});
-		const apBefore = state.player.ap;
-
-		const result = executeDebugOneshotKill(state, "enemy-1");
-
-		expect(result.player.ap).toBe(apBefore);
-	});
-
 	it("存在しない敵IDの場合は無操作", () => {
 		const state = createTestState({
 			enemies: [
@@ -134,15 +115,6 @@ describe("executeDebugTeleport", () => {
 		const { state: result } = executeDebugTeleport(state, { x: 5, y: 5 });
 
 		expect(result.player.position).toEqual({ x: 5, y: 5 });
-	});
-
-	it("APが消費されない", () => {
-		const state = createTestState();
-		const apBefore = state.player.ap;
-
-		const { state: result } = executeDebugTeleport(state, { x: 5, y: 5 });
-
-		expect(result.player.ap).toBe(apBefore);
 	});
 
 	it("手札が消費されない", () => {

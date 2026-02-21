@@ -36,13 +36,9 @@ const TOOLTIP_PADDING = 10;
 /**
  * カードツールチップのビューを生成
  * @param cardType カード種別
- * @param cost APコスト
  * @returns コンテナと高さ
  */
-export function createCardTooltip(
-	cardType: CardType,
-	cost: number,
-): {
+export function createCardTooltip(cardType: CardType): {
 	container: Container;
 	height: number;
 } {
@@ -67,23 +63,6 @@ export function createCardTooltip(
 	nameText.x = TOOLTIP_PADDING;
 	nameText.y = yOffset;
 	yOffset += 20;
-
-	// APコスト（cost > 0 の場合のみ）
-	let costText: Text | null = null;
-	if (cost > 0) {
-		costText = new Text({
-			text: `AP: ${cost}`,
-			style: {
-				fontSize: 12,
-				fontFamily: "sans-serif",
-				fill: cost >= 2 ? 0xffaa44 : 0xcccccc,
-				fontWeight: cost >= 2 ? "bold" : "normal",
-			},
-		});
-		costText.x = TOOLTIP_PADDING;
-		costText.y = yOffset;
-		yOffset += 18;
-	}
 
 	// 詳細説明
 	const descText = new Text({
@@ -141,7 +120,6 @@ export function createCardTooltip(
 
 	// テキスト要素を追加
 	tooltip.addChild(nameText);
-	if (costText) tooltip.addChild(costText);
 	tooltip.addChild(descText);
 	tooltip.addChild(rarityText);
 

@@ -3,7 +3,6 @@ import {
 	BOSS_SKILL,
 	ENEMY_HP,
 	ENEMY_PARAMS,
-	MAX_AP,
 	PLAYER_INITIAL_HP,
 } from "../constants";
 import {
@@ -142,8 +141,6 @@ describe("executeEnemyTurn - 敵タイプ別行動", () => {
 				position: { x: 1, y: 1 },
 				hp: PLAYER_INITIAL_HP,
 				maxHp: PLAYER_INITIAL_HP,
-				ap: MAX_AP,
-				maxAp: MAX_AP,
 			},
 			enemies,
 		});

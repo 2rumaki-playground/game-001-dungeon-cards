@@ -21,7 +21,6 @@ const COLORS_OFF = { bg: 0x3a3a3a, border: 0x666666 } as const;
 /** ボタン定義 */
 const CHEAT_BUTTONS: { key: keyof DebugCheats; label: string }[] = [
 	{ key: "invincible", label: "無敵" },
-	{ key: "infiniteAp", label: "AP無限" },
 	{ key: "fullMapVisible", label: "全マップ可視" },
 	{ key: "skipEnemyTurn", label: "敵スキップ" },
 	{ key: "showEnemyAi", label: "敵AI可視化" },

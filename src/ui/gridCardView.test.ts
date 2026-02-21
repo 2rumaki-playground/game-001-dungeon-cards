@@ -1,6 +1,5 @@
 import { Container, Graphics, Text } from "pixi.js";
 import { describe, expect, it } from "vitest";
-import { CARD_COST } from "../constants";
 import type { CardType } from "../types";
 import { CARD_COLORS, CARD_TYPE_NAME, CARD_TYPE_SYMBOL } from "./cardConstants";
 import { createGridCardView } from "./gridCardView";
@@ -62,35 +61,6 @@ describe("gridCardView", () => {
 			expect(CARD_COLORS.attack).toBeDefined();
 		});
 
-		it("APコスト>=2のカードはオレンジ色でbold表示", () => {
-			const view = createGridCardView("strong_attack");
-			const texts = view.children.filter((c) => c instanceof Text) as Text[];
-			const costText = texts.find((t) =>
-				t.text.includes(`AP: ${CARD_COST.strong_attack}`),
-			);
-			expect(costText).toBeDefined();
-			expect(costText?.style.fill).toBe(0xffaa44);
-			expect(costText?.style.fontWeight).toBe("bold");
-		});
-
-		it("APコスト=1のカードは灰色で通常表示", () => {
-			const view = createGridCardView("move");
-			const texts = view.children.filter((c) => c instanceof Text) as Text[];
-			const costText = texts.find((t) =>
-				t.text.includes(`AP: ${CARD_COST.move}`),
-			);
-			expect(costText).toBeDefined();
-			expect(costText?.style.fill).toBe(0xcccccc);
-			expect(costText?.style.fontWeight).toBe("normal");
-		});
-
-		it("APコスト=0のカードはコストテキストが空", () => {
-			const view = createGridCardView("wait");
-			const texts = view.children.filter((c) => c instanceof Text) as Text[];
-			const costText = texts.find((t) => t.text.includes("AP:"));
-			expect(costText).toBeUndefined();
-		});
-
 		it("シンボルのX位置がカード幅の中央", () => {
 			const view = createGridCardView("move");
 			const texts = view.children.filter((c) => c instanceof Text) as Text[];
@@ -98,9 +68,9 @@ describe("gridCardView", () => {
 			expect(symbol?.x).toBe(CARD_WIDTH / 2);
 		});
 
-		it("子要素が4つ（背景、シンボル、名前、コスト）", () => {
+		it("子要素が3つ（背景、シンボル、名前）", () => {
 			const view = createGridCardView("attack");
-			expect(view.children.length).toBe(4);
+			expect(view.children.length).toBe(3);
 		});
 
 		it("CARD_WIDTHが90px、CARD_HEIGHTが120px", () => {

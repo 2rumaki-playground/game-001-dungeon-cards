@@ -4,7 +4,6 @@
  */
 
 import { Container, Graphics, Text } from "pixi.js";
-import { getEffectiveCardCost } from "../game/debugCheats";
 import type { Card, CardType, Rarity } from "../types";
 import { Easing, tween } from "../utils/tween";
 import {
@@ -511,21 +510,6 @@ export class RewardScreen {
 		rarityText.y = 62;
 		cardContainer.addChild(rarityText);
 
-		// APコスト
-		const cost = getEffectiveCardCost(cardType);
-		const costText = new Text({
-			text: cost > 0 ? `AP: ${cost}` : "",
-			style: {
-				fontSize: 12,
-				fontFamily: "sans-serif",
-				fill: 0xcccccc,
-			},
-		});
-		costText.anchor.set(0.5, 0);
-		costText.x = REWARD_CARD_WIDTH / 2;
-		costText.y = 78;
-		cardContainer.addChild(costText);
-
 		return cardContainer;
 	}
 
@@ -901,11 +885,8 @@ export class RewardScreen {
 		cardWidth: number,
 	): void {
 		this.tooltipContainer.removeChildren();
-		const cost = getEffectiveCardCost(cardType);
-		const { container: tooltip, height: tooltipHeight } = createCardTooltip(
-			cardType,
-			cost,
-		);
+		const { container: tooltip, height: tooltipHeight } =
+			createCardTooltip(cardType);
 		tooltip.x = cardX + cardWidth / 2 - TOOLTIP_WIDTH / 2;
 		tooltip.y = cardY - tooltipHeight - TOOLTIP_MARGIN;
 		this.tooltipContainer.addChild(tooltip);
@@ -917,11 +898,8 @@ export class RewardScreen {
 	private showGridTooltip(cardType: CardType, cardContainer: Container): void {
 		this.tooltipContainer.removeChildren();
 		if (!this.gridContainer) return;
-		const cost = getEffectiveCardCost(cardType);
-		const { container: tooltip, height: tooltipHeight } = createCardTooltip(
-			cardType,
-			cost,
-		);
+		const { container: tooltip, height: tooltipHeight } =
+			createCardTooltip(cardType);
 		tooltip.x =
 			this.gridContainer.x +
 			cardContainer.x +

@@ -130,7 +130,7 @@ export function renderGameScreen(
 	ctx.ui.handRenderer.setComboHistory(ctx.state.comboHistory);
 	ctx.ui.handRenderer.setUsedCardIds(new Set(ctx.state.deck.usedCardIds));
 	if (!skipHand) {
-		ctx.ui.handRenderer.render(ctx.state.deck.hand, ctx.state.player.ap);
+		ctx.ui.handRenderer.render(ctx.state.deck.hand);
 	}
 	ctx.ui.turnEndButton.show();
 	ctx.ui.turnEndButton.render(ctx.state.turn);

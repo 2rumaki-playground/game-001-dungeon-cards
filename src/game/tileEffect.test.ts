@@ -38,8 +38,6 @@ describe("applyTileEffect", () => {
 				position: { x: 3, y: 3 },
 				hp: 1,
 				maxHp: PLAYER_INITIAL_HP,
-				ap: 3,
-				maxAp: 3,
 			},
 		});
 		const result = applyTileEffect(state);
@@ -59,8 +57,6 @@ describe("applyTileEffect", () => {
 				position: { x: 3, y: 3 },
 				hp: 5,
 				maxHp: PLAYER_INITIAL_HP,
-				ap: 3,
-				maxAp: 3,
 			},
 		});
 		const result = applyTileEffect(state);
@@ -81,8 +77,6 @@ describe("applyTileEffect", () => {
 				position: { x: 3, y: 3 },
 				hp: PLAYER_INITIAL_HP - 1,
 				maxHp: PLAYER_INITIAL_HP,
-				ap: 3,
-				maxAp: 3,
 			},
 		});
 		const result = applyTileEffect(state);
@@ -99,8 +93,6 @@ describe("applyTileEffect", () => {
 				position: { x: 3, y: 3 },
 				hp: 1,
 				maxHp: PLAYER_INITIAL_HP,
-				ap: 3,
-				maxAp: 3,
 			},
 		});
 		const result = applyTileEffect(state);
@@ -142,8 +134,6 @@ describe("applyTileEffect", () => {
 				position: { x: 0, y: 0 },
 				hp: PLAYER_INITIAL_HP,
 				maxHp: PLAYER_INITIAL_HP,
-				ap: 3,
-				maxAp: 3,
 			},
 		});
 		const result = applyTileEffect(state);

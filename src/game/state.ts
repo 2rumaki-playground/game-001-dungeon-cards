@@ -7,7 +7,6 @@ import {
 	ENEMY_PARAMS,
 	getEnemyComposition,
 	INITIAL_FLOOR,
-	MAX_AP,
 	PLAYER_INITIAL_HP,
 } from "../constants";
 import type {
@@ -104,8 +103,6 @@ export function createInitialPlayer(): Player {
 		position: { x: 0, y: 0 }, // 実際の位置はマップ生成時に設定
 		hp: PLAYER_INITIAL_HP,
 		maxHp: PLAYER_INITIAL_HP,
-		ap: MAX_AP,
-		maxAp: MAX_AP,
 	};
 }
 

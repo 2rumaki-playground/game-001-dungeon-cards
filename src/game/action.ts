@@ -18,7 +18,6 @@ import type {
 import { DIRECTION_DELTA } from "../types";
 import { applyDamageToEnemy } from "./combat";
 import { detectCombo, getComboBonus } from "./combo";
-import { getEffectiveCardCost } from "./debugCheats";
 import { markCardUsed } from "./deck";
 import { revealAtPosition } from "./fogOfWar";
 import { isInBounds } from "./map";
@@ -33,19 +32,10 @@ import {
 import { applyTileEffect } from "./tileEffect";
 
 /**
- * AP消費 + カードを使用済みにする共通ヘルパー
+ * カードを使用済みにする共通ヘルパー
  */
-export function consumeApAndPlayCard(
-	state: GameState,
-	cardId: string,
-	apCost: number,
-): GameState {
-	let next = updatePlayer(state, (p) => ({
-		...p,
-		ap: p.ap - apCost,
-	}));
-	next = setDeck(next, markCardUsed(next.deck, cardId));
-	return next;
+export function markCardAsPlayed(state: GameState, cardId: string): GameState {
+	return setDeck(state, markCardUsed(state.deck, cardId));
 }
 
 /**
@@ -88,7 +78,7 @@ export type MoveResult = {
 /**
  * 移動カード使用時のプレイヤー移動処理
  *
- * 成功/失敗に関わらずAP消費・カード使用を行う。
+ * 成功/失敗に関わらずカード使用を行う。
  * 成功時は位置更新、失敗時はログのみ。
  * 階段到達時は階層遷移を行わず、フラグで通知する。
  */
@@ -97,8 +87,8 @@ export function executeMove(
 	cardId: string,
 	direction: Direction,
 ): MoveResult {
-	// AP消費 + カードを捨て札へ
-	let next = consumeApAndPlayCard(state, cardId, getEffectiveCardCost("move"));
+	// カードを使用済みへ
+	let next = markCardAsPlayed(state, cardId);
 	recordCardUsage("move");
 
 	// comboHistory更新
@@ -206,7 +196,7 @@ export type AttackResult = {
 /**
  * 攻撃処理の共通実装
  *
- * 成功/失敗に関わらずAP消費・カード使用を行う。
+ * 成功/失敗に関わらずカード使用を行う。
  * 成功時は敵にダメージ、HP0以下で敵を削除。
  * コンボ判定は呼び出し元（executeAttack等）で行い、comboBonus引数で渡す。
  */
@@ -214,21 +204,20 @@ function executeAttackBase(
 	state: GameState,
 	cardId: string,
 	direction: Direction,
-	apCost: number,
 	damage: number,
 	missLog: string,
 	comboBonus: number,
 	comboLog: string | null,
 ): AttackResult {
-	// AP消費 + カードを捨て札へ
-	let next = consumeApAndPlayCard(state, cardId, apCost);
+	// カードを使用済みへ
+	let next = markCardAsPlayed(state, cardId);
 
 	// コンボ発動ログ
 	if (comboLog) {
 		next = addActionLog(next, comboLog, "system");
 	}
 
-	// 攻撃判定（AP消費・カード使用後の状態で判定）
+	// 攻撃判定（カード使用後の状態で判定）
 	const result = canAttack(next, direction);
 	if (!result.hit) {
 		return {
@@ -261,7 +250,7 @@ const COMBO_LOG_MESSAGE: Record<string, string> = {
 /**
  * 攻撃カード使用時のプレイヤー攻撃処理
  *
- * 成功/失敗に関わらずAP消費・カード使用を行う。
+ * 成功/失敗に関わらずカード使用を行う。
  * 成功時は敵にダメージを与え、HP0以下で敵を削除。
  * 戻り値の hit でヒット情報を返す。
  */
@@ -281,7 +270,6 @@ export function executeAttack(
 		state,
 		cardId,
 		direction,
-		getEffectiveCardCost("attack"),
 		PLAYER_ATTACK_DAMAGE,
 		"攻撃できなかった",
 		comboBonus,
@@ -302,7 +290,7 @@ export function executeAttack(
 /**
  * 強攻撃カード使用時のプレイヤー攻撃処理
  *
- * 成功/失敗に関わらずAP消費・カード使用を行う。
+ * 成功/失敗に関わらずカード使用を行う。
  * 成功時は敵に大ダメージを与え、HP0以下で敵を削除。
  * 戻り値の hit でヒット情報を返す。
  * strong_attackはコンボ対象外（トリガーにも判定対象にもならない）。
@@ -317,7 +305,6 @@ export function executeStrongAttack(
 		state,
 		cardId,
 		direction,
-		getEffectiveCardCost("strong_attack"),
 		PLAYER_STRONG_ATTACK_DAMAGE,
 		"強攻撃できなかった",
 		0,
@@ -350,10 +337,10 @@ export type JumpResult = {
 /**
  * ジャンプカード使用時のプレイヤー移動処理
  *
- * 成功/失敗に関わらずAP消費・カード使用を行う。
+ * 成功/失敗に関わらずカード使用を行う。
  * 1マス先を飛び越えて2マス先に直接着地する。
- * - 着地先（2マス先）が壁/マップ外: 移動なし（AP消費して失敗）
- * - 着地先に敵がいる: 移動なし（AP消費して失敗）
+ * - 着地先（2マス先）が壁/マップ外: 移動なし（カード使用して失敗）
+ * - 着地先に敵がいる: 移動なし（カード使用して失敗）
  * - 着地先が階段: 着地して階段到達フラグを返す
  * - 着地先が特殊タイル: 着地先の効果のみ発動（飛び越えたマスは無視）
  */
@@ -364,8 +351,8 @@ export function executeJump(
 ): JumpResult {
 	const delta = DIRECTION_DELTA[direction];
 
-	// AP消費 + カードを捨て札へ
-	let next = consumeApAndPlayCard(state, cardId, getEffectiveCardCost("jump"));
+	// カードを使用済みへ
+	let next = markCardAsPlayed(state, cardId);
 	recordCardUsage("jump");
 
 	// comboHistory更新
@@ -473,11 +460,11 @@ export function executeJump(
 /**
  * 待機カード使用時の処理
  *
- * APコスト0。カードを捨て札へ移動し、行動ログを記録する。
+ * カードを使用済みへ移動し、行動ログを記録する。
  */
 export function executeWait(state: GameState, cardId: string): GameState {
-	// AP消費 + カードを捨て札へ
-	let next = consumeApAndPlayCard(state, cardId, getEffectiveCardCost("wait"));
+	// カードを使用済みへ
+	let next = markCardAsPlayed(state, cardId);
 	recordCardUsage("wait");
 
 	// comboHistory更新

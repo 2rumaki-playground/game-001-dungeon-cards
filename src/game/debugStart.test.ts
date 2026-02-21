@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ENEMY_PARAMS, MAX_AP, PLAYER_INITIAL_HP } from "../constants";
+import { ENEMY_PARAMS, PLAYER_INITIAL_HP } from "../constants";
 import { createTestState } from "../test-utils/createTestFixtures";
 import type {
 	DebugDeckComposition,
@@ -201,7 +201,6 @@ describe("debugStart", () => {
 
 			expect(result.screen).toBe("game");
 			expect(result.player.hp).toBe(PLAYER_INITIAL_HP);
-			expect(result.player.ap).toBe(MAX_AP);
 			expect(result.deck.hand.length).toBeGreaterThan(0);
 		});
 
@@ -228,20 +227,6 @@ describe("debugStart", () => {
 			expect(result.player.maxHp).toBe(50);
 			// playerHp未指定時はmaxHpと同じ
 			expect(result.player.hp).toBe(50);
-		});
-
-		it("playerApが反映される", () => {
-			const state = createTestState();
-			const result = startNewGameWithDebugParams(state, { playerAp: 2 });
-
-			expect(result.player.ap).toBe(2);
-		});
-
-		it("playerApがmaxApでクランプされる", () => {
-			const state = createTestState();
-			const result = startNewGameWithDebugParams(state, { playerAp: 10 });
-
-			expect(result.player.ap).toBe(result.player.maxAp);
 		});
 
 		it("playerHpがmaxHpでクランプされる", () => {

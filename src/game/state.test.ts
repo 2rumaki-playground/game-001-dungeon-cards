@@ -7,7 +7,6 @@ import {
 	getMapSize,
 	HAND_LIMIT,
 	INITIAL_FLOOR,
-	MAX_AP,
 	PLAYER_INITIAL_HP,
 } from "../constants";
 import { createTestState } from "../test-utils/createTestFixtures";
@@ -32,12 +31,10 @@ import {
 
 describe("state", () => {
 	describe("createInitialPlayer", () => {
-		it("初期HP/APが正しい", () => {
+		it("初期HPが正しい", () => {
 			const player = createInitialPlayer();
 			expect(player.hp).toBe(PLAYER_INITIAL_HP);
 			expect(player.maxHp).toBe(PLAYER_INITIAL_HP);
-			expect(player.ap).toBe(MAX_AP);
-			expect(player.maxAp).toBe(MAX_AP);
 		});
 	});
 
@@ -245,11 +242,10 @@ describe("state", () => {
 			expect(gameState.deck.usedCardIds).toEqual([]);
 		});
 
-		it("プレイヤーのHP/APが初期値", () => {
+		it("プレイヤーのHPが初期値", () => {
 			const titleState = createTitleScreenState(12345);
 			const gameState = startNewGame(titleState);
 			expect(gameState.player.hp).toBe(PLAYER_INITIAL_HP);
-			expect(gameState.player.ap).toBe(MAX_AP);
 		});
 	});
 
@@ -376,7 +372,6 @@ describe("state", () => {
 			const titleState = returnToTitle(gameState);
 			expect(titleState.floor).toBe(INITIAL_FLOOR);
 			expect(titleState.player.hp).toBe(PLAYER_INITIAL_HP);
-			expect(titleState.player.ap).toBe(MAX_AP);
 			expect(titleState.enemies).toEqual([]);
 			expect(titleState.deck.hand).toEqual([]);
 			expect(titleState.deck.usedCardIds).toEqual([]);

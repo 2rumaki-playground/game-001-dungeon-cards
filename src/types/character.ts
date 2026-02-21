@@ -12,8 +12,6 @@ export type Player = {
 	position: Position;
 	hp: number;
 	maxHp: number;
-	ap: number;
-	maxAp: number;
 };
 
 /**

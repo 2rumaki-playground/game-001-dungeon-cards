@@ -4,7 +4,6 @@
 
 import type { Container, FederatedPointerEvent, Text } from "pixi.js";
 import { describe, expect, it, vi } from "vitest";
-import { CARD_COST } from "../constants";
 import { createTweenMock, mockEasing } from "../test-utils/mockTween";
 import type { Card, CardType } from "../types";
 import { tween } from "../utils/tween";
@@ -160,7 +159,7 @@ describe("HandRenderer ホバー・選択演出", () => {
 	it("ホバー中のカードの Y 座標が負（浮き上がり）になる", () => {
 		const renderer = new HandRenderer();
 		const cards = createTestCards();
-		renderer.render(cards, 10);
+		renderer.render(cards);
 
 		const card0 = findCardContainer(renderer, 0);
 		// pointerover をシミュレート
@@ -174,7 +173,7 @@ describe("HandRenderer ホバー・選択演出", () => {
 	it("pointerout でホバー解除後、Y=0 に戻る", () => {
 		const renderer = new HandRenderer();
 		const cards = createTestCards();
-		renderer.render(cards, 10);
+		renderer.render(cards);
 
 		const card0 = findCardContainer(renderer, 0);
 		card0.emit("pointerover", {} as FederatedPointerEvent);
@@ -187,10 +186,9 @@ describe("HandRenderer ホバー・選択演出", () => {
 		expect(card0After.y).toBe(0);
 	});
 
-	it("無効カード（AP不足）でもドラッグ用にeventModeがstaticになる", () => {
+	it("全カードがドラッグ用にeventModeがstaticになる", () => {
 		const renderer = new HandRenderer();
-		// AP=0 なので move / attack は無効（wait は有効のまま）
-		renderer.render(createTestCards(), 0);
+		renderer.render(createTestCards());
 
 		const card0 = findCardContainer(renderer, 0);
 		// ドラッグ並べ替えのため全カードがインタラクティブ
@@ -200,13 +198,13 @@ describe("HandRenderer ホバー・選択演出", () => {
 	it("ホバー中に render() を再呼び出ししてもホバー状態が維持される", () => {
 		const renderer = new HandRenderer();
 		const cards = createTestCards();
-		renderer.render(cards, 10);
+		renderer.render(cards);
 
 		const card0 = findCardContainer(renderer, 0);
 		card0.emit("pointerover", {} as FederatedPointerEvent);
 
 		// 外部から render() を再呼び出し
-		renderer.render(cards, 10);
+		renderer.render(cards);
 
 		const card0After = findCardContainer(renderer, 0);
 		expect(card0After.y).toBeLessThan(0);
@@ -217,7 +215,7 @@ describe("HandRenderer ホバー・選択演出", () => {
 		const cards = createTestCards();
 		const callback = vi.fn();
 		renderer.setOnCardSelect(callback);
-		renderer.render(cards, 10);
+		renderer.render(cards);
 
 		// waitカード（方向なし）をクリック
 		const card2 = findCardContainer(renderer, 2);
@@ -240,7 +238,7 @@ describe("HandRenderer ホバー・選択演出", () => {
 		// falseを返すコールバック（無効クリック）
 		const callback = vi.fn().mockReturnValue(false);
 		renderer.setOnCardSelect(callback);
-		renderer.render(cards, 10);
+		renderer.render(cards);
 
 		const mockedTween = vi.mocked(tween);
 		mockedTween.mockClear();
@@ -266,7 +264,7 @@ describe("HandRenderer ホバー・選択演出", () => {
 		const renderer = new HandRenderer();
 		const cards = createTestCards();
 		renderer.setOnCardSelect(vi.fn());
-		renderer.render(cards, 10);
+		renderer.render(cards);
 
 		const mockedTween = vi.mocked(tween);
 		mockedTween.mockClear();
@@ -299,7 +297,7 @@ describe("HandRenderer ホバー・選択演出", () => {
 		const cards = createTestCards();
 		const callback = vi.fn();
 		renderer.setOnCardSelect(callback);
-		renderer.render(cards, 10);
+		renderer.render(cards);
 
 		const mockedTween = vi.mocked(tween);
 		const tweenCountBefore = mockedTween.mock.calls.length;
@@ -352,7 +350,7 @@ describe("HandRenderer ホバー・選択演出", () => {
 		const cards = createTestCards();
 		const callback = vi.fn();
 		renderer.setOnCardSelect(callback);
-		renderer.render(cards, 10);
+		renderer.render(cards);
 
 		const mockedTween = vi.mocked(tween);
 		const tweenCountBefore = mockedTween.mock.calls.length;
@@ -383,7 +381,7 @@ describe("HandRenderer ホバー・選択演出", () => {
 		const tweenCountAfterFirst = mockedTween.mock.calls.length;
 
 		// 外部からrender()を呼んでもロックは解除されない
-		renderer.render(cards, 10);
+		renderer.render(cards);
 
 		// クリックしてもtweenは増えない（ロック維持）
 		const card0After = findCardContainer(renderer, 0);
@@ -400,7 +398,7 @@ describe("HandRenderer ホバー・選択演出", () => {
 		const cards = createTestCards();
 		const callback = vi.fn();
 		renderer.setOnCardSelect(callback);
-		renderer.render(cards, 10);
+		renderer.render(cards);
 
 		const mockedTween = vi.mocked(tween);
 		const tweenCountBefore = mockedTween.mock.calls.length;
@@ -464,7 +462,7 @@ describe("HandRenderer ホバー・選択演出", () => {
 				}),
 		);
 		renderer.setOnCardSelect(asyncCallback);
-		renderer.render(cards, 10);
+		renderer.render(cards);
 
 		const event = {
 			button: 0,
@@ -521,7 +519,7 @@ describe("HandRenderer ホバー・選択演出", () => {
 		const renderer = new HandRenderer(mockParticleSystem as never);
 		const cards = createTestCards();
 		renderer.setOnCardSelect(vi.fn());
-		renderer.render(cards, 10);
+		renderer.render(cards);
 
 		const card2 = findCardContainer(renderer, 2);
 		const event = {
@@ -569,7 +567,7 @@ describe("HandRenderer キュー表示", () => {
 		const renderer = new HandRenderer();
 		const cards = createTestCards();
 		renderer.setQueuedCards(new Map([["card-1", 1]]));
-		renderer.render(cards, 10);
+		renderer.render(cards);
 
 		const card0 = findCardContainer(renderer, 0);
 		const texts = getTextChildren(card0);
@@ -581,7 +579,7 @@ describe("HandRenderer キュー表示", () => {
 		const renderer = new HandRenderer();
 		const cards = createTestCards();
 		renderer.setQueuedCards(new Map([["card-1", 1]]));
-		renderer.render(cards, 10);
+		renderer.render(cards);
 
 		const card1 = findCardContainer(renderer, 1);
 		const texts = getTextChildren(card1);
@@ -596,11 +594,11 @@ describe("HandRenderer キュー表示", () => {
 		const renderer = new HandRenderer();
 		const cards = createTestCards();
 		renderer.setQueuedCards(new Map([["card-1", 1]]));
-		renderer.render(cards, 10);
+		renderer.render(cards);
 
 		// クリア
 		renderer.setQueuedCards(new Map());
-		renderer.render(cards, 10);
+		renderer.render(cards);
 
 		const card0 = findCardContainer(renderer, 0);
 		const texts = getTextChildren(card0);
@@ -619,7 +617,7 @@ describe("HandRenderer キュー表示", () => {
 				["card-2", 2],
 			]),
 		);
-		renderer.render(cards, 10);
+		renderer.render(cards);
 
 		const card0 = findCardContainer(renderer, 0);
 		const card1 = findCardContainer(renderer, 1);
@@ -634,7 +632,7 @@ describe("HandRenderer キュー表示", () => {
 		const renderer = new HandRenderer();
 		const cards = createTestCards();
 		renderer.setQueuedCards(new Map([["card-1", 1]]));
-		renderer.render(cards, 10);
+		renderer.render(cards);
 
 		const card0 = findCardContainer(renderer, 0);
 		const card1 = findCardContainer(renderer, 1);
@@ -656,7 +654,7 @@ describe("カード種別ビジュアル差別化", () => {
 	function renderSingleCard(type: CardType): Container {
 		const renderer = new HandRenderer();
 		const cards: Card[] = [{ id: `card-${type}`, type, keyword: "flame" }];
-		renderer.render(cards, 10);
+		renderer.render(cards);
 		const cardsContainer = renderer
 			.getContainer()
 			.children.find((c) => c.label === "cards") as Container;
@@ -689,38 +687,13 @@ describe("カード種別ビジュアル差別化", () => {
 		});
 	});
 
-	describe("APコスト表示強化", () => {
-		it("コスト2のカードはAPコストが強調色で表示される", () => {
+	describe("APコスト非表示", () => {
+		it("カードにAPコスト表示がない", () => {
 			for (const type of allCardTypes) {
-				const cost = CARD_COST[type];
-				if (cost < 2) continue;
 				const cardContainer = renderSingleCard(type);
 				const texts = getTextChildren(cardContainer);
-				const costText = texts.find((t) => t.text === `AP: ${cost}`);
-				expect(costText).toBeDefined();
-				// style.fillは強調色 0xffaa44
-				const style = (costText as Text).style;
-				expect(style.fill).toBe(0xffaa44);
-			}
-		});
-
-		it("コスト0の待機カードはAPコストが非表示になる", () => {
-			const cardContainer = renderSingleCard("wait");
-			const texts = getTextChildren(cardContainer);
-			const costText = texts.find((t) => t.text.startsWith("AP:"));
-			expect(costText).toBeUndefined();
-		});
-
-		it("コスト1のカードは通常色で表示される", () => {
-			for (const type of allCardTypes) {
-				const cost = CARD_COST[type];
-				if (cost !== 1) continue;
-				const cardContainer = renderSingleCard(type);
-				const texts = getTextChildren(cardContainer);
-				const costText = texts.find((t) => t.text === `AP: ${cost}`);
-				expect(costText).toBeDefined();
-				const style = (costText as Text).style;
-				expect(style.fill).toBe(0xcccccc);
+				const costText = texts.find((t) => t.text.startsWith("AP:"));
+				expect(costText).toBeUndefined();
 			}
 		});
 	});
@@ -774,7 +747,7 @@ describe("HandRenderer ツールチップ表示", () => {
 	it("ホバー時にツールチップが表示される", () => {
 		const renderer = new HandRenderer();
 		const cards = createTestCards();
-		renderer.render(cards, 10);
+		renderer.render(cards);
 
 		const card0 = findCardContainer(renderer, 0);
 		card0.emit("pointerover", {} as FederatedPointerEvent);
@@ -786,7 +759,7 @@ describe("HandRenderer ツールチップ表示", () => {
 	it("ツールチップにカード名が含まれる", () => {
 		const renderer = new HandRenderer();
 		const cards = createTestCards();
-		renderer.render(cards, 10);
+		renderer.render(cards);
 
 		const card0 = findCardContainer(renderer, 0);
 		card0.emit("pointerover", {} as FederatedPointerEvent);
@@ -797,24 +770,24 @@ describe("HandRenderer ツールチップ表示", () => {
 		expect(hasName).toBe(true);
 	});
 
-	it("ツールチップにAPコストが含まれる", () => {
+	it("ツールチップにAPコストが含まれない", () => {
 		const renderer = new HandRenderer();
 		const cards = createTestCards();
-		renderer.render(cards, 10);
+		renderer.render(cards);
 
 		const card0 = findCardContainer(renderer, 0);
 		card0.emit("pointerover", {} as FederatedPointerEvent);
 
 		const tooltipContainer = findTooltipContainer(renderer);
 		const texts = getAllTextsRecursive(tooltipContainer);
-		const hasCost = texts.some((t) => t.text.includes(`AP: ${CARD_COST.move}`));
-		expect(hasCost).toBe(true);
+		const hasCost = texts.some((t) => t.text.includes("AP:"));
+		expect(hasCost).toBe(false);
 	});
 
 	it("ツールチップに詳細説明が含まれる", () => {
 		const renderer = new HandRenderer();
 		const cards = createTestCards();
-		renderer.render(cards, 10);
+		renderer.render(cards);
 
 		const card0 = findCardContainer(renderer, 0);
 		card0.emit("pointerover", {} as FederatedPointerEvent);
@@ -828,7 +801,7 @@ describe("HandRenderer ツールチップ表示", () => {
 	it("ツールチップにレアリティが含まれる", () => {
 		const renderer = new HandRenderer();
 		const cards = createTestCards();
-		renderer.render(cards, 10);
+		renderer.render(cards);
 
 		const card0 = findCardContainer(renderer, 0);
 		card0.emit("pointerover", {} as FederatedPointerEvent);
@@ -843,7 +816,7 @@ describe("HandRenderer ツールチップ表示", () => {
 	it("pointeroutでツールチップが消える", () => {
 		const renderer = new HandRenderer();
 		const cards = createTestCards();
-		renderer.render(cards, 10);
+		renderer.render(cards);
 
 		const card0 = findCardContainer(renderer, 0);
 		card0.emit("pointerover", {} as FederatedPointerEvent);
@@ -855,22 +828,10 @@ describe("HandRenderer ツールチップ表示", () => {
 		expect(tooltipContainer.children.length).toBe(0);
 	});
 
-	it("AP不足カードにはツールチップが表示されない", () => {
-		const renderer = new HandRenderer();
-		const cards = createTestCards();
-		// AP=0なのでmoveカード(cost=1)は無効
-		renderer.render(cards, 0);
-
-		// 無効カードはeventModeがstaticでないのでpointeroverが発火しない
-		// ただし直接render後のtooltipContainerを確認
-		const tooltipContainer = findTooltipContainer(renderer);
-		expect(tooltipContainer.children.length).toBe(0);
-	});
-
 	it("clear()でツールチップが消える", () => {
 		const renderer = new HandRenderer();
 		const cards = createTestCards();
-		renderer.render(cards, 10);
+		renderer.render(cards);
 
 		const card0 = findCardContainer(renderer, 0);
 		card0.emit("pointerover", {} as FederatedPointerEvent);
@@ -884,7 +845,7 @@ describe("HandRenderer ツールチップ表示", () => {
 	it("ツールチップのY座標がカードより上にある", () => {
 		const renderer = new HandRenderer();
 		const cards = createTestCards();
-		renderer.render(cards, 10);
+		renderer.render(cards);
 
 		const card0 = findCardContainer(renderer, 0);
 		card0.emit("pointerover", {} as FederatedPointerEvent);
@@ -892,20 +853,6 @@ describe("HandRenderer ツールチップ表示", () => {
 		const tooltipContainer = findTooltipContainer(renderer);
 		const tooltip = tooltipContainer.children[0] as Container;
 		expect(tooltip.y).toBeLessThan(0);
-	});
-
-	it("待機カード(cost=0)のツールチップにAPコストが表示されない", () => {
-		const renderer = new HandRenderer();
-		const cards: Card[] = [{ id: "card-wait", type: "wait", keyword: "flame" }];
-		renderer.render(cards, 10);
-
-		const card0 = findCardContainer(renderer, 0);
-		card0.emit("pointerover", {} as FederatedPointerEvent);
-
-		const tooltipContainer = findTooltipContainer(renderer);
-		const texts = getAllTextsRecursive(tooltipContainer);
-		const hasCost = texts.some((t) => t.text.includes("AP:"));
-		expect(hasCost).toBe(false);
 	});
 });
 
@@ -930,10 +877,7 @@ describe("HandRenderer コンボ予告表示", () => {
 	function getBaseChildCount(cardType: CardType): number {
 		const renderer = new HandRenderer();
 		renderer.setComboHistory(null);
-		renderer.render(
-			[{ id: "base-card", type: cardType, keyword: "flame" }],
-			10,
-		);
+		renderer.render([{ id: "base-card", type: cardType, keyword: "flame" }]);
 		const cardsContainer = renderer
 			.getContainer()
 			.children.find((c) => c.label === "cards") as Container;
@@ -945,7 +889,7 @@ describe("HandRenderer コンボ予告表示", () => {
 
 		const renderer = new HandRenderer();
 		renderer.setComboHistory(null);
-		renderer.render(createTestCards(), 10);
+		renderer.render(createTestCards());
 
 		const attackCard = findCardContainer(renderer, 1);
 		expect(attackCard.children.length).toBe(baseCount);
@@ -956,7 +900,7 @@ describe("HandRenderer コンボ予告表示", () => {
 
 		const renderer = new HandRenderer();
 		renderer.setComboHistory({ lastCardType: "attack", lastDirection: null });
-		renderer.render(createTestCards(), 10);
+		renderer.render(createTestCards());
 
 		const attackCard = findCardContainer(renderer, 1);
 		expect(attackCard.children.length).toBe(baseCount + 1);
@@ -967,7 +911,7 @@ describe("HandRenderer コンボ予告表示", () => {
 
 		const renderer = new HandRenderer();
 		renderer.setComboHistory({ lastCardType: "move", lastDirection: "right" });
-		renderer.render(createTestCards(), 10);
+		renderer.render(createTestCards());
 
 		const attackCard = findCardContainer(renderer, 1);
 		expect(attackCard.children.length).toBe(baseCount + 1);
@@ -978,7 +922,7 @@ describe("HandRenderer コンボ予告表示", () => {
 
 		const renderer = new HandRenderer();
 		renderer.setComboHistory({ lastCardType: "attack", lastDirection: null });
-		renderer.render(createTestCards(), 10);
+		renderer.render(createTestCards());
 
 		const moveCard = findCardContainer(renderer, 0);
 		expect(moveCard.children.length).toBe(baseCount);
@@ -989,7 +933,7 @@ describe("HandRenderer コンボ予告表示", () => {
 
 		const renderer = new HandRenderer();
 		renderer.setComboHistory({ lastCardType: "attack", lastDirection: null });
-		renderer.render(createTestCards(), 10);
+		renderer.render(createTestCards());
 
 		const strongAttackCard = findCardContainer(renderer, 2);
 		expect(strongAttackCard.children.length).toBe(baseCount);
@@ -1001,7 +945,7 @@ describe("HandRenderer コンボ予告表示", () => {
 		const renderer = new HandRenderer();
 		renderer.setComboHistory({ lastCardType: "attack", lastDirection: null });
 		renderer.setSelectedCard("card-2");
-		renderer.render(createTestCards(), 10);
+		renderer.render(createTestCards());
 
 		const attackCard = findCardContainer(renderer, 1);
 		expect(attackCard.children.length).toBe(baseCount);
@@ -1011,14 +955,14 @@ describe("HandRenderer コンボ予告表示", () => {
 		const renderer = new HandRenderer();
 		renderer.setComboHistory({ lastCardType: "attack", lastDirection: null });
 		renderer.setQueuedCards(new Map([["card-2", 1]]));
-		renderer.render(createTestCards(), 10);
+		renderer.render(createTestCards());
 
 		const attackCard = findCardContainer(renderer, 1);
 
 		// キューバッジ(2要素)は追加されるが、コンボ予告は追加されない
 		renderer.setComboHistory(null);
 		renderer.setQueuedCards(new Map([["card-2", 1]]));
-		renderer.render(createTestCards(), 10);
+		renderer.render(createTestCards());
 		const attackCardNoCombo = findCardContainer(renderer, 1);
 
 		expect(attackCard.children.length).toBe(attackCardNoCombo.children.length);
@@ -1030,7 +974,7 @@ describe("HandRenderer コンボ予告表示", () => {
 		const renderer = new HandRenderer();
 		renderer.setComboHistory({ lastCardType: "attack", lastDirection: null });
 		renderer.clear();
-		renderer.render(createTestCards(), 10);
+		renderer.render(createTestCards());
 
 		const attackCard = findCardContainer(renderer, 1);
 		expect(attackCard.children.length).toBe(baseCount);
@@ -1041,7 +985,7 @@ describe("HandRenderer コンボ予告表示", () => {
 
 		const renderer = new HandRenderer();
 		renderer.setComboHistory({ lastCardType: "wait", lastDirection: null });
-		renderer.render(createTestCards(), 10);
+		renderer.render(createTestCards());
 
 		const attackCard = findCardContainer(renderer, 1);
 		expect(attackCard.children.length).toBe(baseCount);
@@ -1070,7 +1014,7 @@ describe("HandRenderer ドラッグ＆ドロップ", () => {
 		const cards = createTestCards();
 		const callback = vi.fn();
 		renderer.setOnCardSelect(callback);
-		renderer.render(cards, 10);
+		renderer.render(cards);
 
 		const card2 = findCardContainer(renderer, 2);
 		// pointerdown
@@ -1103,7 +1047,7 @@ describe("HandRenderer ドラッグ＆ドロップ", () => {
 		const clickCallback = vi.fn();
 		renderer.setOnCardSelect(clickCallback);
 		renderer.setOnReorder(reorderCallback);
-		renderer.render(cards, 10);
+		renderer.render(cards);
 
 		const card0 = findCardContainer(renderer, 0);
 		// pointerdown
@@ -1135,7 +1079,7 @@ describe("HandRenderer ドラッグ＆ドロップ", () => {
 		const cards = createTestCards();
 		const reorderCallback = vi.fn();
 		renderer.setOnReorder(reorderCallback);
-		renderer.render(cards, 10);
+		renderer.render(cards);
 
 		const card0 = findCardContainer(renderer, 0);
 		const containerPos = renderer.getContainer().getGlobalPosition();
@@ -1168,7 +1112,7 @@ describe("HandRenderer ドラッグ＆ドロップ", () => {
 	it("ドラッグ確定中のrender()呼び出しは再描画をスキップする", () => {
 		const renderer = new HandRenderer();
 		const cards = createTestCards();
-		renderer.render(cards, 10);
+		renderer.render(cards);
 
 		const card0 = findCardContainer(renderer, 0);
 		const card0InitialX = card0.x;
@@ -1189,7 +1133,7 @@ describe("HandRenderer ドラッグ＆ドロップ", () => {
 		expect(card0DragX).not.toBe(card0InitialX);
 
 		// 外部からrender()を呼んでもドラッグ状態が維持される
-		renderer.render(cards, 10);
+		renderer.render(cards);
 		expect(card0.x).toBe(card0DragX);
 	});
 
@@ -1210,7 +1154,7 @@ describe("HandRenderer ドラッグ＆ドロップ", () => {
 			});
 		});
 		renderer.setOnCardSelect(vi.fn());
-		renderer.render(cards, 10);
+		renderer.render(cards);
 
 		// 最初のクリックで入力ロック
 		const card2 = findCardContainer(renderer, 2);
@@ -1248,40 +1192,13 @@ describe("HandRenderer ドラッグ＆ドロップ", () => {
 		resolveTween();
 	});
 
-	it("無効カード（AP不足）でもドラッグによる並べ替えが可能", () => {
-		const renderer = new HandRenderer();
-		const cards = createTestCards();
-		const reorderCallback = vi.fn();
-		renderer.setOnReorder(reorderCallback);
-		// AP=0 なので move/attack は無効
-		renderer.render(cards, 0);
-
-		const card0 = findCardContainer(renderer, 0);
-		card0.emit("pointerdown", {
-			button: 0,
-			global: { x: 100, y: 50 },
-		} as FederatedPointerEvent);
-
-		renderer.getContainer().emit("globalpointermove", {
-			global: { x: 300, y: 50 },
-		} as FederatedPointerEvent);
-
-		card0.emit("pointerupoutside", {
-			button: 0,
-			global: { x: 300, y: 50 },
-		} as FederatedPointerEvent);
-
-		// 無効カードでもドラッグ並べ替えは動作する
-		expect(reorderCallback).toHaveBeenCalledTimes(1);
-	});
-
-	it("無効カード（AP不足）のクリックはコールバックを呼ばない", async () => {
+	it("使用済みカードのクリックはコールバックを呼ばない", async () => {
 		const renderer = new HandRenderer();
 		const cards = createTestCards();
 		const clickCallback = vi.fn();
 		renderer.setOnCardSelect(clickCallback);
-		// AP=0 なので move は無効
-		renderer.render(cards, 0);
+		renderer.setUsedCardIds(new Set(["card-1"]));
+		renderer.render(cards);
 
 		const card0 = findCardContainer(renderer, 0);
 		const event = {
