@@ -1,5 +1,5 @@
 name: PR Comment
-description: PRにコメントを投稿し、同一タグの古いコメントを非表示にする（必要な権限: pull-requests: write）
+description: "PRにコメントを投稿し、同一タグの古いコメントを非表示にする（必要な権限: pull-requests: write）"
 
 inputs:
   issue-number:
