@@ -18,7 +18,7 @@
 
 ## 並列処理モード（複数PR）
 
-複数のPR番号が指定された場合、agent teamとgit worktreeを使って並列に作業を進める。
+複数のPR番号が指定された場合、Task toolの `isolation: "worktree"` を使って並列に作業を進める。
 
 ### P-1. 事前準備
 
@@ -26,36 +26,18 @@
 2. 各PRについて [コメントの詳細を取得](#ref-コメントの詳細を取得) で必要に応じて全文を取得する
 3. 各PRの未解決コメントの分析結果と対応方針の一覧をユーザーに提示し、承認を得る
 
-### P-2. チームの作成
+### P-2. PRをドラフトに変換
 
-TeamCreateでチームを作成する:
-- チーム名: `resolve-pr-batch`
-
-### P-3. タスクの作成
-
-各PRに対してTaskCreateでタスクを作成する。タスクの説明には以下を含める:
-- PR番号とタイトル
-- 未解決レビューコメントの一覧（スレッドID、databaseId、ファイル、要約、対応方針）
-- worktreeパスとブランチ名
-
-### P-4. git worktreeのセットアップ
-
-各PRについて以下を実行する:
+各PRをドラフトに変換し、PRブランチ名を取得する:
 
 ```bash
-# PRをドラフトに変換
 gh pr ready --undo <番号>
-
-# worktreeを作成（/tmp配下に作成し、メインリポジトリを汚さない）
-git worktree add /tmp/wt-pr-<番号>
-
-# worktree側でPRブランチをcheckoutし、依存関係をインストール
-(cd /tmp/wt-pr-<番号> && gh pr checkout <番号> && pnpm install)
+gh pr view <番号> --json headRefName -q .headRefName
 ```
 
-### P-5. エージェントの並列起動
+### P-3. エージェントの並列起動
 
-各PRに対して、Taskツールで `general-purpose` エージェントを**並列に**起動する。
+各PRに対して、Taskツールで `general-purpose` エージェントを **`isolation: "worktree"`** で**並列に**起動する。
 
 **重要**: 全エージェントを**1つのメッセージ内で同時に**起動すること（逐次起動しない）。
 
@@ -64,20 +46,18 @@ git worktree add /tmp/wt-pr-<番号>
 ```
 あなたはPR #<番号> のレビューコメント解決担当です。
 
-## 作業ディレクトリ
-/tmp/wt-pr-<番号>
-
 ## リポジトリ情報
 - owner/repo: <owner>/<repo>
-- 作業ブランチ: <ブランチ名>（チェックアウト済み）
+- PRブランチ: <ブランチ名>
 
 ## 未解決レビューコメント
 <コメント一覧（スレッドID、databaseId、ファイル、要約、対応方針）>
 
 ## 実装手順
 
-以下のすべての作業を /tmp/wt-pr-<番号> ディレクトリ内で行うこと。
-メインリポジトリのファイルは絶対に変更しないこと。
+まずPRブランチをチェックアウトし、依存関係をインストールする:
+gh pr checkout <番号>
+pnpm install
 
 レビューコメント1件ごとに以下のサイクルを繰り返す:
 
@@ -87,18 +67,17 @@ git worktree add /tmp/wt-pr-<番号>
    - 当該コメントの指摘範囲外の変更はしない
 
 2. **コミット前チェック**（各コミットの前に必ず実行）:
-   - `cd /tmp/wt-pr-<番号> && pnpm format`
-   - `cd /tmp/wt-pr-<番号> && pnpm lint`
-   - `cd /tmp/wt-pr-<番号> && pnpm build`（ビルドエラー時は [vite skill](.claude/skills/vite/SKILL.md) を参照）
-   - `cd /tmp/wt-pr-<番号> && pnpm test:run`（テスト失敗時は [vitest skill](.claude/skills/vitest/SKILL.md) を参照）
+   - `pnpm format`
+   - `pnpm lint`
+   - `pnpm build`（ビルドエラー時は vite skill を参照）
+   - `pnpm test:run`（テスト失敗時は vitest skill を参照）
 
 3. **コミット・push**:
    - Conventional Commits形式、日本語、50文字以内
    - コミットメッセージは当該コメントの指摘内容を反映させる
-   - `git -C /tmp/wt-pr-<番号> add <files>`（対象ファイルを個別指定、`git add .` は使わない）
-   - `git -C /tmp/wt-pr-<番号> commit -m "<message>"`
-   - `branch=$(git -C /tmp/wt-pr-<番号> rev-parse --abbrev-ref HEAD)`
-   - `git -C /tmp/wt-pr-<番号> push -u origin "$branch"`
+   - `git add <files>`（対象ファイルを個別指定、`git add .` は使わない）
+   - `git commit -m "<message>"`
+   - `git push -u origin <ブランチ名>`
 
 4. **レビューコメントへの返信・resolve**:
    push後、対応したレビューコメントに対して以下を行う:
@@ -135,23 +114,20 @@ git worktree add /tmp/wt-pr-<番号>
 
 6. **ドラフトを解除**:
    ```
-   cd /tmp/wt-pr-<番号> && gh pr ready <番号>
+   gh pr ready <番号>
    ```
 
 完了したら、対応したコメント数とPRのURLを報告してください。
 ```
 
-### P-6. 完了待機と後片付け
+### P-4. 完了待機・結果報告
 
 全エージェントの完了を待ち、以下を行う:
 
 1. 各エージェントの結果（対応コメント数、PRのURL等）をまとめてユーザーに報告する
 2. 各PRのドラフトが解除されているか確認し、ドラフトのまま残っている場合は `gh pr ready <番号>` で解除する
-3. git worktreeを削除する:
-   ```bash
-   git worktree remove /tmp/wt-pr-<番号>
-   ```
-4. チームを削除する（TeamDelete）
+
+**注意**: worktreeは `isolation: "worktree"` により自動管理される（変更なしなら自動削除、変更ありなら保持）。手動での削除は不要。
 
 ---
 
@@ -210,8 +186,8 @@ gh pr checkout <番号>
 
 1. `pnpm format` — フォーマット適用
 2. `pnpm lint` — リントチェック
-3. `pnpm build` — TypeScriptビルド確認（ビルドエラー時は [vite skill](.claude/skills/vite/SKILL.md) を参照）
-4. `pnpm test:run` — ユニットテスト全通過を確認（テスト失敗時は [vitest skill](.claude/skills/vitest/SKILL.md) を参照）
+3. `pnpm build` — TypeScriptビルド確認（ビルドエラー時は vite skill を参照）
+4. `pnpm test:run` — ユニットテスト全通過を確認（テスト失敗時は vitest skill を参照）
 
 #### 5c. コミット・push
 
