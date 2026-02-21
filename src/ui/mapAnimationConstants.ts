@@ -89,11 +89,8 @@ export const ENEMY_PADDING: Record<EnemyType, number> = {
 	boss: 4, // 最大サイズ
 };
 
-/** HPバーの高さ（px） */
-export const HP_BAR_HEIGHT = 6;
-
-/** HPバー背景色 */
-export const HP_BAR_BG_COLOR = 0x333333;
+/** HPゲージ明部の色（床タイル 0x3a3a3a より明るいグレー） */
+export const HP_GAUGE_BRIGHT_COLOR = 0x5a5a5a;
 
 /** コンボポップアップのフォントサイズ */
 export const COMBO_POPUP_FONT_SIZE = 20;
