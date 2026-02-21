@@ -3,7 +3,7 @@
  * @see docs/spec/mvp/cards.md
  */
 
-import { Container, Graphics, Text } from "pixi.js";
+import { Container, type FederatedPointerEvent, Graphics, Text } from "pixi.js";
 import { getEffectiveCardCost } from "../game/debugCheats";
 import type { Card, CardType, ComboHistory, Direction } from "../types";
 import { Easing, tween } from "../utils/tween";
@@ -18,11 +18,7 @@ import {
 	TOOLTIP_MARGIN,
 	TOOLTIP_WIDTH,
 } from "./cardTooltip";
-import {
-	drawEdgeLine,
-	drawRoundedRect,
-	makeInteractive,
-} from "./graphicsHelpers";
+import { drawEdgeLine, drawRoundedRect } from "./graphicsHelpers";
 import type { ParticleSystem } from "./particleSystem";
 import {
 	UI_COLOR_COMBO_PREVIEW,
@@ -47,6 +43,12 @@ const DECK_OFFSET_Y = -50; // 山札の位置（手札コンテナからの相�
 
 /** ホバー時の浮き上がり距離（px） */
 const HOVER_LIFT = 8;
+
+/** ドラッグ確定閾値（px） */
+const DRAG_THRESHOLD = 5;
+
+/** ドラッグ中のY浮き上がり（px） */
+const DRAG_LIFT = 12;
 
 /** キューバッジのサイズ（直径px） */
 const QUEUE_BADGE_SIZE = 20;
@@ -137,17 +139,39 @@ export class HandRenderer {
 				direction?: Direction,
 		  ) => undefined | false | Promise<undefined | false>)
 		| null = null;
+	private onReorder: ((fromIndex: number, toIndex: number) => void) | null =
+		null;
 	private isInputLocked = false;
+	private isInteractionEnabled = true;
+
+	// ドラッグ状態
+	private isDragging = false;
+	private dragCardIndex = -1;
+	private dragCardContainer: Container | null = null;
+	private dragStartX = 0;
+	private dragStartY = 0;
+	private dragConfirmed = false;
+	private dragCurrentX = 0;
+	private dragInsertIndex = -1;
 
 	constructor(particleSystem?: ParticleSystem) {
 		this.container = new Container();
 		this.cardsContainer = new Container();
 		this.cardsContainer.label = "cards";
+		this.cardsContainer.sortableChildren = true;
 		this.tooltipContainer = new Container();
 		this.tooltipContainer.label = "tooltip";
 		this.container.addChild(this.cardsContainer);
 		this.container.addChild(this.tooltipContainer);
 		this.particleSystem = particleSystem ?? null;
+
+		// グローバルポインタイベント（ドラッグ中の追従）
+		// PixiJS v8はglobalpointermoveのみサポート（globalpointerupは存在しない）
+		// ドロップ検知はカードコンテナのpointerup/pointerupoutsideで行う
+		this.container.eventMode = "static";
+		this.container.on("globalpointermove", (e) => {
+			this.handleDragMove(e.global.x, e.global.y);
+		});
 	}
 
 	/**
@@ -168,6 +192,13 @@ export class HandRenderer {
 		) => undefined | false | Promise<undefined | false>,
 	): void {
 		this.onCardSelect = callback;
+	}
+
+	/**
+	 * カード並べ替えコールバックを設定
+	 */
+	setOnReorder(callback: (fromIndex: number, toIndex: number) => void): void {
+		this.onReorder = callback;
 	}
 
 	/**
@@ -203,8 +234,12 @@ export class HandRenderer {
 	 * 手札を描画
 	 */
 	render(hand: Card[], currentAp: number): void {
+		// ドラッグ確定中は再描画をスキップ（ドラッグ状態が破壊されるため）
+		if (this.isDragging && this.dragConfirmed) return;
+
 		this.currentHand = hand;
 		this.currentAp = currentAp;
+
 		this.cardsContainer.removeChildren();
 
 		const totalWidth = hand.length * CARD_WIDTH + (hand.length - 1) * CARD_GAP;
@@ -249,6 +284,7 @@ export class HandRenderer {
 		currentAp: number,
 		newCardCount: number,
 	): Promise<void> {
+		this.isInteractionEnabled = false;
 		this.currentHand = hand;
 		this.currentAp = currentAp;
 		this.cardsContainer.removeChildren();
@@ -321,6 +357,7 @@ export class HandRenderer {
 		await Promise.all(animationPromises);
 
 		// アニメーション完了後、インタラクションを有効化して再描画
+		this.isInteractionEnabled = true;
 		this.render(hand, currentAp);
 	}
 
@@ -337,6 +374,7 @@ export class HandRenderer {
 		queueIndex?: number,
 	): Container {
 		const cardContainer = new Container();
+		cardContainer.label = `card-${this.currentHand.indexOf(card)}`;
 		cardContainer.x = x;
 		cardContainer.y = y;
 
@@ -477,63 +515,52 @@ export class HandRenderer {
 			cardContainer.addChild(badgeText);
 		}
 
-		// インタラクション
-		if (enabled) {
-			makeInteractive(cardContainer, (event) => {
-				// 二重クリック防止：アニメーション中は追加クリックを無視
+		// インタラクション（ドラッグ＆クリック兼用）
+		{
+			const cardIndex = this.currentHand.indexOf(card);
+			cardContainer.eventMode = "static";
+			cardContainer.cursor = "pointer";
+
+			cardContainer.on("pointerdown", (event: FederatedPointerEvent) => {
+				if (event.button !== 0) return;
 				if (this.isInputLocked) return;
-				this.isInputLocked = true;
-				this.hoveredCardId = null;
+				if (!this.isInteractionEnabled) return;
 
-				// 方向判定はアニメーション前に計算して保持
-				let direction: Direction | undefined;
-				if (
-					card.type === "move" ||
-					card.type === "attack" ||
-					card.type === "strong_attack" ||
-					card.type === "jump"
-				) {
-					const cardGlobalPos = cardContainer.getGlobalPosition();
-					direction = getDirectionFromClickPosition(
-						event.global.x - cardGlobalPos.x,
-						event.global.y - cardGlobalPos.y,
-					);
-				}
-
-				const invokeCallback = () => {
-					if (direction !== undefined) {
-						return this.onCardSelect?.(card, direction);
-					}
-					return this.onCardSelect?.(card);
-				};
-
-				Promise.resolve()
-					.then(invokeCallback)
-					.then((result) => {
-						// onCardSelectがfalseを返した場合は無効クリック（アニメーションスキップ）
-						if (result === false) return;
-						return this.animateCardConsume(cardContainer, card.type);
-					})
-					.catch((error) => {
-						console.error("onCardSelect callback failed:", error);
-					})
-					.finally(() => {
-						this.isInputLocked = false;
-						this.render(this.currentHand, this.currentAp);
-					});
+				// ドラッグ準備開始
+				this.isDragging = true;
+				this.dragConfirmed = false;
+				this.dragCardIndex = cardIndex;
+				this.dragCardContainer = cardContainer;
+				this.dragStartX = event.global.x;
+				this.dragStartY = event.global.y;
+				this.dragCurrentX = event.global.x;
+				this.dragInsertIndex = cardIndex;
 			});
 
-			cardContainer.on("pointerover", () => {
-				if (this.hoveredCardId === card.id) return;
-				this.hoveredCardId = card.id;
-				this.render(this.currentHand, this.currentAp);
+			// ドロップ検知: pointerup（カード上でリリース）+ pointerupoutside（カード外でリリース）
+			// PixiJS v8にはglobalpointerupが存在しないため、各カードで検知する
+			cardContainer.on("pointerup", (e: FederatedPointerEvent) => {
+				this.handleDragEnd(e);
+			});
+			cardContainer.on("pointerupoutside", (e: FederatedPointerEvent) => {
+				this.handleDragEnd(e);
 			});
 
-			cardContainer.on("pointerout", () => {
-				if (this.hoveredCardId !== card.id) return;
-				this.hoveredCardId = null;
-				this.render(this.currentHand, this.currentAp);
-			});
+			if (enabled) {
+				cardContainer.on("pointerover", () => {
+					if (this.isDragging) return;
+					if (this.hoveredCardId === card.id) return;
+					this.hoveredCardId = card.id;
+					this.render(this.currentHand, this.currentAp);
+				});
+
+				cardContainer.on("pointerout", () => {
+					if (this.isDragging) return;
+					if (this.hoveredCardId !== card.id) return;
+					this.hoveredCardId = null;
+					this.render(this.currentHand, this.currentAp);
+				});
+			}
 		}
 
 		return cardContainer;
@@ -639,6 +666,226 @@ export class HandRenderer {
 	}
 
 	/**
+	 * ドラッグ中のポインタ移動処理
+	 */
+	private handleDragMove(globalX: number, globalY: number): void {
+		if (!this.isDragging) return;
+
+		this.dragCurrentX = globalX;
+
+		const dx = globalX - this.dragStartX;
+		const dy = globalY - this.dragStartY;
+		const distance = Math.sqrt(dx * dx + dy * dy);
+
+		if (!this.dragConfirmed && distance >= DRAG_THRESHOLD) {
+			this.dragConfirmed = true;
+			this.hoveredCardId = null;
+			this.tooltipContainer.removeChildren();
+		}
+
+		if (this.dragConfirmed) {
+			this.dragInsertIndex = this.calculateInsertIndex(globalX);
+			this.renderDragState();
+		}
+	}
+
+	/**
+	 * ドラッグ終了（ポインタアップ）処理
+	 */
+	private handleDragEnd(event: FederatedPointerEvent): void {
+		if (!this.isDragging) return;
+
+		const wasDragConfirmed = this.dragConfirmed;
+		const fromIndex = this.dragCardIndex;
+		const toIndex = this.dragInsertIndex;
+
+		// ドラッグ状態リセット
+		this.isDragging = false;
+		this.dragConfirmed = false;
+		this.dragCardIndex = -1;
+		this.dragCardContainer = null;
+		this.dragInsertIndex = -1;
+
+		if (wasDragConfirmed) {
+			// ドロップ: 並べ替えコールバック呼び出し
+			if (fromIndex !== toIndex) {
+				this.onReorder?.(fromIndex, toIndex);
+			} else {
+				// 同じ位置にドロップした場合は再描画のみ
+				this.render(this.currentHand, this.currentAp);
+			}
+		} else {
+			// クリック: 既存のクリック処理を実行
+			this.handleCardClick(fromIndex, event);
+		}
+	}
+
+	/**
+	 * カードクリック処理（ドラッグでなかった場合に呼ばれる）
+	 */
+	private handleCardClick(
+		cardIndex: number,
+		event: FederatedPointerEvent,
+	): void {
+		if (cardIndex < 0 || cardIndex >= this.currentHand.length) return;
+
+		const card = this.currentHand[cardIndex];
+		const cost = getEffectiveCardCost(card.type);
+		const used = this.currentUsedCardIds.has(card.id);
+		const enabled = !used && this.currentAp >= cost;
+
+		if (!enabled) return;
+
+		// 二重クリック防止
+		if (this.isInputLocked) return;
+		this.isInputLocked = true;
+		this.hoveredCardId = null;
+
+		// 方向判定
+		let direction: Direction | undefined;
+		if (
+			card.type === "move" ||
+			card.type === "attack" ||
+			card.type === "strong_attack" ||
+			card.type === "jump"
+		) {
+			const cardContainer = this.cardsContainer.children[
+				cardIndex
+			] as Container;
+			const cardGlobalPos = cardContainer.getGlobalPosition();
+			direction = getDirectionFromClickPosition(
+				event.global.x - cardGlobalPos.x,
+				event.global.y - cardGlobalPos.y,
+			);
+		}
+
+		const invokeCallback = () => {
+			if (direction !== undefined) {
+				return this.onCardSelect?.(card, direction);
+			}
+			return this.onCardSelect?.(card);
+		};
+
+		const cardContainer = this.cardsContainer.children[cardIndex] as Container;
+
+		Promise.resolve()
+			.then(invokeCallback)
+			.then((result) => {
+				if (result === false) return;
+				return this.animateCardConsume(cardContainer, card.type);
+			})
+			.catch((error) => {
+				console.error("onCardSelect callback failed:", error);
+			})
+			.finally(() => {
+				this.isInputLocked = false;
+				this.render(this.currentHand, this.currentAp);
+			});
+	}
+
+	/**
+	 * ドラッグ中のビジュアル更新
+	 */
+	private renderDragState(): void {
+		const hand = this.currentHand;
+		if (hand.length === 0) return;
+
+		const totalWidth = hand.length * CARD_WIDTH + (hand.length - 1) * CARD_GAP;
+		const startX = -totalWidth / 2;
+
+		// children配列はsortChildren()で並び替わるため、
+		// 各カードの実インデックスをrender()時の追加順で特定する
+		for (let i = 0; i < this.cardsContainer.children.length; i++) {
+			const child = this.cardsContainer.children[i] as Container;
+
+			if (child === this.dragCardContainer) {
+				// ドラッグ中カード: ポインタ追従
+				const containerGlobalPos = this.container.getGlobalPosition();
+				child.x = this.dragCurrentX - containerGlobalPos.x - CARD_WIDTH / 2;
+				child.y = -DRAG_LIFT;
+				child.zIndex = 1;
+				child.alpha = 0.8;
+			} else {
+				// 他のカード: 挿入位置に応じてスライド
+				const actualIndex = this.getActualIndex(child);
+				const visualIndex = this.getVisualIndex(actualIndex);
+				const targetX = startX + visualIndex * (CARD_WIDTH + CARD_GAP);
+				child.x = targetX;
+				child.y = 0;
+				child.zIndex = 0;
+				child.alpha = 1;
+			}
+		}
+
+		this.cardsContainer.sortChildren();
+	}
+
+	/**
+	 * ドラッグ中のカードの挿入先インデックスを計算
+	 * 隣接カード中心の中間点をスロット境界として使用
+	 */
+	private calculateInsertIndex(globalX: number): number {
+		const hand = this.currentHand;
+		if (hand.length <= 1) return 0;
+
+		const containerGlobalPos = this.container.getGlobalPosition();
+		const localX = globalX - containerGlobalPos.x;
+
+		const totalWidth = hand.length * CARD_WIDTH + (hand.length - 1) * CARD_GAP;
+		const startX = -totalWidth / 2;
+		const step = CARD_WIDTH + CARD_GAP;
+
+		for (let i = 0; i < hand.length - 1; i++) {
+			const currentCenter = startX + i * step + CARD_WIDTH / 2;
+			const nextCenter = startX + (i + 1) * step + CARD_WIDTH / 2;
+			const boundary = (currentCenter + nextCenter) / 2;
+			if (localX < boundary) {
+				return i;
+			}
+		}
+		return hand.length - 1;
+	}
+
+	/**
+	 * コンテナのラベルから実インデックスを取得
+	 */
+	private getActualIndex(child: Container): number {
+		const match = child.label?.match(/^card-(\d+)$/);
+		return match ? Number(match[1]) : -1;
+	}
+
+	/**
+	 * ドラッグ中の表示位置インデックスを取得
+	 * ドラッグ中カードが抜けた穴を埋めるようにシフト
+	 */
+	private getVisualIndex(actualIndex: number): number {
+		if (actualIndex === this.dragCardIndex) return this.dragInsertIndex;
+
+		// ドラッグ元からカードが抜けた影響を計算
+		let visualIndex = actualIndex;
+
+		if (this.dragCardIndex < this.dragInsertIndex) {
+			// 前→後への移動: ドラッグ元〜挿入先の間のカードが左にシフト
+			if (
+				actualIndex > this.dragCardIndex &&
+				actualIndex <= this.dragInsertIndex
+			) {
+				visualIndex = actualIndex - 1;
+			}
+		} else if (this.dragCardIndex > this.dragInsertIndex) {
+			// 後→前への移動: 挿入先〜ドラッグ元の間のカードが右にシフト
+			if (
+				actualIndex >= this.dragInsertIndex &&
+				actualIndex < this.dragCardIndex
+			) {
+				visualIndex = actualIndex + 1;
+			}
+		}
+
+		return visualIndex;
+	}
+
+	/**
 	 * クリア
 	 */
 	clear(): void {
@@ -649,6 +896,11 @@ export class HandRenderer {
 		this.currentUsedCardIds = new Set();
 		this.currentQueuedCardIndexMap = new Map();
 		this.currentComboHistory = null;
+		this.isDragging = false;
+		this.dragConfirmed = false;
+		this.dragCardIndex = -1;
+		this.dragCardContainer = null;
+		this.dragInsertIndex = -1;
 	}
 
 	/**

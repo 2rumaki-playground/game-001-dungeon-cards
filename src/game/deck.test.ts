@@ -11,6 +11,7 @@ import {
 	getTotalDeckSize,
 	isCardUsed,
 	markCardUsed,
+	reorderHand,
 	resetCardIdCounter,
 	resetUsedCards,
 } from "./deck";
@@ -187,6 +188,86 @@ describe("deck", () => {
 
 			const card2 = createCard("attack", "water");
 			expect(card2.keyword).toBe("water");
+		});
+	});
+
+	describe("reorderHand", () => {
+		it("カードを前方から後方に移動する", () => {
+			const deck: DeckState = {
+				hand: [
+					{ id: "card-1", type: "move", keyword: "flame" },
+					{ id: "card-2", type: "attack", keyword: "flame" },
+					{ id: "card-3", type: "wait", keyword: "flame" },
+					{ id: "card-4", type: "move", keyword: "water" },
+				],
+				usedCardIds: [],
+			};
+			const result = reorderHand(deck, 0, 2);
+			expect(result.hand.map((c) => c.id)).toEqual([
+				"card-2",
+				"card-3",
+				"card-1",
+				"card-4",
+			]);
+		});
+
+		it("カードを後方から前方に移動する", () => {
+			const deck: DeckState = {
+				hand: [
+					{ id: "card-1", type: "move", keyword: "flame" },
+					{ id: "card-2", type: "attack", keyword: "flame" },
+					{ id: "card-3", type: "wait", keyword: "flame" },
+					{ id: "card-4", type: "move", keyword: "water" },
+				],
+				usedCardIds: [],
+			};
+			const result = reorderHand(deck, 3, 1);
+			expect(result.hand.map((c) => c.id)).toEqual([
+				"card-1",
+				"card-4",
+				"card-2",
+				"card-3",
+			]);
+		});
+
+		it("同一インデックスの場合は元のdeckを返す", () => {
+			const deck: DeckState = {
+				hand: [
+					{ id: "card-1", type: "move", keyword: "flame" },
+					{ id: "card-2", type: "attack", keyword: "flame" },
+				],
+				usedCardIds: [],
+			};
+			const result = reorderHand(deck, 1, 1);
+			expect(result).toBe(deck);
+		});
+
+		it("範囲外インデックスの場合は元のdeckを返す", () => {
+			const deck: DeckState = {
+				hand: [
+					{ id: "card-1", type: "move", keyword: "flame" },
+					{ id: "card-2", type: "attack", keyword: "flame" },
+				],
+				usedCardIds: [],
+			};
+			expect(reorderHand(deck, -1, 0)).toBe(deck);
+			expect(reorderHand(deck, 0, 5)).toBe(deck);
+		});
+
+		it("イミュータブル: 元のdeckが変更されない", () => {
+			const deck: DeckState = {
+				hand: [
+					{ id: "card-1", type: "move", keyword: "flame" },
+					{ id: "card-2", type: "attack", keyword: "flame" },
+					{ id: "card-3", type: "wait", keyword: "flame" },
+				],
+				usedCardIds: ["card-1"],
+			};
+			const originalIds = deck.hand.map((c) => c.id);
+			const result = reorderHand(deck, 0, 2);
+			expect(deck.hand.map((c) => c.id)).toEqual(originalIds);
+			expect(result).not.toBe(deck);
+			expect(result.usedCardIds).toEqual(["card-1"]);
 		});
 	});
 
