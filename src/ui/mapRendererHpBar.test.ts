@@ -390,8 +390,8 @@ describe("MapRenderer 敵ホバーツールチップ", () => {
 		const container = renderer.getContainer();
 		const enemiesContainer = container.children[4];
 		const enemyContainer = enemiesContainer.children[0];
-		// 敵ツールチップは最上位から2番目（プレイヤーツールチップが最上位）
-		const tooltipContainer = container.children.at(-2);
+		// 敵ツールチップは最上位から3番目（プレイヤー・タイルツールチップが上位）
+		const tooltipContainer = container.children.at(-3);
 
 		expect(tooltipContainer?.visible).toBe(false);
 		enemyContainer.emit("pointerover", {} as FederatedPointerEvent);
@@ -404,13 +404,17 @@ describe("MapRenderer 敵ホバーツールチップ", () => {
 		const renderer = new MapRenderer();
 		const container = renderer.getContainer();
 		// 敵ツールチップ
-		const enemyTooltip = container.children.at(-2);
+		const enemyTooltip = container.children.at(-3);
 		expect(enemyTooltip?.visible).toBe(false);
 		expect(enemyTooltip?.eventMode).toBe("none");
 		// プレイヤーツールチップ
-		const playerTooltip = container.children.at(-1);
+		const playerTooltip = container.children.at(-2);
 		expect(playerTooltip?.visible).toBe(false);
 		expect(playerTooltip?.eventMode).toBe("none");
+		// タイルツールチップ
+		const tileTooltip = container.children.at(-1);
+		expect(tileTooltip?.visible).toBe(false);
+		expect(tileTooltip?.eventMode).toBe("none");
 	});
 });
 
@@ -456,7 +460,7 @@ describe("MapRenderer プレイヤーホバーツールチップ", () => {
 
 		const container = renderer.getContainer();
 		const playerContainer = renderer.getPlayerContainer();
-		const tooltipContainer = container.children.at(-1);
+		const tooltipContainer = container.children.at(-2);
 
 		expect(tooltipContainer?.visible).toBe(false);
 		playerContainer.emit("pointerover", {} as FederatedPointerEvent);

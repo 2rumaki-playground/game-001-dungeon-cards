@@ -4,17 +4,36 @@
 
 import { type Container, type Graphics, Sprite } from "pixi.js";
 import { CELL_SIZE } from "../constants";
-import type { GameMap } from "../types";
+import type { GameMap, TileType } from "../types";
 import { getTileTexture } from "./assetLoader";
 import { gridToPixel } from "./coordinates";
 import { drawRemnantOverlay } from "./mapAnimationConstants";
+
+/** 特殊タイルのホバーイベントコールバック */
+export type TileHoverCallbacks = {
+	onPointerOver: (gridX: number, gridY: number, tileType: TileType) => void;
+	onPointerOut: () => void;
+};
+
+/** ホバーイベント対象の特殊タイル種別 */
+const HOVERABLE_TILE_TYPES: ReadonlySet<TileType> = new Set([
+	"stairs",
+	"trap",
+	"treasure",
+	"rest_area",
+]);
 
 /**
  * マップタイルを描画
  * @param tilesContainer タイルを配置するコンテナ
  * @param map 描画するマップ
+ * @param hoverCallbacks 特殊タイルのホバーコールバック（省略時はイベント未登録）
  */
-export function renderTiles(tilesContainer: Container, map: GameMap): void {
+export function renderTiles(
+	tilesContainer: Container,
+	map: GameMap,
+	hoverCallbacks?: TileHoverCallbacks,
+): void {
 	const removedTiles = tilesContainer.removeChildren();
 	for (const child of removedTiles) {
 		child.destroy();
@@ -30,6 +49,17 @@ export function renderTiles(tilesContainer: Container, map: GameMap): void {
 			sprite.y = pixelPos.y;
 			sprite.width = CELL_SIZE;
 			sprite.height = CELL_SIZE;
+
+			if (hoverCallbacks && HOVERABLE_TILE_TYPES.has(tile.type)) {
+				sprite.eventMode = "static";
+				sprite.on("pointerover", () => {
+					hoverCallbacks.onPointerOver(x, y, tile.type);
+				});
+				sprite.on("pointerout", () => {
+					hoverCallbacks.onPointerOut();
+				});
+			}
+
 			tilesContainer.addChild(sprite);
 		}
 	}

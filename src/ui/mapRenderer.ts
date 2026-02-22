@@ -12,9 +12,10 @@ import type {
 	Player,
 	Position,
 	SpecialTileType,
+	TileType,
 } from "../types";
 import { CharacterRenderer } from "./characterRenderer";
-import { getViewportPixelSize } from "./coordinates";
+import { getViewportPixelSize, gridToPixel } from "./coordinates";
 import {
 	animateDamagePopup as animateDamagePopupImpl,
 	animateMissPopup as animateMissPopupImpl,
@@ -27,11 +28,17 @@ import {
 	animatePlayerBlink,
 	animateScreenShake,
 } from "./mapEffects";
-import { renderFog, renderRemnants, renderTiles } from "./mapTileRenderer";
+import {
+	renderFog,
+	renderRemnants,
+	renderTiles,
+	type TileHoverCallbacks,
+} from "./mapTileRenderer";
 import { PlayerTooltip } from "./playerTooltip";
 import { calcScreenShakeIntensity } from "./popupLogic";
 import { SkillForecastEffectManager } from "./skillForecastEffect";
 import { SpecialTileEffectManager } from "./specialTileEffect";
+import { TileTooltip } from "./tileTooltip";
 
 export type { PopupType } from "./mapAnimationConstants";
 
@@ -48,8 +55,11 @@ export class MapRenderer {
 	private lastRenderedMap: GameMap | null = null;
 	private enemyTooltip: EnemyTooltip;
 	private playerTooltip: PlayerTooltip;
+	private tileTooltip: TileTooltip;
 	private tooltipEnemyId: string | null = null;
+	private tooltipTileKey: string | null = null;
 	private lastPlayer: Player | null = null;
+	private lastVisitedTiles: Set<string> | undefined;
 	private specialTileEffectManager: SpecialTileEffectManager;
 	private skillForecastEffectManager: SkillForecastEffectManager;
 	private characterRenderer: CharacterRenderer;
@@ -71,6 +81,7 @@ export class MapRenderer {
 		this.fogGraphics = new Graphics();
 		this.enemyTooltip = new EnemyTooltip();
 		this.playerTooltip = new PlayerTooltip();
+		this.tileTooltip = new TileTooltip();
 		this.specialTileEffectManager = new SpecialTileEffectManager();
 		this.skillForecastEffectManager = new SkillForecastEffectManager();
 
@@ -102,7 +113,15 @@ export class MapRenderer {
 		this.container.addChild(this.playerContainer);
 		this.container.addChild(this.enemyTooltip.getContainer());
 		this.container.addChild(this.playerTooltip.getContainer());
+		this.container.addChild(this.tileTooltip.getContainer());
 	}
+
+	/** タイルホバーコールバック */
+	private tileHoverCallbacks: TileHoverCallbacks = {
+		onPointerOver: (gridX: number, gridY: number, tileType: TileType) =>
+			this.showTileTooltip(gridX, gridY, tileType),
+		onPointerOut: () => this.hideTileTooltip(),
+	};
 
 	/**
 	 * ルートコンテナを取得
@@ -138,7 +157,11 @@ export class MapRenderer {
 	renderMap(map: GameMap): void {
 		if (this.lastRenderedMap === map) return;
 		this.lastRenderedMap = map;
-		renderTiles(this.tilesContainer, map);
+		// マップ再描画時にホバー中タイルのSpriteがdestroyされるため、
+		// pointeroutが発火せずツールチップが残るのを防ぐ
+		this.hideTileTooltip();
+		this.tooltipTileKey = null;
+		renderTiles(this.tilesContainer, map, this.tileHoverCallbacks);
 	}
 
 	/**
@@ -307,6 +330,7 @@ export class MapRenderer {
 		visitedTiles?: Set<string>,
 	): void {
 		this.renderMap(map);
+		this.lastVisitedTiles = visitedTiles;
 		this.specialTileEffectManager.setFloorCleared(enemies.length === 0);
 		this.specialTileEffectManager.update(map, visitedTiles);
 		this.renderRemnants(remnants);
@@ -345,6 +369,8 @@ export class MapRenderer {
 		this.characterRenderer.clear();
 		this.hideEnemyTooltip();
 		this.hidePlayerTooltip();
+		this.hideTileTooltip();
+		this.lastVisitedTiles = undefined;
 		this.specialTileEffectManager.clear();
 		this.skillForecastEffectManager.clear();
 		this.enemyAiOverlayManager?.clear();
@@ -460,6 +486,69 @@ export class MapRenderer {
 	 */
 	private hidePlayerTooltip(): void {
 		this.playerTooltip.hide();
+	}
+
+	/**
+	 * 特殊タイルツールチップを表示
+	 */
+	private showTileTooltip(
+		gridX: number,
+		gridY: number,
+		tileType: TileType,
+	): void {
+		const key = `${gridX},${gridY}`;
+		// Fog of War: 未訪問タイルにはツールチップを表示しない
+		if (this.lastVisitedTiles && !this.lastVisitedTiles.has(key)) return;
+
+		this.tooltipTileKey = key;
+		const pixelPos = gridToPixel({ x: gridX, y: gridY });
+		const viewport = getViewportPixelSize();
+		const containerTransform = {
+			x: this.container.x,
+			y: this.container.y,
+			scale: this.container.scale.x,
+		};
+		this.tileTooltip.show(
+			tileType,
+			pixelPos.x,
+			pixelPos.y,
+			viewport,
+			containerTransform,
+		);
+	}
+
+	/**
+	 * 表示中の特殊タイルツールチップを現在のコンテナ変換で再配置
+	 * カメラオフセット/ズーム変更後に呼び出す
+	 */
+	repositionTileTooltip(): void {
+		if (!this.tooltipTileKey) return;
+
+		const [xStr, yStr] = this.tooltipTileKey.split(",");
+		const gridX = Number(xStr);
+		const gridY = Number(yStr);
+		const pixelPos = gridToPixel({ x: gridX, y: gridY });
+		const viewport = getViewportPixelSize();
+		const containerTransform = {
+			x: this.container.x,
+			y: this.container.y,
+			scale: this.container.scale.x,
+		};
+
+		this.tileTooltip.updatePosition(
+			pixelPos.x,
+			pixelPos.y,
+			viewport,
+			containerTransform,
+		);
+	}
+
+	/**
+	 * 特殊タイルツールチップを非表示
+	 */
+	private hideTileTooltip(): void {
+		this.tooltipTileKey = null;
+		this.tileTooltip.hide();
 	}
 
 	/**
