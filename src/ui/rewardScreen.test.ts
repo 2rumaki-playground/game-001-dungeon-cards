@@ -640,7 +640,7 @@ describe("RewardScreen", () => {
 			).resolves.toBeUndefined();
 		});
 
-		it("render後にemitがレアリティに応じた引数で呼ばれる（common）", async () => {
+		it("render後にemitがカード種別に応じた引数で呼ばれる", async () => {
 			const screen = new RewardScreen();
 			const mockEmit = vi.fn().mockResolvedValue(undefined);
 			const mockGetContainer = vi.fn().mockReturnValue({
@@ -657,33 +657,11 @@ describe("RewardScreen", () => {
 			expect(mockEmit).toHaveBeenCalledTimes(1);
 			expect(mockEmit).toHaveBeenCalledWith(
 				expect.objectContaining({
-					count: 12,
-					color: [0xaaaaaa, 0xcccccc],
+					count: 20,
+					color: [0x44ccff, 0x2288cc],
+					speed: { min: 0.02, max: 0.08 },
 					life: { min: 300, max: 500 },
-				}),
-			);
-		});
-
-		it("render後にemitがレアリティに応じた引数で呼ばれる（rare）", async () => {
-			const screen = new RewardScreen();
-			const mockEmit = vi.fn().mockResolvedValue(undefined);
-			const mockGetContainer = vi.fn().mockReturnValue({
-				toLocal: (pos: { x: number; y: number }) => pos,
-			});
-			const mockParticle = {
-				emit: mockEmit,
-				getContainer: mockGetContainer,
-			} as unknown as ParticleSystem;
-			screen.setParticleSystem(mockParticle);
-			screen.render(["jump"], 600, 400);
-
-			await screen.animateCardAcquire(0, "jump");
-			expect(mockEmit).toHaveBeenCalledTimes(1);
-			expect(mockEmit).toHaveBeenCalledWith(
-				expect.objectContaining({
-					count: 30,
-					color: [0xddaa22, 0xffdd44, 0xffcc00, 0xffffff],
-					life: { min: 300, max: 800 },
+					size: { min: 1, max: 3 },
 				}),
 			);
 		});

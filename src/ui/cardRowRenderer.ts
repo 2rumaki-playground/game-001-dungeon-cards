@@ -5,13 +5,7 @@
 
 import { Container, Graphics, Text } from "pixi.js";
 import type { CardType } from "../types";
-import {
-	CARD_COLORS,
-	CARD_RARITY,
-	CARD_TYPE_NAME,
-	CARD_TYPE_SYMBOL,
-	RARITY_COLORS,
-} from "./cardConstants";
+import { CARD_COLORS, CARD_TYPE_NAME, CARD_TYPE_SYMBOL } from "./cardConstants";
 import { drawRoundedRect } from "./graphicsHelpers";
 
 /** カード行の高さ */
@@ -28,12 +22,6 @@ export const CARD_ROW_TEXT_X = 16;
 
 /** カード行の角丸半径 */
 const ROW_RADIUS = 6;
-
-/** レアリティバー設定 */
-const RARITY_BAR_X = 6;
-const RARITY_BAR_WIDTH = 3;
-const RARITY_BAR_PADDING = 4;
-const RARITY_BAR_RADIUS = 1;
 
 /** フォント設定 */
 const NAME_FONT_SIZE = 15;
@@ -59,8 +47,6 @@ export function createCardListRow(options: CardListRowOptions): Container {
 	const row = new Container();
 
 	const colors = CARD_COLORS[cardType];
-	const rarity = CARD_RARITY[cardType];
-	const rarityColor = RARITY_COLORS[rarity];
 
 	// 背景
 	const bg = new Graphics();
@@ -69,18 +55,6 @@ export function createCardListRow(options: CardListRowOptions): Container {
 		width: 1,
 	});
 	row.addChild(bg);
-
-	// レアリティバー
-	const rarityBar = new Graphics();
-	rarityBar.roundRect(
-		RARITY_BAR_X,
-		RARITY_BAR_PADDING,
-		RARITY_BAR_WIDTH,
-		CARD_ROW_HEIGHT - RARITY_BAR_PADDING * 2,
-		RARITY_BAR_RADIUS,
-	);
-	rarityBar.fill(rarityColor);
-	row.addChild(rarityBar);
 
 	// シンボル + 種別名（+ 枚数）
 	const nameStr =

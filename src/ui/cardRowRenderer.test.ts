@@ -60,10 +60,10 @@ describe("cardRowRenderer", () => {
 			expect(nameText?.text).not.toContain("x");
 		});
 
-		it("レアリティバーが描画される", () => {
+		it("背景と名前テキストが描画される", () => {
 			const row = createCardListRow({ cardType: "jump" });
-			// 背景 + レアリティバー + 名前テキスト = 最低3つの子要素
-			expect(row.children.length).toBeGreaterThanOrEqual(3);
+			// 背景 + 名前テキスト = 最低2つの子要素
+			expect(row.children.length).toBeGreaterThanOrEqual(2);
 		});
 
 		it("幅を指定できる", () => {

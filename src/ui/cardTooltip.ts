@@ -7,11 +7,8 @@ import { Container, Graphics, Text } from "pixi.js";
 import type { CardType } from "../types";
 import {
 	CARD_DESCRIPTION,
-	CARD_RARITY,
 	CARD_TYPE_NAME,
 	CARD_TYPE_SYMBOL,
-	RARITY_COLORS,
-	RARITY_NAME,
 } from "./cardConstants";
 import { drawRoundedRect } from "./graphicsHelpers";
 
@@ -45,8 +42,6 @@ export function createCardTooltip(cardType: CardType): {
 	const tooltip = new Container();
 	tooltip.eventMode = "none";
 	tooltip.interactiveChildren = false;
-
-	const rarity = CARD_RARITY[cardType];
 
 	let yOffset = TOOLTIP_PADDING;
 
@@ -88,19 +83,6 @@ export function createCardTooltip(cardType: CardType): {
 	}
 	yOffset += descHeight + 8;
 
-	// レアリティ
-	const rarityText = new Text({
-		text: RARITY_NAME[rarity],
-		style: {
-			fontSize: 11,
-			fontFamily: "sans-serif",
-			fill: RARITY_COLORS[rarity],
-		},
-	});
-	rarityText.x = TOOLTIP_PADDING;
-	rarityText.y = yOffset;
-	yOffset += 16;
-
 	const tooltipHeight = yOffset + TOOLTIP_PADDING;
 
 	// 背景
@@ -121,7 +103,6 @@ export function createCardTooltip(cardType: CardType): {
 	// テキスト要素を追加
 	tooltip.addChild(nameText);
 	tooltip.addChild(descText);
-	tooltip.addChild(rarityText);
 
 	return { container: tooltip, height: tooltipHeight };
 }

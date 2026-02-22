@@ -8,7 +8,7 @@ import {
 	PLAYER_ATTACK_DAMAGE,
 	PLAYER_STRONG_ATTACK_DAMAGE,
 } from "../constants";
-import type { CardType, Rarity } from "../types";
+import type { CardType } from "../types";
 
 /** カード背景色 */
 export const CARD_COLORS: Record<CardType, { bg: number; border: number }> = {
@@ -46,22 +46,6 @@ export const CARD_GLOW_COLORS: Record<CardType, number[]> = {
 	wait: [0x888888, 0x666666],
 };
 
-/** カードレアリティ（UI表示用） */
-export const CARD_RARITY: Record<CardType, Rarity> = {
-	move: "common",
-	attack: "common",
-	wait: "common",
-	strong_attack: "uncommon",
-	jump: "rare",
-};
-
-/** レアリティ色 */
-export const RARITY_COLORS: Record<Rarity, number> = {
-	common: 0x888888,
-	uncommon: 0x44aa44,
-	rare: 0xddaa22,
-};
-
 /** カード詳細説明（ツールチップ用） */
 export const CARD_DESCRIPTION: Record<CardType, string> = {
 	move: "選択した方向に1マス移動する。\nマップ外・壁・敵がいる場合は移動失敗。",
@@ -69,11 +53,4 @@ export const CARD_DESCRIPTION: Record<CardType, string> = {
 	strong_attack: `隣接1マス先の敵に${PLAYER_STRONG_ATTACK_DAMAGE}ダメージ。\nマップ外・壁・敵不在の場合は空振り。`,
 	jump: `選択した方向の${JUMP_DISTANCE}マス先に着地し、1マス先を飛び越える。\nマップ外・壁・敵がいる場合は失敗。`,
 	wait: "何もせずターンを消費する。",
-};
-
-/** レアリティ日本語名 */
-export const RARITY_NAME: Record<Rarity, string> = {
-	common: "コモン",
-	uncommon: "アンコモン",
-	rare: "レア",
 };

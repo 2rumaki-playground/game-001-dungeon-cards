@@ -7,12 +7,7 @@ import { describe, expect, it, vi } from "vitest";
 import { createTweenMock, mockEasing } from "../test-utils/mockTween";
 import type { Card, CardType } from "../types";
 import { tween } from "../utils/tween";
-import {
-	CARD_DESCRIPTION,
-	CARD_RARITY,
-	CARD_TYPE_NAME,
-	RARITY_NAME,
-} from "./cardConstants";
+import { CARD_DESCRIPTION, CARD_TYPE_NAME } from "./cardConstants";
 import {
 	CARD_GAP,
 	CARD_HEIGHT,
@@ -796,21 +791,6 @@ describe("HandRenderer ツールチップ表示", () => {
 		const texts = getAllTextsRecursive(tooltipContainer);
 		const hasDesc = texts.some((t) => t.text.includes(CARD_DESCRIPTION.move));
 		expect(hasDesc).toBe(true);
-	});
-
-	it("ツールチップにレアリティが含まれる", () => {
-		const renderer = new HandRenderer();
-		const cards = createTestCards();
-		renderer.render(cards);
-
-		const card0 = findCardContainer(renderer, 0);
-		card0.emit("pointerover", {} as FederatedPointerEvent);
-
-		const tooltipContainer = findTooltipContainer(renderer);
-		const texts = getAllTextsRecursive(tooltipContainer);
-		const rarity = CARD_RARITY.move;
-		const hasRarity = texts.some((t) => t.text.includes(RARITY_NAME[rarity]));
-		expect(hasRarity).toBe(true);
 	});
 
 	it("pointeroutでツールチップが消える", () => {

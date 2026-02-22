@@ -2,7 +2,7 @@
  * 型定義のエクスポート
  */
 
-export type { Card, CardType, DeckState, Rarity } from "./card";
+export type { Card, CardType, DeckState } from "./card";
 export type {
 	AcquisitionCondition,
 	AcquisitionConditionType,
