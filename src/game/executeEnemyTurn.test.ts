@@ -12,6 +12,7 @@ import {
 import type { Enemy, Screen } from "../types";
 import { RNG } from "../utils/rng";
 import { resetDebugCheats, toggleDebugCheat } from "./debugCheats";
+import { executeEnemyTurnWithDebug } from "./debugMiddleware";
 import { executeEnemyTurn } from "./enemyAi";
 
 describe("executeEnemyTurn", () => {
@@ -400,7 +401,7 @@ describe("executeEnemyTurn", () => {
 				},
 			];
 			const state = createTestState({ turn: "enemy", enemies });
-			const { state: result, totalDamage } = executeEnemyTurn(state);
+			const { state: result, totalDamage } = executeEnemyTurnWithDebug(state);
 
 			expect(result.player.hp).toBe(PLAYER_INITIAL_HP);
 			expect(totalDamage).toBe(0);
@@ -418,7 +419,7 @@ describe("executeEnemyTurn", () => {
 				},
 			];
 			const state = createTestState({ turn: "enemy", enemies });
-			const { state: result, totalDamage } = executeEnemyTurn(state);
+			const { state: result, totalDamage } = executeEnemyTurnWithDebug(state);
 
 			expect(result.player.hp).toBe(PLAYER_INITIAL_HP - ENEMY_ATTACK_DAMAGE);
 			expect(totalDamage).toBe(ENEMY_PARAMS.normal.attackDamage);

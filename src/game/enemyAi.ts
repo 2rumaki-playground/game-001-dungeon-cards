@@ -13,7 +13,6 @@ import {
 	executePendingSkill,
 } from "./bossSkill";
 import { applyEnemyDamageToPlayer, checkGameOver, isDefeated } from "./combat";
-import { getDebugCheats } from "./debugCheats";
 import { DIRECTION_LABEL } from "./enemyAiAnalysis";
 import { isInBounds } from "./map";
 import { bfsFirstStep } from "./pathfinding";
@@ -101,8 +100,8 @@ function moveEnemyByType(
 	state: GameState,
 	enemy: Enemy,
 	moveDistance: number,
+	verbose = false,
 ): GameState {
-	const showAi = import.meta.env.DEV && getDebugCheats().showEnemyAi;
 	const label = ENEMY_TYPE_LABEL[enemy.type];
 
 	if (moveDistance === 0) {
@@ -136,7 +135,7 @@ function moveEnemyByType(
 			);
 			next = setEnemies(next, newEnemies);
 			if (step === 0) {
-				const msg = showAi
+				const msg = verbose
 					? `${label}が移動した（距離${distBefore}→${distAfter}, BFS:${DIRECTION_LABEL[dir]}）`
 					: "敵が移動した";
 				next = addActionLog(next, msg, "enemy");
@@ -167,10 +166,11 @@ export type EnemyTurnResult = {
  *    - 索敵範囲内 → プレイヤーに近づく移動
  *    - 索敵範囲外 → 待機（何もしない）
  */
-export function executeEnemyTurn(state: GameState): EnemyTurnResult {
-	if (import.meta.env.DEV && getDebugCheats().skipEnemyTurn) {
-		return { state, totalDamage: 0 };
-	}
+export function executeEnemyTurn(
+	state: GameState,
+	options?: { verbose?: boolean },
+): EnemyTurnResult {
+	const verbose = options?.verbose ?? false;
 
 	// RNGをcloneして入力stateを変更しない
 	let rng = state.rng.clone();
@@ -215,8 +215,6 @@ export function executeEnemyTurn(state: GameState): EnemyTurnResult {
 
 		const enemyRoom = findRoomAt(currentEnemy.position, next.rooms);
 
-		const showAi = import.meta.env.DEV && getDebugCheats().showEnemyAi;
-
 		if (isAdjacent(currentEnemy.position, next.player.position)) {
 			// 攻撃（激昂時はボーナスダメージ）— 部屋境界に関係なく発動
 			const enrageBonus = currentEnemy.enraged
@@ -224,7 +222,7 @@ export function executeEnemyTurn(state: GameState): EnemyTurnResult {
 				: 0;
 			const damage = params.attackDamage + enrageBonus;
 			next = applyEnemyDamageToPlayer(next, damage, currentEnemy.type);
-			const attackMsg = showAi
+			const attackMsg = verbose
 				? `${ENEMY_TYPE_LABEL[currentEnemy.type]}が攻撃した（隣接, ATK:${damage}）`
 				: "敵が攻撃した";
 			next = addActionLog(next, attackMsg, "enemy");
@@ -239,7 +237,7 @@ export function executeEnemyTurn(state: GameState): EnemyTurnResult {
 			params.senseRange
 		) {
 			// 索敵範囲内 → 追従
-			next = moveEnemyByType(next, currentEnemy, params.moveDistance);
+			next = moveEnemyByType(next, currentEnemy, params.moveDistance, verbose);
 			rng = next.rng;
 
 			// ボス/ミニボス: スキル予告判定（移動後の敵をインデックスで取得）

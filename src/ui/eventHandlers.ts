@@ -6,7 +6,6 @@ import { JUMP_DISTANCE, TRAP_DAMAGE, TREASURE_HEAL } from "../constants";
 import {
 	endPlayerTurn,
 	executeAttack,
-	executeEnemyTurn,
 	executeJump,
 	executeMove,
 	executeStrongAttack,
@@ -18,6 +17,7 @@ import {
 } from "../game";
 import { buildQueuedCardIndexMap, canEnqueueCard } from "../game/cardQueue";
 import { resetDebugCheats } from "../game/debugCheats";
+import { executeEnemyTurnWithDebug } from "../game/debugMiddleware";
 import { reorderHand } from "../game/deck";
 import { endSession, startSession } from "../game/playStats";
 import { setDeck } from "../game/state";
@@ -692,7 +692,8 @@ export function setupEventHandlers(ctx: GameContext): void {
 			await ctx.ui.turnBanner.showBanner("enemy");
 
 			const enemiesBefore = next.enemies;
-			const { state: enemyTurnState, totalDamage } = executeEnemyTurn(next);
+			const { state: enemyTurnState, totalDamage } =
+				executeEnemyTurnWithDebug(next);
 			next = enemyTurnState;
 			const enemyMoves = detectEnemyMoves(enemiesBefore, next.enemies);
 			const playerWasAttacked = totalDamage > 0;
