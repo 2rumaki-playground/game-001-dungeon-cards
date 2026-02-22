@@ -2,15 +2,7 @@
  * イベントハンドラ設定
  */
 
-import {
-	JUMP_DISTANCE,
-	STATUS_BAR_HEIGHT,
-	TRAP_DAMAGE,
-	TREASURE_HEAL,
-	ZOOM_MAX,
-	ZOOM_MIN,
-	ZOOM_WHEEL_STEP,
-} from "../constants";
+import { JUMP_DISTANCE, TRAP_DAMAGE, TREASURE_HEAL } from "../constants";
 import {
 	endPlayerTurn,
 	executeAttack,
@@ -30,13 +22,7 @@ import { reorderHand } from "../game/deck";
 import { endSession, startSession } from "../game/playStats";
 import { setDeck } from "../game/state";
 import type { GameContext } from "../gameContext";
-import type {
-	Card,
-	ComboType,
-	Direction,
-	Position,
-	SpecialTileType,
-} from "../types";
+import type { Card, ComboType, Direction, SpecialTileType } from "../types";
 import { DIRECTION_DELTA } from "../types";
 import {
 	clearPlaySessions,
@@ -51,13 +37,9 @@ import {
 	createJumpParticleConfig,
 	createTrapDamageParticleConfig,
 } from "./battleParticles";
+import { setupCameraControls } from "./cameraControls";
 import { animateComboPopup } from "./comboPopup";
-import {
-	calculateCameraOffset,
-	clampCameraOffset,
-	getViewportPixelSize,
-	gridToParticlePosition,
-} from "./coordinates";
+import { gridToParticlePosition } from "./coordinates";
 import { detectEnemyMoves } from "./enemyMoveDetector";
 import {
 	executeNextFloorTransition,
@@ -77,7 +59,6 @@ import {
 	renderGameScreen,
 	updateState,
 } from "./gameRenderer";
-import { BUTTON_HEIGHT, RETURN_TO_PLAYER_BUTTON_WIDTH } from "./layout";
 import { relayoutUI } from "./relayout";
 
 /**

@@ -4,7 +4,6 @@
  */
 
 import type { GameState } from "../types";
-import { saveGame } from "../utils/storage";
 import { resetUsedCards } from "./deck";
 import { createEmptyVisitedTiles, revealAtPosition } from "./fogOfWar";
 import { generateMapPlacement } from "./map";
@@ -32,7 +31,6 @@ import { startPlayerTurn } from "./turn";
  * 6. プレイヤーターン開始処理（AP リセット + 手札補充）
  * 7. 撃破カウント・報酬状態・残骸をリセット
  * 8. 行動ログに記録
- * 9. セーブ処理
  */
 export function transitionFloor(state: GameState): GameState {
 	// 1. 階層番号を +1
@@ -80,9 +78,6 @@ export function transitionFloor(state: GameState): GameState {
 
 	// 8. 行動ログに記録
 	next = addActionLog(next, `${next.floor}階に到達した`, "system");
-
-	// 9. セーブ処理 (#104)
-	saveGame(next);
 
 	return next;
 }

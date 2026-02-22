@@ -5,6 +5,7 @@
 import { shouldShowVictoryScreen, transitionFloor } from "../game";
 import type { GameContext } from "../gameContext";
 import type { GameState, Position } from "../types";
+import { saveGame } from "../utils/storage";
 import { applyState, render } from "./gameRenderer";
 import { relayoutUI } from "./relayout";
 import { showVictoryScreen } from "./victoryFlow";
@@ -25,6 +26,9 @@ async function executeFloorTransitionFlow(
 
 	// 2. 階層遷移
 	const transitioned = transitionFloor(baseState);
+
+	// 3. セーブ処理
+	saveGame(transitioned);
 
 	// 5. フェードトランジション（暗転中に階層バナー表示 + 状態更新）
 	await ctx.ui.screenTransition.fadeTransition(async () => {
