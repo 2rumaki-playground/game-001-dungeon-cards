@@ -62,7 +62,7 @@ const TREASURE_CONFIG: TileParticleEmitterConfig = {
 const REST_AREA_CONFIG: TileParticleEmitterConfig = {
 	movement: "float",
 	shape: "circle",
-	colors: [0x44aa88, 0x27ae60, 0x2ecc71, 0x1abc9c],
+	colors: [COLORS.restArea, 0x27ae60, 0x2ecc71, 0x1abc9c],
 	maxParticles: 4,
 	spawnInterval: 500,
 	lifetime: { min: 2500, max: 3500 },
