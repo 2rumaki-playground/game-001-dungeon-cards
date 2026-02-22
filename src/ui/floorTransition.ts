@@ -12,7 +12,7 @@ import { showVictoryScreen } from "./victoryFlow";
 
 /**
  * 階層遷移の共通フロー
- * カード除去→報酬→勝利判定→階層遷移→フェード→手札配布を実行する
+ * 勝利画面判定→階層遷移→セーブ→フェードトランジションを実行する
  */
 async function executeFloorTransitionFlow(
 	ctx: GameContext,
@@ -65,7 +65,7 @@ export async function updateStateWithStairsAnimation(
 
 /**
  * 「次の階層へ」ボタン押下時の階層遷移処理
- * 階段移動アニメーションをスキップし、カード除去→報酬→勝利判定→階層遷移を行う
+ * 階段移動アニメーションをスキップし、階層遷移フローを実行する
  */
 export async function executeNextFloorTransition(
 	ctx: GameContext,
