@@ -168,16 +168,19 @@ export type EnemyTurnResult = {
  */
 export function executeEnemyTurn(
 	state: GameState,
-	options?: { verbose?: boolean },
+	options?: {
+		verbose?: boolean;
+		applyPlayerDamage?: typeof applyEnemyDamageToPlayer;
+	},
 ): EnemyTurnResult {
 	const verbose = options?.verbose ?? false;
+	const applyDmg = options?.applyPlayerDamage ?? applyEnemyDamageToPlayer;
 
 	// RNGをcloneして入力stateを変更しない
 	let rng = state.rng.clone();
 	const order = rng.shuffle(state.enemies.map((_e, i) => i));
 
 	let next = { ...state, enemies: state.enemies.map((e) => ({ ...e })), rng };
-	let totalDamage = 0;
 
 	for (const idx of order) {
 		// プレイヤーが死亡していたら残りの敵は行動しない
@@ -200,9 +203,8 @@ export function executeEnemyTurn(
 
 		// 予告済みスキルの発動
 		if (currentEnemy.pendingSkill) {
-			const skillResult = executePendingSkill(next, currentEnemy);
+			const skillResult = executePendingSkill(next, currentEnemy, applyDmg);
 			next = skillResult.state;
-			totalDamage += skillResult.damage;
 
 			// ゲームオーバー判定
 			next = checkGameOver(next);
@@ -221,12 +223,11 @@ export function executeEnemyTurn(
 				? BOSS_SKILL.enrageBonusDamage
 				: 0;
 			const damage = params.attackDamage + enrageBonus;
-			next = applyEnemyDamageToPlayer(next, damage, currentEnemy.type);
+			next = applyDmg(next, damage, currentEnemy.type);
 			const attackMsg = verbose
 				? `${ENEMY_TYPE_LABEL[currentEnemy.type]}が攻撃した（隣接, ATK:${damage}）`
 				: "敵が攻撃した";
 			next = addActionLog(next, attackMsg, "enemy");
-			totalDamage += damage;
 		} else if (
 			enemyRoom !== null &&
 			!isInRoom(next.player.position, enemyRoom)
@@ -261,5 +262,8 @@ export function executeEnemyTurn(
 	// プレイヤー死亡判定
 	next = checkGameOver(next);
 
-	return { state: next, totalDamage };
+	return {
+		state: next,
+		totalDamage: Math.max(0, state.player.hp - next.player.hp),
+	};
 }

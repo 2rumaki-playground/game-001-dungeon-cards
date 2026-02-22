@@ -4,7 +4,6 @@ import {
 	createTestEnemy,
 	createTestState,
 } from "../test-utils/createTestFixtures";
-import { applyEnemyDamageToPlayer } from "./combat";
 import { resetDebugCheats, toggleDebugCheat } from "./debugCheats";
 import {
 	applyDamageToPlayerWithDebug,
@@ -52,15 +51,29 @@ describe("executeEnemyTurnWithDebug", () => {
 		// 敵が移動または攻撃していることを確認（状態が変化している）
 		expect(result).not.toBe(state);
 	});
-});
 
-describe("applyEnemyDamageToPlayer - 無敵チートON（ミドルウェア経由）", () => {
-	it("無敵ONでもapplyEnemyDamageToPlayer単体ではダメージを受ける（純粋関数）", () => {
+	it("無敵ONの場合、敵の攻撃ダメージを受けない", () => {
+		// 無敵OFFの場合のダメージを確認して、敵が実際に攻撃していることを保証する
+		const enemyWithoutInvincible = createTestEnemy("normal", { x: 4, y: 3 });
+		const stateWithoutInvincible = createTestState({
+			enemies: [enemyWithoutInvincible],
+		});
+		const { state: damagedState, totalDamage: damageWithoutInvincible } =
+			executeEnemyTurnWithDebug(stateWithoutInvincible);
+
+		expect(damageWithoutInvincible).toBeGreaterThan(0);
+		expect(damagedState.player.hp).toBeLessThan(PLAYER_INITIAL_HP);
+
+		// 無敵ONの場合、同じ状況でもダメージを受けないことを確認する
 		toggleDebugCheat("invincible");
-		const state = createTestState();
-		const result = applyEnemyDamageToPlayer(state, 3, "normal");
+		const enemyWithInvincible = createTestEnemy("normal", { x: 4, y: 3 });
+		const stateWithInvincible = createTestState({
+			enemies: [enemyWithInvincible],
+		});
+		const { state: invincibleState, totalDamage: damageWithInvincible } =
+			executeEnemyTurnWithDebug(stateWithInvincible);
 
-		// 純粋関数は無敵チートを考慮しない
-		expect(result.player.hp).toBe(PLAYER_INITIAL_HP - 3);
+		expect(damageWithInvincible).toBe(0);
+		expect(invincibleState.player.hp).toBe(PLAYER_INITIAL_HP);
 	});
 });
