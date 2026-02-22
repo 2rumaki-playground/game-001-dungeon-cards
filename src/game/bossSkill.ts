@@ -7,8 +7,7 @@
 import { BOSS_SKILL, ENEMY_PARAMS } from "../constants";
 import type { Enemy, GameState } from "../types";
 import type { RNG } from "../utils/rng";
-import { updateHitCounter } from "./cardAcquisition";
-import { applyDamageToPlayer } from "./combat";
+import { applyEnemyDamageToPlayer } from "./combat";
 import { isAdjacent, manhattanDistance } from "./positionUtils";
 import { addActionLog, updateEnemy } from "./state";
 
@@ -128,18 +127,7 @@ function executePowerStrike(state: GameState, enemy: Enemy): SkillResult {
 
 	const params = ENEMY_PARAMS[enemy.type];
 	const damage = params.attackDamage * BOSS_SKILL.powerStrikeMultiplier;
-	const hpBefore = next.player.hp;
-	next = applyDamageToPlayer(next, damage);
-	next = {
-		...next,
-		lastAttackerEnemyType: enemy.type,
-		...(next.player.hp < hpBefore && {
-			acquisitionCounters: updateHitCounter(
-				next.acquisitionCounters,
-				enemy.type,
-			),
-		}),
-	};
+	next = applyEnemyDamageToPlayer(next, damage, enemy.type);
 	next = addActionLog(next, "ミニボスが強化攻撃を放った", "enemy");
 
 	return { state: next, damage, executed: true };
@@ -163,18 +151,7 @@ function executeAreaAttack(state: GameState, enemy: Enemy): SkillResult {
 	}
 
 	const damage = BOSS_SKILL.areaAttackDamage;
-	const hpBefore = next.player.hp;
-	next = applyDamageToPlayer(next, damage);
-	next = {
-		...next,
-		lastAttackerEnemyType: enemy.type,
-		...(next.player.hp < hpBefore && {
-			acquisitionCounters: updateHitCounter(
-				next.acquisitionCounters,
-				enemy.type,
-			),
-		}),
-	};
+	next = applyEnemyDamageToPlayer(next, damage, enemy.type);
 	next = addActionLog(next, "ボスが範囲攻撃を放った", "enemy");
 
 	return { state: next, damage, executed: true };
