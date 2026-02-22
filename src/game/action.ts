@@ -29,7 +29,7 @@ import {
 	updateComboHistory,
 	updatePlayer,
 } from "./state";
-import { applyTileEffect } from "./tileEffect";
+import { applyTileEffect, type TileEffectResult } from "./tileEffect";
 
 /**
  * カードを使用済みにする共通ヘルパー
@@ -86,6 +86,9 @@ export function executeMove(
 	state: GameState,
 	cardId: string,
 	direction: Direction,
+	options?: {
+		applyTileEffectFn?: (state: GameState) => TileEffectResult;
+	},
 ): MoveResult {
 	// カードを使用済みへ
 	let next = markCardAsPlayed(state, cardId);
@@ -136,7 +139,8 @@ export function executeMove(
 	}
 
 	// 特殊タイル効果
-	const effect = applyTileEffect(next);
+	const tileEffectFn = options?.applyTileEffectFn ?? applyTileEffect;
+	const effect = tileEffectFn(next);
 	return {
 		state: effect.state,
 		reachedStairs: false,
@@ -348,6 +352,9 @@ export function executeJump(
 	state: GameState,
 	cardId: string,
 	direction: Direction,
+	options?: {
+		applyTileEffectFn?: (state: GameState) => TileEffectResult;
+	},
 ): JumpResult {
 	const delta = DIRECTION_DELTA[direction];
 
@@ -430,7 +437,8 @@ export function executeJump(
 
 	// 着地先の特殊タイル効果
 	const tileEffects: { tile: SpecialTileType; position: Position }[] = [];
-	const effect = applyTileEffect(next);
+	const tileEffectFn = options?.applyTileEffectFn ?? applyTileEffect;
+	const effect = tileEffectFn(next);
 	next = effect.state;
 	if (effect.triggeredTile) {
 		tileEffects.push({

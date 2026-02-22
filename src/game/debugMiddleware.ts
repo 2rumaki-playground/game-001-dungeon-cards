@@ -2,23 +2,27 @@
  * デバッグミドルウェア
  *
  * ゲームロジック関数をデバッグチートでラップする。
- * ゲームロジック層（combat.ts, enemyAi.ts）が debugCheats に依存しないようにするための中間レイヤー。
+ * ゲームロジック層（combat.ts, enemyAi.ts, tileEffect.ts）が debugCheats に依存しないようにするための中間レイヤー。
  */
 
 import type { EnemyType, GameState } from "../types";
 import { applyDamageToPlayer, applyEnemyDamageToPlayer } from "./combat";
 import { getDebugCheats } from "./debugCheats";
 import { type EnemyTurnResult, executeEnemyTurn } from "./enemyAi";
+import { applyTileEffect, type TileEffectResult } from "./tileEffect";
 
 /**
  * applyDamageToPlayer のデバッグラッパー
  *
- * 無敵チートの判定は applyDamageToPlayer 内で行われる。
+ * 無敵チートON時はダメージをスキップする。
  */
 export function applyDamageToPlayerWithDebug(
 	state: GameState,
 	damage: number,
 ): GameState {
+	if (import.meta.env.DEV && getDebugCheats().invincible) {
+		return state;
+	}
 	return applyDamageToPlayer(state, damage);
 }
 
@@ -39,6 +43,17 @@ function applyEnemyDamageToPlayerWithDebug(
 		};
 	}
 	return applyEnemyDamageToPlayer(state, damage, enemyType);
+}
+
+/**
+ * applyTileEffect のデバッグラッパー
+ *
+ * 無敵チートON時は罠ダメージをスキップする。
+ */
+export function applyTileEffectWithDebug(state: GameState): TileEffectResult {
+	return applyTileEffect(state, {
+		applyDamage: applyDamageToPlayerWithDebug,
+	});
 }
 
 /**

@@ -29,8 +29,15 @@ function isSpecialTile(type: TileType): type is SpecialTileType {
  * - 罠 → ダメージ + タイルをfloorに
  * - 宝箱 → HP回復（maxHp上限） + タイルをfloorに
  * - 休憩所 → HP全回復 + タイルをfloorに
+ *
+ * @param options.applyDamage ダメージ適用関数（DI用、デフォルトは applyDamageToPlayer）
  */
-export function applyTileEffect(state: GameState): TileEffectResult {
+export function applyTileEffect(
+	state: GameState,
+	options?: {
+		applyDamage?: (state: GameState, damage: number) => GameState;
+	},
+): TileEffectResult {
 	const { x, y } = state.player.position;
 	const tile = state.map[y][x];
 
@@ -40,10 +47,11 @@ export function applyTileEffect(state: GameState): TileEffectResult {
 
 	const tileType = tile.type;
 	let next = setTile(state, x, y, { type: "floor" });
+	const applyDmg = options?.applyDamage ?? applyDamageToPlayer;
 
 	switch (tileType) {
 		case "trap": {
-			next = applyDamageToPlayer(next, TRAP_DAMAGE);
+			next = applyDmg(next, TRAP_DAMAGE);
 			next = addActionLog(next, "罠を踏んだ！", "player");
 			next = checkGameOver(next);
 			return {

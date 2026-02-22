@@ -17,7 +17,10 @@ import {
 } from "../game";
 import { buildQueuedCardIndexMap, canEnqueueCard } from "../game/cardQueue";
 import { resetDebugCheats } from "../game/debugCheats";
-import { executeEnemyTurnWithDebug } from "../game/debugMiddleware";
+import {
+	applyTileEffectWithDebug,
+	executeEnemyTurnWithDebug,
+} from "../game/debugMiddleware";
 import { reorderHand } from "../game/deck";
 import { endSession, startSession } from "../game/playStats";
 import { setDeck } from "../game/state";
@@ -143,7 +146,9 @@ async function handleMoveCardExecution(
 		reachedStairs,
 		tileEffect,
 		gameOver,
-	} = executeMove(ctx.state, cardId, direction);
+	} = executeMove(ctx.state, cardId, direction, {
+		applyTileEffectFn: applyTileEffectWithDebug,
+	});
 	const moved =
 		next.player.position.x !== prevPosition.x ||
 		next.player.position.y !== prevPosition.y;
@@ -304,7 +309,9 @@ async function handleJumpCardExecution(
 ): Promise<void> {
 	const prevPosition = ctx.state.player.position;
 	const prevHp = ctx.state.player.hp;
-	const result = executeJump(ctx.state, cardId, direction);
+	const result = executeJump(ctx.state, cardId, direction, {
+		applyTileEffectFn: applyTileEffectWithDebug,
+	});
 	ctx.ui.directionSelector.hide();
 	ctx.pendingCard = null;
 
