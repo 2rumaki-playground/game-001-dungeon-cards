@@ -197,7 +197,7 @@ export class SpecialTileEffectManager {
 				effect.particles.push(
 					spawnTileParticle(effect.emitterConfig, CELL_SIZE),
 				);
-				effect.timeSinceLastSpawn = 0;
+				effect.timeSinceLastSpawn -= effect.emitterConfig.spawnInterval;
 			}
 
 			for (const p of effect.particles) {
