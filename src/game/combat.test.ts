@@ -14,6 +14,7 @@ import {
 import {
 	applyDamageToEnemy,
 	applyDamageToPlayer,
+	applyEnemyDamageToPlayer,
 	checkGameOver,
 	isDefeated,
 } from "./combat";
@@ -333,5 +334,37 @@ describe("applyDamageToEnemy - カード獲得条件", () => {
 		const result = applyDamageToEnemy(state, enemy.id, PLAYER_ATTACK_DAMAGE);
 
 		expect(result.state.cardExchangeState).toBeNull();
+	});
+});
+
+describe("applyEnemyDamageToPlayer", () => {
+	it("HPが減少した場合、hitCounterが更新される", () => {
+		const state = createTestState();
+		const result = applyEnemyDamageToPlayer(
+			state,
+			ENEMY_ATTACK_DAMAGE,
+			"normal",
+		);
+
+		expect(result.acquisitionCounters.hitCounts.normal).toBe(1);
+	});
+
+	it("lastAttackerEnemyTypeが設定される", () => {
+		const state = createTestState();
+		const result = applyEnemyDamageToPlayer(
+			state,
+			ENEMY_ATTACK_DAMAGE,
+			"miniboss",
+		);
+
+		expect(result.lastAttackerEnemyType).toBe("miniboss");
+	});
+
+	it("ダメージ0でもlastAttackerEnemyTypeが設定される", () => {
+		const state = createTestState();
+		const result = applyEnemyDamageToPlayer(state, 0, "normal");
+
+		expect(result.lastAttackerEnemyType).toBe("normal");
+		expect(result.acquisitionCounters.hitCounts.normal).toBe(0);
 	});
 });

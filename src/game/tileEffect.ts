@@ -13,6 +13,10 @@ export type TileEffectResult = {
 	state: GameState;
 	triggeredTile: SpecialTileType | null;
 	gameOver: boolean;
+	/** 効果発動前のHP */
+	hpBefore: number;
+	/** 効果発動後のHP */
+	hpAfter: number;
 };
 
 /**
@@ -40,9 +44,16 @@ export function applyTileEffect(
 ): TileEffectResult {
 	const { x, y } = state.player.position;
 	const tile = state.map[y][x];
+	const hpBefore = state.player.hp;
 
 	if (!isSpecialTile(tile.type)) {
-		return { state, triggeredTile: null, gameOver: false };
+		return {
+			state,
+			triggeredTile: null,
+			gameOver: false,
+			hpBefore,
+			hpAfter: hpBefore,
+		};
 	}
 
 	const tileType = tile.type;
@@ -58,6 +69,8 @@ export function applyTileEffect(
 				state: next,
 				triggeredTile: "trap",
 				gameOver: isDefeated(next.player.hp),
+				hpBefore,
+				hpAfter: next.player.hp,
 			};
 		}
 		case "treasure": {
@@ -67,12 +80,24 @@ export function applyTileEffect(
 			);
 			next = updatePlayer(next, (p) => ({ ...p, hp: healed }));
 			next = addActionLog(next, "宝箱を開けた！", "player");
-			return { state: next, triggeredTile: "treasure", gameOver: false };
+			return {
+				state: next,
+				triggeredTile: "treasure",
+				gameOver: false,
+				hpBefore,
+				hpAfter: next.player.hp,
+			};
 		}
 		case "rest_area": {
 			next = updatePlayer(next, (p) => ({ ...p, hp: p.maxHp }));
 			next = addActionLog(next, "休憩所で回復した！", "player");
-			return { state: next, triggeredTile: "rest_area", gameOver: false };
+			return {
+				state: next,
+				triggeredTile: "rest_area",
+				gameOver: false,
+				hpBefore,
+				hpAfter: next.player.hp,
+			};
 		}
 	}
 }
