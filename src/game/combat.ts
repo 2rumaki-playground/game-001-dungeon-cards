@@ -4,10 +4,11 @@
  */
 
 import { ENEMY_ACQUISITION_CONDITIONS, ENEMY_TYPE_LABEL } from "../constants";
-import type { GameState } from "../types";
+import type { EnemyType, GameState } from "../types";
 import {
 	checkAcquisitionCondition,
 	updateDefeatCounter,
+	updateHitCounter,
 } from "./cardAcquisition";
 import { getDebugCheats } from "./debugCheats";
 import { recordDamageDealt, recordDamageTaken } from "./playStats";
@@ -135,6 +136,33 @@ export function applyDamageToPlayer(
 
 	next = addActionLog(next, "プレイヤーがダメージを受けた", "system");
 
+	return next;
+}
+
+/**
+ * 敵からプレイヤーへのダメージ適用 + 被弾カウンター更新
+ *
+ * - applyDamageToPlayer でダメージを適用
+ * - lastAttackerEnemyType を記録
+ * - HPが実際に減少した場合のみ hitCounter を更新
+ */
+export function applyEnemyDamageToPlayer(
+	state: GameState,
+	damage: number,
+	enemyType: EnemyType,
+): GameState {
+	const hpBefore = state.player.hp;
+	let next = applyDamageToPlayer(state, damage);
+	next = {
+		...next,
+		lastAttackerEnemyType: enemyType,
+		...(next.player.hp < hpBefore && {
+			acquisitionCounters: updateHitCounter(
+				next.acquisitionCounters,
+				enemyType,
+			),
+		}),
+	};
 	return next;
 }
 
