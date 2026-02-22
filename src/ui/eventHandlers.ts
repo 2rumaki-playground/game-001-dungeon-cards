@@ -2,7 +2,7 @@
  * イベントハンドラ設定
  */
 
-import { JUMP_DISTANCE, TRAP_DAMAGE, TREASURE_HEAL } from "../constants";
+import { JUMP_DISTANCE } from "../constants";
 import {
 	endPlayerTurn,
 	executeAttack,
@@ -303,7 +303,6 @@ async function handleJumpCardExecution(
 	direction: Direction,
 ): Promise<void> {
 	const prevPosition = ctx.state.player.position;
-	const prevHp = ctx.state.player.hp;
 	const result = executeJump(ctx.state, cardId, direction);
 	ctx.ui.directionSelector.hide();
 	ctx.pendingCard = null;
@@ -333,17 +332,7 @@ async function handleJumpCardExecution(
 			result.state.player.position,
 		);
 		// 着地先の特殊タイル効果
-		const maxHp = result.state.player.maxHp;
-		for (const { tile, position } of result.tileEffects) {
-			const hpBefore = prevHp;
-			let hpAfter: number;
-			if (tile === "trap") {
-				hpAfter = Math.max(0, hpBefore - TRAP_DAMAGE);
-			} else if (tile === "rest_area") {
-				hpAfter = maxHp;
-			} else {
-				hpAfter = Math.min(maxHp, hpBefore + TREASURE_HEAL);
-			}
+		for (const { tile, position, hpBefore, hpAfter } of result.tileEffects) {
 			await showTileEffectPopup(ctx, tile, hpBefore, hpAfter, position);
 		}
 		if (result.gameOver) {

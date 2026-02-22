@@ -14,6 +14,8 @@ describe("applyTileEffect", () => {
 		expect(result.triggeredTile).toBeNull();
 		expect(result.gameOver).toBe(false);
 		expect(result.state.player.hp).toBe(PLAYER_INITIAL_HP);
+		expect(result.hpBefore).toBe(PLAYER_INITIAL_HP);
+		expect(result.hpAfter).toBe(PLAYER_INITIAL_HP);
 	});
 
 	it("罠タイル: ダメージを受けてタイルがfloorに変化", () => {
@@ -27,6 +29,8 @@ describe("applyTileEffect", () => {
 		expect(result.state.player.hp).toBe(PLAYER_INITIAL_HP - TRAP_DAMAGE);
 		expect(result.state.map[3][3].type).toBe("floor");
 		expect(result.state.actionLog[0].message).toContain("罠");
+		expect(result.hpBefore).toBe(PLAYER_INITIAL_HP);
+		expect(result.hpAfter).toBe(PLAYER_INITIAL_HP - TRAP_DAMAGE);
 	});
 
 	it("罠タイル: HP1で踏むとゲームオーバー", () => {
@@ -46,6 +50,8 @@ describe("applyTileEffect", () => {
 		expect(result.gameOver).toBe(true);
 		expect(result.state.player.hp).toBe(1 - TRAP_DAMAGE);
 		expect(result.state.screen).toBe("gameOver");
+		expect(result.hpBefore).toBe(1);
+		expect(result.hpAfter).toBe(1 - TRAP_DAMAGE);
 	});
 
 	it("宝箱タイル: HP回復してタイルがfloorに変化", () => {
@@ -66,6 +72,8 @@ describe("applyTileEffect", () => {
 		expect(result.state.player.hp).toBe(5 + TREASURE_HEAL);
 		expect(result.state.map[3][3].type).toBe("floor");
 		expect(result.state.actionLog[0].message).toContain("宝箱");
+		expect(result.hpBefore).toBe(5);
+		expect(result.hpAfter).toBe(5 + TREASURE_HEAL);
 	});
 
 	it("宝箱タイル: HP回復がmaxHpを超えない", () => {
@@ -82,6 +90,8 @@ describe("applyTileEffect", () => {
 		const result = applyTileEffect(state);
 
 		expect(result.state.player.hp).toBe(PLAYER_INITIAL_HP);
+		expect(result.hpBefore).toBe(PLAYER_INITIAL_HP - 1);
+		expect(result.hpAfter).toBe(PLAYER_INITIAL_HP);
 	});
 
 	it("休憩所タイル: HP全回復してタイルがfloorに変化", () => {
@@ -102,6 +112,8 @@ describe("applyTileEffect", () => {
 		expect(result.state.player.hp).toBe(PLAYER_INITIAL_HP);
 		expect(result.state.map[3][3].type).toBe("floor");
 		expect(result.state.actionLog[0].message).toContain("休憩所");
+		expect(result.hpBefore).toBe(1);
+		expect(result.hpAfter).toBe(PLAYER_INITIAL_HP);
 	});
 
 	it("元のGameStateが変更されない（イミュータブル）", () => {

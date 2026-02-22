@@ -244,7 +244,12 @@ describe("executeJump", () => {
 
 		expect(result.jumped).toBe(true);
 		expect(result.tileEffects).toEqual([
-			{ tile: "treasure", position: { x: 5, y: 3 } },
+			{
+				tile: "treasure",
+				position: { x: 5, y: 3 },
+				hpBefore: PLAYER_INITIAL_HP - 5,
+				hpAfter: PLAYER_INITIAL_HP - 5 + TREASURE_HEAL,
+			},
 		]);
 		expect(result.state.player.hp).toBe(PLAYER_INITIAL_HP - 5 + TREASURE_HEAL);
 	});
@@ -268,7 +273,12 @@ describe("executeJump", () => {
 		const result = executeJump(state, "jump-1", "right");
 
 		expect(result.tileEffects).toEqual([
-			{ tile: "treasure", position: { x: 5, y: 3 } },
+			{
+				tile: "treasure",
+				position: { x: 5, y: 3 },
+				hpBefore: PLAYER_INITIAL_HP - 5,
+				hpAfter: PLAYER_INITIAL_HP - 5 + TREASURE_HEAL,
+			},
 		]);
 		// HP: 5 + 3(treasure) = 8（罠ダメージなし）
 		expect(result.state.player.hp).toBe(PLAYER_INITIAL_HP - 5 + TREASURE_HEAL);
