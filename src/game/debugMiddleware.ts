@@ -39,6 +39,7 @@ function applyEnemyDamageToPlayerWithDebug(
 	if (import.meta.env.DEV && getDebugCheats().invincible) {
 		return {
 			...state,
+			rng: state.rng.clone(),
 			lastAttackerEnemyType: enemyType,
 		};
 	}
