@@ -4,15 +4,13 @@
  */
 
 import { Container, Graphics, Text } from "pixi.js";
-import type { Card, CardType, Rarity } from "../types";
+import type { Card, CardType } from "../types";
 import { Easing, tween } from "../utils/tween";
 import {
 	CARD_COLORS,
-	CARD_RARITY,
+	CARD_GLOW_COLORS,
 	CARD_TYPE_NAME,
 	CARD_TYPE_SYMBOL,
-	RARITY_COLORS,
-	RARITY_NAME,
 } from "./cardConstants";
 import {
 	createCardTooltip,
@@ -47,16 +45,7 @@ const BUTTON_RADIUS = 6;
 /** カード取得アニメーション定数 */
 const ACQUIRE_SCALE_DURATION = 200;
 const ACQUIRE_SHRINK_DURATION = 300;
-const ACQUIRE_PARTICLE_COLORS: Record<Rarity, number[]> = {
-	common: [0xaaaaaa, 0xcccccc],
-	uncommon: [0x44aa44, 0x88ff88, 0x22cc22],
-	rare: [0xddaa22, 0xffdd44, 0xffcc00, 0xffffff],
-};
-const ACQUIRE_PARTICLE_COUNT: Record<Rarity, number> = {
-	common: 12,
-	uncommon: 20,
-	rare: 30,
-};
+const ACQUIRE_PARTICLE_COUNT = 20;
 
 /** カード除去アニメーション定数 */
 const REMOVE_FADE_DURATION = 400;
@@ -446,8 +435,6 @@ export class RewardScreen {
 		const cardContainer = new Container();
 
 		const colors = CARD_COLORS[cardType];
-		const rarity = CARD_RARITY[cardType];
-		const rarityColor = RARITY_COLORS[rarity];
 
 		// 背景
 		const bg = new Graphics();
@@ -460,12 +447,6 @@ export class RewardScreen {
 			{ color: colors.border, width: 2 },
 		);
 		cardContainer.addChild(bg);
-
-		// レアリティバー
-		const rarityBar = new Graphics();
-		rarityBar.roundRect(10, 6, REWARD_CARD_WIDTH - 20, 3, 1);
-		rarityBar.fill(rarityColor);
-		cardContainer.addChild(rarityBar);
 
 		// シンボル
 		const symbol = new Text({
@@ -495,20 +476,6 @@ export class RewardScreen {
 		name.x = REWARD_CARD_WIDTH / 2;
 		name.y = 42;
 		cardContainer.addChild(name);
-
-		// レアリティ
-		const rarityText = new Text({
-			text: RARITY_NAME[rarity],
-			style: {
-				fontSize: 11,
-				fontFamily: "sans-serif",
-				fill: rarityColor,
-			},
-		});
-		rarityText.anchor.set(0.5, 0);
-		rarityText.x = REWARD_CARD_WIDTH / 2;
-		rarityText.y = 62;
-		cardContainer.addChild(rarityText);
 
 		return cardContainer;
 	}
@@ -797,9 +764,7 @@ export class RewardScreen {
 		const cardContainer = this.cardContainers[index];
 		if (!cardContainer) return;
 
-		const rarity = CARD_RARITY[cardType];
-
-		// パーティクルエフェクト（レアリティで差別化）
+		// パーティクルエフェクト（カード種別の発光色を使用）
 		// カード中心のグローバル座標をパーティクルシステムのローカル座標に変換
 		// パーティクルはUXフローをブロックしないよう待機せず並列実行
 		if (this.particleSystem) {
@@ -812,12 +777,12 @@ export class RewardScreen {
 				.toLocal(globalPos);
 
 			this.particleSystem.emit({
-				count: ACQUIRE_PARTICLE_COUNT[rarity],
+				count: ACQUIRE_PARTICLE_COUNT,
 				origin: particleOrigin,
-				color: ACQUIRE_PARTICLE_COLORS[rarity],
-				speed: { min: 0.02, max: rarity === "rare" ? 0.12 : 0.08 },
-				life: { min: 300, max: rarity === "rare" ? 800 : 500 },
-				size: { min: 1, max: rarity === "rare" ? 4 : 3 },
+				color: CARD_GLOW_COLORS[cardType],
+				speed: { min: 0.02, max: 0.08 },
+				life: { min: 300, max: 500 },
+				size: { min: 1, max: 3 },
 				pattern: { type: "radial" },
 			});
 		}

@@ -1,13 +1,11 @@
 import { describe, expect, it } from "vitest";
-import type { CardType, Rarity } from "../types";
+import type { CardType } from "../types";
 import {
 	CARD_COLORS,
 	CARD_DESCRIPTION,
 	CARD_GLOW_COLORS,
 	CARD_TYPE_NAME,
 	CARD_TYPE_SYMBOL,
-	RARITY_COLORS,
-	RARITY_NAME,
 } from "./cardConstants";
 
 const ALL_CARD_TYPES: CardType[] = [
@@ -17,8 +15,6 @@ const ALL_CARD_TYPES: CardType[] = [
 	"jump",
 	"wait",
 ];
-
-const ALL_RARITIES: Rarity[] = ["common", "uncommon", "rare"];
 
 describe("cardConstants", () => {
 	describe("CARD_COLORS", () => {
@@ -67,28 +63,11 @@ describe("cardConstants", () => {
 		});
 	});
 
-	describe("RARITY_COLORS", () => {
-		it("全レアリティに色が定義されている", () => {
-			for (const rarity of ALL_RARITIES) {
-				expect(typeof RARITY_COLORS[rarity]).toBe("number");
-			}
-		});
-	});
-
 	describe("CARD_DESCRIPTION", () => {
 		it("全カード種別に詳細説明が定義されている", () => {
 			for (const type of ALL_CARD_TYPES) {
 				expect(typeof CARD_DESCRIPTION[type]).toBe("string");
 				expect(CARD_DESCRIPTION[type].length).toBeGreaterThan(0);
-			}
-		});
-	});
-
-	describe("RARITY_NAME", () => {
-		it("全レアリティに日本語名が定義されている", () => {
-			for (const rarity of ALL_RARITIES) {
-				expect(typeof RARITY_NAME[rarity]).toBe("string");
-				expect(RARITY_NAME[rarity].length).toBeGreaterThan(0);
 			}
 		});
 	});
