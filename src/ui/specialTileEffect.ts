@@ -8,11 +8,24 @@ import {
 	getStairsEffectConfig,
 	type SpecialTileEffectConfig,
 } from "./specialTileEffectLogic";
+import {
+	calcTileParticleAlpha,
+	calcTileParticlePosition,
+	getTileParticleEmitterConfig,
+	shouldSpawn,
+	spawnTileParticle,
+	type TileParticle,
+	type TileParticleEmitterConfig,
+	updateTileParticles,
+} from "./tileParticleLogic";
 
 type TileEffect = {
 	config: SpecialTileEffectConfig;
 	px: number;
 	py: number;
+	particles?: TileParticle[];
+	emitterConfig?: TileParticleEmitterConfig;
+	timeSinceLastSpawn?: number;
 };
 
 const SPECIAL_TILE_TYPES = new Set<string>(["trap", "treasure", "rest_area"]);
@@ -29,6 +42,7 @@ const ARROW_ALPHA = 0.6;
 export class SpecialTileEffectManager {
 	private container: Container;
 	private graphics: Graphics;
+	private particleGraphics: Graphics;
 	private arrowGraphics: Graphics;
 	private effects: Map<string, TileEffect> = new Map();
 	private stairsEffects: Map<string, TileEffect> = new Map();
@@ -39,8 +53,10 @@ export class SpecialTileEffectManager {
 	constructor() {
 		this.container = new Container();
 		this.graphics = new Graphics();
+		this.particleGraphics = new Graphics();
 		this.arrowGraphics = new Graphics();
 		this.container.addChild(this.graphics);
+		this.container.addChild(this.particleGraphics);
 		this.container.addChild(this.arrowGraphics);
 	}
 
@@ -93,10 +109,15 @@ export class SpecialTileEffectManager {
 				if (visitedTiles && !visitedTiles.has(key)) continue;
 
 				const pixelPos = gridToPixel({ x, y });
+				const tileType = tile.type as SpecialTileType;
+				const existing = this.effects.get(key);
 				newEffects.set(key, {
-					config: getSpecialTileEffectConfig(tile.type as SpecialTileType),
+					config: getSpecialTileEffectConfig(tileType),
 					px: pixelPos.x + CELL_SIZE / 2,
 					py: pixelPos.y + CELL_SIZE / 2,
+					particles: existing?.particles ?? [],
+					emitterConfig: getTileParticleEmitterConfig(tileType),
+					timeSinceLastSpawn: existing?.timeSinceLastSpawn ?? 0,
 				});
 			}
 		}
@@ -125,7 +146,7 @@ export class SpecialTileEffectManager {
 	private start(): void {
 		this.tickerCallback = (tick: Ticker): void => {
 			this.elapsed += tick.deltaMS;
-			this.render();
+			this.render(tick.deltaMS);
 		};
 		Ticker.shared.add(this.tickerCallback);
 	}
@@ -136,10 +157,13 @@ export class SpecialTileEffectManager {
 			this.tickerCallback = null;
 		}
 		this.graphics.clear();
+		this.particleGraphics.clear();
 	}
 
-	private render(): void {
+	private render(deltaMS: number): void {
 		this.graphics.clear();
+		this.particleGraphics.clear();
+
 		for (const effect of this.effects.values()) {
 			const alpha = calcPulseAlpha(this.elapsed, effect.config);
 			const radius = CELL_SIZE * effect.config.glowRadius;
@@ -152,6 +176,59 @@ export class SpecialTileEffectManager {
 			this.graphics.circle(effect.px, effect.py, radius);
 			this.graphics.fill({ color: effect.config.glowColor, alpha });
 		}
+
+		this.renderParticles(deltaMS);
+	}
+
+	private renderParticles(deltaMS: number): void {
+		for (const effect of this.effects.values()) {
+			if (!effect.particles || !effect.emitterConfig) continue;
+
+			effect.particles = updateTileParticles(effect.particles, deltaMS);
+
+			effect.timeSinceLastSpawn = (effect.timeSinceLastSpawn ?? 0) + deltaMS;
+			if (
+				shouldSpawn(
+					effect.particles,
+					effect.emitterConfig,
+					effect.timeSinceLastSpawn,
+				)
+			) {
+				effect.particles.push(
+					spawnTileParticle(effect.emitterConfig, CELL_SIZE),
+				);
+				effect.timeSinceLastSpawn = 0;
+			}
+
+			for (const p of effect.particles) {
+				const pos = calcTileParticlePosition(p, CELL_SIZE);
+				const alpha = calcTileParticleAlpha(p, effect.emitterConfig.maxAlpha);
+				const x = effect.px + pos.x;
+				const y = effect.py + pos.y;
+
+				if (effect.emitterConfig.shape === "diamond") {
+					this.drawDiamond(x, y, p.size, p.color, alpha);
+				} else {
+					this.particleGraphics.circle(x, y, p.size);
+					this.particleGraphics.fill({ color: p.color, alpha });
+				}
+			}
+		}
+	}
+
+	private drawDiamond(
+		x: number,
+		y: number,
+		size: number,
+		color: number,
+		alpha: number,
+	): void {
+		this.particleGraphics.moveTo(x, y - size);
+		this.particleGraphics.lineTo(x + size, y);
+		this.particleGraphics.lineTo(x, y + size);
+		this.particleGraphics.lineTo(x - size, y);
+		this.particleGraphics.closePath();
+		this.particleGraphics.fill({ color, alpha });
 	}
 
 	/**
