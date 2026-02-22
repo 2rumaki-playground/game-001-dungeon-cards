@@ -626,7 +626,7 @@ export class RewardScreen {
 	}
 
 	/**
-	 * 獲得候補カードのプレビューを生成（インタラクションなし）
+	 * 獲得候補カードのプレビューを生成（ツールチップ用のホバーのみ）
 	 */
 	private createAcquiredCardPreview(
 		cardType: CardType,
@@ -637,7 +637,15 @@ export class RewardScreen {
 		cardContainer.x = x;
 		cardContainer.y = y;
 		cardContainer.label = "acquiredCard";
-		cardContainer.eventMode = "none";
+		cardContainer.eventMode = "static";
+
+		// ツールチップ表示
+		cardContainer.on("pointerover", () => {
+			this.showTooltip(cardType, x, y, REWARD_CARD_WIDTH);
+		});
+		cardContainer.on("pointerout", () => {
+			this.hideTooltip();
+		});
 
 		return cardContainer;
 	}
