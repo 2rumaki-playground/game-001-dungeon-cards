@@ -223,11 +223,12 @@ export class SpecialTileEffectManager {
 		color: number,
 		alpha: number,
 	): void {
-		this.particleGraphics.moveTo(x, y - size);
-		this.particleGraphics.lineTo(x + size, y);
-		this.particleGraphics.lineTo(x, y + size);
-		this.particleGraphics.lineTo(x - size, y);
-		this.particleGraphics.closePath();
+		this.particleGraphics
+			.moveTo(x, y - size)
+			.lineTo(x + size, y)
+			.lineTo(x, y + size)
+			.lineTo(x - size, y)
+			.closePath();
 		this.particleGraphics.fill({ color, alpha });
 	}
 
