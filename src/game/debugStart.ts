@@ -16,12 +16,7 @@ import type {
 	DebugEnemyComposition,
 	DebugStartParams,
 } from "../types/debug";
-import type { RNG } from "../utils/rng";
-import {
-	assignRandomKeyword,
-	createCard,
-	createInitialDeckState,
-} from "./deck";
+import { createCard, createInitialDeckState } from "./deck";
 import { createInitialGameState } from "./state";
 
 /** デバッグデッキで使用可能なカードタイプ */
@@ -40,7 +35,6 @@ const VALID_CARD_TYPES: CardType[] = [
  */
 export function createDebugDeckState(
 	composition: DebugDeckComposition,
-	rng: RNG,
 ): DeckState {
 	const cards = Object.entries(composition).flatMap(([type, count]) => {
 		if (!VALID_CARD_TYPES.includes(type as CardType)) {
@@ -55,7 +49,7 @@ export function createDebugDeckState(
 			);
 		}
 		return Array.from({ length: normalizedCount }, () =>
-			createCard(type as CardType, assignRandomKeyword(rng)),
+			createCard(type as CardType),
 		);
 	});
 	return {
@@ -136,8 +130,8 @@ export function startNewGameWithDebugParams(
 
 	// デッキ: 指定があればカスタム、なければデフォルト
 	const deck = params.deck
-		? createDebugDeckState(params.deck, base.rng)
-		: createInitialDeckState(base.rng);
+		? createDebugDeckState(params.deck)
+		: createInitialDeckState();
 
 	// 敵: 指定があればカスタム、なければベースのまま
 	const enemies = params.enemies

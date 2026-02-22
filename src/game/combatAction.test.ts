@@ -28,7 +28,7 @@ describe("executeAttack", () => {
 		const state = createTestState({
 			enemies,
 			deck: {
-				hand: [{ id: "attack-1", type: "attack", keyword: "flame" }],
+				hand: [{ id: "attack-1", type: "attack" }],
 				usedCardIds: [],
 			},
 		});
@@ -61,7 +61,7 @@ describe("executeAttack", () => {
 		const state = createTestState({
 			enemies,
 			deck: {
-				hand: [{ id: "attack-1", type: "attack", keyword: "flame" }],
+				hand: [{ id: "attack-1", type: "attack" }],
 				usedCardIds: [],
 			},
 		});
@@ -96,7 +96,7 @@ describe("executeAttack", () => {
 					}
 				: {}),
 			deck: {
-				hand: [{ id: "attack-1", type: "attack", keyword: "flame" }],
+				hand: [{ id: "attack-1", type: "attack" }],
 				usedCardIds: [],
 			},
 		});
@@ -121,7 +121,7 @@ describe("executeAttack", () => {
 		const state = createTestState({
 			enemies,
 			deck: {
-				hand: [{ id: "attack-1", type: "attack", keyword: "flame" }],
+				hand: [{ id: "attack-1", type: "attack" }],
 				usedCardIds: [],
 			},
 		});
@@ -138,7 +138,7 @@ describe("executeWait", () => {
 	it("待機成功: カード使用済み記録・行動ログ", () => {
 		const state = createTestState({
 			deck: {
-				hand: [{ id: "wait-1", type: "wait", keyword: "flame" }],
+				hand: [{ id: "wait-1", type: "wait" }],
 				usedCardIds: [],
 			},
 		});
@@ -156,7 +156,7 @@ describe("executeWait", () => {
 	it("元のGameStateが変更されない（イミュータブル）", () => {
 		const state = createTestState({
 			deck: {
-				hand: [{ id: "wait-1", type: "wait", keyword: "flame" }],
+				hand: [{ id: "wait-1", type: "wait" }],
 				usedCardIds: [],
 			},
 		});
@@ -182,7 +182,7 @@ describe("executeStrongAttack", () => {
 		const state = createTestState({
 			enemies,
 			deck: {
-				hand: [{ id: "strong-1", type: "strong_attack", keyword: "flame" }],
+				hand: [{ id: "strong-1", type: "strong_attack" }],
 				usedCardIds: [],
 			},
 		});
@@ -214,7 +214,7 @@ describe("executeStrongAttack", () => {
 		const state = createTestState({
 			enemies,
 			deck: {
-				hand: [{ id: "strong-1", type: "strong_attack", keyword: "flame" }],
+				hand: [{ id: "strong-1", type: "strong_attack" }],
 				usedCardIds: [],
 			},
 		});
@@ -249,7 +249,7 @@ describe("executeStrongAttack", () => {
 					}
 				: {}),
 			deck: {
-				hand: [{ id: "strong-1", type: "strong_attack", keyword: "flame" }],
+				hand: [{ id: "strong-1", type: "strong_attack" }],
 				usedCardIds: [],
 			},
 		});
@@ -278,7 +278,7 @@ describe("executeStrongAttack", () => {
 		const state = createTestState({
 			enemies,
 			deck: {
-				hand: [{ id: "strong-1", type: "strong_attack", keyword: "flame" }],
+				hand: [{ id: "strong-1", type: "strong_attack" }],
 				usedCardIds: [],
 			},
 		});
@@ -295,7 +295,7 @@ describe("markCardAsPlayed", () => {
 	it("カードが使用済みに記録される", () => {
 		const state = createTestState({
 			deck: {
-				hand: [{ id: "move-1", type: "move", keyword: "flame" }],
+				hand: [{ id: "move-1", type: "move" }],
 				usedCardIds: [],
 			},
 		});

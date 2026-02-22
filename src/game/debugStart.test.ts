@@ -5,7 +5,6 @@ import type {
 	DebugDeckComposition,
 	DebugEnemyComposition,
 } from "../types/debug";
-import { RNG } from "../utils/rng";
 import {
 	createDebugDeckState,
 	createDebugEnemies,
@@ -15,8 +14,7 @@ import {
 describe("debugStart", () => {
 	describe("createDebugDeckState", () => {
 		it("CardType別の枚数が正しい", () => {
-			const rng = new RNG(42);
-			const deck = createDebugDeckState({ attack: 5, move: 3, jump: 2 }, rng);
+			const deck = createDebugDeckState({ attack: 5, move: 3, jump: 2 });
 
 			const allCards = deck.hand;
 			expect(allCards.filter((c) => c.type === "attack")).toHaveLength(5);
@@ -26,69 +24,41 @@ describe("debugStart", () => {
 		});
 
 		it("空のcompositionでは空デッキを返す", () => {
-			const rng = new RNG(42);
-			const deck = createDebugDeckState({}, rng);
+			const deck = createDebugDeckState({});
 			expect(deck.hand).toHaveLength(0);
 			expect(deck.usedCardIds).toHaveLength(0);
 		});
 
-		it("キーワードがRNGに基づいてランダムに割り当てられる", () => {
-			const rng1 = new RNG(42);
-			const rng2 = new RNG(99);
-			const composition = { attack: 5, move: 5 };
-
-			const deck1 = createDebugDeckState(composition, rng1);
-			const deck2 = createDebugDeckState(composition, rng2);
-
-			const keywords1 = deck1.hand.map((c) => c.keyword);
-			const keywords2 = deck2.hand.map((c) => c.keyword);
-			// 異なるシードではキーワードの並びが異なる（確率的だが10枚あればほぼ確実）
-			expect(keywords1).not.toEqual(keywords2);
-		});
-
 		it("usedCardIdsが空", () => {
-			const rng = new RNG(42);
-			const deck = createDebugDeckState({ attack: 3 }, rng);
+			const deck = createDebugDeckState({ attack: 3 });
 			expect(deck.usedCardIds).toHaveLength(0);
 		});
 
 		it("不正なカードタイプを指定した場合はエラーになる", () => {
-			const rng = new RNG(42);
 			expect(() => {
-				createDebugDeckState(
-					{ foo: 1 } as unknown as DebugDeckComposition,
-					rng,
-				);
+				createDebugDeckState({ foo: 1 } as unknown as DebugDeckComposition);
 			}).toThrow();
 		});
 
 		it("負の count を指定した場合はエラーになる", () => {
-			const rng = new RNG(42);
 			expect(() => {
-				createDebugDeckState(
-					{ attack: -1 } as unknown as DebugDeckComposition,
-					rng,
-				);
+				createDebugDeckState({ attack: -1 } as unknown as DebugDeckComposition);
 			}).toThrow();
 		});
 
 		it("小数の count を指定した場合はエラーになる", () => {
-			const rng = new RNG(42);
 			expect(() => {
-				createDebugDeckState(
-					{ attack: 1.5 } as unknown as DebugDeckComposition,
-					rng,
-				);
+				createDebugDeckState({
+					attack: 1.5,
+				} as unknown as DebugDeckComposition);
 			}).toThrow();
 		});
 
 		it("NaN の count を指定した場合はエラーになる", () => {
-			const rng = new RNG(42);
 			expect(() => {
-				createDebugDeckState(
-					{ attack: Number.NaN } as unknown as DebugDeckComposition,
-					rng,
-				);
+				createDebugDeckState({
+					attack: Number.NaN,
+				} as unknown as DebugDeckComposition);
 			}).toThrow();
 		});
 	});

@@ -196,7 +196,7 @@ export function createInitialGameState(
  */
 export function startNewGame(state: GameState): GameState {
 	const gameState = createInitialGameState(state.rng.seed);
-	const deck = createInitialDeckState(gameState.rng);
+	const deck = createInitialDeckState();
 	return { ...gameState, deck };
 }
 
@@ -208,7 +208,7 @@ export function startNewGameAtFloor(
 	floor: number,
 ): GameState {
 	const gameState = createInitialGameState(state.rng.seed, floor);
-	const deck = createInitialDeckState(gameState.rng);
+	const deck = createInitialDeckState();
 	return { ...gameState, deck };
 }
 

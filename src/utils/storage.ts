@@ -3,7 +3,7 @@
  * @see docs/spec/mvp/rules.md - セーブとログ
  */
 
-import { getEnemyCount, INITIAL_FLOOR, KEYWORDS } from "../constants";
+import { getEnemyCount, INITIAL_FLOOR } from "../constants";
 import { createInitialCounters } from "../game/cardAcquisition";
 import { initCardIdCounterFromDeck } from "../game/deck";
 import type { AcquisitionCounters, DeckState, GameState, Room } from "../types";
@@ -205,17 +205,8 @@ export function loadGame(): GameState | null {
 				}))
 			: data.enemies;
 
-		// 旧セーブデータの後方互換: keyword未設定のカードに"flame"を補完
+		// 旧セーブデータの後方互換: usedCardIdsが未設定の場合は空配列を補完
 		if (data.deck && typeof data.deck === "object") {
-			const cards = data.deck.hand;
-			if (Array.isArray(cards)) {
-				for (const card of cards) {
-					if (card && typeof card === "object" && !card.keyword) {
-						card.keyword = KEYWORDS[0];
-					}
-				}
-			}
-			// usedCardIdsが未設定の場合は空配列を補完
 			if (!Array.isArray(data.deck.usedCardIds)) {
 				data.deck.usedCardIds = [];
 			}
