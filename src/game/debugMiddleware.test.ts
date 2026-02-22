@@ -1,5 +1,9 @@
 import { afterEach, describe, expect, it } from "vitest";
-import { ENEMY_ATTACK_DAMAGE, PLAYER_INITIAL_HP } from "../constants";
+import {
+	ENEMY_ATTACK_DAMAGE,
+	ENEMY_PARAMS,
+	PLAYER_INITIAL_HP,
+} from "../constants";
 import {
 	createTestEnemy,
 	createTestState,
@@ -39,17 +43,18 @@ describe("executeEnemyTurnWithDebug", () => {
 		const state = createTestState({ enemies: [enemy] });
 		const { state: result, totalDamage } = executeEnemyTurnWithDebug(state);
 
-		expect(result).toBe(state);
+		expect(result.player.hp).toBe(PLAYER_INITIAL_HP);
 		expect(totalDamage).toBe(0);
+		expect(result).toBe(state);
 	});
 
 	it("敵行動スキップOFFの場合、通常通り敵が行動する", () => {
 		const enemy = createTestEnemy("normal", { x: 4, y: 3 });
 		const state = createTestState({ enemies: [enemy] });
-		const { state: result } = executeEnemyTurnWithDebug(state);
+		const { state: result, totalDamage } = executeEnemyTurnWithDebug(state);
 
-		// 敵が移動または攻撃していることを確認（状態が変化している）
-		expect(result).not.toBe(state);
+		expect(result.player.hp).toBe(PLAYER_INITIAL_HP - ENEMY_ATTACK_DAMAGE);
+		expect(totalDamage).toBe(ENEMY_PARAMS.normal.attackDamage);
 	});
 
 	it("無敵ONの場合、敵の攻撃ダメージを受けない", () => {

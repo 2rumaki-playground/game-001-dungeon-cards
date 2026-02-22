@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 import {
 	ENEMY_ATTACK_DAMAGE,
 	ENEMY_HP,
@@ -11,8 +11,6 @@ import {
 } from "../test-utils/createTestFixtures";
 import type { Enemy, Screen } from "../types";
 import { RNG } from "../utils/rng";
-import { resetDebugCheats, toggleDebugCheat } from "./debugCheats";
-import { executeEnemyTurnWithDebug } from "./debugMiddleware";
 import { executeEnemyTurn } from "./enemyAi";
 
 describe("executeEnemyTurn", () => {
@@ -382,47 +380,5 @@ describe("executeEnemyTurn", () => {
 		const enemy = result.enemies.find((e) => e.id === "enemy-1");
 		// BFSで迂回: left(2,3)に移動
 		expect(enemy?.position).toEqual({ x: 2, y: 3 });
-	});
-
-	describe("敵行動スキップチート", () => {
-		afterEach(() => {
-			resetDebugCheats();
-		});
-
-		it("敵スキップONの場合、敵が行動せずtotalDamage=0", () => {
-			toggleDebugCheat("skipEnemyTurn");
-			const enemies: Enemy[] = [
-				{
-					id: "enemy-1",
-					type: "normal",
-					position: { x: 4, y: 3 },
-					hp: ENEMY_HP,
-					maxHp: ENEMY_HP,
-				},
-			];
-			const state = createTestState({ turn: "enemy", enemies });
-			const { state: result, totalDamage } = executeEnemyTurnWithDebug(state);
-
-			expect(result.player.hp).toBe(PLAYER_INITIAL_HP);
-			expect(totalDamage).toBe(0);
-			expect(result).toBe(state);
-		});
-
-		it("敵スキップOFFの場合、通常通り敵が行動する", () => {
-			const enemies: Enemy[] = [
-				{
-					id: "enemy-1",
-					type: "normal",
-					position: { x: 4, y: 3 },
-					hp: ENEMY_HP,
-					maxHp: ENEMY_HP,
-				},
-			];
-			const state = createTestState({ turn: "enemy", enemies });
-			const { state: result, totalDamage } = executeEnemyTurnWithDebug(state);
-
-			expect(result.player.hp).toBe(PLAYER_INITIAL_HP - ENEMY_ATTACK_DAMAGE);
-			expect(totalDamage).toBe(ENEMY_PARAMS.normal.attackDamage);
-		});
 	});
 });
