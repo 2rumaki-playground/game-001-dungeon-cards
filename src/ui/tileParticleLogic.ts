@@ -40,7 +40,7 @@ export type TileParticle = {
 const TRAP_CONFIG: TileParticleEmitterConfig = {
 	movement: "rise",
 	shape: "circle",
-	colors: [0x9b59b6, 0x8e44ad, 0x7d3c98, 0xaf7ac5],
+	colors: [COLORS.trap, 0x8e44ad, 0x7d3c98, 0xaf7ac5],
 	maxParticles: 5,
 	spawnInterval: 400,
 	lifetime: { min: 1500, max: 2500 },
