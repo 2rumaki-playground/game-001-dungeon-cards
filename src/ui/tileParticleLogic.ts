@@ -118,7 +118,7 @@ export function spawnTileParticle(
 		color: config.colors[colorIndex],
 		movement: config.movement,
 		phase: random() * Math.PI * 2,
-		orbitAngle: random() * Math.PI * 2,
+		orbitAngle: config.movement === "orbit" ? random() * Math.PI * 2 : 0,
 		initialX,
 		initialY,
 	};
