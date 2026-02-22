@@ -626,7 +626,7 @@ export class RewardScreen {
 	}
 
 	/**
-	 * 獲得候補カードのプレビューを生成（インタラクションなし）
+	 * 獲得候補カードのプレビューを生成（ツールチップ用のホバーのみ）
 	 */
 	private createAcquiredCardPreview(
 		cardType: CardType,
