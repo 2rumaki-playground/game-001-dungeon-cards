@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { CELL_SIZE } from "../constants";
 import {
 	calcTileParticleAlpha,
 	calcTileParticlePosition,
@@ -8,8 +9,6 @@ import {
 	type TileParticle,
 	updateTileParticles,
 } from "./tileParticleLogic";
-
-const CELL_SIZE = 48;
 
 function createFixedRandom(value: number): () => number {
 	return () => value;
