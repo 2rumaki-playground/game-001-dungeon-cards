@@ -41,7 +41,7 @@ async function executeFloorTransitionFlow(
 }
 
 /**
- * 階段への移動アニメーション後に報酬フロー→階層遷移する
+ * 階段への移動アニメーション後に状態適用→階層遷移フローを実行する
  */
 export async function updateStateWithStairsAnimation(
 	ctx: GameContext,
