@@ -4,6 +4,7 @@
  */
 
 import {
+	ACTION_LOG_LIMIT,
 	ENEMY_PARAMS,
 	getEnemyComposition,
 	INITIAL_FLOOR,
@@ -339,7 +340,7 @@ export function addActionLog(
 	state: GameState,
 	message: string,
 	actor: LogActor = "system",
-	maxEntries = 50,
+	maxEntries = ACTION_LOG_LIMIT,
 ): GameState {
 	const entry: ActionLogEntry = {
 		id: crypto.randomUUID(),
