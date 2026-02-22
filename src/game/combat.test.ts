@@ -339,6 +339,8 @@ describe("applyDamageToEnemy - カード獲得条件", () => {
 });
 
 describe("applyEnemyDamageToPlayer", () => {
+	afterEach(() => resetDebugCheats());
+
 	it("HPが減少した場合、hitCounterが更新される", () => {
 		const state = createTestState();
 		const result = applyEnemyDamageToPlayer(
@@ -360,7 +362,6 @@ describe("applyEnemyDamageToPlayer", () => {
 		);
 
 		expect(result.acquisitionCounters.hitCounts.normal).toBe(0);
-		resetDebugCheats();
 	});
 
 	it("lastAttackerEnemyTypeが設定される", () => {
