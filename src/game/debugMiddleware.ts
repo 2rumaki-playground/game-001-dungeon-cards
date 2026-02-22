@@ -13,13 +13,12 @@ import { type EnemyTurnResult, executeEnemyTurn } from "./enemyAi";
 /**
  * applyDamageToPlayer のデバッグラッパー
  *
- * 無敵チートON時はダメージをスキップする。
+ * 無敵チートの判定は applyDamageToPlayer 内で行われる。
  */
 export function applyDamageToPlayerWithDebug(
 	state: GameState,
 	damage: number,
 ): GameState {
-	if (import.meta.env.DEV && getDebugCheats().invincible) return state;
 	return applyDamageToPlayer(state, damage);
 }
 
@@ -33,7 +32,12 @@ function applyEnemyDamageToPlayerWithDebug(
 	damage: number,
 	enemyType: EnemyType,
 ): GameState {
-	if (import.meta.env.DEV && getDebugCheats().invincible) return state;
+	if (import.meta.env.DEV && getDebugCheats().invincible) {
+		return {
+			...state,
+			lastAttackerEnemyType: enemyType,
+		};
+	}
 	return applyEnemyDamageToPlayer(state, damage, enemyType);
 }
 
