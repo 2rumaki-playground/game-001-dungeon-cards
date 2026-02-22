@@ -1,12 +1,8 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 import { PLAYER_INITIAL_HP } from "../constants";
-import {
-	createTestState,
-	resetTestEnemySeq,
-} from "../test-utils/createTestFixtures";
+import { createTestState } from "../test-utils/createTestFixtures";
 import { applyEnemyDamageToPlayer } from "./combat";
-
-beforeEach(() => resetTestEnemySeq());
+import { resetDebugCheats, toggleDebugCheat } from "./debugCheats";
 
 describe("applyEnemyDamageToPlayer", () => {
 	it("プレイヤーにダメージを適用しlastAttackerEnemyTypeを設定する", () => {
@@ -42,6 +38,27 @@ describe("applyEnemyDamageToPlayer", () => {
 
 		expect(state.player.hp).toBe(originalHp);
 		expect(state.acquisitionCounters).toBe(originalCounters);
+	});
+
+	describe("無敵チートON", () => {
+		afterEach(() => resetDebugCheats());
+
+		it("HPが変化せずhitCounterも更新されない", () => {
+			toggleDebugCheat("invincible");
+			const state = createTestState();
+			const result = applyEnemyDamageToPlayer(state, 3, "normal");
+
+			expect(result.player.hp).toBe(PLAYER_INITIAL_HP);
+			expect(result.acquisitionCounters.hitCounts.normal).toBe(0);
+		});
+
+		it("lastAttackerEnemyTypeは設定される", () => {
+			toggleDebugCheat("invincible");
+			const state = createTestState();
+			const result = applyEnemyDamageToPlayer(state, 3, "heavy");
+
+			expect(result.lastAttackerEnemyType).toBe("heavy");
+		});
 	});
 
 	it("異なる敵タイプで正しくhitCounterが更新される", () => {
