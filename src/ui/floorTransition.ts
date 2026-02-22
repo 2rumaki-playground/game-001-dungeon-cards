@@ -30,7 +30,7 @@ async function executeFloorTransitionFlow(
 	// 3. セーブ処理
 	saveGame(transitioned);
 
-	// 5. フェードトランジション（暗転中に階層バナー表示 + 状態更新）
+	// 4. フェードトランジション（暗転中に階層バナー表示 + 状態更新）
 	await ctx.ui.screenTransition.fadeTransition(async () => {
 		await ctx.ui.floorBanner.show(transitioned.floor);
 		applyState(ctx, transitioned);
