@@ -339,7 +339,7 @@ describe("RewardScreen", () => {
 			const container = screen.getContainer();
 			const acquiredCard = findByLabel(container, "acquiredCard");
 			expect(acquiredCard).toBeDefined();
-			expect(acquiredCard?.eventMode).toBe("none");
+			expect(acquiredCard?.eventMode).toBe("static");
 		});
 
 		it("acquiredCardType指定かつタイトルに案内文を含まない場合、サブタイトルが表示される", () => {
@@ -745,6 +745,63 @@ describe("RewardScreen", () => {
 			const texts = getAllTextsRecursive(tooltipContainer as Container);
 			const hasDesc = texts.some((t) => t.text.includes(CARD_DESCRIPTION.move));
 			expect(hasDesc).toBe(true);
+		});
+
+		it("獲得候補カードのpointeroverでツールチップが表示される", () => {
+			const testCards: Card[] = [
+				{ id: "c1", type: "move" },
+				{ id: "c2", type: "attack" },
+			];
+			const screen = new RewardScreen();
+			screen.renderRemoveSelection(
+				testCards,
+				600,
+				800,
+				"テスト",
+				undefined,
+				undefined,
+				"jump",
+			);
+
+			const container = screen.getContainer();
+			const acquiredCard = findByLabel(container, "acquiredCard");
+			expect(acquiredCard).toBeDefined();
+			acquiredCard?.emit("pointerover", {} as FederatedPointerEvent);
+
+			const tooltipContainer = findTooltipContainer(screen);
+			expect(tooltipContainer).toBeDefined();
+			expect(tooltipContainer?.children.length).toBeGreaterThan(0);
+
+			const texts = getAllTextsRecursive(tooltipContainer as Container);
+			const hasName = texts.some((t) => t.text.includes(CARD_TYPE_NAME.jump));
+			expect(hasName).toBe(true);
+		});
+
+		it("獲得候補カードのpointeroutでツールチップが消える", () => {
+			const testCards: Card[] = [
+				{ id: "c1", type: "move" },
+				{ id: "c2", type: "attack" },
+			];
+			const screen = new RewardScreen();
+			screen.renderRemoveSelection(
+				testCards,
+				600,
+				800,
+				"テスト",
+				undefined,
+				undefined,
+				"jump",
+			);
+
+			const container = screen.getContainer();
+			const acquiredCard = findByLabel(container, "acquiredCard");
+			acquiredCard?.emit("pointerover", {} as FederatedPointerEvent);
+
+			const tooltipContainer = findTooltipContainer(screen);
+			expect(tooltipContainer?.children.length).toBeGreaterThan(0);
+
+			acquiredCard?.emit("pointerout", {} as FederatedPointerEvent);
+			expect(tooltipContainer?.children.length).toBe(0);
 		});
 
 		it("交換グリッドカードのpointeroutでツールチップが消える", () => {
