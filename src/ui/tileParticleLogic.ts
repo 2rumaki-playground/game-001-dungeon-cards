@@ -2,6 +2,7 @@
  * タイル常駐パーティクルの純粋ロジック（PixiJS依存なし）
  */
 
+import { COLORS } from "../constants";
 import type { SpecialTileType } from "../types/map";
 
 export type TileParticleMovement = "rise" | "orbit" | "float";
@@ -50,7 +51,7 @@ const TRAP_CONFIG: TileParticleEmitterConfig = {
 const TREASURE_CONFIG: TileParticleEmitterConfig = {
 	movement: "orbit",
 	shape: "diamond",
-	colors: [0xf1c40f, 0xe6b800, 0xd4ac0f, 0xf5d442],
+	colors: [COLORS.treasure, 0xf1c40f, 0xe6b800, 0xf5d442],
 	maxParticles: 6,
 	spawnInterval: 350,
 	lifetime: { min: 2000, max: 3000 },
