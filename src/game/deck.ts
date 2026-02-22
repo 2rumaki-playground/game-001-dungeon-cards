@@ -4,9 +4,8 @@
  * @see docs/spec/cards.md
  */
 
-import { INITIAL_DECK, KEYWORDS } from "../constants";
-import type { Card, CardType, DeckState, Keyword } from "../types";
-import type { RNG } from "../utils/rng";
+import { INITIAL_DECK } from "../constants";
+import type { Card, CardType, DeckState } from "../types";
 
 /**
  * 手札の全カードを取得
@@ -47,45 +46,36 @@ export function initCardIdCounterFromDeck(deck: DeckState): void {
 }
 
 /**
- * RNGを使ってランダムにキーワードを割り当てる
- */
-export function assignRandomKeyword(rng: RNG): Keyword {
-	return rng.pick<Keyword>(KEYWORDS);
-}
-
-/**
  * カードを1枚生成
  */
-export function createCard(type: CardType, keyword: Keyword): Card {
+export function createCard(type: CardType): Card {
 	cardIdCounter++;
-	return { id: `card-${cardIdCounter}`, type, keyword };
+	return { id: `card-${cardIdCounter}`, type };
 }
 
 /**
  * 指定種別のカードを指定枚数生成
  */
-function createCards(type: CardType, count: number, rng: RNG): Card[] {
-	return Array.from({ length: count }, () =>
-		createCard(type, assignRandomKeyword(rng)),
-	);
+function createCards(type: CardType, count: number): Card[] {
+	return Array.from({ length: count }, () => createCard(type));
 }
 
 /**
  * 初期手札を生成（固定順）
  */
-export function createInitialDeck(rng: RNG): Card[] {
+export function createInitialDeck(): Card[] {
 	return [
-		...createCards("move", INITIAL_DECK.moveCards, rng),
-		...createCards("attack", INITIAL_DECK.attackCards, rng),
-		...createCards("wait", INITIAL_DECK.waitCards, rng),
+		...createCards("move", INITIAL_DECK.moveCards),
+		...createCards("attack", INITIAL_DECK.attackCards),
+		...createCards("wait", INITIAL_DECK.waitCards),
 	];
 }
 
 /**
  * 初期デッキ状態を生成（固定手札4枚 + 使用済みID空）
  */
-export function createInitialDeckState(rng: RNG): DeckState {
-	const cards = createInitialDeck(rng);
+export function createInitialDeckState(): DeckState {
+	const cards = createInitialDeck();
 	return {
 		hand: cards,
 		usedCardIds: [],

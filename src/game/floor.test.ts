@@ -56,7 +56,7 @@ function createTestState(overrides?: Partial<GameState>): GameState {
 			maxHp: 10,
 		},
 		enemies: [createTestEnemy("normal", { x: 2, y: 2 })],
-		deck: createInitialDeckState(rng),
+		deck: createInitialDeckState(),
 		actionLog: [],
 		rng,
 		defeatedEnemyCount: 0,

@@ -16,7 +16,7 @@ describe("executeJump", () => {
 				maxHp: PLAYER_INITIAL_HP,
 			},
 			deck: {
-				hand: [{ id: "jump-1", type: "jump", keyword: "flame" }],
+				hand: [{ id: "jump-1", type: "jump" }],
 				usedCardIds: [],
 			},
 		});
@@ -79,7 +79,7 @@ describe("executeJump", () => {
 			},
 			...createOverrides(),
 			deck: {
-				hand: [{ id: "jump-1", type: "jump", keyword: "flame" }],
+				hand: [{ id: "jump-1", type: "jump" }],
 				usedCardIds: [],
 			},
 		});
@@ -132,7 +132,7 @@ describe("executeJump", () => {
 				maxHp: PLAYER_INITIAL_HP,
 			},
 			deck: {
-				hand: [{ id: "jump-1", type: "jump", keyword: "flame" }],
+				hand: [{ id: "jump-1", type: "jump" }],
 				usedCardIds: [],
 			},
 		});
@@ -161,7 +161,7 @@ describe("executeJump", () => {
 				maxHp: PLAYER_INITIAL_HP,
 			},
 			deck: {
-				hand: [{ id: "jump-1", type: "jump", keyword: "flame" }],
+				hand: [{ id: "jump-1", type: "jump" }],
 				usedCardIds: [],
 			},
 		});
@@ -188,7 +188,7 @@ describe("executeJump", () => {
 				maxHp: PLAYER_INITIAL_HP,
 			},
 			deck: {
-				hand: [{ id: "jump-1", type: "jump", keyword: "flame" }],
+				hand: [{ id: "jump-1", type: "jump" }],
 				usedCardIds: [],
 			},
 		});
@@ -211,7 +211,7 @@ describe("executeJump", () => {
 				maxHp: PLAYER_INITIAL_HP,
 			},
 			deck: {
-				hand: [{ id: "jump-1", type: "jump", keyword: "flame" }],
+				hand: [{ id: "jump-1", type: "jump" }],
 				usedCardIds: [],
 			},
 		});
@@ -236,7 +236,7 @@ describe("executeJump", () => {
 				maxHp: PLAYER_INITIAL_HP,
 			},
 			deck: {
-				hand: [{ id: "jump-1", type: "jump", keyword: "flame" }],
+				hand: [{ id: "jump-1", type: "jump" }],
 				usedCardIds: [],
 			},
 		});
@@ -261,7 +261,7 @@ describe("executeJump", () => {
 				maxHp: PLAYER_INITIAL_HP,
 			},
 			deck: {
-				hand: [{ id: "jump-1", type: "jump", keyword: "flame" }],
+				hand: [{ id: "jump-1", type: "jump" }],
 				usedCardIds: [],
 			},
 		});
@@ -282,7 +282,7 @@ describe("executeJump", () => {
 				maxHp: PLAYER_INITIAL_HP,
 			},
 			deck: {
-				hand: [{ id: "jump-1", type: "jump", keyword: "flame" }],
+				hand: [{ id: "jump-1", type: "jump" }],
 				usedCardIds: [],
 			},
 		});
@@ -295,7 +295,7 @@ describe("executeJump", () => {
 	it("元のGameStateが変更されない（イミュータブル）", () => {
 		const state = createTestState({
 			deck: {
-				hand: [{ id: "jump-1", type: "jump", keyword: "flame" }],
+				hand: [{ id: "jump-1", type: "jump" }],
 				usedCardIds: [],
 			},
 		});
@@ -312,7 +312,7 @@ describe("executeJump - visitedTiles", () => {
 	it("ジャンプ着地時に着地先が訪問済みに追加される", () => {
 		const state = createTestState({
 			deck: {
-				hand: [{ id: "jump-1", type: "jump", keyword: "flame" }],
+				hand: [{ id: "jump-1", type: "jump" }],
 				usedCardIds: [],
 			},
 		});
@@ -328,7 +328,7 @@ describe("executeJump - visitedTiles", () => {
 				maxHp: PLAYER_INITIAL_HP,
 			},
 			deck: {
-				hand: [{ id: "jump-1", type: "jump", keyword: "flame" }],
+				hand: [{ id: "jump-1", type: "jump" }],
 				usedCardIds: [],
 			},
 		});

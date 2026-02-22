@@ -3,7 +3,7 @@
  * @see docs/spec/constants.md
  */
 
-import type { EnemyCardAcquisitionConfig, EnemyType, Keyword } from "./types";
+import type { EnemyCardAcquisitionConfig, EnemyType } from "./types";
 
 // 手札関連
 export const HAND_LIMIT = 4;
@@ -17,12 +17,6 @@ export const INITIAL_DECK = {
 
 export const TOTAL_DECK_SIZE =
 	INITIAL_DECK.moveCards + INITIAL_DECK.attackCards + INITIAL_DECK.waitCards;
-
-// カードキーワード（属性）
-export const KEYWORDS = [
-	"flame",
-	"water",
-] as const satisfies readonly Keyword[];
 
 // ジャンプ
 export const JUMP_DISTANCE = 2;

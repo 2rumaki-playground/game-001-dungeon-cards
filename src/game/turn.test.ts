@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 import type { GameState } from "../types";
-import { RNG } from "../utils/rng";
 import { createInitialDeckState } from "./deck";
 import { createTitleScreenState } from "./state";
 import { endPlayerTurn, startPlayerTurn } from "./turn";
@@ -11,8 +10,7 @@ import { endPlayerTurn, startPlayerTurn } from "./turn";
 function createGameState(overrides?: Partial<GameState>): GameState {
 	const seed = 12345;
 	const base = createTitleScreenState(seed);
-	const rng = new RNG(seed);
-	const deck = createInitialDeckState(rng);
+	const deck = createInitialDeckState();
 	return {
 		...base,
 		screen: "game",
@@ -24,7 +22,7 @@ function createGameState(overrides?: Partial<GameState>): GameState {
 describe("turn", () => {
 	describe("startPlayerTurn", () => {
 		it("使用済みカードIDリストをリセットする", () => {
-			const deck = createInitialDeckState(new RNG(12345));
+			const deck = createInitialDeckState();
 			// 使用済みカードがある状態
 			const usedCardIds = [deck.hand[0].id, deck.hand[1].id];
 			const state = createGameState({
@@ -49,7 +47,7 @@ describe("turn", () => {
 		});
 
 		it("手札はそのまま保持される", () => {
-			const deck = createInitialDeckState(new RNG(12345));
+			const deck = createInitialDeckState();
 			const state = createGameState({ deck });
 			const originalHand = state.deck.hand;
 
@@ -59,7 +57,7 @@ describe("turn", () => {
 		});
 
 		it("元の状態を変更しない（イミュータブル）", () => {
-			const deck = createInitialDeckState(new RNG(12345));
+			const deck = createInitialDeckState();
 			const usedCardIds = [deck.hand[0].id];
 			const state = createGameState({
 				deck: { ...deck, usedCardIds },
@@ -74,7 +72,7 @@ describe("turn", () => {
 
 	describe("endPlayerTurn", () => {
 		it("手札はそのまま保持される", () => {
-			const deck = createInitialDeckState(new RNG(12345));
+			const deck = createInitialDeckState();
 			const state = createGameState({ deck });
 			const originalHandLength = state.deck.hand.length;
 
@@ -97,7 +95,7 @@ describe("turn", () => {
 		});
 
 		it("元の状態を変更しない（イミュータブル）", () => {
-			const deck = createInitialDeckState(new RNG(12345));
+			const deck = createInitialDeckState();
 			const state = createGameState({ deck });
 			const originalHandLength = state.deck.hand.length;
 			const originalTurn = state.turn;

@@ -13,31 +13,31 @@ import {
 describe("cardQueue", () => {
 	describe("canEnqueueCard", () => {
 		it("未使用カードは予約可能", () => {
-			const card: Card = { id: "c1", type: "move", keyword: "flame" };
+			const card: Card = { id: "c1", type: "move" };
 			expect(canEnqueueCard([], card)).toBe(true);
 		});
 
 		it("使用済みカードは予約不可", () => {
-			const card: Card = { id: "c1", type: "move", keyword: "flame" };
+			const card: Card = { id: "c1", type: "move" };
 			const deck = { hand: [card], usedCardIds: ["c1"] };
 			expect(canEnqueueCard([], card, deck)).toBe(false);
 		});
 
 		it("キュー内に同じカードがあれば予約不可", () => {
-			const card: Card = { id: "c1", type: "move", keyword: "flame" };
+			const card: Card = { id: "c1", type: "move" };
 			const queue: QueuedCard[] = [{ card, direction: "up" }];
 			expect(canEnqueueCard(queue, card)).toBe(false);
 		});
 
 		it("キュー内に別のカードがあれば予約可能", () => {
-			const card1: Card = { id: "c1", type: "move", keyword: "flame" };
-			const card2: Card = { id: "c2", type: "attack", keyword: "flame" };
+			const card1: Card = { id: "c1", type: "move" };
+			const card2: Card = { id: "c2", type: "attack" };
 			const queue: QueuedCard[] = [{ card: card1, direction: "up" }];
 			expect(canEnqueueCard(queue, card2)).toBe(true);
 		});
 
 		it("deck未指定でも未使用カードは予約可能", () => {
-			const card: Card = { id: "c1", type: "wait", keyword: "flame" };
+			const card: Card = { id: "c1", type: "wait" };
 			expect(canEnqueueCard([], card)).toBe(true);
 		});
 	});
@@ -49,20 +49,20 @@ describe("cardQueue", () => {
 
 		it("1件のキューは1始まりのインデックスを返す", () => {
 			const queue: QueuedCard[] = [
-				{ card: { id: "c1", type: "move", keyword: "flame" }, direction: "up" },
+				{ card: { id: "c1", type: "move" }, direction: "up" },
 			];
 			expect(buildQueuedCardIndexMap(queue)).toEqual(new Map([["c1", 1]]));
 		});
 
 		it("複数件のキューは挿入順にインデックスを返す", () => {
 			const queue: QueuedCard[] = [
-				{ card: { id: "c1", type: "move", keyword: "flame" }, direction: "up" },
+				{ card: { id: "c1", type: "move" }, direction: "up" },
 				{
-					card: { id: "c2", type: "attack", keyword: "flame" },
+					card: { id: "c2", type: "attack" },
 					direction: "down",
 				},
 				{
-					card: { id: "c3", type: "jump", keyword: "flame" },
+					card: { id: "c3", type: "jump" },
 					direction: "left",
 				},
 			];

@@ -227,9 +227,9 @@ describe("RewardScreen", () => {
 
 	describe("renderRemoveSelection", () => {
 		const testCards: Card[] = [
-			{ id: "card-1", type: "move", keyword: "flame" },
-			{ id: "card-2", type: "attack", keyword: "flame" },
-			{ id: "card-3", type: "jump", keyword: "flame" },
+			{ id: "card-1", type: "move" },
+			{ id: "card-2", type: "attack" },
+			{ id: "card-3", type: "jump" },
 		];
 
 		it("gameAreaWidth指定時にタイトルがゲームエリア中央に配置される", () => {
@@ -289,12 +289,12 @@ describe("RewardScreen", () => {
 
 		it("グリッドコンテナにカードが4列で配置される", () => {
 			const sixCards: Card[] = [
-				{ id: "c1", type: "move", keyword: "flame" },
-				{ id: "c2", type: "attack", keyword: "flame" },
-				{ id: "c3", type: "jump", keyword: "flame" },
-				{ id: "c4", type: "move", keyword: "flame" },
-				{ id: "c5", type: "attack", keyword: "flame" },
-				{ id: "c6", type: "jump", keyword: "flame" },
+				{ id: "c1", type: "move" },
+				{ id: "c2", type: "attack" },
+				{ id: "c3", type: "jump" },
+				{ id: "c4", type: "move" },
+				{ id: "c5", type: "attack" },
+				{ id: "c6", type: "jump" },
 			];
 			const screen = new RewardScreen();
 			screen.renderRemoveSelection(sixCards, 600, 800);
@@ -524,8 +524,8 @@ describe("RewardScreen", () => {
 
 	describe("animateCardRemove（ParticleSystem設定済み）", () => {
 		const testCards: Card[] = [
-			{ id: "rm-1", type: "move", keyword: "flame" },
-			{ id: "rm-2", type: "attack", keyword: "flame" },
+			{ id: "rm-1", type: "move" },
+			{ id: "rm-2", type: "attack" },
 		];
 
 		function createMockParticle() {
@@ -745,9 +745,9 @@ describe("RewardScreen", () => {
 
 		it("交換グリッドカードのpointeroverでツールチップが表示される", () => {
 			const testCards: Card[] = [
-				{ id: "c1", type: "move", keyword: "flame" },
-				{ id: "c2", type: "attack", keyword: "flame" },
-				{ id: "c3", type: "jump", keyword: "flame" },
+				{ id: "c1", type: "move" },
+				{ id: "c2", type: "attack" },
+				{ id: "c3", type: "jump" },
 			];
 			const screen = new RewardScreen();
 			screen.renderRemoveSelection(testCards, 600, 800);
@@ -771,8 +771,8 @@ describe("RewardScreen", () => {
 
 		it("交換グリッドカードのpointeroutでツールチップが消える", () => {
 			const testCards: Card[] = [
-				{ id: "c1", type: "move", keyword: "flame" },
-				{ id: "c2", type: "attack", keyword: "flame" },
+				{ id: "c1", type: "move" },
+				{ id: "c2", type: "attack" },
 			];
 			const screen = new RewardScreen();
 			screen.renderRemoveSelection(testCards, 600, 800);

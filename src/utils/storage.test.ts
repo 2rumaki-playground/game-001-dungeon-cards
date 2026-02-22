@@ -133,41 +133,16 @@ describe("storage", () => {
 		}
 	});
 
-	it("should add default keyword to cards without keyword field (backward compatibility)", () => {
-		const state = createTitleScreenState(42);
-		const saveData = {
-			...state,
-			screen: "game",
-			deck: {
-				hand: [
-					{ id: "c1", type: "move" },
-					{ id: "c2", type: "attack" },
-				],
-				usedCardIds: [],
-			},
-			rng: state.rng.serialize(),
-		};
-		localStorageMock.setItem("dungeon-cards-save", JSON.stringify(saveData));
-
-		const loaded = loadGame();
-		expect(loaded).not.toBeNull();
-		if (loaded) {
-			for (const card of loaded.deck.hand) {
-				expect(card.keyword).toBe("flame");
-			}
-		}
-	});
-
 	it("should convert old 3-zone deck format to hand-only format (backward compatibility)", () => {
 		const state = createTitleScreenState(42);
 		const saveData = {
 			...state,
 			screen: "game",
 			deck: {
-				deckOrder: [{ id: "c1", type: "move", keyword: "flame" }],
-				drawPile: [{ id: "c2", type: "attack", keyword: "flame" }],
-				hand: [{ id: "c3", type: "jump", keyword: "flame" }],
-				discardPile: [{ id: "c4", type: "wait", keyword: "flame" }],
+				deckOrder: [{ id: "c1", type: "move" }],
+				drawPile: [{ id: "c2", type: "attack" }],
+				hand: [{ id: "c3", type: "jump" }],
+				discardPile: [{ id: "c4", type: "wait" }],
 			},
 			rng: state.rng.serialize(),
 		};
@@ -179,26 +154,6 @@ describe("storage", () => {
 			// 旧3ゾーンのカードがすべてhandに統合される
 			expect(loaded.deck.hand).toHaveLength(3);
 			expect(loaded.deck.usedCardIds).toEqual([]);
-		}
-	});
-
-	it("should preserve existing keyword field on cards", () => {
-		const state = createTitleScreenState(42);
-		const saveData = {
-			...state,
-			screen: "game",
-			deck: {
-				hand: [{ id: "c1", type: "move", keyword: "water" }],
-				usedCardIds: [],
-			},
-			rng: state.rng.serialize(),
-		};
-		localStorageMock.setItem("dungeon-cards-save", JSON.stringify(saveData));
-
-		const loaded = loadGame();
-		expect(loaded).not.toBeNull();
-		if (loaded) {
-			expect(loaded.deck.hand[0].keyword).toBe("water");
 		}
 	});
 

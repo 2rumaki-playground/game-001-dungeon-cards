@@ -95,8 +95,8 @@ describe("executeDebugOneshotKill", () => {
 			],
 			deck: {
 				hand: [
-					{ id: "card-1", type: "move", keyword: "flame" },
-					{ id: "card-2", type: "attack", keyword: "flame" },
+					{ id: "card-1", type: "move" },
+					{ id: "card-2", type: "attack" },
 				],
 				usedCardIds: [],
 			},
@@ -121,8 +121,8 @@ describe("executeDebugTeleport", () => {
 		const state = createTestState({
 			deck: {
 				hand: [
-					{ id: "card-1", type: "move", keyword: "flame" },
-					{ id: "card-2", type: "attack", keyword: "flame" },
+					{ id: "card-1", type: "move" },
+					{ id: "card-2", type: "attack" },
 				],
 				usedCardIds: [],
 			},

@@ -11,7 +11,7 @@ import type {
 	EnemyType,
 	GameState,
 } from "../types";
-import { assignRandomKeyword, createCard } from "./deck";
+import { createCard } from "./deck";
 
 /**
  * カウンター初期値（全0）を返す
@@ -101,8 +101,7 @@ export function exchangeCardInDeck(
 	removeCardId: string,
 	newCardType: CardType,
 ): GameState {
-	const rng = state.rng.clone();
-	const newCard = createCard(newCardType, assignRandomKeyword(rng));
+	const newCard = createCard(newCardType);
 
 	// 手札から除去対象のインデックスを取得
 	const handIndex = state.deck.hand.findIndex((c) => c.id === removeCardId);
@@ -121,7 +120,6 @@ export function exchangeCardInDeck(
 
 	return {
 		...state,
-		rng,
 		deck: newDeck,
 	};
 }

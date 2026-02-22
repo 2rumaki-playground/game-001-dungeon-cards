@@ -9,11 +9,6 @@
 export type CardType = "move" | "attack" | "strong_attack" | "jump" | "wait";
 
 /**
- * カードキーワード（属性）
- */
-export type Keyword = "flame" | "water";
-
-/**
  * カードレアリティ
  */
 export type Rarity = "common" | "uncommon" | "rare";
@@ -24,7 +19,6 @@ export type Rarity = "common" | "uncommon" | "rare";
 export type Card = {
 	id: string;
 	type: CardType;
-	keyword: Keyword;
 };
 
 /**
