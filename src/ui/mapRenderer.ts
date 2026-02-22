@@ -157,6 +157,10 @@ export class MapRenderer {
 	renderMap(map: GameMap): void {
 		if (this.lastRenderedMap === map) return;
 		this.lastRenderedMap = map;
+		// マップ再描画時にホバー中タイルのSpriteがdestroyされるため、
+		// pointeroutが発火せずツールチップが残るのを防ぐ
+		this.hideTileTooltip();
+		this.tooltipTileKey = null;
 		renderTiles(this.tilesContainer, map, this.tileHoverCallbacks);
 	}
 
