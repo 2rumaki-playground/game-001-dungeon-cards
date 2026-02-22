@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import {
 	CLEAR_FLOOR,
 	ENEMY_ATTACK_DAMAGE,
@@ -18,7 +18,6 @@ import {
 	checkGameOver,
 	isDefeated,
 } from "./combat";
-import { resetDebugCheats, toggleDebugCheat } from "./debugCheats";
 
 beforeEach(() => resetTestEnemySeq());
 
@@ -339,8 +338,6 @@ describe("applyDamageToEnemy - カード獲得条件", () => {
 });
 
 describe("applyEnemyDamageToPlayer", () => {
-	afterEach(() => resetDebugCheats());
-
 	it("HPが減少した場合、hitCounterが更新される", () => {
 		const state = createTestState();
 		const result = applyEnemyDamageToPlayer(
@@ -350,18 +347,6 @@ describe("applyEnemyDamageToPlayer", () => {
 		);
 
 		expect(result.acquisitionCounters.hitCounts.normal).toBe(1);
-	});
-
-	it("HPが減少しない場合（無敵チート）、hitCounterが更新されない", () => {
-		toggleDebugCheat("invincible");
-		const state = createTestState();
-		const result = applyEnemyDamageToPlayer(
-			state,
-			ENEMY_ATTACK_DAMAGE,
-			"normal",
-		);
-
-		expect(result.acquisitionCounters.hitCounts.normal).toBe(0);
 	});
 
 	it("lastAttackerEnemyTypeが設定される", () => {
@@ -381,27 +366,5 @@ describe("applyEnemyDamageToPlayer", () => {
 
 		expect(result.lastAttackerEnemyType).toBe("normal");
 		expect(result.acquisitionCounters.hitCounts.normal).toBe(0);
-	});
-});
-
-describe("applyDamageToPlayer - 無敵チート", () => {
-	afterEach(() => {
-		resetDebugCheats();
-	});
-
-	it("無敵ONの場合、ダメージを受けない", () => {
-		toggleDebugCheat("invincible");
-		const state = createTestState();
-		const result = applyDamageToPlayer(state, ENEMY_ATTACK_DAMAGE);
-
-		expect(result.player.hp).toBe(PLAYER_INITIAL_HP);
-		expect(result).toBe(state);
-	});
-
-	it("無敵OFFの場合、通常通りダメージを受ける", () => {
-		const state = createTestState();
-		const result = applyDamageToPlayer(state, ENEMY_ATTACK_DAMAGE);
-
-		expect(result.player.hp).toBe(PLAYER_INITIAL_HP - ENEMY_ATTACK_DAMAGE);
 	});
 });

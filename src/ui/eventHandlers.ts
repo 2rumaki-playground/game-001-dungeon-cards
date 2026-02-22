@@ -6,7 +6,6 @@ import { JUMP_DISTANCE } from "../constants";
 import {
 	endPlayerTurn,
 	executeAttack,
-	executeEnemyTurn,
 	executeJump,
 	executeMove,
 	executeStrongAttack,
@@ -18,6 +17,10 @@ import {
 } from "../game";
 import { buildQueuedCardIndexMap, canEnqueueCard } from "../game/cardQueue";
 import { resetDebugCheats } from "../game/debugCheats";
+import {
+	applyTileEffectWithDebug,
+	executeEnemyTurnWithDebug,
+} from "../game/debugMiddleware";
 import { reorderHand } from "../game/deck";
 import { endSession, startSession } from "../game/playStats";
 import { setDeck } from "../game/state";
@@ -143,7 +146,9 @@ async function handleMoveCardExecution(
 		reachedStairs,
 		tileEffect,
 		gameOver,
-	} = executeMove(ctx.state, cardId, direction);
+	} = executeMove(ctx.state, cardId, direction, {
+		applyTileEffectFn: applyTileEffectWithDebug,
+	});
 	const moved =
 		next.player.position.x !== prevPosition.x ||
 		next.player.position.y !== prevPosition.y;
@@ -303,7 +308,9 @@ async function handleJumpCardExecution(
 	direction: Direction,
 ): Promise<void> {
 	const prevPosition = ctx.state.player.position;
-	const result = executeJump(ctx.state, cardId, direction);
+	const result = executeJump(ctx.state, cardId, direction, {
+		applyTileEffectFn: applyTileEffectWithDebug,
+	});
 	ctx.ui.directionSelector.hide();
 	ctx.pendingCard = null;
 
@@ -681,7 +688,8 @@ export function setupEventHandlers(ctx: GameContext): void {
 			await ctx.ui.turnBanner.showBanner("enemy");
 
 			const enemiesBefore = next.enemies;
-			const { state: enemyTurnState, totalDamage } = executeEnemyTurn(next);
+			const { state: enemyTurnState, totalDamage } =
+				executeEnemyTurnWithDebug(next);
 			next = enemyTurnState;
 			const enemyMoves = detectEnemyMoves(enemiesBefore, next.enemies);
 			const playerWasAttacked = totalDamage > 0;

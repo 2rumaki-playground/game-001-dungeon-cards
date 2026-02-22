@@ -5,9 +5,9 @@
 
 import type { GameState, Position } from "../types";
 import { applyDamageToEnemy } from "./combat";
+import { applyTileEffectWithDebug } from "./debugMiddleware";
 import { isInBounds } from "./map";
 import { addActionLog, updatePlayer } from "./state";
-import { applyTileEffect } from "./tileEffect";
 
 /**
  * 一撃カード: 指定した敵を即撃破
@@ -68,7 +68,7 @@ export function executeDebugTeleport(
 	}
 
 	// 特殊タイル効果
-	const effect = applyTileEffect(next);
+	const effect = applyTileEffectWithDebug(next);
 	return {
 		state: effect.state,
 		reachedStairs: false,

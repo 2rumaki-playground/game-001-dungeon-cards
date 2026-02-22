@@ -10,7 +10,6 @@ import {
 	updateDefeatCounter,
 	updateHitCounter,
 } from "./cardAcquisition";
-import { getDebugCheats } from "./debugCheats";
 import { recordDamageDealt, recordDamageTaken } from "./playStats";
 import {
 	addActionLog,
@@ -124,8 +123,6 @@ export function applyDamageToPlayer(
 	state: GameState,
 	damage: number,
 ): GameState {
-	if (import.meta.env.DEV && getDebugCheats().invincible) return state;
-
 	const actualDamage = Math.min(damage, state.player.hp);
 	recordDamageTaken(actualDamage);
 

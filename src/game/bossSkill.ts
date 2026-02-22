@@ -72,6 +72,7 @@ export type SkillResult = {
 export function executePendingSkill(
 	state: GameState,
 	enemy: Enemy,
+	applyPlayerDamage: typeof applyEnemyDamageToPlayer = applyEnemyDamageToPlayer,
 ): SkillResult {
 	if (!enemy.pendingSkill) {
 		return { state, damage: 0, executed: false };
@@ -88,7 +89,7 @@ export function executePendingSkill(
 				}));
 				return { state: next, damage: 0, executed: false };
 			}
-			return executePowerStrike(state, enemy);
+			return executePowerStrike(state, enemy, applyPlayerDamage);
 		case "area_attack":
 			if (enemy.type !== "boss") {
 				const next = updateEnemy(state, enemy.id, (e) => ({
@@ -97,7 +98,7 @@ export function executePendingSkill(
 				}));
 				return { state: next, damage: 0, executed: false };
 			}
-			return executeAreaAttack(state, enemy);
+			return executeAreaAttack(state, enemy, applyPlayerDamage);
 		default: {
 			// 想定外のスキルtypeの場合はpendingSkillをクリアして未実行扱い
 			const next = updateEnemy(state, enemy.id, (e) => ({
@@ -114,7 +115,11 @@ export function executePendingSkill(
  *
  * 隣接プレイヤーに通常攻撃の2倍ダメージを与える
  */
-function executePowerStrike(state: GameState, enemy: Enemy): SkillResult {
+function executePowerStrike(
+	state: GameState,
+	enemy: Enemy,
+	applyPlayerDamage: typeof applyEnemyDamageToPlayer,
+): SkillResult {
 	// pendingSkillをクリア
 	let next = updateEnemy(state, enemy.id, (e) => ({
 		...e,
@@ -127,7 +132,7 @@ function executePowerStrike(state: GameState, enemy: Enemy): SkillResult {
 
 	const params = ENEMY_PARAMS[enemy.type];
 	const damage = params.attackDamage * BOSS_SKILL.powerStrikeMultiplier;
-	next = applyEnemyDamageToPlayer(next, damage, enemy.type);
+	next = applyPlayerDamage(next, damage, enemy.type);
 	next = addActionLog(next, "ミニボスが強化攻撃を放った", "enemy");
 
 	return { state: next, damage, executed: true };
@@ -138,7 +143,11 @@ function executePowerStrike(state: GameState, enemy: Enemy): SkillResult {
  *
  * マンハッタン距離2以内のプレイヤーにダメージを与える
  */
-function executeAreaAttack(state: GameState, enemy: Enemy): SkillResult {
+function executeAreaAttack(
+	state: GameState,
+	enemy: Enemy,
+	applyPlayerDamage: typeof applyEnemyDamageToPlayer,
+): SkillResult {
 	// pendingSkillをクリア
 	let next = updateEnemy(state, enemy.id, (e) => ({
 		...e,
@@ -151,7 +160,7 @@ function executeAreaAttack(state: GameState, enemy: Enemy): SkillResult {
 	}
 
 	const damage = BOSS_SKILL.areaAttackDamage;
-	next = applyEnemyDamageToPlayer(next, damage, enemy.type);
+	next = applyPlayerDamage(next, damage, enemy.type);
 	next = addActionLog(next, "ボスが範囲攻撃を放った", "enemy");
 
 	return { state: next, damage, executed: true };

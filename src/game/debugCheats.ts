@@ -2,8 +2,9 @@
  * デバッグチート状態管理（DEV環境限定）
  *
  * モジュールレベルの共有オブジェクトでチート状態を保持。
- * ゲームロジック関数から `import.meta.env.DEV && getDebugCheats().xxx` でチェック可能。
- * プロダクションビルド時はデッドコード除去される。
+ * debugMiddleware.ts のラッパー関数から `import.meta.env.DEV && getDebugCheats().xxx` でチェックされ、
+ * ゲームロジック層（combat.ts, enemyAi.ts, tileEffect.ts）はこのモジュールに依存しない。
+ * プロダクションビルド時は `import.meta.env.DEV` が false になるため、関連コードごとデッドコード除去される想定。
  */
 
 export interface DebugCheats {
