@@ -15,6 +15,7 @@ import type {
 	TileType,
 } from "../types";
 import { CharacterRenderer } from "./characterRenderer";
+import type { ContainerTransform } from "./containerTransform";
 import { getViewportPixelSize, gridToPixel } from "./coordinates";
 import {
 	animateDamagePopup as animateDamagePopupImpl,
@@ -378,6 +379,17 @@ export class MapRenderer {
 	}
 
 	/**
+	 * 現在のコンテナ変換情報を取得
+	 */
+	private getContainerTransform(): ContainerTransform {
+		return {
+			x: this.container.x,
+			y: this.container.y,
+			scale: this.container.scale.x,
+		};
+	}
+
+	/**
 	 * 敵ツールチップを表示
 	 */
 	private showEnemyTooltip(enemyId: string): void {
@@ -387,11 +399,7 @@ export class MapRenderer {
 
 		this.tooltipEnemyId = enemyId;
 		const viewport = getViewportPixelSize();
-		const containerTransform = {
-			x: this.container.x,
-			y: this.container.y,
-			scale: this.container.scale.x,
-		};
+		const containerTransform = this.getContainerTransform();
 		const debugInfo = this.enemyAiAnalyses.get(enemyId);
 		this.enemyTooltip.show(
 			enemy,
@@ -416,11 +424,7 @@ export class MapRenderer {
 		if (!enemyContainer) return;
 
 		const viewport = getViewportPixelSize();
-		const containerTransform = {
-			x: this.container.x,
-			y: this.container.y,
-			scale: this.container.scale.x,
-		};
+		const containerTransform = this.getContainerTransform();
 
 		this.enemyTooltip.updatePosition(
 			enemyContainer.x,
@@ -445,11 +449,7 @@ export class MapRenderer {
 		if (!this.lastPlayer) return;
 
 		const viewport = getViewportPixelSize();
-		const containerTransform = {
-			x: this.container.x,
-			y: this.container.y,
-			scale: this.container.scale.x,
-		};
+		const containerTransform = this.getContainerTransform();
 		this.playerTooltip.show(
 			this.lastPlayer,
 			this.playerContainer.x,
@@ -467,11 +467,7 @@ export class MapRenderer {
 		if (!this.playerTooltip.isVisible()) return;
 
 		const viewport = getViewportPixelSize();
-		const containerTransform = {
-			x: this.container.x,
-			y: this.container.y,
-			scale: this.container.scale.x,
-		};
+		const containerTransform = this.getContainerTransform();
 
 		this.playerTooltip.updatePosition(
 			this.playerContainer.x,
@@ -503,11 +499,7 @@ export class MapRenderer {
 		this.tooltipTileKey = key;
 		const pixelPos = gridToPixel({ x: gridX, y: gridY });
 		const viewport = getViewportPixelSize();
-		const containerTransform = {
-			x: this.container.x,
-			y: this.container.y,
-			scale: this.container.scale.x,
-		};
+		const containerTransform = this.getContainerTransform();
 		this.tileTooltip.show(
 			tileType,
 			pixelPos.x,
@@ -529,11 +521,7 @@ export class MapRenderer {
 		const gridY = Number(yStr);
 		const pixelPos = gridToPixel({ x: gridX, y: gridY });
 		const viewport = getViewportPixelSize();
-		const containerTransform = {
-			x: this.container.x,
-			y: this.container.y,
-			scale: this.container.scale.x,
-		};
+		const containerTransform = this.getContainerTransform();
 
 		this.tileTooltip.updatePosition(
 			pixelPos.x,

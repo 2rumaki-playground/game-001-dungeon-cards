@@ -6,6 +6,7 @@
 import { Container, Graphics, Text } from "pixi.js";
 import { CELL_SIZE, TRAP_DAMAGE, TREASURE_HEAL } from "../constants";
 import type { TileType } from "../types";
+import type { ContainerTransform } from "./containerTransform";
 import { drawRoundedRect } from "./graphicsHelpers";
 
 /** ツールチップの枠線色 */
@@ -107,7 +108,7 @@ export class TileTooltip {
 			width: Number.POSITIVE_INFINITY,
 			height: Number.POSITIVE_INFINITY,
 		},
-		containerTransform: { x: number; y: number; scale: number } = {
+		containerTransform: ContainerTransform = {
 			x: 0,
 			y: 0,
 			scale: 1,
@@ -159,7 +160,7 @@ export class TileTooltip {
 		pixelX: number,
 		pixelY: number,
 		viewport: { width: number; height: number },
-		containerTransform: { x: number; y: number; scale: number },
+		containerTransform: ContainerTransform,
 	): void {
 		if (!this.container.visible) return;
 		this.applyPosition(pixelX, pixelY, viewport, containerTransform);
@@ -169,7 +170,7 @@ export class TileTooltip {
 		pixelX: number,
 		pixelY: number,
 		viewport: { width: number; height: number },
-		containerTransform: { x: number; y: number; scale: number },
+		containerTransform: ContainerTransform,
 	): void {
 		const { x: cx, y: cy, scale } = containerTransform;
 

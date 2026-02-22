@@ -328,8 +328,13 @@ export type JumpResult = {
 	jumped: boolean;
 	/** 階段に到達したか */
 	reachedStairs: boolean;
-	/** 発動した特殊タイル効果の一覧（発動位置付き） */
-	tileEffects: { tile: SpecialTileType; position: Position }[];
+	/** 発動した特殊タイル効果の一覧（発動位置・HP変化付き） */
+	tileEffects: {
+		tile: SpecialTileType;
+		position: Position;
+		hpBefore: number;
+		hpAfter: number;
+	}[];
 	/** 特殊タイル効果によるゲームオーバー */
 	gameOver: boolean;
 };
@@ -429,13 +434,20 @@ export function executeJump(
 	}
 
 	// 着地先の特殊タイル効果
-	const tileEffects: { tile: SpecialTileType; position: Position }[] = [];
+	const tileEffects: {
+		tile: SpecialTileType;
+		position: Position;
+		hpBefore: number;
+		hpAfter: number;
+	}[] = [];
 	const effect = applyTileEffect(next);
 	next = effect.state;
 	if (effect.triggeredTile) {
 		tileEffects.push({
 			tile: effect.triggeredTile,
 			position: { x: landX, y: landY },
+			hpBefore: effect.hpBefore,
+			hpAfter: effect.hpAfter,
 		});
 	}
 	if (effect.gameOver) {
