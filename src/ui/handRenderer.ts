@@ -393,13 +393,16 @@ export class HandRenderer {
 		if (enabled) {
 			const { ratio } = getExpProgress(card);
 			if (ratio > 0) {
+				const xpGaugeMask = new Graphics();
+				xpGaugeMask.roundRect(0, 0, CARD_WIDTH, CARD_HEIGHT, CARD_RADIUS);
+				xpGaugeMask.fill({ color: 0xffffff });
 				const xpGauge = new Graphics();
 				const gaugeHeight = ratio * CARD_HEIGHT;
 				const gaugeY = CARD_HEIGHT - gaugeHeight;
-				xpGauge.roundRect(0, 0, CARD_WIDTH, CARD_HEIGHT, CARD_RADIUS);
-				xpGauge.fill({ color: 0x000000, alpha: 0 });
 				xpGauge.rect(0, gaugeY, CARD_WIDTH, gaugeHeight);
 				xpGauge.fill({ color: CARD_BRIGHT_COLORS[card.type], alpha: 0.4 });
+				xpGauge.mask = xpGaugeMask;
+				cardContainer.addChild(xpGaugeMask);
 				cardContainer.addChild(xpGauge);
 			}
 		}
