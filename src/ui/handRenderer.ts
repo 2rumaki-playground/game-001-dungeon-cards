@@ -733,16 +733,26 @@ export class HandRenderer {
 
 		const cardContainer = this.cardsContainer.children[cardIndex] as Container;
 
-		Promise.resolve()
-			.then(invokeCallback)
+		// コールバックを同期的に呼び出し、即座にロックを解放する。
+		// これによりカードアクションアニメーション中（async待機中）でも予約クリックが通る。
+		// consumeアニメーション中は再ロックして二重クリックを防止する。
+		const callbackResult = invokeCallback();
+		this.isInputLocked = false;
+
+		Promise.resolve(callbackResult)
 			.then((result) => {
-				if (result === false) return;
-				return this.animateCardConsume(cardContainer, card.type);
+				if (result === false) {
+					this.render(this.currentHand);
+					return;
+				}
+				this.isInputLocked = true;
+				return this.animateCardConsume(cardContainer, card.type).finally(() => {
+					this.isInputLocked = false;
+					this.render(this.currentHand);
+				});
 			})
 			.catch((error) => {
 				console.error("onCardSelect callback failed:", error);
-			})
-			.finally(() => {
 				this.isInputLocked = false;
 				this.render(this.currentHand);
 			});
