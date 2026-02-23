@@ -156,12 +156,12 @@ describe("checkAcquisitionCondition", () => {
 describe("exchangeCardInDeck", () => {
 	function createTestCards(): Card[] {
 		return [
-			{ id: "test-card-1", type: "move" },
-			{ id: "test-card-2", type: "move" },
-			{ id: "test-card-3", type: "move" },
-			{ id: "test-card-4", type: "attack" },
-			{ id: "test-card-5", type: "attack" },
-			{ id: "test-card-6", type: "wait" },
+			{ id: "test-card-1", type: "move", level: 1, exp: 0 },
+			{ id: "test-card-2", type: "move", level: 1, exp: 0 },
+			{ id: "test-card-3", type: "move", level: 1, exp: 0 },
+			{ id: "test-card-4", type: "attack", level: 1, exp: 0 },
+			{ id: "test-card-5", type: "attack", level: 1, exp: 0 },
+			{ id: "test-card-6", type: "wait", level: 1, exp: 0 },
 		];
 	}
 

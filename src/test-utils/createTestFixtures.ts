@@ -91,5 +91,7 @@ export function createTestHand(cards: CardType[]): Card[] {
 	return cards.map((type, i) => ({
 		id: `test-card-${i}`,
 		type,
+		level: 1,
+		exp: 0,
 	}));
 }

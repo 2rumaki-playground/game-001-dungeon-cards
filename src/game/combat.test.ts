@@ -337,6 +337,94 @@ describe("applyDamageToEnemy - カード獲得条件", () => {
 	});
 });
 
+describe("applyDamageToEnemy - XP付与", () => {
+	it("敵撃破時にattackCardIdを渡すとカードのXPが増加する", () => {
+		const card = {
+			id: "atk-1",
+			type: "attack" as const,
+			level: 1,
+			exp: 0,
+		};
+		const enemy = createTestEnemy("normal", { x: 4, y: 3 }, { hp: 1 });
+		const state = createTestState({
+			enemies: [enemy],
+			deck: { hand: [card], usedCardIds: [] },
+		});
+		const result = applyDamageToEnemy(
+			state,
+			enemy.id,
+			PLAYER_ATTACK_DAMAGE,
+			"atk-1",
+		);
+
+		expect(result.state.deck.hand[0].exp).toBe(1);
+	});
+
+	it("敵撃破時にattackCardId未指定だとXP変化なし", () => {
+		const card = {
+			id: "atk-1",
+			type: "attack" as const,
+			level: 1,
+			exp: 0,
+		};
+		const enemy = createTestEnemy("normal", { x: 4, y: 3 }, { hp: 1 });
+		const state = createTestState({
+			enemies: [enemy],
+			deck: { hand: [card], usedCardIds: [] },
+		});
+		const result = applyDamageToEnemy(state, enemy.id, PLAYER_ATTACK_DAMAGE);
+
+		expect(result.state.deck.hand[0].exp).toBe(0);
+	});
+
+	it("非撃破時にはXPが付与されない", () => {
+		const card = {
+			id: "atk-1",
+			type: "attack" as const,
+			level: 1,
+			exp: 0,
+		};
+		const enemy = createTestEnemy("normal", { x: 4, y: 3 });
+		const state = createTestState({
+			enemies: [enemy],
+			deck: { hand: [card], usedCardIds: [] },
+		});
+		const result = applyDamageToEnemy(
+			state,
+			enemy.id,
+			PLAYER_ATTACK_DAMAGE,
+			"atk-1",
+		);
+
+		expect(result.state.deck.hand[0].exp).toBe(0);
+	});
+
+	it("レベルアップ時にログが記録される", () => {
+		const card = {
+			id: "atk-1",
+			type: "attack" as const,
+			level: 1,
+			exp: 1,
+		};
+		const enemy = createTestEnemy("normal", { x: 4, y: 3 }, { hp: 1 });
+		const state = createTestState({
+			enemies: [enemy],
+			deck: { hand: [card], usedCardIds: [] },
+		});
+		const result = applyDamageToEnemy(
+			state,
+			enemy.id,
+			PLAYER_ATTACK_DAMAGE,
+			"atk-1",
+		);
+
+		const levelUpLog = result.state.actionLog.find((l) =>
+			l.message.includes("Lv."),
+		);
+		expect(levelUpLog).toBeDefined();
+	});
+});
+
 describe("applyEnemyDamageToPlayer", () => {
 	it("HPが減少した場合、hitCounterが更新される", () => {
 		const state = createTestState();

@@ -50,7 +50,7 @@ export function initCardIdCounterFromDeck(deck: DeckState): void {
  */
 export function createCard(type: CardType): Card {
 	cardIdCounter++;
-	return { id: `card-${cardIdCounter}`, type };
+	return { id: `card-${cardIdCounter}`, type, level: 1, exp: 0 };
 }
 
 /**

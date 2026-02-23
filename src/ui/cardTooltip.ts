@@ -4,7 +4,8 @@
  */
 
 import { Container, Graphics, Text } from "pixi.js";
-import type { CardType } from "../types";
+import { getExpProgress, isMaxLevel } from "../game/cardLevel";
+import type { Card, CardType } from "../types";
 import {
 	CARD_DESCRIPTION,
 	CARD_TYPE_NAME,
@@ -32,13 +33,16 @@ const TOOLTIP_PADDING = 10;
 
 /**
  * カードツールチップのビューを生成
- * @param cardType カード種別
+ * @param cardOrType カードオブジェクトまたはカード種別
  * @returns コンテナと高さ
  */
-export function createCardTooltip(cardType: CardType): {
+export function createCardTooltip(cardOrType: Card | CardType): {
 	container: Container;
 	height: number;
 } {
+	const card = typeof cardOrType === "string" ? null : (cardOrType as Card);
+	const cardType: CardType = card ? card.type : (cardOrType as CardType);
+
 	const tooltip = new Container();
 	tooltip.eventMode = "none";
 	tooltip.interactiveChildren = false;
@@ -58,6 +62,28 @@ export function createCardTooltip(cardType: CardType): {
 	nameText.x = TOOLTIP_PADDING;
 	nameText.y = yOffset;
 	yOffset += 20;
+
+	// レベル表示（Cardオブジェクトが渡された場合のみ）
+	if (card) {
+		const levelLabel = isMaxLevel(card)
+			? `Lv.${card.level} (MAX)`
+			: (() => {
+					const { current, required } = getExpProgress(card);
+					return `Lv.${card.level} (XP: ${current}/${required})`;
+				})();
+		const levelText = new Text({
+			text: levelLabel,
+			style: {
+				fontSize: 11,
+				fontFamily: "sans-serif",
+				fill: 0xcccc88,
+			},
+		});
+		levelText.x = TOOLTIP_PADDING;
+		levelText.y = yOffset;
+		yOffset += 16;
+		tooltip.addChild(levelText);
+	}
 
 	// 詳細説明
 	const descText = new Text({

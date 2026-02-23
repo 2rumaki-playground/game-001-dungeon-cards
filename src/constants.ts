@@ -207,6 +207,11 @@ export const MAX_PLAY_SESSIONS = 50;
 export const FLOOR_AREA_SIZE = 5; // 5x5
 export const FLOOR_TILE_COUNT = FLOOR_AREA_SIZE * FLOOR_AREA_SIZE; // 25
 
+// カードレベル（v1.5）
+export const CARD_MAX_LEVEL = 5;
+/** index = level-1 の値が、そのレベルに到達するのに必要な累計XP */
+export const CARD_XP_TABLE = [0, 2, 4, 8, 16] as const;
+
 // コンボボーナス（v1.5）
 export const COMBO_BONUS = {
 	charge: 1,

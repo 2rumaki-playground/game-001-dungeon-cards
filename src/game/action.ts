@@ -233,7 +233,12 @@ function executeAttackBase(
 
 	// 敵にダメージ（HP0以下で自動除去）
 	const totalDamage = damage + comboBonus;
-	const damageResult = applyDamageToEnemy(next, result.enemyId, totalDamage);
+	const damageResult = applyDamageToEnemy(
+		next,
+		result.enemyId,
+		totalDamage,
+		cardId,
+	);
 
 	return {
 		state: damageResult.state,
