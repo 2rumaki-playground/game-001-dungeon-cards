@@ -53,46 +53,5 @@ AI による自動生成の結果は日本語で出力すること。
 - 既存文章の大規模リライト（差分が読めなくなるため）
 
 ## コミットメッセージの書き方
-- [.github/git-commit-instructions.md](git-commit-instructions.md) を参照
 
-### Conventional Commits
-
-https://www.conventionalcommits.org/ja/v1.0.0/
-
-過度に冗長な説明や不要な詳細は避けてください。  
-命令形で始まる、50文字以内の短い文章にしてください。  
-コミットメッセージは **日本語** で記述してください。
-
-以下の **Type** に基づいたプレフィックスを短い文章の先頭に付け、  
-コロン（:）で区切ってください。
-
-例）  
-feat: 新しい機能を追加
-
-#### Type
-
-以下のいずれかを使用してください。
-
-- **build**: ビルドシステムや外部依存関係に影響する変更  
-  （例: gulp, broccoli, npm）
-
-- **ci**: CI 設定ファイルやスクリプトの変更  
-  （例: Travis, Circle, BrowserStack, SauceLabs）
-
-- **docs**: ドキュメントのみの変更
-
-- **feat**: 新機能の追加
-
-- **fix**: バグ修正
-
-- **perf**: パフォーマンスを向上させるコード変更
-
-- **refactor**: バグ修正や機能追加を伴わないコードの変更
-
-- **style**: コードの意味に影響しない変更  
-  （空白、フォーマット、セミコロンの不足など）
-
-- **test**: テストの追加、または既存テストの修正
-
-- **chore**: その他の変更  
-  （補助ツールや各種設定の変更など）
+[.github/git-commit-instructions.md](git-commit-instructions.md) に従う。
