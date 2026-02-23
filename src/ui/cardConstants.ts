@@ -19,6 +19,15 @@ export const CARD_COLORS: Record<CardType, { bg: number; border: number }> = {
 	wait: { bg: 0x4a4a4a, border: 0x6a6a6a },
 };
 
+/** カードXPゲージ明色（レベル進捗表示用） */
+export const CARD_BRIGHT_COLORS: Record<CardType, number> = {
+	move: 0x4a8abe,
+	attack: 0xbe4a4a,
+	strong_attack: 0xaa5a9a,
+	jump: 0x4aaa6a,
+	wait: 0x6a6a6a,
+};
+
 /** カード種別シンボル */
 export const CARD_TYPE_SYMBOL: Record<CardType, string> = {
 	move: "👟",

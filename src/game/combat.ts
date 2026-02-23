@@ -10,6 +10,7 @@ import {
 	updateDefeatCounter,
 	updateHitCounter,
 } from "./cardAcquisition";
+import { awardExpToCard } from "./cardLevel";
 import { recordDamageDealt, recordDamageTaken } from "./playStats";
 import {
 	addActionLog,
@@ -48,6 +49,7 @@ export function applyDamageToEnemy(
 	state: GameState,
 	enemyId: string,
 	damage: number,
+	attackCardId?: string,
 ): DamageResult {
 	// 対象の敵が存在しない場合は何もしない
 	const enemy = state.enemies.find((e) => e.id === enemyId);
@@ -80,6 +82,11 @@ export function applyDamageToEnemy(
 			defeatedEnemyCount: next.defeatedEnemyCount + 1,
 			acquisitionCounters: updatedCounters,
 		};
+
+		// 攻撃カードへのXP付与
+		if (attackCardId) {
+			next = awardExpToCard(next, attackCardId);
+		}
 
 		// カード獲得条件の判定
 		if (checkAcquisitionCondition(updatedCounters, target.type)) {

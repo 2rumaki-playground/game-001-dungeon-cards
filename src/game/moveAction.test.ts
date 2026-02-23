@@ -11,7 +11,7 @@ describe("markCardAsPlayed", () => {
 	it("カードが使用済みに記録される", () => {
 		const state = createTestState({
 			deck: {
-				hand: [{ id: "move-1", type: "move" }],
+				hand: [{ id: "move-1", type: "move", level: 1, exp: 0 }],
 				usedCardIds: [],
 			},
 		});
@@ -25,7 +25,7 @@ describe("markCardAsPlayed", () => {
 	it("元のGameStateが変更されない（イミュータブル）", () => {
 		const state = createTestState({
 			deck: {
-				hand: [{ id: "move-1", type: "move" }],
+				hand: [{ id: "move-1", type: "move", level: 1, exp: 0 }],
 				usedCardIds: [],
 			},
 		});
@@ -41,7 +41,7 @@ describe("executeMove", () => {
 	it("床タイルへの移動成功: 位置更新・カード使用済み記録・行動ログ", () => {
 		const state = createTestState({
 			deck: {
-				hand: [{ id: "move-1", type: "move" }],
+				hand: [{ id: "move-1", type: "move", level: 1, exp: 0 }],
 				usedCardIds: [],
 			},
 		});
@@ -72,7 +72,7 @@ describe("executeMove", () => {
 				maxHp: PLAYER_INITIAL_HP,
 			},
 			deck: {
-				hand: [{ id: "move-1", type: "move" }],
+				hand: [{ id: "move-1", type: "move", level: 1, exp: 0 }],
 				usedCardIds: [],
 			},
 		});
@@ -100,7 +100,7 @@ describe("executeMove", () => {
 		const state = createTestState({
 			enemies,
 			deck: {
-				hand: [{ id: "move-1", type: "move" }],
+				hand: [{ id: "move-1", type: "move", level: 1, exp: 0 }],
 				usedCardIds: [],
 			},
 		});
@@ -122,7 +122,7 @@ describe("executeMove", () => {
 			map,
 			floor: 1,
 			deck: {
-				hand: [{ id: "move-1", type: "move" }],
+				hand: [{ id: "move-1", type: "move", level: 1, exp: 0 }],
 				usedCardIds: [],
 			},
 		});
@@ -146,7 +146,7 @@ describe("executeMove", () => {
 		const state = createTestState({
 			map,
 			deck: {
-				hand: [{ id: "move-1", type: "move" }],
+				hand: [{ id: "move-1", type: "move", level: 1, exp: 0 }],
 				usedCardIds: [],
 			},
 		});
@@ -174,7 +174,7 @@ describe("executeMove", () => {
 				maxHp: PLAYER_INITIAL_HP,
 			},
 			deck: {
-				hand: [{ id: "move-1", type: "move" }],
+				hand: [{ id: "move-1", type: "move", level: 1, exp: 0 }],
 				usedCardIds: [],
 			},
 		});
@@ -195,7 +195,7 @@ describe("executeMove", () => {
 				maxHp: PLAYER_INITIAL_HP,
 			},
 			deck: {
-				hand: [{ id: "move-1", type: "move" }],
+				hand: [{ id: "move-1", type: "move", level: 1, exp: 0 }],
 				usedCardIds: [],
 			},
 		});
@@ -207,7 +207,7 @@ describe("executeMove", () => {
 	it("床タイルへの移動: tileEffectがnull", () => {
 		const state = createTestState({
 			deck: {
-				hand: [{ id: "move-1", type: "move" }],
+				hand: [{ id: "move-1", type: "move", level: 1, exp: 0 }],
 				usedCardIds: [],
 			},
 		});
@@ -220,7 +220,7 @@ describe("executeMove", () => {
 	it("元のGameStateが変更されない（イミュータブル）", () => {
 		const state = createTestState({
 			deck: {
-				hand: [{ id: "move-1", type: "move" }],
+				hand: [{ id: "move-1", type: "move", level: 1, exp: 0 }],
 				usedCardIds: [],
 			},
 		});
@@ -237,7 +237,7 @@ describe("executeMove - visitedTiles", () => {
 	it("移動成功時に移動先が訪問済みに追加される", () => {
 		const state = createTestState({
 			deck: {
-				hand: [{ id: "move-1", type: "move" }],
+				hand: [{ id: "move-1", type: "move", level: 1, exp: 0 }],
 				usedCardIds: [],
 			},
 		});
@@ -253,7 +253,7 @@ describe("executeMove - visitedTiles", () => {
 				maxHp: PLAYER_INITIAL_HP,
 			},
 			deck: {
-				hand: [{ id: "move-1", type: "move" }],
+				hand: [{ id: "move-1", type: "move", level: 1, exp: 0 }],
 				usedCardIds: [],
 			},
 		});
@@ -267,7 +267,7 @@ describe("executeMove - visitedTiles", () => {
 		const state = createTestState({
 			rooms: [room],
 			deck: {
-				hand: [{ id: "move-1", type: "move" }],
+				hand: [{ id: "move-1", type: "move", level: 1, exp: 0 }],
 				usedCardIds: [],
 			},
 		});

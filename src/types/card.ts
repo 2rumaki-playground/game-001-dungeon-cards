@@ -14,6 +14,8 @@ export type CardType = "move" | "attack" | "strong_attack" | "jump" | "wait";
 export type Card = {
 	id: string;
 	type: CardType;
+	level: number;
+	exp: number;
 };
 
 /**

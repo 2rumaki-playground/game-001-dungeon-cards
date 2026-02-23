@@ -4,10 +4,12 @@
  */
 
 import { Container, type FederatedPointerEvent, Graphics, Text } from "pixi.js";
+import { getExpProgress } from "../game/cardLevel";
 import type { Card, CardType, ComboHistory, Direction } from "../types";
 import { Easing, tween } from "../utils/tween";
 import {
 	CARD_COLORS as BASE_CARD_COLORS,
+	CARD_BRIGHT_COLORS,
 	CARD_GLOW_COLORS,
 	CARD_TYPE_NAME,
 	CARD_TYPE_SYMBOL,
@@ -387,6 +389,21 @@ export class HandRenderer {
 
 		cardContainer.addChild(bg);
 
+		// XP進捗ゲージ（明色矩形を下から描画）
+		if (enabled) {
+			const { ratio } = getExpProgress(card);
+			if (ratio > 0) {
+				const xpGauge = new Graphics();
+				const gaugeHeight = ratio * CARD_HEIGHT;
+				const gaugeY = CARD_HEIGHT - gaugeHeight;
+				xpGauge.roundRect(0, 0, CARD_WIDTH, CARD_HEIGHT, CARD_RADIUS);
+				xpGauge.fill({ color: 0x000000, alpha: 0 });
+				xpGauge.rect(0, gaugeY, CARD_WIDTH, gaugeHeight);
+				xpGauge.fill({ color: CARD_BRIGHT_COLORS[card.type], alpha: 0.4 });
+				cardContainer.addChild(xpGauge);
+			}
+		}
+
 		// コンボ予告枠線（選択/キュー状態より低優先度）
 		if (enabled && !selected && !queued) {
 			const comboPreview = this.getComboPreviewType(card.type);
@@ -622,9 +639,8 @@ export class HandRenderer {
 		const cardCenterX =
 			startX + cardIndex * (CARD_WIDTH + CARD_GAP) + CARD_WIDTH / 2;
 
-		const { container: tooltip, height: tooltipHeight } = createCardTooltip(
-			hoveredCard.type,
-		);
+		const { container: tooltip, height: tooltipHeight } =
+			createCardTooltip(hoveredCard);
 		tooltip.x = cardCenterX - TOOLTIP_WIDTH / 2;
 		tooltip.y = -HOVER_LIFT - tooltipHeight - TOOLTIP_MARGIN;
 
