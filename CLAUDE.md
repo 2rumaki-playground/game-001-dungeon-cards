@@ -6,17 +6,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 「タイル制ローグライク × デッキ構築」ゲーム開発。
 
-## 仕様ドキュメント構成
+## 仕様ドキュメント
 
-すべての仕様は `docs/spec/` 配下で管理：
+すべての仕様は `docs/spec/` 配下で管理。一覧は [`docs/spec/readme.md`](docs/spec/readme.md) を参照。
 
-| ファイル | 役割 |
-|----------|------|
-| `rules.md` | ゲーム進行の本則（最重要） |
-| `cards.md` | カードの効果・コスト・成立条件 |
-| `constants.md` | 数値・上限などのパラメータ（**正典：Single Source of Truth**） |
-| `glossary.md` | 用語の定義 |
-| `vision.md` | ゲームのビジョン・コンセプト |
+特に重要なファイル：
+- `rules.md` — ゲーム進行の本則（最重要）
+- `constants.md` — 数値パラメータの**正典（Single Source of Truth）**
 
 ## 開発方針
 
@@ -34,15 +30,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## コミットメッセージ
 
-Conventional Commits形式、**日本語**、50文字以内。
-
-```
-<type>: <説明>
-```
-
-**Type**: `feat`, `fix`, `docs`, `refactor`, `test`, `chore`, `build`, `ci`, `perf`, `style`
-
-例: `docs: 階段の配置ルールを明確化`
+[`.github/git-commit-instructions.md`](.github/git-commit-instructions.md) に従う。
+要点：Conventional Commits形式、**日本語**、50文字以内。
 
 ## 仕様の曖昧さを見つけたら
 
@@ -52,29 +41,25 @@ Issueとして起票する：
 - **背景/問題**: 実装・テスト・UXで何が困るか
 - **受け入れ条件**: 何が決まれば完了か
 
-## 技術スタック
-
-- **言語**: TypeScript
-- **ビルドツール**: Vite
-- **描画ライブラリ**: PixiJS
-- **パッケージマネージャー**: pnpm
-- **リンター/フォーマッター**: Biome
-- **テスト**: Vitest
-
 ## 開発
 
-### コマンド
+開発環境の詳細は [`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md) を参照。
+
+### よく使うコマンド
 
 ```bash
 pnpm install     # 依存関係のインストール
 pnpm dev         # 開発サーバー起動
 pnpm build       # プロダクションビルド
-pnpm preview     # ビルド結果のプレビュー
 pnpm lint        # Biomeによるリント
 pnpm format      # Biomeによるフォーマット
-pnpm test        # テスト実行（watchモード）
-pnpm test:run    # テスト実行（1回のみ）
+pnpm test:run    # ユニットテスト実行
+pnpm test:e2e    # E2Eテスト実行
 ```
+
+### 技術スタック
+
+TypeScript / Vite / PixiJS / pnpm / Biome / Vitest / Playwright
 
 ### ディレクトリ構造
 
@@ -90,11 +75,7 @@ src/
 
 ### コーディング規約
 
-- インデント: タブ
-- クォートスタイル: ダブルクォート (`"`)
-- import文の自動整理: 有効
-
-これらは `biome.json` で設定済み
+`biome.json` に従う（タブインデント、ダブルクォート、import自動整理）。
 
 ## 言語
 
