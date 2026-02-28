@@ -147,6 +147,26 @@ describe("getLevelDamageBonus", () => {
 		expect(warnSpy).toHaveBeenCalledOnce();
 		warnSpy.mockRestore();
 	});
+
+	it.each([
+		NaN,
+		Infinity,
+		-Infinity,
+	])("level=%s はLv.1にフォールバックされ警告が出る", (invalidLevel) => {
+		const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+		const card = makeCard({ level: invalidLevel });
+		expect(getLevelDamageBonus(card)).toBe(0); // Lv.1相当
+		expect(warnSpy).toHaveBeenCalledOnce();
+		warnSpy.mockRestore();
+	});
+
+	it("小数レベルはLv.1にフォールバックされ警告が出る", () => {
+		const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+		const card = makeCard({ level: 2.5 });
+		expect(getLevelDamageBonus(card)).toBe(0); // Lv.1相当
+		expect(warnSpy).toHaveBeenCalledOnce();
+		warnSpy.mockRestore();
+	});
 });
 
 describe("awardExpToCard", () => {
