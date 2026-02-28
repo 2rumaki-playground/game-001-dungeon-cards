@@ -72,15 +72,16 @@ export function getCardDescription(cardOrType: Card | CardType): string {
 	}
 
 	const card = cardOrType;
-	const bonus = getLevelDamageBonus(card);
 
 	if (card.type === "attack") {
+		const bonus = getLevelDamageBonus(card);
 		const total = PLAYER_ATTACK_DAMAGE + bonus;
 		const bonusText = bonus > 0 ? `(+${bonus})` : "";
 		return `隣接1マス先の敵に${total}ダメージ${bonusText}。\nマップ外・壁・敵不在の場合は空振り。`;
 	}
 
 	if (card.type === "strong_attack") {
+		const bonus = getLevelDamageBonus(card);
 		const total = PLAYER_STRONG_ATTACK_DAMAGE + bonus;
 		const bonusText = bonus > 0 ? `(+${bonus})` : "";
 		return `隣接1マス先の敵に${total}ダメージ${bonusText}。\nマップ外・壁・敵不在の場合は空振り。`;
