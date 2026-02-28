@@ -175,7 +175,6 @@ function renderGameOverScreen(ctx: GameContext): void {
 	ctx.ui.returnToPlayerButton.hide();
 	ctx.ui.cameraDragController.reset();
 	ctx.ui.actionLogRenderer.hide();
-	ctx.ui.speechBannerRenderer.hide();
 	ctx.ui.mapRenderer.clear();
 	ctx.ui.handRenderer.clear();
 	const viewportSize = getViewportPixelSize();
@@ -184,6 +183,8 @@ function renderGameOverScreen(ctx: GameContext): void {
 	const height = viewportSize.height + HAND_AREA_HEIGHT + STATUS_BAR_HEIGHT;
 	ctx.ui.gameOverScreen.render(ctx.state.floor, width, height);
 	ctx.ui.gameOverScreen.show();
+	ctx.ui.speechBannerRenderer.show();
+	ctx.ui.speechBannerRenderer.render(ctx.state.speechLog);
 	hideDebugUI(ctx);
 }
 
@@ -199,7 +200,6 @@ function renderVictoryScreen(ctx: GameContext): void {
 	ctx.ui.returnToPlayerButton.hide();
 	ctx.ui.cameraDragController.reset();
 	ctx.ui.actionLogRenderer.hide();
-	ctx.ui.speechBannerRenderer.hide();
 	ctx.ui.mapRenderer.clear();
 	ctx.ui.handRenderer.clear();
 	const viewportSize = getViewportPixelSize();
@@ -208,6 +208,8 @@ function renderVictoryScreen(ctx: GameContext): void {
 	const height = viewportSize.height + HAND_AREA_HEIGHT + STATUS_BAR_HEIGHT;
 	ctx.ui.victoryScreen.render(ctx.state.floor, width, height);
 	ctx.ui.victoryScreen.show();
+	ctx.ui.speechBannerRenderer.show();
+	ctx.ui.speechBannerRenderer.render(ctx.state.speechLog);
 	hideDebugUI(ctx);
 }
 
