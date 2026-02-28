@@ -1,5 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { getEnemyCount, INITIAL_FLOOR } from "../constants";
+import {
+	DEFAULT_PERSONALITY,
+	getEnemyCount,
+	INITIAL_FLOOR,
+} from "../constants";
 import { createTitleScreenState } from "../game/state";
 import { deleteSaveData, hasSaveData, loadGame, saveGame } from "./storage";
 
@@ -479,7 +483,7 @@ describe("storage", () => {
 
 		const loaded = loadGame();
 		expect(loaded).not.toBeNull();
-		expect(loaded?.personality).toBe("brave");
+		expect(loaded?.personality).toBe(DEFAULT_PERSONALITY);
 	});
 
 	it("不正なpersonality値はデフォルト性格にフォールバック", () => {
@@ -496,7 +500,7 @@ describe("storage", () => {
 
 			const loaded = loadGame();
 			expect(loaded).not.toBeNull();
-			expect(loaded?.personality).toBe("brave");
+			expect(loaded?.personality).toBe(DEFAULT_PERSONALITY);
 		}
 	});
 
