@@ -265,8 +265,9 @@ describe("Lv5攻撃カード: 射程延長 + 貫通", () => {
 			},
 		});
 
-		const { hit } = executeAttack(state, "atk-1", "right");
+		const { state: result, hit } = executeAttack(state, "atk-1", "right");
 		expect(hit).toBe(false);
+		expect(result.speechLog?.eventType).toBe("attack_miss");
 	});
 
 	it("壁越しの敵は攻撃できない", () => {
@@ -614,8 +615,13 @@ describe("Lv5強攻撃カード: 衝撃波", () => {
 			},
 		});
 
-		const { hit } = executeStrongAttack(state, "strong-1", "right");
+		const { state: result, hit } = executeStrongAttack(
+			state,
+			"strong-1",
+			"right",
+		);
 		expect(hit).toBe(false);
+		expect(result.speechLog?.eventType).toBe("attack_miss");
 	});
 
 	it("衝撃波後に生存した敵がノックバックされる", () => {

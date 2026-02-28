@@ -332,11 +332,13 @@ export function executeAttack(
 
 		const target = findExtendedRangeTarget(next, direction);
 		if (!target) {
+			next = addActionLog(next, "攻撃できなかった", "player");
+			next = addSpeechLog(next, "attack_miss");
 			return {
-				state: updateComboHistory(
-					addActionLog(next, "攻撃できなかった", "player"),
-					{ lastCardType: "attack", lastDirection: direction },
-				),
+				state: updateComboHistory(next, {
+					lastCardType: "attack",
+					lastDirection: direction,
+				}),
 				hit: false,
 				overkill: 0,
 				defeated: false,
@@ -451,6 +453,7 @@ export function executeStrongAttack(
 
 		if (!shockResult.hit) {
 			next = addActionLog(next, "強攻撃できなかった", "player");
+			next = addSpeechLog(next, "attack_miss");
 		}
 
 		return {
