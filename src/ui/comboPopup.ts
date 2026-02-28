@@ -13,6 +13,7 @@ import {
 	COMBO_POPUP_STROKE_COLOR,
 	COMBO_POPUP_STROKE_WIDTH,
 	COMBO_POPUP_TEXT,
+	COMBO_POPUP_Y_OFFSET,
 } from "./mapAnimationConstants";
 import { withPopupText } from "./popupBase";
 
@@ -46,7 +47,7 @@ export async function animateComboPopup(
 				},
 			},
 		},
-		-4,
+		COMBO_POPUP_Y_OFFSET,
 		async (text) => {
 			// 初期状態: スケール0
 			text.scale.set(0, 0);
