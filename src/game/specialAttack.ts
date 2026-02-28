@@ -195,11 +195,9 @@ export function executeShockwave(
 	let next = addActionLog(state, "衝撃波！", "system");
 
 	// 各ターゲットにダメージを適用し、生存した敵のIDを記録
-	const survivingEnemies: { id: string; targetIndex: number }[] = [];
+	const survivingEnemies: string[] = [];
 
-	for (let i = 0; i < targets.length; i++) {
-		const pos = targets[i];
-
+	for (const pos of targets) {
 		if (!isInBounds(next.map, pos.x, pos.y)) continue;
 		if (next.map[pos.y][pos.x].type === "wall") continue;
 
@@ -215,12 +213,12 @@ export function executeShockwave(
 		next = result.state;
 
 		if (!result.defeated) {
-			survivingEnemies.push({ id: enemy.id, targetIndex: i });
+			survivingEnemies.push(enemy.id);
 		}
 	}
 
 	// 生存した敵にノックバック（正面→サイドの順）
-	for (const { id } of survivingEnemies) {
+	for (const id of survivingEnemies) {
 		next = applyKnockback(next, id, direction);
 	}
 
