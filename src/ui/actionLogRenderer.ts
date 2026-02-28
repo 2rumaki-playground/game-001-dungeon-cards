@@ -204,6 +204,7 @@ export class ActionLogRenderer {
 	 * クリア
 	 */
 	clear(): void {
+		this.lastEntries = [];
 		for (const label of this.actorLabels) {
 			label.text = "";
 			label.visible = false;

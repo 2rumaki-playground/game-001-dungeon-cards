@@ -228,6 +228,27 @@ describe("ActionLogRenderer", () => {
 		expect(logText1.text).toBe("テスト");
 	});
 
+	it("clear後に展開してもログが復活しない", () => {
+		const renderer = new ActionLogRenderer(400);
+		const logs: ActionLogEntry[] = [
+			{
+				id: "1",
+				actor: "player",
+				message: "テスト",
+				timestamp: 1000,
+			},
+		];
+		renderer.render(logs);
+		renderer.toggle(); // 最小化
+		renderer.clear();
+		renderer.toggle(); // 展開
+
+		const container = renderer.getContainer();
+		const logText1 = getLogEntry(container, 0);
+		expect(logText1.text).toBe("");
+		expect(logText1.visible).toBe(false);
+	});
+
 	it("最小化中にrenderしても例外が出ない", () => {
 		const renderer = new ActionLogRenderer(400);
 		renderer.toggle(); // 最小化
