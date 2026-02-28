@@ -37,16 +37,20 @@ describe("calculateLevel", () => {
 		expect(calculateLevel(3)).toBe(2);
 	});
 
-	it("XP 4 でレベル3", () => {
-		expect(calculateLevel(4)).toBe(3);
+	it("XP 5 でレベル2", () => {
+		expect(calculateLevel(5)).toBe(2);
 	});
 
-	it("XP 8 でレベル4", () => {
-		expect(calculateLevel(8)).toBe(4);
+	it("XP 6 でレベル3", () => {
+		expect(calculateLevel(6)).toBe(3);
 	});
 
-	it("XP 16 でレベル5（最大）", () => {
-		expect(calculateLevel(16)).toBe(5);
+	it("XP 14 でレベル4", () => {
+		expect(calculateLevel(14)).toBe(4);
+	});
+
+	it("XP 30 でレベル5（最大）", () => {
+		expect(calculateLevel(30)).toBe(5);
 	});
 
 	it("XP 100 でもレベル5（上限）", () => {
@@ -73,8 +77,8 @@ describe("addExpToCard", () => {
 
 	it("複数レベルを一度に飛び越える場合", () => {
 		const card = makeCard({ exp: 0, level: 1 });
-		const { card: updated, leveledUp } = addExpToCard(card, 8);
-		expect(updated.exp).toBe(8);
+		const { card: updated, leveledUp } = addExpToCard(card, 14);
+		expect(updated.exp).toBe(14);
 		expect(updated.level).toBe(4);
 		expect(leveledUp).toBe(true);
 	});
@@ -152,7 +156,7 @@ describe("getExpProgress", () => {
 	});
 
 	it("最大レベルの進捗率は1", () => {
-		const card = makeCard({ level: CARD_MAX_LEVEL, exp: 16 });
+		const card = makeCard({ level: CARD_MAX_LEVEL, exp: 30 });
 		const progress = getExpProgress(card);
 		expect(progress.ratio).toBe(1);
 	});
@@ -184,8 +188,8 @@ describe("getExpProgress（レベル内進捗率）", () => {
 		expect(getExpProgress(card).ratio).toBe(0);
 	});
 
-	it("レベル2でXP3の進捗率は0.5", () => {
-		const card = makeCard({ level: 2, exp: 3 });
+	it("レベル2でXP4の進捗率は0.5", () => {
+		const card = makeCard({ level: 2, exp: 4 });
 		expect(getExpProgress(card).ratio).toBe(0.5);
 	});
 });

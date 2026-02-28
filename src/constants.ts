@@ -210,7 +210,7 @@ export const FLOOR_TILE_COUNT = FLOOR_AREA_SIZE * FLOOR_AREA_SIZE; // 25
 // カードレベル（v1.5）
 export const CARD_MAX_LEVEL = 5;
 /** index = level-1 の値が、そのレベルに到達するのに必要な累計XP */
-export const CARD_XP_TABLE = [0, 2, 4, 8, 16] as const;
+export const CARD_XP_TABLE = [0, 2, 6, 14, 30] as const;
 /** index = level-1 の値が、そのレベルで得られるダメージボーナス */
 export const CARD_LEVEL_DAMAGE_BONUS = [0, 1, 1, 2, 3] as const;
 
