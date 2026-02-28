@@ -18,6 +18,7 @@ import type {
 	ReturnToPlayerButton,
 	RewardScreen,
 	ScreenTransition,
+	SpeechBannerRenderer,
 	StatsScreen,
 	StatusBar,
 	TitleScreen,
@@ -40,6 +41,7 @@ export interface UIComponents {
 	turnEndButton: TurnEndButton;
 	nextFloorButton: NextFloorButton;
 	actionLogRenderer: ActionLogRenderer;
+	speechBannerRenderer: SpeechBannerRenderer;
 	turnBanner: TurnBanner;
 	rewardScreen: RewardScreen;
 	screenTransition: ScreenTransition;

@@ -258,5 +258,8 @@
 
   - 詳細な効果内容は `docs/spec/cards.md` を参照
 
+## 発話バナー
+- バナー高さ：40px（`SPEECH_BANNER_HEIGHT`）
+
 ## プレイ統計
 - 最大保存ラン数：50

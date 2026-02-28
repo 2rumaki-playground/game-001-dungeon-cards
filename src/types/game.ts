@@ -11,6 +11,32 @@ import type { ComboHistory } from "./combo";
 import type { GameMap, Room } from "./map";
 
 /**
+ * 発話イベント種別
+ */
+export type SpeechEventType =
+	| "move_success"
+	| "move_fail"
+	| "attack_miss"
+	| "combo_activated"
+	| "enemy_defeated"
+	| "damage_taken"
+	| "game_over"
+	| "trap_triggered"
+	| "treasure_found"
+	| "rest_area_used"
+	| "floor_reached"
+	| "rush_move";
+
+/**
+ * 発話ログエントリ
+ */
+export type SpeechLogEntry = {
+	message: string;
+	eventType: SpeechEventType;
+	timestamp: number;
+};
+
+/**
  * 画面種別
  */
 export type Screen = "title" | "game" | "gameOver" | "exchange" | "victory";
@@ -75,4 +101,6 @@ export type GameState = {
 	cardExchangeState: CardExchangeState;
 	/** ターン内カード使用履歴（コンボ判定用、ターン開始時にnullリセット） */
 	comboHistory: ComboHistory | null;
+	/** キャラクター発話ログ（最新1件のみ保持） */
+	speechLog: SpeechLogEntry | null;
 };

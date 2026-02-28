@@ -50,6 +50,7 @@ export function createTestState(overrides?: Partial<GameState>): GameState {
 		acquisitionCounters: createInitialCounters(),
 		cardExchangeState: null,
 		comboHistory: null,
+		speechLog: null,
 		...overrides,
 	};
 }

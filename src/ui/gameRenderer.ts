@@ -55,6 +55,7 @@ function renderTitleScreen(ctx: GameContext): void {
 	ctx.ui.returnToPlayerButton.hide();
 	ctx.ui.cameraDragController.reset();
 	ctx.ui.actionLogRenderer.hide();
+	ctx.ui.speechBannerRenderer.hide();
 	ctx.ui.mapRenderer.clear();
 	ctx.ui.handRenderer.clear();
 	hideDebugUI(ctx);
@@ -134,6 +135,8 @@ export function renderGameScreen(
 	ctx.ui.nextFloorButton.render(ctx.state.enemies.length);
 	ctx.ui.actionLogRenderer.show();
 	ctx.ui.actionLogRenderer.render(ctx.state.actionLog);
+	ctx.ui.speechBannerRenderer.show();
+	ctx.ui.speechBannerRenderer.render(ctx.state.speechLog);
 
 	// デバッグカード表示（DEV環境 + デバッグモードON時のみ）
 	if (ctx.debugMode && ctx.ui.debugCardRenderer) {
@@ -172,6 +175,7 @@ function renderGameOverScreen(ctx: GameContext): void {
 	ctx.ui.returnToPlayerButton.hide();
 	ctx.ui.cameraDragController.reset();
 	ctx.ui.actionLogRenderer.hide();
+	ctx.ui.speechBannerRenderer.hide();
 	ctx.ui.mapRenderer.clear();
 	ctx.ui.handRenderer.clear();
 	const viewportSize = getViewportPixelSize();
@@ -195,6 +199,7 @@ function renderVictoryScreen(ctx: GameContext): void {
 	ctx.ui.returnToPlayerButton.hide();
 	ctx.ui.cameraDragController.reset();
 	ctx.ui.actionLogRenderer.hide();
+	ctx.ui.speechBannerRenderer.hide();
 	ctx.ui.mapRenderer.clear();
 	ctx.ui.handRenderer.clear();
 	const viewportSize = getViewportPixelSize();

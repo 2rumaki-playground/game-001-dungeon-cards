@@ -22,6 +22,7 @@ import type {
 	Player,
 	Position,
 	Screen,
+	SpeechEventType,
 	Tile,
 	Turn,
 } from "../types";
@@ -147,6 +148,7 @@ export function createTitleScreenState(seed?: number): GameState {
 		acquisitionCounters: createInitialCounters(),
 		cardExchangeState: null,
 		comboHistory: null,
+		speechLog: null,
 	};
 }
 
@@ -189,6 +191,7 @@ export function createInitialGameState(
 		acquisitionCounters: createInitialCounters(),
 		cardExchangeState: null,
 		comboHistory: null,
+		speechLog: null,
 	};
 }
 
@@ -357,4 +360,26 @@ export function addActionLog(
  */
 export function clearActionLog(state: GameState): GameState {
 	return { ...state, actionLog: [], rng: cloneRng(state.rng) };
+}
+
+/**
+ * 発話ログを設定
+ */
+export function setSpeechLog(
+	state: GameState,
+	eventType: SpeechEventType,
+	message: string,
+): GameState {
+	return {
+		...state,
+		speechLog: { message, eventType, timestamp: Date.now() },
+		rng: cloneRng(state.rng),
+	};
+}
+
+/**
+ * 発話ログをクリア
+ */
+export function clearSpeechLog(state: GameState): GameState {
+	return { ...state, speechLog: null, rng: cloneRng(state.rng) };
 }

@@ -8,6 +8,7 @@ import { resetUsedCards } from "./deck";
 import { createEmptyVisitedTiles, revealAtPosition } from "./fogOfWar";
 import { generateMapPlacement } from "./map";
 import { recordFloorReached } from "./playStats";
+import { addSpeechLog } from "./speech";
 import {
 	addActionLog,
 	createEnemiesForFloor,
@@ -78,6 +79,7 @@ export function transitionFloor(state: GameState): GameState {
 
 	// 8. 行動ログに記録
 	next = addActionLog(next, `${next.floor}階に到達した`, "system");
+	next = addSpeechLog(next, "floor_reached");
 
 	return next;
 }
