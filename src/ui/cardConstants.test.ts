@@ -1,11 +1,16 @@
 import { describe, expect, it } from "vitest";
-import type { CardType } from "../types";
+import {
+	PLAYER_ATTACK_DAMAGE,
+	PLAYER_STRONG_ATTACK_DAMAGE,
+} from "../constants";
+import type { Card, CardType } from "../types";
 import {
 	CARD_COLORS,
 	CARD_DESCRIPTION,
 	CARD_GLOW_COLORS,
 	CARD_TYPE_NAME,
 	CARD_TYPE_SYMBOL,
+	getCardDescription,
 } from "./cardConstants";
 
 const ALL_CARD_TYPES: CardType[] = [
@@ -69,6 +74,52 @@ describe("cardConstants", () => {
 				expect(typeof CARD_DESCRIPTION[type]).toBe("string");
 				expect(CARD_DESCRIPTION[type].length).toBeGreaterThan(0);
 			}
+		});
+	});
+
+	describe("getCardDescription", () => {
+		function makeCard(overrides?: Partial<Card>): Card {
+			return {
+				id: "card-1",
+				type: "attack",
+				level: 1,
+				exp: 0,
+				...overrides,
+			};
+		}
+
+		it("CardType文字列を渡すとCARD_DESCRIPTIONと同じ値を返す", () => {
+			for (const type of ALL_CARD_TYPES) {
+				expect(getCardDescription(type)).toBe(CARD_DESCRIPTION[type]);
+			}
+		});
+
+		it("Lv.1の攻撃カードではボーナス表示なし", () => {
+			const desc = getCardDescription(makeCard({ type: "attack", level: 1 }));
+			expect(desc).toContain(`${PLAYER_ATTACK_DAMAGE}ダメージ`);
+			expect(desc).not.toContain("(+");
+		});
+
+		it("Lv.2の攻撃カードでは+1ボーナスが表示される", () => {
+			const desc = getCardDescription(makeCard({ type: "attack", level: 2 }));
+			expect(desc).toContain(`${PLAYER_ATTACK_DAMAGE + 1}ダメージ(+1)`);
+		});
+
+		it("Lv.5の攻撃カードでは+3ボーナスが表示される", () => {
+			const desc = getCardDescription(makeCard({ type: "attack", level: 5 }));
+			expect(desc).toContain(`${PLAYER_ATTACK_DAMAGE + 3}ダメージ(+3)`);
+		});
+
+		it("Lv.2の強攻撃カードでは+1ボーナスが表示される", () => {
+			const desc = getCardDescription(
+				makeCard({ type: "strong_attack", level: 2 }),
+			);
+			expect(desc).toContain(`${PLAYER_STRONG_ATTACK_DAMAGE + 1}ダメージ(+1)`);
+		});
+
+		it("移動カードはレベルに関係なく固定テキスト", () => {
+			const desc = getCardDescription(makeCard({ type: "move", level: 3 }));
+			expect(desc).toBe(CARD_DESCRIPTION.move);
 		});
 	});
 });
