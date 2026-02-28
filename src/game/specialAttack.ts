@@ -82,7 +82,7 @@ export function applyPierce(
 			(e) => e.position.x === cx && e.position.y === cy,
 		);
 		if (enemy) {
-			let next = addActionLog(state, "貫通！", "system");
+			const next = addActionLog(state, "貫通！", "system");
 			const result = applyDamageToEnemy(next, enemy.id, overkill, attackCardId);
 			return result.state;
 		}

@@ -110,6 +110,9 @@ export const COMBO_POPUP_STROKE_WIDTH = 3;
 /** コンボポップアップのアウトライン色 */
 export const COMBO_POPUP_STROKE_COLOR = 0x000000;
 
+/** コンボポップアップのY方向オフセット（ダメージポップアップとの重なりを避けるため） */
+export const COMBO_POPUP_Y_OFFSET = -4;
+
 /** コンボ種別ごとの表示テキスト */
 export const COMBO_POPUP_TEXT: Record<ComboType, string> = {
 	charge: "突撃!",
