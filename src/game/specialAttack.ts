@@ -174,28 +174,34 @@ export function executeShockwave(
 	direction: Direction,
 	damage: number,
 	attackCardId: string,
-): { state: GameState; hit: boolean } {
+): {
+	state: GameState;
+	hit: boolean;
+	enemyId: string | null;
+	overkill: number;
+} {
 	const targets = getShockwaveTargets(state.player.position, direction);
 	const frontPos = targets[0];
 
 	// 正面に敵が必須
 	if (!isInBounds(state.map, frontPos.x, frontPos.y)) {
-		return { state, hit: false };
+		return { state, hit: false, enemyId: null, overkill: 0 };
 	}
 	if (state.map[frontPos.y][frontPos.x].type === "wall") {
-		return { state, hit: false };
+		return { state, hit: false, enemyId: null, overkill: 0 };
 	}
 	const frontEnemy = state.enemies.find(
 		(e) => e.position.x === frontPos.x && e.position.y === frontPos.y,
 	);
 	if (!frontEnemy) {
-		return { state, hit: false };
+		return { state, hit: false, enemyId: null, overkill: 0 };
 	}
 
 	let next = addActionLog(state, "衝撃波！", "system");
 
 	// 各ターゲットにダメージを適用し、生存した敵のIDを記録
 	const survivingEnemies: string[] = [];
+	let frontOverkill = 0;
 
 	for (const pos of targets) {
 		if (!isInBounds(next.map, pos.x, pos.y)) continue;
@@ -212,6 +218,11 @@ export function executeShockwave(
 		const result = applyDamageToEnemy(next, enemy.id, damage, attackCardId);
 		next = result.state;
 
+		// 正面敵のoverkillを記録
+		if (enemy.id === frontEnemy.id) {
+			frontOverkill = result.overkill;
+		}
+
 		if (!result.defeated) {
 			survivingEnemies.push(enemy.id);
 		}
@@ -222,5 +233,10 @@ export function executeShockwave(
 		next = applyKnockback(next, id, direction);
 	}
 
-	return { state: next, hit: true };
+	return {
+		state: next,
+		hit: true,
+		enemyId: frontEnemy.id,
+		overkill: frontOverkill,
+	};
 }

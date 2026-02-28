@@ -447,7 +447,8 @@ export function executeStrongAttack(
 				lastDirection: direction,
 			}),
 			hit: shockResult.hit,
-			overkill: 0,
+			overkill: shockResult.overkill,
+			enemyId: shockResult.enemyId ?? undefined,
 		};
 	}
 
