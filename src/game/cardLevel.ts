@@ -85,17 +85,9 @@ export function getExpProgress(card: Card): {
 	const nextLevelXp = CARD_XP_TABLE[level];
 	const current = card.exp - currentLevelXp;
 	const required = nextLevelXp - currentLevelXp;
-	const ratio = required > 0 ? current / required : 1;
+	const raw = required > 0 ? current / required : 1;
+	const ratio = Number.isFinite(raw) ? Math.max(0, Math.min(1, raw)) : 0;
 	return { current, required, ratio };
-}
-
-/**
- * レベル全体の進捗率を取得（0〜1）
- * レベル1→0, 最大レベル→1
- */
-export function getLevelProgress(card: Card): number {
-	const level = normalizeCardLevel(card);
-	return (level - 1) / (CARD_MAX_LEVEL - 1);
 }
 
 /**
