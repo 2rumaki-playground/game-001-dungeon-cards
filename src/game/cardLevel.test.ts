@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { CARD_MAX_LEVEL, CARD_XP_TABLE } from "../constants";
 import { createTestState } from "../test-utils/createTestFixtures";
 import type { Card } from "../types";
@@ -130,6 +130,22 @@ describe("getLevelDamageBonus", () => {
 	])("Lv.%i のボーナスは %i", (level, expected) => {
 		const card = makeCard({ level });
 		expect(getLevelDamageBonus(card)).toBe(expected);
+	});
+
+	it("レベル0以下はLv.1にクランプされ警告が出る", () => {
+		const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+		const card = makeCard({ level: 0 });
+		expect(getLevelDamageBonus(card)).toBe(0); // Lv.1相当
+		expect(warnSpy).toHaveBeenCalledOnce();
+		warnSpy.mockRestore();
+	});
+
+	it("最大レベル超はMAXにクランプされ警告が出る", () => {
+		const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+		const card = makeCard({ level: CARD_MAX_LEVEL + 1 });
+		expect(getLevelDamageBonus(card)).toBe(3); // Lv.5相当
+		expect(warnSpy).toHaveBeenCalledOnce();
+		warnSpy.mockRestore();
 	});
 });
 

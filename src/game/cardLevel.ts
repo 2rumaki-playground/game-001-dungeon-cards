@@ -64,7 +64,18 @@ export function getExpProgress(card: Card): {
  * カードレベルに応じたダメージボーナスを取得
  */
 export function getLevelDamageBonus(card: Card): number {
-	return CARD_LEVEL_DAMAGE_BONUS[card.level - 1] ?? 0;
+	const level = card.level;
+
+	if (level < 1 || level > CARD_MAX_LEVEL) {
+		console.warn(
+			`[cardLevel] 異常なカードレベルを検出: id=${card.id}, level=${level}. 1..${CARD_MAX_LEVEL} にクランプします。`,
+		);
+	}
+
+	const clampedLevel =
+		level < 1 ? 1 : level > CARD_MAX_LEVEL ? CARD_MAX_LEVEL : level;
+
+	return CARD_LEVEL_DAMAGE_BONUS[clampedLevel - 1] ?? 0;
 }
 
 /**
