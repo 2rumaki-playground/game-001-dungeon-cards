@@ -7,9 +7,9 @@ import { Container, Graphics, Text } from "pixi.js";
 import { getExpProgress, isMaxLevel } from "../game/cardLevel";
 import type { Card, CardType } from "../types";
 import {
-	CARD_DESCRIPTION,
 	CARD_TYPE_NAME,
 	CARD_TYPE_SYMBOL,
+	getCardDescription,
 } from "./cardConstants";
 import { drawRoundedRect } from "./graphicsHelpers";
 
@@ -86,8 +86,9 @@ export function createCardTooltip(cardOrType: Card | CardType): {
 	}
 
 	// 詳細説明
+	const description = getCardDescription(cardOrType);
 	const descText = new Text({
-		text: CARD_DESCRIPTION[cardType],
+		text: description,
 		style: {
 			fontSize: 11,
 			fontFamily: "sans-serif",
@@ -104,7 +105,7 @@ export function createCardTooltip(cardOrType: Card | CardType): {
 		descHeight = descText.height;
 	} catch {
 		// Canvas API が利用不可の場合のフォールバック
-		const descLineCount = CARD_DESCRIPTION[cardType].split("\n").length;
+		const descLineCount = description.split("\n").length;
 		descHeight = descLineCount * 14;
 	}
 	yOffset += descHeight + 8;

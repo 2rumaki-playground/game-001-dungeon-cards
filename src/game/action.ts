@@ -16,6 +16,7 @@ import type {
 	SpecialTileType,
 } from "../types";
 import { DIRECTION_DELTA } from "../types";
+import { getLevelDamageBonus } from "./cardLevel";
 import { applyDamageToEnemy } from "./combat";
 import { detectCombo, getComboBonus } from "./combo";
 import { markCardUsed } from "./deck";
@@ -270,6 +271,10 @@ export function executeAttack(
 ): AttackResult {
 	recordCardUsage("attack");
 
+	// レベルボーナス算出
+	const card = state.deck.hand.find((c) => c.id === cardId);
+	const levelBonus = card ? getLevelDamageBonus(card) : 0;
+
 	// コンボ判定（comboHistory更新前に判定）
 	const combo = detectCombo(state.comboHistory, "attack", direction);
 	const comboBonus = combo ? getComboBonus(combo) : 0;
@@ -279,7 +284,7 @@ export function executeAttack(
 		state,
 		cardId,
 		direction,
-		PLAYER_ATTACK_DAMAGE,
+		PLAYER_ATTACK_DAMAGE + levelBonus,
 		"攻撃できなかった",
 		comboBonus,
 		comboLog,
@@ -310,11 +315,16 @@ export function executeStrongAttack(
 	direction: Direction,
 ): AttackResult {
 	recordCardUsage("strong_attack");
+
+	// レベルボーナス算出
+	const card = state.deck.hand.find((c) => c.id === cardId);
+	const levelBonus = card ? getLevelDamageBonus(card) : 0;
+
 	const result = executeAttackBase(
 		state,
 		cardId,
 		direction,
-		PLAYER_STRONG_ATTACK_DAMAGE,
+		PLAYER_STRONG_ATTACK_DAMAGE + levelBonus,
 		"強攻撃できなかった",
 		0,
 		null,

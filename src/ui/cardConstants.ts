@@ -8,7 +8,8 @@ import {
 	PLAYER_ATTACK_DAMAGE,
 	PLAYER_STRONG_ATTACK_DAMAGE,
 } from "../constants";
-import type { CardType } from "../types";
+import { getLevelDamageBonus } from "../game/cardLevel";
+import type { Card, CardType } from "../types";
 
 /** カード背景色 */
 export const CARD_COLORS: Record<CardType, { bg: number; border: number }> = {
@@ -63,3 +64,27 @@ export const CARD_DESCRIPTION: Record<CardType, string> = {
 	jump: `選択した方向の${JUMP_DISTANCE}マス先に着地し、1マス先を飛び越える。\nマップ外・壁・敵がいる場合は失敗。`,
 	wait: "何もせずターンを消費する。",
 };
+
+/** カード説明文を生成（Cardオブジェクト時はレベルボーナスを反映） */
+export function getCardDescription(cardOrType: Card | CardType): string {
+	if (typeof cardOrType === "string") {
+		return CARD_DESCRIPTION[cardOrType];
+	}
+
+	const card = cardOrType;
+	const bonus = getLevelDamageBonus(card);
+
+	if (card.type === "attack") {
+		const total = PLAYER_ATTACK_DAMAGE + bonus;
+		const bonusText = bonus > 0 ? `(+${bonus})` : "";
+		return `隣接1マス先の敵に${total}ダメージ${bonusText}。\nマップ外・壁・敵不在の場合は空振り。`;
+	}
+
+	if (card.type === "strong_attack") {
+		const total = PLAYER_STRONG_ATTACK_DAMAGE + bonus;
+		const bonusText = bonus > 0 ? `(+${bonus})` : "";
+		return `隣接1マス先の敵に${total}ダメージ${bonusText}。\nマップ外・壁・敵不在の場合は空振り。`;
+	}
+
+	return CARD_DESCRIPTION[card.type];
+}

@@ -132,6 +132,30 @@ describe("executeAttack", () => {
 		expect(state.enemies[0].hp).toBe(originalEnemyHp);
 		expect(state.deck.hand).toHaveLength(1);
 	});
+
+	it("Lv2攻撃カードでダメージボーナス+1が適用される", () => {
+		const enemies: Enemy[] = [
+			{
+				id: "enemy-1",
+				type: "normal",
+				position: { x: 4, y: 3 },
+				hp: ENEMY_HP,
+				maxHp: ENEMY_HP,
+			},
+		];
+		const state = createTestState({
+			enemies,
+			deck: {
+				hand: [{ id: "attack-1", type: "attack", level: 2, exp: 2 }],
+				usedCardIds: [],
+			},
+		});
+		const { state: result, hit } = executeAttack(state, "attack-1", "right");
+
+		expect(hit).toBe(true);
+		// ENEMY_HP(3) - (PLAYER_ATTACK_DAMAGE(1) + bonus(1)) = 1
+		expect(result.enemies[0].hp).toBe(ENEMY_HP - PLAYER_ATTACK_DAMAGE - 1);
+	});
 });
 
 describe("executeWait", () => {
@@ -263,6 +287,34 @@ describe("executeStrongAttack", () => {
 		expect(result.deck.hand).toHaveLength(1);
 		expect(result.deck.usedCardIds).toHaveLength(1);
 		expect(result.actionLog[0].message).toBe("強攻撃できなかった");
+	});
+
+	it("Lv3強攻撃カードでダメージボーナス+1が適用される", () => {
+		const enemies: Enemy[] = [
+			{
+				id: "enemy-1",
+				type: "normal",
+				position: { x: 4, y: 3 },
+				hp: 5,
+				maxHp: 5,
+			},
+		];
+		const state = createTestState({
+			enemies,
+			deck: {
+				hand: [{ id: "strong-1", type: "strong_attack", level: 3, exp: 4 }],
+				usedCardIds: [],
+			},
+		});
+		const { state: result, hit } = executeStrongAttack(
+			state,
+			"strong-1",
+			"right",
+		);
+
+		expect(hit).toBe(true);
+		// 5 - (PLAYER_STRONG_ATTACK_DAMAGE(3) + bonus(1)) = 1
+		expect(result.enemies[0].hp).toBe(5 - PLAYER_STRONG_ATTACK_DAMAGE - 1);
 	});
 
 	it("元のGameStateが変更されない（イミュータブル）", () => {

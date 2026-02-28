@@ -4,7 +4,11 @@
  * @see docs/spec/constants.md
  */
 
-import { CARD_MAX_LEVEL, CARD_XP_TABLE } from "../constants";
+import {
+	CARD_LEVEL_DAMAGE_BONUS,
+	CARD_MAX_LEVEL,
+	CARD_XP_TABLE,
+} from "../constants";
 import type { Card, GameState } from "../types";
 import { addActionLog } from "./state";
 
@@ -54,6 +58,13 @@ export function getExpProgress(card: Card): {
 	const required = nextLevelXp - currentLevelXp;
 	const ratio = required > 0 ? current / required : 1;
 	return { current, required, ratio };
+}
+
+/**
+ * カードレベルに応じたダメージボーナスを取得
+ */
+export function getLevelDamageBonus(card: Card): number {
+	return CARD_LEVEL_DAMAGE_BONUS[card.level - 1] ?? 0;
 }
 
 /**

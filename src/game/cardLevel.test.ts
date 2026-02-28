@@ -7,6 +7,7 @@ import {
 	awardExpToCard,
 	calculateLevel,
 	getExpProgress,
+	getLevelDamageBonus,
 	isMaxLevel,
 } from "./cardLevel";
 
@@ -116,6 +117,19 @@ describe("isMaxLevel", () => {
 
 	it("最大レベルではtrue", () => {
 		expect(isMaxLevel(makeCard({ level: CARD_MAX_LEVEL }))).toBe(true);
+	});
+});
+
+describe("getLevelDamageBonus", () => {
+	it.each([
+		[1, 0],
+		[2, 1],
+		[3, 1],
+		[4, 2],
+		[5, 3],
+	])("Lv.%i のボーナスは %i", (level, expected) => {
+		const card = makeCard({ level });
+		expect(getLevelDamageBonus(card)).toBe(expected);
 	});
 });
 
