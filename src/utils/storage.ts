@@ -6,7 +6,13 @@
 import { getEnemyCount, INITIAL_FLOOR } from "../constants";
 import { createInitialCounters } from "../game/cardAcquisition";
 import { initCardIdCounterFromDeck } from "../game/deck";
-import type { AcquisitionCounters, DeckState, GameState, Room } from "../types";
+import type {
+	AcquisitionCounters,
+	DeckState,
+	GameState,
+	Room,
+	SpeechLogEntry,
+} from "../types";
 import { RNG } from "./rng";
 
 const SAVE_KEY = "dungeon-cards-save";
@@ -138,6 +144,22 @@ function createFullyVisitedTiles(map: unknown): Set<string> {
 }
 
 /**
+ * speechLog をバリデーションし、不正なら null にフォールバック
+ */
+function sanitizeSpeechLog(raw: unknown): SpeechLogEntry | null {
+	if (raw == null || typeof raw !== "object") return null;
+	const data = raw as Record<string, unknown>;
+	if (
+		typeof data.message !== "string" ||
+		typeof data.eventType !== "string" ||
+		typeof data.timestamp !== "number"
+	) {
+		return null;
+	}
+	return raw as SpeechLogEntry;
+}
+
+/**
  * ゲーム状態を保存
  */
 export function saveGame(state: GameState): void {
@@ -266,6 +288,7 @@ export function loadGame(): GameState | null {
 			),
 			cardExchangeState: null,
 			comboHistory: null,
+			speechLog: sanitizeSpeechLog(data.speechLog),
 		};
 
 		// 旧セーブデータ互換: 3ゾーン形式のデッキを手札形式に変換
