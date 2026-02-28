@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { PERSONALITIES } from "../constants";
+import { DEFAULT_PERSONALITY, PERSONALITIES } from "../constants";
 import { createTestState } from "../test-utils/createTestFixtures";
 import type { Personality } from "../types";
 import { addSpeechLog } from "./speech";
@@ -19,7 +19,7 @@ describe("addSpeechLog", () => {
 	it("発話メッセージがバリエーション内のいずれかである", () => {
 		const state = createTestState();
 		const next = addSpeechLog(state, "enemy_defeated");
-		const variants = SPEECH_VARIANTS.brave.enemy_defeated;
+		const variants = SPEECH_VARIANTS[DEFAULT_PERSONALITY].enemy_defeated;
 		expect(variants).toContain(next.speechLog?.message);
 	});
 
