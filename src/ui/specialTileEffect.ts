@@ -164,12 +164,6 @@ export class SpecialTileEffectManager {
 		this.graphics.clear();
 		this.particleGraphics.clear();
 
-		for (const effect of this.effects.values()) {
-			const alpha = calcPulseAlpha(this.elapsed, effect.config);
-			const radius = CELL_SIZE * effect.config.glowRadius;
-			this.graphics.circle(effect.px, effect.py, radius);
-			this.graphics.fill({ color: effect.config.glowColor, alpha });
-		}
 		for (const effect of this.stairsEffects.values()) {
 			const alpha = calcPulseAlpha(this.elapsed, effect.config);
 			const radius = CELL_SIZE * effect.config.glowRadius;
