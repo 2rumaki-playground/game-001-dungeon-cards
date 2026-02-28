@@ -4,7 +4,11 @@
  */
 
 import { Container, Graphics, Text } from "pixi.js";
-import { getExpProgress, isMaxLevel } from "../game/cardLevel";
+import {
+	getExpProgress,
+	isMaxLevel,
+	normalizeCardLevel,
+} from "../game/cardLevel";
 import type { Card, CardType } from "../types";
 import {
 	CARD_TYPE_NAME,
@@ -30,6 +34,16 @@ const TOOLTIP_RADIUS = 6;
 
 /** ツールチップ内パディング */
 const TOOLTIP_PADDING = 10;
+
+/** カードのレベルラベルを生成 */
+function formatLevelLabel(card: Card): string {
+	const level = normalizeCardLevel(card);
+	if (isMaxLevel(card)) {
+		return `Lv.${level} (MAX)`;
+	}
+	const { current, required } = getExpProgress(card);
+	return `Lv.${level} (XP: ${current}/${required})`;
+}
 
 /**
  * カードツールチップのビューを生成
@@ -65,12 +79,7 @@ export function createCardTooltip(cardOrType: Card | CardType): {
 
 	// レベル表示（Cardオブジェクトが渡された場合のみ）
 	if (card) {
-		const levelLabel = isMaxLevel(card)
-			? `Lv.${card.level} (MAX)`
-			: (() => {
-					const { current, required } = getExpProgress(card);
-					return `Lv.${card.level} (XP: ${current}/${required})`;
-				})();
+		const levelLabel = formatLevelLabel(card);
 		const levelText = new Text({
 			text: levelLabel,
 			style: {

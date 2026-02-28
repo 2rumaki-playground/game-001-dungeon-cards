@@ -1,6 +1,6 @@
 import type { Container, Text } from "pixi.js";
 import { describe, expect, it } from "vitest";
-import { PLAYER_ATTACK_DAMAGE } from "../constants";
+import { CARD_MAX_LEVEL, PLAYER_ATTACK_DAMAGE } from "../constants";
 import type { Card } from "../types";
 import {
 	CARD_DESCRIPTION,
@@ -76,5 +76,24 @@ describe("createCardTooltip", () => {
 		const texts = getAllTextsRecursive(result.container);
 		const hasLevel = texts.some((t) => t.text.includes("Lv.2"));
 		expect(hasLevel).toBe(true);
+	});
+
+	it("card.levelが範囲外でも正規化されたレベルが表示される", () => {
+		const card: Card = {
+			id: "card-1",
+			type: "attack",
+			level: CARD_MAX_LEVEL + 1,
+			exp: 99,
+		};
+		const result = createCardTooltip(card);
+		const texts = getAllTextsRecursive(result.container);
+		const hasNormalizedLevel = texts.some((t) =>
+			t.text.includes(`Lv.${CARD_MAX_LEVEL}`),
+		);
+		expect(hasNormalizedLevel).toBe(true);
+		const hasRawLevel = texts.some((t) =>
+			t.text.includes(`Lv.${CARD_MAX_LEVEL + 1}`),
+		);
+		expect(hasRawLevel).toBe(false);
 	});
 });
