@@ -29,8 +29,8 @@ describe("ActionLogRenderer", () => {
 		const renderer = new ActionLogRenderer(400);
 		const container = renderer.getContainer();
 		expect(container).toBeDefined();
-		// 背景(1) + タイトル(1) + (主体ラベル+メッセージ)×15 = 32
-		expect(container.children.length).toBe(32);
+		// 背景(1) + タイトル(1) + (主体ラベル+メッセージ)×15 + トグルボタン(1) = 33
+		expect(container.children.length).toBe(33);
 	});
 
 	it("getWidthでログエリアの幅を返す", () => {
@@ -164,6 +164,111 @@ describe("ActionLogRenderer", () => {
 		expect(label1.style.fill).toBe(COLORS.player);
 		expect(label2.style.fill).toBe(COLORS.enemy);
 		expect(label3.style.fill).toBe(COLORS.system);
+	});
+
+	it("トグルボタンが存在する", () => {
+		const renderer = new ActionLogRenderer(400);
+		const container = renderer.getContainer();
+		// トグルボタンはContainerでその子にText("▲"/"▼")を持つ
+		const toggleButton = container.children.find((child) => {
+			const c = child as unknown as { children?: unknown[] };
+			if (!Array.isArray(c.children)) return false;
+			return c.children.some((gc) => {
+				const t = gc as unknown as { text?: string };
+				return t.text === "▲" || t.text === "▼";
+			});
+		});
+		expect(toggleButton).toBeDefined();
+	});
+
+	it("isMinimizedがデフォルトでfalseを返す", () => {
+		const renderer = new ActionLogRenderer(400);
+		expect(renderer.isMinimized()).toBe(false);
+	});
+
+	it("toggleで最小化/展開が切り替わる", () => {
+		const renderer = new ActionLogRenderer(400);
+		renderer.toggle();
+		expect(renderer.isMinimized()).toBe(true);
+		renderer.toggle();
+		expect(renderer.isMinimized()).toBe(false);
+	});
+
+	it("最小化時にログエントリが非表示になる", () => {
+		const renderer = new ActionLogRenderer(400);
+		const logs: ActionLogEntry[] = [
+			{
+				id: "1",
+				actor: "player",
+				message: "テスト",
+				timestamp: 1000,
+			},
+		];
+		renderer.render(logs);
+		renderer.toggle(); // 最小化
+
+		const container = renderer.getContainer();
+		const label1 = getActorLabelElement(container, 0);
+		const logText1 = getLogEntry(container, 0);
+		expect(label1.visible).toBe(false);
+		expect(logText1.visible).toBe(false);
+	});
+
+	it("展開時にログエントリが再表示される", () => {
+		const renderer = new ActionLogRenderer(400);
+		const logs: ActionLogEntry[] = [
+			{
+				id: "1",
+				actor: "player",
+				message: "テスト",
+				timestamp: 1000,
+			},
+		];
+		renderer.render(logs);
+		renderer.toggle(); // 最小化
+		renderer.toggle(); // 展開
+
+		const container = renderer.getContainer();
+		const label1 = getActorLabelElement(container, 0);
+		const logText1 = getLogEntry(container, 0);
+		expect(label1.visible).toBe(true);
+		expect(logText1.visible).toBe(true);
+		expect(logText1.text).toBe("テスト");
+	});
+
+	it("clear後に展開してもログが復活しない", () => {
+		const renderer = new ActionLogRenderer(400);
+		const logs: ActionLogEntry[] = [
+			{
+				id: "1",
+				actor: "player",
+				message: "テスト",
+				timestamp: 1000,
+			},
+		];
+		renderer.render(logs);
+		renderer.toggle(); // 最小化
+		renderer.clear();
+		renderer.toggle(); // 展開
+
+		const container = renderer.getContainer();
+		const logText1 = getLogEntry(container, 0);
+		expect(logText1.text).toBe("");
+		expect(logText1.visible).toBe(false);
+	});
+
+	it("最小化中にrenderしても例外が出ない", () => {
+		const renderer = new ActionLogRenderer(400);
+		renderer.toggle(); // 最小化
+		const logs: ActionLogEntry[] = [
+			{
+				id: "1",
+				actor: "player",
+				message: "テスト",
+				timestamp: 1000,
+			},
+		];
+		expect(() => renderer.render(logs)).not.toThrow();
 	});
 });
 
