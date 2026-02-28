@@ -16,6 +16,7 @@ import {
 	startPlayerTurn,
 } from "../game";
 import { buildQueuedCardIndexMap, canEnqueueCard } from "../game/cardQueue";
+import { getComboBonus } from "../game/combo";
 import { resetDebugCheats } from "../game/debugCheats";
 import {
 	applyTileEffectWithDebug,
@@ -239,12 +240,14 @@ async function handleAttackCardExecution(
 		: undefined;
 
 	if (hit && enemyId) {
+		const comboBonus = comboType ? getComboBonus(comboType) : 0;
 		await updateStateWithAttackAnimation(
 			ctx,
 			next,
 			enemyId,
 			"attack",
 			overkill,
+			comboBonus,
 		);
 	} else {
 		await updateStateWithMissAnimation(ctx, next, direction);
