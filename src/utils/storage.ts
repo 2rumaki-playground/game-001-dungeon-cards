@@ -163,7 +163,7 @@ const VALID_SPEECH_EVENT_TYPES: ReadonlySet<SpeechEventType> = new Set([
 ]);
 
 function sanitizeSpeechLog(raw: unknown): SpeechLogEntry | null {
-	if (raw == null || typeof raw !== "object") return null;
+	if (raw == null || typeof raw !== "object" || Array.isArray(raw)) return null;
 	const data = raw as Record<string, unknown>;
 	if (
 		typeof data.message !== "string" ||
