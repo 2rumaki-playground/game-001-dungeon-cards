@@ -230,6 +230,7 @@ async function handleAttackCardExecution(
 		enemyId,
 		overkill,
 		comboType,
+		levelBonus,
 	} = executeAttack(ctx.state, cardId, direction);
 	ctx.ui.directionSelector.hide();
 	ctx.pendingCard = null;
@@ -241,14 +242,11 @@ async function handleAttackCardExecution(
 
 	if (hit && enemyId) {
 		const comboBonus = comboType ? getComboBonus(comboType) : 0;
-		await updateStateWithAttackAnimation(
-			ctx,
-			next,
-			enemyId,
-			"attack",
+		await updateStateWithAttackAnimation(ctx, next, enemyId, "attack", {
 			overkill,
 			comboBonus,
-		);
+			levelBonus,
+		});
 	} else {
 		await updateStateWithMissAnimation(ctx, next, direction);
 	}
@@ -270,17 +268,15 @@ async function handleStrongAttackCardExecution(
 		hit,
 		enemyId,
 		overkill,
+		levelBonus,
 	} = executeStrongAttack(ctx.state, cardId, direction);
 	ctx.ui.directionSelector.hide();
 	ctx.pendingCard = null;
 	if (hit && enemyId) {
-		await updateStateWithAttackAnimation(
-			ctx,
-			next,
-			enemyId,
-			"strong_attack",
+		await updateStateWithAttackAnimation(ctx, next, enemyId, "strong_attack", {
 			overkill,
-		);
+			levelBonus,
+		});
 	} else {
 		await updateStateWithMissAnimation(ctx, next, direction);
 	}
