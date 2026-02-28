@@ -7,6 +7,7 @@
 import { Container, Graphics, Text } from "pixi.js";
 import { COLORS, LOG_AREA_WIDTH } from "../constants";
 import type { ActionLogEntry, LogActor } from "../types";
+import { makeInteractive } from "./graphicsHelpers";
 
 /** ログ表示エリアの設定 */
 const LOG_AREA_PADDING = 8;
@@ -21,6 +22,9 @@ const ACTOR_COLUMN_WIDTH = 24;
 
 /** ログUIに表示する最大件数（画面に収まる範囲） */
 const MAX_DISPLAY_ENTRIES = 15;
+
+/** 最小化時のヘッダー高さ */
+const HEADER_HEIGHT = 32;
 
 /** 主体ラベルを取得 */
 export function getActorLabel(actor: LogActor): string {
@@ -56,12 +60,17 @@ export class ActionLogRenderer {
 	private actorLabels: Text[];
 	private logTexts: Text[];
 	private height: number;
+	private minimized: boolean;
+	private toggleButtonText: Text;
+	private lastEntries: ActionLogEntry[];
 
 	constructor(height: number) {
 		this.height = height;
 		this.container = new Container();
 		this.actorLabels = [];
 		this.logTexts = [];
+		this.minimized = false;
+		this.lastEntries = [];
 
 		// 背景
 		this.background = new Graphics();
@@ -112,14 +121,31 @@ export class ActionLogRenderer {
 			this.container.addChild(text);
 			this.logTexts.push(text);
 		}
+
+		// トグルボタン
+		const toggleButton = new Container();
+		this.toggleButtonText = new Text({
+			text: "▲",
+			style: {
+				fontSize: 12,
+				fontFamily: "sans-serif",
+				fill: 0xcccccc,
+			},
+		});
+		toggleButton.addChild(this.toggleButtonText);
+		toggleButton.x = LOG_AREA_WIDTH - LOG_AREA_PADDING - 16;
+		toggleButton.y = LOG_AREA_PADDING;
+		makeInteractive(toggleButton, () => this.toggle());
+		this.container.addChild(toggleButton);
 	}
 
 	/**
 	 * 背景を描画
 	 */
 	private drawBackground(): void {
+		const bgHeight = this.minimized ? HEADER_HEIGHT : this.height;
 		this.background.clear();
-		this.background.roundRect(0, 0, LOG_AREA_WIDTH, this.height, 4);
+		this.background.roundRect(0, 0, LOG_AREA_WIDTH, bgHeight, 4);
 		this.background.fill({
 			color: LOG_BACKGROUND_COLOR,
 			alpha: LOG_BACKGROUND_ALPHA,
@@ -145,6 +171,12 @@ export class ActionLogRenderer {
 	 * 行動ログを描画
 	 */
 	render(actionLog: ActionLogEntry[]): void {
+		this.lastEntries = actionLog;
+
+		if (this.minimized) {
+			return;
+		}
+
 		// 最新のログを上から表示（表示件数制限）
 		const displayEntries = actionLog.slice(0, MAX_DISPLAY_ENTRIES);
 
@@ -202,5 +234,32 @@ export class ActionLogRenderer {
 	 */
 	hide(): void {
 		this.container.visible = false;
+	}
+
+	/**
+	 * 最小化/展開を切り替え
+	 */
+	toggle(): void {
+		this.minimized = !this.minimized;
+		this.toggleButtonText.text = this.minimized ? "▼" : "▲";
+		this.drawBackground();
+
+		if (this.minimized) {
+			for (const label of this.actorLabels) {
+				label.visible = false;
+			}
+			for (const text of this.logTexts) {
+				text.visible = false;
+			}
+		} else {
+			this.render(this.lastEntries);
+		}
+	}
+
+	/**
+	 * 最小化状態を返す
+	 */
+	isMinimized(): boolean {
+		return this.minimized;
 	}
 }
