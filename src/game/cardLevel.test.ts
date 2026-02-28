@@ -239,42 +239,79 @@ describe("getLevelDamageBonus", () => {
 });
 
 describe("hasPierceEffect", () => {
-	it.each([1, 2])("Lv.%i ではfalse", (level) => {
-		expect(hasPierceEffect(makeCard({ level }))).toBe(false);
+	it.each([1, 2])("攻撃カードLv.%i ではfalse", (level) => {
+		expect(hasPierceEffect(makeCard({ type: "attack", level }))).toBe(false);
 	});
 
-	it.each([3, 4, 5])("Lv.%i ではtrue", (level) => {
-		expect(hasPierceEffect(makeCard({ level }))).toBe(true);
+	it.each([3, 4, 5])("攻撃カードLv.%i ではtrue", (level) => {
+		expect(hasPierceEffect(makeCard({ type: "attack", level }))).toBe(true);
+	});
+
+	it("攻撃カード以外ではレベルに関係なくfalse", () => {
+		expect(hasPierceEffect(makeCard({ type: "strong_attack", level: 5 }))).toBe(
+			false,
+		);
+		expect(hasPierceEffect(makeCard({ type: "move", level: 5 }))).toBe(false);
 	});
 });
 
 describe("hasRangeExtendEffect", () => {
-	it.each([1, 2, 3, 4])("Lv.%i ではfalse", (level) => {
-		expect(hasRangeExtendEffect(makeCard({ level }))).toBe(false);
+	it.each([1, 2, 3, 4])("攻撃カードLv.%i ではfalse", (level) => {
+		expect(hasRangeExtendEffect(makeCard({ type: "attack", level }))).toBe(
+			false,
+		);
 	});
 
-	it("Lv.5ではtrue", () => {
-		expect(hasRangeExtendEffect(makeCard({ level: 5 }))).toBe(true);
+	it("攻撃カードLv.5ではtrue", () => {
+		expect(hasRangeExtendEffect(makeCard({ type: "attack", level: 5 }))).toBe(
+			true,
+		);
+	});
+
+	it("攻撃カード以外ではレベルに関係なくfalse", () => {
+		expect(
+			hasRangeExtendEffect(makeCard({ type: "strong_attack", level: 5 })),
+		).toBe(false);
 	});
 });
 
 describe("hasKnockbackEffect", () => {
-	it.each([1, 2])("Lv.%i ではfalse", (level) => {
-		expect(hasKnockbackEffect(makeCard({ level }))).toBe(false);
+	it.each([1, 2])("強攻撃カードLv.%i ではfalse", (level) => {
+		expect(hasKnockbackEffect(makeCard({ type: "strong_attack", level }))).toBe(
+			false,
+		);
 	});
 
-	it.each([3, 4, 5])("Lv.%i ではtrue", (level) => {
-		expect(hasKnockbackEffect(makeCard({ level }))).toBe(true);
+	it.each([3, 4, 5])("強攻撃カードLv.%i ではtrue", (level) => {
+		expect(hasKnockbackEffect(makeCard({ type: "strong_attack", level }))).toBe(
+			true,
+		);
+	});
+
+	it("強攻撃カード以外ではレベルに関係なくfalse", () => {
+		expect(hasKnockbackEffect(makeCard({ type: "attack", level: 5 }))).toBe(
+			false,
+		);
 	});
 });
 
 describe("hasShockwaveEffect", () => {
-	it.each([1, 2, 3, 4])("Lv.%i ではfalse", (level) => {
-		expect(hasShockwaveEffect(makeCard({ level }))).toBe(false);
+	it.each([1, 2, 3, 4])("強攻撃カードLv.%i ではfalse", (level) => {
+		expect(hasShockwaveEffect(makeCard({ type: "strong_attack", level }))).toBe(
+			false,
+		);
 	});
 
-	it("Lv.5ではtrue", () => {
-		expect(hasShockwaveEffect(makeCard({ level: 5 }))).toBe(true);
+	it("強攻撃カードLv.5ではtrue", () => {
+		expect(
+			hasShockwaveEffect(makeCard({ type: "strong_attack", level: 5 })),
+		).toBe(true);
+	});
+
+	it("強攻撃カード以外ではレベルに関係なくfalse", () => {
+		expect(hasShockwaveEffect(makeCard({ type: "attack", level: 5 }))).toBe(
+			false,
+		);
 	});
 });
 

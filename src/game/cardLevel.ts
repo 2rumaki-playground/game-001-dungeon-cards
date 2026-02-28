@@ -108,28 +108,39 @@ export function isMaxLevel(card: Card): boolean {
  * 攻撃カードが貫通効果を持つか判定
  */
 export function hasPierceEffect(card: Card): boolean {
-	return normalizeCardLevel(card) >= CARD_LEVEL_PIERCE;
+	return (
+		card.type === "attack" && normalizeCardLevel(card) >= CARD_LEVEL_PIERCE
+	);
 }
 
 /**
  * 攻撃カードが射程延長効果を持つか判定
  */
 export function hasRangeExtendEffect(card: Card): boolean {
-	return normalizeCardLevel(card) >= CARD_LEVEL_RANGE_EXTEND;
+	return (
+		card.type === "attack" &&
+		normalizeCardLevel(card) >= CARD_LEVEL_RANGE_EXTEND
+	);
 }
 
 /**
  * 強攻撃カードがノックバック効果を持つか判定
  */
 export function hasKnockbackEffect(card: Card): boolean {
-	return normalizeCardLevel(card) >= CARD_LEVEL_KNOCKBACK;
+	return (
+		card.type === "strong_attack" &&
+		normalizeCardLevel(card) >= CARD_LEVEL_KNOCKBACK
+	);
 }
 
 /**
  * 強攻撃カードが衝撃波効果を持つか判定
  */
 export function hasShockwaveEffect(card: Card): boolean {
-	return normalizeCardLevel(card) >= CARD_LEVEL_SHOCKWAVE;
+	return (
+		card.type === "strong_attack" &&
+		normalizeCardLevel(card) >= CARD_LEVEL_SHOCKWAVE
+	);
 }
 
 /**
