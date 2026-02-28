@@ -58,6 +58,7 @@ function createTestState(overrides?: Partial<GameState>): GameState {
 		acquisitionCounters: createInitialCounters(),
 		cardExchangeState: null,
 		comboHistory: null,
+		personality: "brave",
 		speechLog: null,
 		...overrides,
 	};

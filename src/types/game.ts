@@ -11,6 +11,16 @@ import type { ComboHistory } from "./combo";
 import type { GameMap, Room } from "./map";
 
 /**
+ * キャラクター性格タイプ
+ */
+export type Personality =
+	| "brave"
+	| "cautious"
+	| "cheerful"
+	| "stoic"
+	| "curious";
+
+/**
  * 発話イベント種別
  */
 export type SpeechEventType =
@@ -101,6 +111,8 @@ export type GameState = {
 	cardExchangeState: CardExchangeState;
 	/** ターン内カード使用履歴（コンボ判定用、ターン開始時にnullリセット） */
 	comboHistory: ComboHistory | null;
+	/** キャラクター性格タイプ */
+	personality: Personality;
 	/** キャラクター発話ログ（最新1件のみ保持） */
 	speechLog: SpeechLogEntry | null;
 };

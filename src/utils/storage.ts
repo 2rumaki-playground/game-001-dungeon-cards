@@ -3,13 +3,19 @@
  * @see docs/spec/mvp/rules.md - セーブとログ
  */
 
-import { getEnemyCount, INITIAL_FLOOR } from "../constants";
+import {
+	DEFAULT_PERSONALITY,
+	getEnemyCount,
+	INITIAL_FLOOR,
+	PERSONALITIES,
+} from "../constants";
 import { createInitialCounters } from "../game/cardAcquisition";
 import { initCardIdCounterFromDeck } from "../game/deck";
 import type {
 	AcquisitionCounters,
 	DeckState,
 	GameState,
+	Personality,
 	Room,
 	SpeechEventType,
 	SpeechLogEntry,
@@ -179,6 +185,18 @@ function sanitizeSpeechLog(raw: unknown): SpeechLogEntry | null {
 }
 
 /**
+ * personality をバリデーションし、不正なら DEFAULT_PERSONALITY にフォールバック
+ */
+const VALID_PERSONALITIES: ReadonlySet<Personality> = new Set(PERSONALITIES);
+
+function sanitizePersonality(raw: unknown): Personality {
+	if (typeof raw === "string" && VALID_PERSONALITIES.has(raw as Personality)) {
+		return raw as Personality;
+	}
+	return DEFAULT_PERSONALITY;
+}
+
+/**
  * ゲーム状態を保存
  */
 export function saveGame(state: GameState): void {
@@ -307,6 +325,7 @@ export function loadGame(): GameState | null {
 			),
 			cardExchangeState: null,
 			comboHistory: null,
+			personality: sanitizePersonality(data.personality),
 			speechLog: sanitizeSpeechLog(data.speechLog),
 		};
 

@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
+import { PERSONALITIES } from "../constants";
 import { createTestState } from "../test-utils/createTestFixtures";
+import type { Personality } from "../types";
 import { addSpeechLog } from "./speech";
 import { SPEECH_VARIANTS } from "./speechData";
 
@@ -17,7 +19,7 @@ describe("addSpeechLog", () => {
 	it("発話メッセージがバリエーション内のいずれかである", () => {
 		const state = createTestState();
 		const next = addSpeechLog(state, "enemy_defeated");
-		const variants = SPEECH_VARIANTS.enemy_defeated;
+		const variants = SPEECH_VARIANTS.brave.enemy_defeated;
 		expect(variants).toContain(next.speechLog?.message);
 	});
 
@@ -33,5 +35,14 @@ describe("addSpeechLog", () => {
 		const s1 = addSpeechLog(state, "move_success");
 		const s2 = addSpeechLog(s1, "enemy_defeated");
 		expect(s2.speechLog?.eventType).toBe("enemy_defeated");
+	});
+
+	it.each(
+		PERSONALITIES,
+	)("性格 %s の発話が該当バリエーションから選択される", (personality: Personality) => {
+		const state = createTestState({ personality });
+		const next = addSpeechLog(state, "move_success");
+		const variants = SPEECH_VARIANTS[personality].move_success;
+		expect(variants).toContain(next.speechLog?.message);
 	});
 });

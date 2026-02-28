@@ -3,7 +3,11 @@
  * @see docs/spec/constants.md
  */
 
-import type { EnemyCardAcquisitionConfig, EnemyType } from "./types";
+import type {
+	EnemyCardAcquisitionConfig,
+	EnemyType,
+	Personality,
+} from "./types";
 
 // 手札関連
 export const HAND_LIMIT = 4;
@@ -342,6 +346,16 @@ export const BOSS_SKILL = {
 	/** ボス: 激昂時の攻撃ダメージ加算 */
 	enrageBonusDamage: 2,
 } as const;
+
+// キャラクター性格
+export const PERSONALITIES: readonly Personality[] = [
+	"brave",
+	"cautious",
+	"cheerful",
+	"stoic",
+	"curious",
+] as const;
+export const DEFAULT_PERSONALITY: Personality = "brave";
 
 // 発話バナー
 export const SPEECH_BANNER_HEIGHT = 40;

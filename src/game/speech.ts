@@ -16,7 +16,7 @@ export function addSpeechLog(
 	state: GameState,
 	eventType: SpeechEventType,
 ): GameState {
-	const variants = SPEECH_VARIANTS[eventType];
+	const variants = SPEECH_VARIANTS[state.personality][eventType];
 	const index = Math.floor(Math.random() * variants.length);
 	const message = variants[index];
 	return setSpeechLog(state, eventType, message);
