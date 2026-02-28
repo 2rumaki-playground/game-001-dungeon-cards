@@ -65,10 +65,10 @@
 - 次の敵の探索は射程制限なし（壁またはマップ外まで走査）
 
 ### Lv5特殊効果: 射程延長
-- 解放レベル: 5（`CARD_LEVEL_RANGE_EXTEND`、射程: `ATTACK_EXTENDED_RANGE=2`、数値は [constants.md](./constants.md) 参照）
-- 2マス先までの最初の敵を攻撃対象とする（壁で走査停止）
-- このレベルでは、攻撃カードの基本仕様における「指定方向1マス先に敵がいること」という成立条件は、「指定方向最大2マス先までの最初の敵が存在すること」に置き換わる
-- Lv3の貫通効果も保持される（射程2でヒットした敵を撃破時、さらに奥の敵にoverkill伝播）
+- 解放レベル: 5（`CARD_LEVEL_RANGE_EXTEND`、射程: `ATTACK_EXTENDED_RANGE`、具体値は [constants.md](./constants.md) 参照）
+- `ATTACK_EXTENDED_RANGE` マス先までの最初の敵を攻撃対象とする（壁で走査停止）
+- このレベルでは、攻撃カードの基本仕様における「指定方向1マス先に敵がいること」という成立条件は、「指定方向最大 `ATTACK_EXTENDED_RANGE` マス先までの最初の敵が存在すること」に置き換わる
+- Lv3の貫通効果も保持される（射程 `ATTACK_EXTENDED_RANGE` でヒットした敵を撃破時、さらに奥の敵にoverkill伝播）
 
 ### データ表現
 - 実装上、攻撃カードは単一のカードID（例：`card_attack`）を持つ
