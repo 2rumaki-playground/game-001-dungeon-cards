@@ -16,13 +16,18 @@ import type {
 	SpecialTileType,
 } from "../types";
 import { DIRECTION_DELTA } from "../types";
-import { getLevelDamageBonus } from "./cardLevel";
+import {
+	getLevelDamageBonus,
+	hasPierceEffect,
+	hasRangeExtendEffect,
+} from "./cardLevel";
 import { applyDamageToEnemy } from "./combat";
 import { detectCombo, getComboBonus } from "./combo";
 import { markCardUsed } from "./deck";
 import { revealAtPosition } from "./fogOfWar";
 import { isInBounds } from "./map";
 import { recordCardUsage } from "./playStats";
+import { applyPierce, findExtendedRangeTarget } from "./specialAttack";
 import {
 	addActionLog,
 	setDeck,
@@ -270,6 +275,8 @@ const COMBO_LOG_MESSAGE: Record<string, string> = {
  *
  * 成功/失敗に関わらずカード使用を行う。
  * 成功時は敵にダメージを与え、HP0以下で敵を削除。
+ * Lv3: 貫通（余剰ダメージが奥の敵に伝播）
+ * Lv5: 射程延長（2マス先まで攻撃可能）+ 貫通
  * 戻り値の hit でヒット情報を返す。
  */
 export function executeAttack(
@@ -279,13 +286,70 @@ export function executeAttack(
 ): AttackResult {
 	recordCardUsage("attack");
 
+	const card = state.deck.hand.find((c) => c.id === cardId);
 	const levelBonus = getAttackDamageBonus(state, cardId);
+	const pierce = card ? hasPierceEffect(card) : false;
+	const rangeExtend = card ? hasRangeExtendEffect(card) : false;
 
 	// コンボ判定（comboHistory更新前に判定）
 	const combo = detectCombo(state.comboHistory, "attack", direction);
 	const comboBonus = combo ? getComboBonus(combo) : 0;
 	const comboLog = combo ? (COMBO_LOG_MESSAGE[combo] ?? null) : null;
 
+	// Lv5射程延長: findAttackTargetで2マス先まで探索
+	if (rangeExtend) {
+		let next = markCardAsPlayed(state, cardId);
+
+		if (comboLog) {
+			next = addActionLog(next, comboLog, "system");
+		}
+
+		const target = findExtendedRangeTarget(next, direction);
+		if (!target) {
+			return {
+				state: updateComboHistory(
+					addActionLog(next, "攻撃できなかった", "player"),
+					{ lastCardType: "attack", lastDirection: direction },
+				),
+				hit: false,
+				overkill: 0,
+				comboType: combo ?? undefined,
+			};
+		}
+
+		const totalDamage = PLAYER_ATTACK_DAMAGE + levelBonus + comboBonus;
+		const damageResult = applyDamageToEnemy(
+			next,
+			target.enemyId,
+			totalDamage,
+			cardId,
+		);
+		next = damageResult.state;
+
+		// 貫通（Lv5はLv3効果も保持）
+		if (damageResult.defeated && damageResult.overkill > 0) {
+			next = applyPierce(
+				next,
+				direction,
+				damageResult.overkill,
+				target.position,
+				cardId,
+			);
+		}
+
+		return {
+			state: updateComboHistory(next, {
+				lastCardType: "attack",
+				lastDirection: direction,
+			}),
+			hit: true,
+			enemyId: target.enemyId,
+			overkill: damageResult.overkill,
+			comboType: combo ?? undefined,
+		};
+	}
+
+	// 通常攻撃（Lv1-4）
 	const result = executeAttackBase(
 		state,
 		cardId,
@@ -296,11 +360,29 @@ export function executeAttack(
 		comboLog,
 	);
 
+	let nextState = result.state;
+
+	// Lv3貫通: 撃破時に余剰ダメージを奥の敵に伝播
+	if (pierce && result.hit && result.overkill > 0) {
+		const delta = DIRECTION_DELTA[direction];
+		const hitPos = {
+			x: state.player.position.x + delta.x,
+			y: state.player.position.y + delta.y,
+		};
+		nextState = applyPierce(
+			nextState,
+			direction,
+			result.overkill,
+			hitPos,
+			cardId,
+		);
+	}
+
 	// comboHistory更新
 	return {
 		...result,
 		comboType: combo ?? undefined,
-		state: updateComboHistory(result.state, {
+		state: updateComboHistory(nextState, {
 			lastCardType: "attack",
 			lastDirection: direction,
 		}),
