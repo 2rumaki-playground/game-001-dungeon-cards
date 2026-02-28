@@ -28,6 +28,7 @@ import {
 	animateFlash,
 	animatePlayerBlink,
 	animateScreenShake,
+	calcScreenShakeIntensity,
 } from "./mapEffects";
 import {
 	renderFog,
@@ -36,7 +37,6 @@ import {
 	type TileHoverCallbacks,
 } from "./mapTileRenderer";
 import { PlayerTooltip } from "./playerTooltip";
-import { calcScreenShakeIntensity } from "./popupLogic";
 import { SkillForecastEffectManager } from "./skillForecastEffect";
 import { SpecialTileEffectManager } from "./specialTileEffect";
 import { TileTooltip } from "./tileTooltip";

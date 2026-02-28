@@ -12,7 +12,24 @@ import {
 	PLAYER_BLINK_INTERVAL,
 	SCREEN_SHAKE_DURATION,
 } from "./mapAnimationConstants";
-import { BASE_SHAKE_INTENSITY } from "./popupLogic";
+
+/** 画面シェイク強度の基本値 */
+export const BASE_SHAKE_INTENSITY = 4;
+
+/** 画面シェイク強度の最大値 */
+const MAX_SHAKE_INTENSITY = 10;
+
+/** 表示数値1あたりのシェイク強度増加量 */
+const SHAKE_INTENSITY_PER_AMOUNT = 1.5;
+
+/**
+ * 表示数値（amount）に応じた画面シェイク強度を計算
+ * 数値が大きいほどシェイクが強い（上限あり）
+ */
+export function calcScreenShakeIntensity(amount: number): number {
+	const extra = Math.max(0, amount - 1) * SHAKE_INTENSITY_PER_AMOUNT;
+	return Math.min(BASE_SHAKE_INTENSITY + extra, MAX_SHAKE_INTENSITY);
+}
 
 /**
  * 対象に白フラッシュエフェクトを適用
