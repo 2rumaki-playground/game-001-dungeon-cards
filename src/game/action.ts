@@ -35,6 +35,7 @@ import {
 	executeShockwave,
 	findExtendedRangeTarget,
 } from "./specialAttack";
+import { addSpeechLog } from "./speech";
 import {
 	addActionLog,
 	setDeck,
@@ -115,8 +116,10 @@ export function executeMove(
 
 	// 移動判定
 	if (!canMove(state, direction)) {
+		next = addActionLog(next, "移動できなかった", "player");
+		next = addSpeechLog(next, "move_fail");
 		return {
-			state: addActionLog(next, "移動できなかった", "player"),
+			state: next,
 			reachedStairs: false,
 			tileEffect: null,
 			gameOver: false,
@@ -140,6 +143,7 @@ export function executeMove(
 	);
 
 	next = addActionLog(next, "移動した", "player");
+	next = addSpeechLog(next, "move_success");
 
 	// 階段判定（遷移はUI層で行う）
 	if (state.map[ny][nx].type === "stairs") {
@@ -239,13 +243,16 @@ function executeAttackBase(
 	// コンボ発動ログ
 	if (comboLog) {
 		next = addActionLog(next, comboLog, "system");
+		next = addSpeechLog(next, "combo_activated");
 	}
 
 	// 攻撃判定（カード使用後の状態で判定）
 	const result = canAttack(next, direction);
 	if (!result.hit) {
+		next = addActionLog(next, missLog, "player");
+		next = addSpeechLog(next, "attack_miss");
 		return {
-			state: addActionLog(next, missLog, "player"),
+			state: next,
 			hit: false,
 			overkill: 0,
 			defeated: false,
@@ -320,15 +327,18 @@ export function executeAttack(
 
 		if (comboLog) {
 			next = addActionLog(next, comboLog, "system");
+			next = addSpeechLog(next, "combo_activated");
 		}
 
 		const target = findExtendedRangeTarget(next, direction);
 		if (!target) {
+			next = addActionLog(next, "攻撃できなかった", "player");
+			next = addSpeechLog(next, "attack_miss");
 			return {
-				state: updateComboHistory(
-					addActionLog(next, "攻撃できなかった", "player"),
-					{ lastCardType: "attack", lastDirection: direction },
-				),
+				state: updateComboHistory(next, {
+					lastCardType: "attack",
+					lastDirection: direction,
+				}),
 				hit: false,
 				overkill: 0,
 				defeated: false,
@@ -443,6 +453,7 @@ export function executeStrongAttack(
 
 		if (!shockResult.hit) {
 			next = addActionLog(next, "強攻撃できなかった", "player");
+			next = addSpeechLog(next, "attack_miss");
 		}
 
 		return {
@@ -629,8 +640,10 @@ export function executeJump(
 		};
 	}
 
+	next = addActionLog(next, "ジャンプした", "player");
+	next = addSpeechLog(next, "jump_success");
 	return {
-		state: addActionLog(next, "ジャンプした", "player"),
+		state: next,
 		jumped: true,
 		reachedStairs: false,
 		tileEffects,

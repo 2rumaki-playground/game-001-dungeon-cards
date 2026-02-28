@@ -6,7 +6,14 @@
 import { getEnemyCount, INITIAL_FLOOR } from "../constants";
 import { createInitialCounters } from "../game/cardAcquisition";
 import { initCardIdCounterFromDeck } from "../game/deck";
-import type { AcquisitionCounters, DeckState, GameState, Room } from "../types";
+import type {
+	AcquisitionCounters,
+	DeckState,
+	GameState,
+	Room,
+	SpeechEventType,
+	SpeechLogEntry,
+} from "../types";
 import { RNG } from "./rng";
 
 const SAVE_KEY = "dungeon-cards-save";
@@ -138,6 +145,40 @@ function createFullyVisitedTiles(map: unknown): Set<string> {
 }
 
 /**
+ * speechLog をバリデーションし、不正なら null にフォールバック
+ */
+const VALID_SPEECH_EVENT_TYPES: ReadonlySet<SpeechEventType> = new Set([
+	"move_success",
+	"move_fail",
+	"attack_miss",
+	"combo_activated",
+	"enemy_defeated",
+	"damage_taken",
+	"game_over",
+	"trap_triggered",
+	"treasure_found",
+	"rest_area_used",
+	"floor_reached",
+	"jump_success",
+]);
+
+function sanitizeSpeechLog(raw: unknown): SpeechLogEntry | null {
+	if (raw == null || typeof raw !== "object" || Array.isArray(raw)) return null;
+	const data = raw as Record<string, unknown>;
+	if (
+		typeof data.message !== "string" ||
+		typeof data.eventType !== "string" ||
+		!VALID_SPEECH_EVENT_TYPES.has(data.eventType as SpeechEventType) ||
+		typeof data.timestamp !== "number" ||
+		!Number.isFinite(data.timestamp) ||
+		data.timestamp < 0
+	) {
+		return null;
+	}
+	return raw as SpeechLogEntry;
+}
+
+/**
  * ゲーム状態を保存
  */
 export function saveGame(state: GameState): void {
@@ -266,6 +307,7 @@ export function loadGame(): GameState | null {
 			),
 			cardExchangeState: null,
 			comboHistory: null,
+			speechLog: sanitizeSpeechLog(data.speechLog),
 		};
 
 		// 旧セーブデータ互換: 3ゾーン形式のデッキを手札形式に変換

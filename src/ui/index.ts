@@ -15,6 +15,7 @@ export { ParticleSystem } from "./particleSystem";
 export { ReturnToPlayerButton } from "./returnToPlayerButton";
 export { RewardScreen } from "./rewardScreen";
 export { ScreenTransition } from "./screenTransition";
+export { SpeechBannerRenderer } from "./speechBannerRenderer";
 export { StatsScreen } from "./statsScreen";
 export { StatusBar } from "./statusBar";
 export { TitleScreen } from "./titleScreen";

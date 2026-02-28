@@ -4,7 +4,11 @@
  * キャンバスサイズは固定（VIEWPORT_TILES × VIEWPORT_TILES タイルのビューポート）のためリサイズは行わない
  */
 
-import { LOG_AREA_GAP, STATUS_BAR_HEIGHT } from "../constants";
+import {
+	LOG_AREA_GAP,
+	SPEECH_BANNER_HEIGHT,
+	STATUS_BAR_HEIGHT,
+} from "../constants";
 import type { GameContext } from "../gameContext";
 import { getViewportPixelSize } from "./coordinates";
 import {
@@ -52,9 +56,15 @@ export function relayoutUI(ctx: GameContext): void {
 	ctx.ui.nextFloorButton.getContainer().y =
 		totalHeight - BUTTON_HEIGHT - BUTTON_BOTTOM_MARGIN;
 
-	// 行動ログ
+	// 行動ログ（発話バナー分を差し引いた高さ）
+	const logHeight = totalHeight - SPEECH_BANNER_HEIGHT;
 	ctx.ui.actionLogRenderer.getContainer().x = viewportSize.width + LOG_AREA_GAP;
-	ctx.ui.actionLogRenderer.resize(totalHeight);
+	ctx.ui.actionLogRenderer.resize(logHeight);
+
+	// 発話バナー
+	ctx.ui.speechBannerRenderer.getContainer().x =
+		viewportSize.width + LOG_AREA_GAP;
+	ctx.ui.speechBannerRenderer.getContainer().y = logHeight;
 
 	// ターンバナー
 	ctx.ui.turnBanner.resize(totalWidth, totalHeight);

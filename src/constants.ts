@@ -343,6 +343,9 @@ export const BOSS_SKILL = {
 	enrageBonusDamage: 2,
 } as const;
 
+// 発話バナー
+export const SPEECH_BANNER_HEIGHT = 40;
+
 // 描画設定
 export const CELL_SIZE = 64;
 export const CELL_GAP = 4;

@@ -12,6 +12,7 @@ import {
 } from "./cardAcquisition";
 import { awardExpToCard } from "./cardLevel";
 import { recordDamageDealt, recordDamageTaken } from "./playStats";
+import { addSpeechLog } from "./speech";
 import {
 	addActionLog,
 	addRemnant,
@@ -111,6 +112,7 @@ export function applyDamageToEnemy(
 			next = addActionLog(next, "敵を倒した", "system");
 		}
 
+		next = addSpeechLog(next, "enemy_defeated");
 		next = checkVictory(next, target.type);
 		return { state: next, overkill, defeated: true };
 	}
@@ -142,6 +144,7 @@ export function applyDamageToPlayer(
 	}));
 
 	next = addActionLog(next, "プレイヤーがダメージを受けた", "system");
+	next = addSpeechLog(next, "damage_taken");
 
 	return next;
 }
@@ -186,6 +189,7 @@ export function checkGameOver(state: GameState): GameState {
 
 	let next = changeScreen(state, "gameOver");
 	next = addActionLog(next, "ゲームオーバー", "system");
+	next = addSpeechLog(next, "game_over");
 
 	return next;
 }
