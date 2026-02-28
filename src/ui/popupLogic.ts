@@ -11,15 +11,6 @@ const MAX_FONT_SIZE = 36;
 /** 表示数値1あたりのフォントサイズ増加量 */
 const FONT_SIZE_PER_AMOUNT = 3;
 
-/** 画面シェイク強度の基本値 */
-export const BASE_SHAKE_INTENSITY = 4;
-
-/** 画面シェイク強度の最大値 */
-const MAX_SHAKE_INTENSITY = 10;
-
-/** 表示数値1あたりのシェイク強度増加量 */
-const SHAKE_INTENSITY_PER_AMOUNT = 1.5;
-
 /**
  * 表示数値（amount）に応じたポップアップフォントサイズを計算
  * 数値が大きいほどフォントサイズが増加（上限あり）
@@ -27,13 +18,4 @@ const SHAKE_INTENSITY_PER_AMOUNT = 1.5;
 export function calcPopupFontSize(amount: number): number {
 	const extra = Math.max(0, amount - 1) * FONT_SIZE_PER_AMOUNT;
 	return Math.min(BASE_FONT_SIZE + extra, MAX_FONT_SIZE);
-}
-
-/**
- * 表示数値（amount）に応じた画面シェイク強度を計算
- * 数値が大きいほどシェイクが強い（上限あり）
- */
-export function calcScreenShakeIntensity(amount: number): number {
-	const extra = Math.max(0, amount - 1) * SHAKE_INTENSITY_PER_AMOUNT;
-	return Math.min(BASE_SHAKE_INTENSITY + extra, MAX_SHAKE_INTENSITY);
 }
