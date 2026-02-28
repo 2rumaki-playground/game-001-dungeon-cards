@@ -1,10 +1,11 @@
 import { describe, expect, it } from "vitest";
+import { PLAYER_STRONG_ATTACK_DAMAGE } from "../constants";
 import {
 	createTestEnemy,
 	createTestState,
 } from "../test-utils/createTestFixtures";
 import type { Card } from "../types";
-import { executeAttack } from "./action";
+import { executeAttack, executeStrongAttack } from "./action";
 import {
 	applyKnockback,
 	applyPierce,
@@ -448,5 +449,221 @@ describe("executeShockwave", () => {
 		expect(hit).toBe(true);
 		// 正面の敵は撃破
 		expect(result.enemies.find((e) => e.id === enemy.id)).toBeUndefined();
+	});
+});
+
+describe("Lv3強攻撃カード: ノックバック", () => {
+	it("攻撃後に生存した敵を1マス吹き飛ばす", () => {
+		const enemy = createTestEnemy("heavy", { x: 4, y: 3 }, { hp: 10 });
+		const state = createTestState({
+			enemies: [enemy],
+			deck: {
+				hand: [
+					makeCard({
+						id: "strong-1",
+						type: "strong_attack",
+						level: 3,
+						exp: 4,
+					}),
+				],
+				usedCardIds: [],
+			},
+		});
+
+		const { state: result, hit } = executeStrongAttack(
+			state,
+			"strong-1",
+			"right",
+		);
+		expect(hit).toBe(true);
+		const moved = result.enemies.find((e) => e.id === enemy.id);
+		// Lv3: dmg=3+1=4, 生存(hp=6), ノックバックで(5,3)へ
+		expect(moved?.hp).toBe(10 - (PLAYER_STRONG_ATTACK_DAMAGE + 1));
+		expect(moved?.position).toEqual({ x: 5, y: 3 });
+	});
+
+	it("撃破時はノックバックしない", () => {
+		const enemy = createTestEnemy("normal", { x: 4, y: 3 }, { hp: 1 });
+		const state = createTestState({
+			enemies: [enemy],
+			deck: {
+				hand: [
+					makeCard({
+						id: "strong-1",
+						type: "strong_attack",
+						level: 3,
+						exp: 4,
+					}),
+				],
+				usedCardIds: [],
+			},
+		});
+
+		const { state: result, hit } = executeStrongAttack(
+			state,
+			"strong-1",
+			"right",
+		);
+		expect(hit).toBe(true);
+		expect(result.enemies).toHaveLength(0);
+	});
+
+	it("ノックバック先が壁の場合はノックバックしない", () => {
+		// (5,3)の敵→right→(6,3)は壁
+		const enemy = createTestEnemy("heavy", { x: 5, y: 3 }, { hp: 10 });
+		const state = createTestState({
+			enemies: [enemy],
+			player: { position: { x: 4, y: 3 }, hp: 10, maxHp: 10 },
+			deck: {
+				hand: [
+					makeCard({
+						id: "strong-1",
+						type: "strong_attack",
+						level: 3,
+						exp: 4,
+					}),
+				],
+				usedCardIds: [],
+			},
+		});
+
+		const { state: result, hit } = executeStrongAttack(
+			state,
+			"strong-1",
+			"right",
+		);
+		expect(hit).toBe(true);
+		const notMoved = result.enemies.find((e) => e.id === enemy.id);
+		expect(notMoved?.position).toEqual({ x: 5, y: 3 });
+	});
+
+	it("Lv1-2ではノックバックが発動しない", () => {
+		const enemy = createTestEnemy("heavy", { x: 4, y: 3 }, { hp: 10 });
+		const state = createTestState({
+			enemies: [enemy],
+			deck: {
+				hand: [
+					makeCard({
+						id: "strong-1",
+						type: "strong_attack",
+						level: 2,
+						exp: 2,
+					}),
+				],
+				usedCardIds: [],
+			},
+		});
+
+		const { state: result, hit } = executeStrongAttack(
+			state,
+			"strong-1",
+			"right",
+		);
+		expect(hit).toBe(true);
+		const notMoved = result.enemies.find((e) => e.id === enemy.id);
+		expect(notMoved?.position).toEqual({ x: 4, y: 3 });
+	});
+});
+
+describe("Lv5強攻撃カード: 衝撃波", () => {
+	it("正面+左右の敵にダメージを与える", () => {
+		const enemyFront = createTestEnemy("heavy", { x: 4, y: 3 }, { hp: 10 });
+		const enemySide = createTestEnemy("normal", { x: 3, y: 4 }, { hp: 3 });
+		const state = createTestState({
+			enemies: [enemyFront, enemySide],
+			deck: {
+				hand: [
+					makeCard({
+						id: "strong-1",
+						type: "strong_attack",
+						level: 5,
+						exp: 16,
+					}),
+				],
+				usedCardIds: [],
+			},
+		});
+
+		const { state: result, hit } = executeStrongAttack(
+			state,
+			"strong-1",
+			"right",
+		);
+		expect(hit).toBe(true);
+		// Lv5: dmg=3+3=6
+		const front = result.enemies.find((e) => e.id === enemyFront.id);
+		expect(front?.hp).toBe(10 - 6);
+		// サイドの敵はHP3-6=撃破
+		expect(result.enemies.find((e) => e.id === enemySide.id)).toBeUndefined();
+	});
+
+	it("正面に敵がいない場合は空振り", () => {
+		const enemySide = createTestEnemy("normal", { x: 3, y: 4 }, { hp: 3 });
+		const state = createTestState({
+			enemies: [enemySide],
+			deck: {
+				hand: [
+					makeCard({
+						id: "strong-1",
+						type: "strong_attack",
+						level: 5,
+						exp: 16,
+					}),
+				],
+				usedCardIds: [],
+			},
+		});
+
+		const { hit } = executeStrongAttack(state, "strong-1", "right");
+		expect(hit).toBe(false);
+	});
+
+	it("衝撃波後に生存した敵がノックバックされる", () => {
+		const enemy = createTestEnemy("heavy", { x: 4, y: 3 }, { hp: 15 });
+		const state = createTestState({
+			enemies: [enemy],
+			deck: {
+				hand: [
+					makeCard({
+						id: "strong-1",
+						type: "strong_attack",
+						level: 5,
+						exp: 16,
+					}),
+				],
+				usedCardIds: [],
+			},
+		});
+
+		const { state: result, hit } = executeStrongAttack(
+			state,
+			"strong-1",
+			"right",
+		);
+		expect(hit).toBe(true);
+		const moved = result.enemies.find((e) => e.id === enemy.id);
+		expect(moved?.hp).toBe(15 - 6);
+		expect(moved?.position).toEqual({ x: 5, y: 3 });
+	});
+
+	it("カードが使用済みになる", () => {
+		const enemy = createTestEnemy("normal", { x: 4, y: 3 });
+		const state = createTestState({
+			enemies: [enemy],
+			deck: {
+				hand: [
+					makeCard({
+						id: "strong-1",
+						type: "strong_attack",
+						level: 5,
+						exp: 16,
+					}),
+				],
+				usedCardIds: [],
+			},
+		});
+
+		const { state: result } = executeStrongAttack(state, "strong-1", "right");
+		expect(result.deck.usedCardIds).toContain("strong-1");
 	});
 });

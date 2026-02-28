@@ -18,8 +18,10 @@ import type {
 import { DIRECTION_DELTA } from "../types";
 import {
 	getLevelDamageBonus,
+	hasKnockbackEffect,
 	hasPierceEffect,
 	hasRangeExtendEffect,
+	hasShockwaveEffect,
 } from "./cardLevel";
 import { applyDamageToEnemy } from "./combat";
 import { detectCombo, getComboBonus } from "./combo";
@@ -27,7 +29,12 @@ import { markCardUsed } from "./deck";
 import { revealAtPosition } from "./fogOfWar";
 import { isInBounds } from "./map";
 import { recordCardUsage } from "./playStats";
-import { applyPierce, findExtendedRangeTarget } from "./specialAttack";
+import {
+	applyKnockback,
+	applyPierce,
+	executeShockwave,
+	findExtendedRangeTarget,
+} from "./specialAttack";
 import {
 	addActionLog,
 	setDeck,
@@ -394,6 +401,8 @@ export function executeAttack(
  *
  * 成功/失敗に関わらずカード使用を行う。
  * 成功時は敵に大ダメージを与え、HP0以下で敵を削除。
+ * Lv3: ノックバック（生存した敵を攻撃方向に1マス吹き飛ばす）
+ * Lv5: 衝撃波（正面+左右3マスにダメージ + ノックバック）
  * 戻り値の hit でヒット情報を返す。
  * strong_attackはコンボ対象外（トリガーにも判定対象にもならない）。
  */
@@ -404,22 +413,55 @@ export function executeStrongAttack(
 ): AttackResult {
 	recordCardUsage("strong_attack");
 
+	const card = state.deck.hand.find((c) => c.id === cardId);
 	const levelBonus = getAttackDamageBonus(state, cardId);
+	const shockwave = card ? hasShockwaveEffect(card) : false;
+	const knockback = card ? hasKnockbackEffect(card) : false;
+	const totalDamage = PLAYER_STRONG_ATTACK_DAMAGE + levelBonus;
 
+	// Lv5衝撃波
+	if (shockwave) {
+		let next = markCardAsPlayed(state, cardId);
+
+		const shockResult = executeShockwave(next, direction, totalDamage, cardId);
+		next = shockResult.state;
+
+		if (!shockResult.hit) {
+			next = addActionLog(next, "強攻撃できなかった", "player");
+		}
+
+		return {
+			state: updateComboHistory(next, {
+				lastCardType: "strong_attack",
+				lastDirection: direction,
+			}),
+			hit: shockResult.hit,
+			overkill: 0,
+		};
+	}
+
+	// 通常強攻撃（Lv1-4）
 	const result = executeAttackBase(
 		state,
 		cardId,
 		direction,
-		PLAYER_STRONG_ATTACK_DAMAGE + levelBonus,
+		totalDamage,
 		"強攻撃できなかった",
 		0,
 		null,
 	);
 
+	let nextState = result.state;
+
+	// Lv3ノックバック: ヒットして敵が生存していれば吹き飛ばす
+	if (knockback && result.hit && result.enemyId && result.overkill === 0) {
+		nextState = applyKnockback(nextState, result.enemyId, direction);
+	}
+
 	// comboHistory更新（コンボ対象外だが履歴には記録）
 	return {
 		...result,
-		state: updateComboHistory(result.state, {
+		state: updateComboHistory(nextState, {
 			lastCardType: "strong_attack",
 			lastDirection: direction,
 		}),
