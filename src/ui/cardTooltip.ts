@@ -4,11 +4,8 @@
  */
 
 import { Container, Graphics, Text } from "pixi.js";
-import {
-	getExpProgress,
-	isMaxLevel,
-	normalizeCardLevel,
-} from "../game/cardLevel";
+import { CARD_MAX_LEVEL, CARD_XP_TABLE } from "../constants";
+import { normalizeCardLevel } from "../game/cardLevel";
 import type { Card, CardType } from "../types";
 import {
 	CARD_TYPE_NAME,
@@ -38,10 +35,13 @@ const TOOLTIP_PADDING = 10;
 /** カードのレベルラベルを生成 */
 function formatLevelLabel(card: Card): string {
 	const level = normalizeCardLevel(card);
-	if (isMaxLevel(card)) {
+	if (level >= CARD_MAX_LEVEL) {
 		return `Lv.${level} (MAX)`;
 	}
-	const { current, required } = getExpProgress(card);
+	const currentLevelXp = CARD_XP_TABLE[level - 1];
+	const nextLevelXp = CARD_XP_TABLE[level];
+	const current = card.exp - currentLevelXp;
+	const required = nextLevelXp - currentLevelXp;
 	return `Lv.${level} (XP: ${current}/${required})`;
 }
 
