@@ -9,6 +9,7 @@ import {
 	getExpProgress,
 	getLevelDamageBonus,
 	isMaxLevel,
+	normalizeCardLevel,
 } from "./cardLevel";
 
 function makeCard(overrides?: Partial<Card>): Card {
@@ -85,6 +86,50 @@ describe("addExpToCard", () => {
 	});
 });
 
+describe("normalizeCardLevel", () => {
+	it("正常なレベルはそのまま返す", () => {
+		expect(normalizeCardLevel(makeCard({ level: 1 }))).toBe(1);
+		expect(normalizeCardLevel(makeCard({ level: 3 }))).toBe(3);
+		expect(normalizeCardLevel(makeCard({ level: CARD_MAX_LEVEL }))).toBe(
+			CARD_MAX_LEVEL,
+		);
+	});
+
+	it("0以下はLv.1にクランプされ警告が出る", () => {
+		const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+		expect(normalizeCardLevel(makeCard({ level: 0 }))).toBe(1);
+		expect(warnSpy).toHaveBeenCalledOnce();
+		warnSpy.mockRestore();
+	});
+
+	it("最大レベル超はMAXにクランプされ警告が出る", () => {
+		const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+		expect(normalizeCardLevel(makeCard({ level: CARD_MAX_LEVEL + 1 }))).toBe(
+			CARD_MAX_LEVEL,
+		);
+		expect(warnSpy).toHaveBeenCalledOnce();
+		warnSpy.mockRestore();
+	});
+
+	it.each([
+		NaN,
+		Infinity,
+		-Infinity,
+	])("level=%s はLv.1にフォールバックされ警告が出る", (invalidLevel) => {
+		const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+		expect(normalizeCardLevel(makeCard({ level: invalidLevel }))).toBe(1);
+		expect(warnSpy).toHaveBeenCalledOnce();
+		warnSpy.mockRestore();
+	});
+
+	it("小数レベルはLv.1にフォールバックされ警告が出る", () => {
+		const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+		expect(normalizeCardLevel(makeCard({ level: 2.5 }))).toBe(1);
+		expect(warnSpy).toHaveBeenCalledOnce();
+		warnSpy.mockRestore();
+	});
+});
+
 describe("getExpProgress", () => {
 	it("レベル1でXP 0の進捗率は0", () => {
 		const card = makeCard({ level: 1, exp: 0 });
@@ -107,6 +152,16 @@ describe("getExpProgress", () => {
 		const progress = getExpProgress(card);
 		expect(progress.ratio).toBe(1);
 	});
+
+	it("異常レベルでもnormalizeCardLevelにより正しく動作する", () => {
+		const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+		const card = makeCard({ level: 999, exp: 0 });
+		const progress = getExpProgress(card);
+		// Lv.MAXにクランプ → ratio=1
+		expect(progress.ratio).toBe(1);
+		expect(warnSpy).toHaveBeenCalled();
+		warnSpy.mockRestore();
+	});
 });
 
 describe("isMaxLevel", () => {
@@ -117,6 +172,16 @@ describe("isMaxLevel", () => {
 
 	it("最大レベルではtrue", () => {
 		expect(isMaxLevel(makeCard({ level: CARD_MAX_LEVEL }))).toBe(true);
+	});
+
+	it("異常レベルでもnormalizeCardLevelにより正しく判定される", () => {
+		const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+		// Lv.999 → MAXにクランプ → true
+		expect(isMaxLevel(makeCard({ level: 999 }))).toBe(true);
+		// Lv.NaN → 1にフォールバック → false
+		expect(isMaxLevel(makeCard({ level: NaN }))).toBe(false);
+		expect(warnSpy).toHaveBeenCalled();
+		warnSpy.mockRestore();
 	});
 });
 
