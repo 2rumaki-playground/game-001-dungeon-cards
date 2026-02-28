@@ -306,7 +306,7 @@ export function executeAttack(
 	const comboBonus = combo ? getComboBonus(combo) : 0;
 	const comboLog = combo ? (COMBO_LOG_MESSAGE[combo] ?? null) : null;
 
-	// Lv5射程延長: findAttackTargetで2マス先まで探索
+	// Lv5射程延長: findExtendedRangeTargetで2マス先まで探索
 	if (rangeExtend) {
 		let next = markCardAsPlayed(state, cardId);
 
