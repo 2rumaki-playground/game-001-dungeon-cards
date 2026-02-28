@@ -210,6 +210,8 @@ export type AttackResult = {
 	defeated: boolean;
 	/** 発動したコンボ種別（未発動時はundefined） */
 	comboType?: ComboType;
+	/** カードレベルによるダメージボーナス */
+	levelBonus: number;
 };
 
 /**
@@ -227,6 +229,7 @@ function executeAttackBase(
 	missLog: string,
 	comboBonus: number,
 	comboLog: string | null,
+	levelBonus: number,
 ): AttackResult {
 	// カードを使用済みへ
 	let next = markCardAsPlayed(state, cardId);
@@ -244,6 +247,7 @@ function executeAttackBase(
 			hit: false,
 			overkill: 0,
 			defeated: false,
+			levelBonus,
 		};
 	}
 
@@ -262,6 +266,7 @@ function executeAttackBase(
 		enemyId: result.enemyId,
 		overkill: damageResult.overkill,
 		defeated: damageResult.defeated,
+		levelBonus,
 	};
 }
 
@@ -326,6 +331,7 @@ export function executeAttack(
 				overkill: 0,
 				defeated: false,
 				comboType: combo ?? undefined,
+				levelBonus,
 			};
 		}
 
@@ -359,6 +365,7 @@ export function executeAttack(
 			overkill: damageResult.overkill,
 			defeated: damageResult.defeated,
 			comboType: combo ?? undefined,
+			levelBonus,
 		};
 	}
 
@@ -371,6 +378,7 @@ export function executeAttack(
 		"攻撃できなかった",
 		comboBonus,
 		comboLog,
+		levelBonus,
 	);
 
 	let nextState = result.state;
@@ -445,6 +453,7 @@ export function executeStrongAttack(
 			overkill: shockResult.overkill,
 			defeated: shockResult.defeated,
 			enemyId: shockResult.enemyId ?? undefined,
+			levelBonus,
 		};
 	}
 
@@ -457,6 +466,7 @@ export function executeStrongAttack(
 		"強攻撃できなかった",
 		0,
 		null,
+		levelBonus,
 	);
 
 	let nextState = result.state;

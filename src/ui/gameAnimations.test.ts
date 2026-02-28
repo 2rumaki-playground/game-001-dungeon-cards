@@ -144,4 +144,83 @@ describe("updateStateWithAttackAnimation ダメージポップアップ", () => 
 			PLAYER_STRONG_ATTACK_DAMAGE,
 		);
 	});
+
+	it("通常攻撃でレベルボーナスがある場合、合計ダメージをポップアップに渡す", async () => {
+		const enemyId = "e1";
+		const levelBonus = 1;
+		const { ctx, animateAttackHitSpy } = createMockCtx([
+			{ id: enemyId, position: { x: 1, y: 0 } },
+		]);
+		const newState = {
+			enemies: [{ id: enemyId, position: { x: 1, y: 0 }, hp: 1 }],
+		} as unknown as GameState;
+
+		await updateStateWithAttackAnimation(
+			ctx,
+			newState,
+			enemyId,
+			"attack",
+			0,
+			0,
+			levelBonus,
+		);
+
+		expect(animateAttackHitSpy).toHaveBeenCalledWith(
+			enemyId,
+			PLAYER_ATTACK_DAMAGE + levelBonus,
+		);
+	});
+
+	it("強攻撃でレベルボーナスがある場合、合計ダメージをポップアップに渡す", async () => {
+		const enemyId = "e1";
+		const levelBonus = 2;
+		const { ctx, animateAttackHitSpy } = createMockCtx([
+			{ id: enemyId, position: { x: 1, y: 0 } },
+		]);
+		const newState = {
+			enemies: [{ id: enemyId, position: { x: 1, y: 0 }, hp: 1 }],
+		} as unknown as GameState;
+
+		await updateStateWithAttackAnimation(
+			ctx,
+			newState,
+			enemyId,
+			"strong_attack",
+			0,
+			0,
+			levelBonus,
+		);
+
+		expect(animateAttackHitSpy).toHaveBeenCalledWith(
+			enemyId,
+			PLAYER_STRONG_ATTACK_DAMAGE + levelBonus,
+		);
+	});
+
+	it("通常攻撃でレベルボーナス＋コンボボーナスがある場合、合計ダメージをポップアップに渡す", async () => {
+		const enemyId = "e1";
+		const comboBonus = 1;
+		const levelBonus = 1;
+		const { ctx, animateAttackHitSpy } = createMockCtx([
+			{ id: enemyId, position: { x: 1, y: 0 } },
+		]);
+		const newState = {
+			enemies: [{ id: enemyId, position: { x: 1, y: 0 }, hp: 1 }],
+		} as unknown as GameState;
+
+		await updateStateWithAttackAnimation(
+			ctx,
+			newState,
+			enemyId,
+			"attack",
+			0,
+			comboBonus,
+			levelBonus,
+		);
+
+		expect(animateAttackHitSpy).toHaveBeenCalledWith(
+			enemyId,
+			PLAYER_ATTACK_DAMAGE + comboBonus + levelBonus,
+		);
+	});
 });
