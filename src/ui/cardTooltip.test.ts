@@ -78,6 +78,21 @@ describe("createCardTooltip", () => {
 		expect(hasLevel).toBe(true);
 	});
 
+	it("最大レベルのカードでは(MAX)ラベルが表示される", () => {
+		const card: Card = {
+			id: "card-1",
+			type: "attack",
+			level: CARD_MAX_LEVEL,
+			exp: 0,
+		};
+		const result = createCardTooltip(card);
+		const texts = getAllTextsRecursive(result.container);
+		const hasMaxLabel = texts.some((t) =>
+			t.text.includes(`Lv.${CARD_MAX_LEVEL} (MAX)`),
+		);
+		expect(hasMaxLabel).toBe(true);
+	});
+
 	it("card.levelが範囲外でも正規化されたレベルが表示される", () => {
 		const card: Card = {
 			id: "card-1",
