@@ -169,8 +169,16 @@ describe("ActionLogRenderer", () => {
 	it("トグルボタンが存在する", () => {
 		const renderer = new ActionLogRenderer(400);
 		const container = renderer.getContainer();
-		// 背景(1) + タイトル(1) + (主体ラベル+メッセージ)×15 + トグルボタン(1) = 33
-		expect(container.children.length).toBe(33);
+		// トグルボタンはContainerでその子にText("▲"/"▼")を持つ
+		const toggleButton = container.children.find((child) => {
+			const c = child as unknown as { children?: unknown[] };
+			if (!Array.isArray(c.children)) return false;
+			return c.children.some((gc) => {
+				const t = gc as unknown as { text?: string };
+				return t.text === "▲" || t.text === "▼";
+			});
+		});
+		expect(toggleButton).toBeDefined();
 	});
 
 	it("isMinimizedがデフォルトでfalseを返す", () => {
