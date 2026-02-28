@@ -4,7 +4,11 @@
  * @see docs/spec/constants.md
  */
 
-import { CARD_MAX_LEVEL, CARD_XP_TABLE } from "../constants";
+import {
+	CARD_LEVEL_DAMAGE_BONUS,
+	CARD_MAX_LEVEL,
+	CARD_XP_TABLE,
+} from "../constants";
 import type { Card, GameState } from "../types";
 import { addActionLog } from "./state";
 
@@ -37,6 +41,29 @@ export function addExpToCard(
 }
 
 /**
+ * カードレベルを 1..CARD_MAX_LEVEL の範囲に正規化する。
+ * 異常値（NaN, Infinity, 小数, 範囲外）は警告を出して補正する。
+ */
+export function normalizeCardLevel(card: Card): number {
+	let level = card.level;
+
+	if (!Number.isFinite(level) || !Number.isInteger(level)) {
+		console.warn(
+			`[cardLevel] 無効なカードレベルを検出: id=${card.id}, level=${String(level)}. 1..${CARD_MAX_LEVEL} の範囲に補正します。`,
+		);
+		level = 1;
+	}
+
+	if (level < 1 || level > CARD_MAX_LEVEL) {
+		console.warn(
+			`[cardLevel] 異常なカードレベルを検出: id=${card.id}, level=${level}. 1..${CARD_MAX_LEVEL} にクランプします。`,
+		);
+	}
+
+	return Math.min(Math.max(level, 1), CARD_MAX_LEVEL);
+}
+
+/**
  * 次レベルまでの進捗率を取得
  */
 export function getExpProgress(card: Card): {
@@ -44,12 +71,14 @@ export function getExpProgress(card: Card): {
 	required: number;
 	ratio: number;
 } {
-	if (card.level >= CARD_MAX_LEVEL) {
+	const level = normalizeCardLevel(card);
+
+	if (level >= CARD_MAX_LEVEL) {
 		return { current: 0, required: 0, ratio: 1 };
 	}
 
-	const currentLevelXp = CARD_XP_TABLE[card.level - 1];
-	const nextLevelXp = CARD_XP_TABLE[card.level];
+	const currentLevelXp = CARD_XP_TABLE[level - 1];
+	const nextLevelXp = CARD_XP_TABLE[level];
 	const current = card.exp - currentLevelXp;
 	const required = nextLevelXp - currentLevelXp;
 	const ratio = required > 0 ? current / required : 1;
@@ -57,10 +86,18 @@ export function getExpProgress(card: Card): {
 }
 
 /**
+ * カードレベルに応じたダメージボーナスを取得
+ */
+export function getLevelDamageBonus(card: Card): number {
+	const level = normalizeCardLevel(card);
+	return CARD_LEVEL_DAMAGE_BONUS[level - 1] ?? 0;
+}
+
+/**
  * 最大レベル判定
  */
 export function isMaxLevel(card: Card): boolean {
-	return card.level >= CARD_MAX_LEVEL;
+	return normalizeCardLevel(card) >= CARD_MAX_LEVEL;
 }
 
 /**

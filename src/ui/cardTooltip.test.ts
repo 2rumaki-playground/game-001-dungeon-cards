@@ -1,5 +1,7 @@
 import type { Container, Text } from "pixi.js";
 import { describe, expect, it } from "vitest";
+import { PLAYER_ATTACK_DAMAGE } from "../constants";
+import type { Card } from "../types";
 import {
 	CARD_DESCRIPTION,
 	CARD_TYPE_NAME,
@@ -46,5 +48,33 @@ describe("createCardTooltip", () => {
 		const texts = getAllTextsRecursive(result.container);
 		const hasDesc = texts.some((t) => t.text.includes(CARD_DESCRIPTION.attack));
 		expect(hasDesc).toBe(true);
+	});
+
+	it("Lv.2の攻撃カードではボーナス込みダメージが表示される", () => {
+		const card: Card = {
+			id: "card-1",
+			type: "attack",
+			level: 2,
+			exp: 2,
+		};
+		const result = createCardTooltip(card);
+		const texts = getAllTextsRecursive(result.container);
+		const hasBonus = texts.some((t) =>
+			t.text.includes(`${PLAYER_ATTACK_DAMAGE + 1}ダメージ(+1)`),
+		);
+		expect(hasBonus).toBe(true);
+	});
+
+	it("Lv.2の攻撃カードではレベル表示が含まれる", () => {
+		const card: Card = {
+			id: "card-1",
+			type: "attack",
+			level: 2,
+			exp: 2,
+		};
+		const result = createCardTooltip(card);
+		const texts = getAllTextsRecursive(result.container);
+		const hasLevel = texts.some((t) => t.text.includes("Lv.2"));
+		expect(hasLevel).toBe(true);
 	});
 });

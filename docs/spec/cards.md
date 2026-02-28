@@ -177,6 +177,6 @@
 
 ### レベルアップ
 - XPテーブルおよびレベル上限は [constants.md](./constants.md) を参照
-- レベルアップ時の性能変化は別途定義予定
+- 攻撃/強攻撃カードはレベルに応じてダメージボーナスが加算される（数値は [constants.md](./constants.md) の `CARD_LEVEL_DAMAGE_BONUS` を参照）
 
 ---
