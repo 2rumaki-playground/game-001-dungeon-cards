@@ -335,39 +335,39 @@ describe("applyKnockback", () => {
 });
 
 describe("getShockwaveTargets", () => {
-	it("right方向: 正面+上+下", () => {
+	it("right方向: 正面+反時計回り(下)+時計回り(上)", () => {
 		const targets = getShockwaveTargets({ x: 3, y: 3 }, "right");
 		expect(targets).toEqual([
 			{ x: 4, y: 3 }, // front
-			{ x: 3, y: 4 }, // sideLeft (perpendicular)
-			{ x: 3, y: 2 }, // sideRight (perpendicular)
+			{ x: 3, y: 4 }, // sideCounterClockwise (-dy=0, dx=1)
+			{ x: 3, y: 2 }, // sideClockwise (dy=0, -dx=-1)
 		]);
 	});
 
-	it("up方向: 正面+右+左", () => {
+	it("up方向: 正面+反時計回り(右)+時計回り(左)", () => {
 		const targets = getShockwaveTargets({ x: 3, y: 3 }, "up");
 		expect(targets).toEqual([
 			{ x: 3, y: 2 }, // front
-			{ x: 4, y: 3 }, // sideLeft (-delta.y=1, delta.x=0)
-			{ x: 2, y: 3 }, // sideRight (delta.y=-1, -delta.x=0)
+			{ x: 4, y: 3 }, // sideCounterClockwise (-dy=1, dx=0)
+			{ x: 2, y: 3 }, // sideClockwise (dy=-1, -dx=0)
 		]);
 	});
 
-	it("down方向: 正面+左+右", () => {
+	it("down方向: 正面+反時計回り(左)+時計回り(右)", () => {
 		const targets = getShockwaveTargets({ x: 3, y: 3 }, "down");
 		expect(targets).toEqual([
 			{ x: 3, y: 4 }, // front
-			{ x: 2, y: 3 }, // sideLeft (-delta.y=-1, delta.x=0)
-			{ x: 4, y: 3 }, // sideRight (delta.y=1, -delta.x=0)
+			{ x: 2, y: 3 }, // sideCounterClockwise (-dy=-1, dx=0)
+			{ x: 4, y: 3 }, // sideClockwise (dy=1, -dx=0)
 		]);
 	});
 
-	it("left方向: 正面+下+上", () => {
+	it("left方向: 正面+反時計回り(上)+時計回り(下)", () => {
 		const targets = getShockwaveTargets({ x: 3, y: 3 }, "left");
 		expect(targets).toEqual([
 			{ x: 2, y: 3 }, // front
-			{ x: 3, y: 2 }, // sideLeft
-			{ x: 3, y: 4 }, // sideRight
+			{ x: 3, y: 2 }, // sideCounterClockwise
+			{ x: 3, y: 4 }, // sideClockwise
 		]);
 	});
 });
@@ -438,7 +438,7 @@ describe("executeShockwave", () => {
 	});
 
 	it("サイドが壁/マップ外でも正面のダメージは適用される", () => {
-		// プレイヤー(1,1)→down→正面(1,2), サイド左(2,1), サイド右(0,1)壁
+		// プレイヤー(1,1)→down→正面(1,2), サイド反時計回り(2,1), サイド時計回り(0,1)壁
 		const enemy = createTestEnemy("normal", { x: 1, y: 2 }, { hp: 3 });
 		const state = createTestState({
 			player: { position: { x: 1, y: 1 }, hp: 10, maxHp: 10 },

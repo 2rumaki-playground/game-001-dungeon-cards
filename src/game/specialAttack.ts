@@ -142,7 +142,7 @@ function canKnockbackTo(
 
 /**
  * 衝撃波のターゲット座標を計算する。
- * 正面 + 左右の3マスを返す。
+ * 正面 + サイド(反時計回り) + サイド(時計回り) の3マスを返す。
  */
 export function getShockwaveTargets(
 	playerPos: Position,
@@ -153,20 +153,20 @@ export function getShockwaveTargets(
 		x: playerPos.x + delta.x,
 		y: playerPos.y + delta.y,
 	};
-	const sideLeft = {
+	const sideCounterClockwise = {
 		x: playerPos.x + -delta.y,
 		y: playerPos.y + delta.x,
 	};
-	const sideRight = {
+	const sideClockwise = {
 		x: playerPos.x + delta.y,
 		y: playerPos.y + -delta.x,
 	};
-	return [front, sideLeft, sideRight];
+	return [front, sideCounterClockwise, sideClockwise];
 }
 
 /**
  * 衝撃波を実行する。
- * 正面に敵必須。正面→サイド左→サイド右の順にダメージ。
+ * 正面に敵必須。正面→サイド(反時計回り)→サイド(時計回り)の順にダメージ。
  * 衝撃波後、生存した敵にノックバック。
  */
 export function executeShockwave(
