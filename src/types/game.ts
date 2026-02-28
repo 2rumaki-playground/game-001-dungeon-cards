@@ -25,7 +25,7 @@ export type SpeechEventType =
 	| "treasure_found"
 	| "rest_area_used"
 	| "floor_reached"
-	| "rush_move";
+	| "jump_success";
 
 /**
  * 発話ログエントリ

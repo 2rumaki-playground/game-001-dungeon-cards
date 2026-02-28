@@ -638,7 +638,7 @@ export function executeJump(
 	}
 
 	next = addActionLog(next, "ジャンプした", "player");
-	next = addSpeechLog(next, "rush_move");
+	next = addSpeechLog(next, "jump_success");
 	return {
 		state: next,
 		jumped: true,

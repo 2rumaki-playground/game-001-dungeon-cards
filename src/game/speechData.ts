@@ -17,5 +17,5 @@ export const SPEECH_VARIANTS: Record<SpeechEventType, readonly string[]> = {
 	treasure_found: ["お、宝箱だ！", "ありがたい", "回復できた"],
 	rest_area_used: ["少し休もう", "体力が戻った", "ふぅ、一息つける"],
 	floor_reached: ["新しい階層だ", "ここからが本番", "気を引き締めよう"],
-	rush_move: ["突っ込むぞ！", "一気に行く！", "ここを抜ける！"],
+	jump_success: ["突っ込むぞ！", "一気に行く！", "ここを抜ける！"],
 } as const;

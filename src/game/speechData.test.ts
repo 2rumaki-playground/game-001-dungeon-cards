@@ -14,7 +14,7 @@ describe("SPEECH_VARIANTS", () => {
 		"treasure_found",
 		"rest_area_used",
 		"floor_reached",
-		"rush_move",
+		"jump_success",
 	] as const;
 
 	it.each(
