@@ -616,7 +616,7 @@ export class RewardScreen {
 
 		// ツールチップ表示
 		cardContainer.on("pointerover", () => {
-			this.showGridTooltip(card.type, cardContainer);
+			this.showGridTooltip(card, cardContainer);
 		});
 		cardContainer.on("pointerout", () => {
 			this.hideTooltip();
@@ -868,11 +868,14 @@ export class RewardScreen {
 	/**
 	 * ツールチップをカード上部中央に表示（グリッドカード用）
 	 */
-	private showGridTooltip(cardType: CardType, cardContainer: Container): void {
+	private showGridTooltip(
+		cardOrType: Card | CardType,
+		cardContainer: Container,
+	): void {
 		this.tooltipContainer.removeChildren();
 		if (!this.gridContainer) return;
 		const { container: tooltip, height: tooltipHeight } =
-			createCardTooltip(cardType);
+			createCardTooltip(cardOrType);
 		tooltip.x =
 			this.gridContainer.x +
 			cardContainer.x +
