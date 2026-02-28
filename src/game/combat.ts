@@ -88,8 +88,11 @@ export function applyDamageToEnemy(
 			next = awardExpToCard(next, attackCardId);
 		}
 
-		// カード獲得条件の判定
-		if (checkAcquisitionCondition(updatedCounters, target.type)) {
+		// カード獲得条件の判定（既存のcardExchangeStateがある場合は維持）
+		if (
+			next.cardExchangeState === null &&
+			checkAcquisitionCondition(updatedCounters, target.type)
+		) {
 			const config = ENEMY_ACQUISITION_CONDITIONS[target.type];
 			next = {
 				...next,

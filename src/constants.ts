@@ -214,6 +214,18 @@ export const CARD_XP_TABLE = [0, 2, 4, 8, 16] as const;
 /** index = level-1 の値が、そのレベルで得られるダメージボーナス */
 export const CARD_LEVEL_DAMAGE_BONUS = [0, 1, 1, 2, 3] as const;
 
+// 特殊効果の解放レベル（v1.5）
+/** 攻撃カード: 貫通効果の解放レベル */
+export const CARD_LEVEL_PIERCE = 3;
+/** 攻撃カード: 射程延長の解放レベル */
+export const CARD_LEVEL_RANGE_EXTEND = 5;
+/** 攻撃カード: 射程延長時の攻撃射程 */
+export const ATTACK_EXTENDED_RANGE = 2;
+/** 強攻撃カード: ノックバック効果の解放レベル */
+export const CARD_LEVEL_KNOCKBACK = 3;
+/** 強攻撃カード: 衝撃波効果の解放レベル */
+export const CARD_LEVEL_SHOCKWAVE = 5;
+
 // コンボボーナス（v1.5）
 export const COMBO_BONUS = {
 	charge: 1,

@@ -249,5 +249,14 @@
   - 上記はカード共通の「基礎ダメージボーナス」のテーブルであり、実装上の `CARD_LEVEL_DAMAGE_BONUS` と一致させること
   - 各カード固有の挙動や倍率などの詳細仕様はカード仕様（`docs/spec/cards.md`）側で定義し、本表を参照する
 
+- 特殊効果の解放レベル：
+
+| カード | Lv3 | Lv5 |
+|--------|-----|-----|
+| 攻撃 | 貫通（`CARD_LEVEL_PIERCE=3`） | 射程延長（`CARD_LEVEL_RANGE_EXTEND=5`, `ATTACK_EXTENDED_RANGE=2`） |
+| 強攻撃 | ノックバック（`CARD_LEVEL_KNOCKBACK=3`） | 衝撃波（`CARD_LEVEL_SHOCKWAVE=5`） |
+
+  - 詳細な効果内容は `docs/spec/cards.md` を参照
+
 ## プレイ統計
 - 最大保存ラン数：50

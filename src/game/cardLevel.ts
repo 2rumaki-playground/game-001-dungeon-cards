@@ -6,6 +6,10 @@
 
 import {
 	CARD_LEVEL_DAMAGE_BONUS,
+	CARD_LEVEL_KNOCKBACK,
+	CARD_LEVEL_PIERCE,
+	CARD_LEVEL_RANGE_EXTEND,
+	CARD_LEVEL_SHOCKWAVE,
 	CARD_MAX_LEVEL,
 	CARD_XP_TABLE,
 } from "../constants";
@@ -98,6 +102,45 @@ export function getLevelDamageBonus(card: Card): number {
  */
 export function isMaxLevel(card: Card): boolean {
 	return normalizeCardLevel(card) >= CARD_MAX_LEVEL;
+}
+
+/**
+ * 攻撃カードが貫通効果を持つか判定
+ */
+export function hasPierceEffect(card: Card): boolean {
+	return (
+		card.type === "attack" && normalizeCardLevel(card) >= CARD_LEVEL_PIERCE
+	);
+}
+
+/**
+ * 攻撃カードが射程延長効果を持つか判定
+ */
+export function hasRangeExtendEffect(card: Card): boolean {
+	return (
+		card.type === "attack" &&
+		normalizeCardLevel(card) >= CARD_LEVEL_RANGE_EXTEND
+	);
+}
+
+/**
+ * 強攻撃カードがノックバック効果を持つか判定
+ */
+export function hasKnockbackEffect(card: Card): boolean {
+	return (
+		card.type === "strong_attack" &&
+		normalizeCardLevel(card) >= CARD_LEVEL_KNOCKBACK
+	);
+}
+
+/**
+ * 強攻撃カードが衝撃波効果を持つか判定
+ */
+export function hasShockwaveEffect(card: Card): boolean {
+	return (
+		card.type === "strong_attack" &&
+		normalizeCardLevel(card) >= CARD_LEVEL_SHOCKWAVE
+	);
 }
 
 /**
