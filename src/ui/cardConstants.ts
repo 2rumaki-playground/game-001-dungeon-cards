@@ -8,7 +8,13 @@ import {
 	PLAYER_ATTACK_DAMAGE,
 	PLAYER_STRONG_ATTACK_DAMAGE,
 } from "../constants";
-import { getLevelDamageBonus } from "../game/cardLevel";
+import {
+	getLevelDamageBonus,
+	hasKnockbackEffect,
+	hasPierceEffect,
+	hasRangeExtendEffect,
+	hasShockwaveEffect,
+} from "../game/cardLevel";
 import type { Card, CardType } from "../types";
 
 /** カード背景色 */
@@ -71,7 +77,41 @@ export const CARD_DESCRIPTION: Record<CardType, string> = {
 	wait: "何もせずターンを消費する。",
 };
 
-/** カード説明文を生成（Cardオブジェクト時はレベルボーナスを反映） */
+/** 攻撃カードのレベル別説明文を生成 */
+function attackCardDescription(card: Card): string {
+	const bonus = getLevelDamageBonus(card);
+	const damage = PLAYER_ATTACK_DAMAGE + bonus;
+	const bonusText = bonus > 0 ? `(+${bonus})` : "";
+
+	if (hasRangeExtendEffect(card)) {
+		return `2マス先までの敵に${damage}ダメージ${bonusText}。\n貫通: 余剰ダメージが奥の敵に伝播。`;
+	}
+
+	if (hasPierceEffect(card)) {
+		return `隣接1マス先の敵に${damage}ダメージ${bonusText}。\n貫通: 余剰ダメージが奥の敵に伝播。`;
+	}
+
+	return attackDescription(damage, bonus);
+}
+
+/** 強攻撃カードのレベル別説明文を生成 */
+function strongAttackCardDescription(card: Card): string {
+	const bonus = getLevelDamageBonus(card);
+	const damage = PLAYER_STRONG_ATTACK_DAMAGE + bonus;
+	const bonusText = bonus > 0 ? `(+${bonus})` : "";
+
+	if (hasShockwaveEffect(card)) {
+		return `正面+左右3マスの敵に${damage}ダメージ${bonusText}。\nノックバック: 生存した敵を1マス後方に吹き飛ばす。`;
+	}
+
+	if (hasKnockbackEffect(card)) {
+		return `隣接1マス先の敵に${damage}ダメージ${bonusText}。\nノックバック: 敵を1マス後方に吹き飛ばす。`;
+	}
+
+	return attackDescription(damage, bonus);
+}
+
+/** カード説明文を生成（Cardオブジェクト時はレベルボーナスと特殊効果を反映） */
 export function getCardDescription(cardOrType: Card | CardType): string {
 	if (typeof cardOrType === "string") {
 		return CARD_DESCRIPTION[cardOrType];
@@ -80,13 +120,11 @@ export function getCardDescription(cardOrType: Card | CardType): string {
 	const card = cardOrType;
 
 	if (card.type === "attack") {
-		const bonus = getLevelDamageBonus(card);
-		return attackDescription(PLAYER_ATTACK_DAMAGE + bonus, bonus);
+		return attackCardDescription(card);
 	}
 
 	if (card.type === "strong_attack") {
-		const bonus = getLevelDamageBonus(card);
-		return attackDescription(PLAYER_STRONG_ATTACK_DAMAGE + bonus, bonus);
+		return strongAttackCardDescription(card);
 	}
 
 	return CARD_DESCRIPTION[card.type];
