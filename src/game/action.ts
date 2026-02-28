@@ -334,7 +334,12 @@ export function executeAttack(
 		next = damageResult.state;
 
 		// 貫通（Lv5はLv3効果も保持）
-		if (damageResult.defeated && damageResult.overkill > 0) {
+		// cardExchangeState が既にセット済みなら、貫通による追加撃破で上書きされるのを防ぐ
+		if (
+			damageResult.defeated &&
+			damageResult.overkill > 0 &&
+			next.cardExchangeState === null
+		) {
 			next = applyPierce(
 				next,
 				direction,
@@ -370,7 +375,13 @@ export function executeAttack(
 	let nextState = result.state;
 
 	// Lv3貫通: 撃破時に余剰ダメージを奥の敵に伝播
-	if (pierce && result.hit && result.overkill > 0) {
+	// cardExchangeState が既にセット済みなら、貫通による追加撃破で上書きされるのを防ぐ
+	if (
+		pierce &&
+		result.hit &&
+		result.overkill > 0 &&
+		nextState.cardExchangeState === null
+	) {
 		const delta = DIRECTION_DELTA[direction];
 		const hitPos = {
 			x: state.player.position.x + delta.x,
