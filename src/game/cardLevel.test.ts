@@ -166,6 +166,16 @@ describe("getExpProgress", () => {
 		expect(warnSpy).toHaveBeenCalled();
 		warnSpy.mockRestore();
 	});
+
+	it("expがレベルに対して過剰でもratioは1にクランプされる", () => {
+		const card = makeCard({ level: 1, exp: 100 });
+		expect(getExpProgress(card).ratio).toBe(1);
+	});
+
+	it("expが負値でもratioは0にクランプされる", () => {
+		const card = makeCard({ level: 1, exp: -5 });
+		expect(getExpProgress(card).ratio).toBe(0);
+	});
 });
 
 describe("getExpProgress（レベル内進捗率）", () => {

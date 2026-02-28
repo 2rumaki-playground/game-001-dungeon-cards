@@ -85,7 +85,8 @@ export function getExpProgress(card: Card): {
 	const nextLevelXp = CARD_XP_TABLE[level];
 	const current = card.exp - currentLevelXp;
 	const required = nextLevelXp - currentLevelXp;
-	const ratio = required > 0 ? current / required : 1;
+	const raw = required > 0 ? current / required : 1;
+	const ratio = Number.isFinite(raw) ? Math.max(0, Math.min(1, raw)) : 0;
 	return { current, required, ratio };
 }
 
