@@ -206,6 +206,8 @@ export type AttackResult = {
 	enemyId?: string;
 	/** 超過ダメージ量（ミス時は0） */
 	overkill: number;
+	/** 敵が撃破されたか（ミス時はfalse） */
+	defeated?: boolean;
 	/** 発動したコンボ種別（未発動時はundefined） */
 	comboType?: ComboType;
 };
@@ -258,6 +260,7 @@ function executeAttackBase(
 		hit: true,
 		enemyId: result.enemyId,
 		overkill: damageResult.overkill,
+		defeated: damageResult.defeated,
 	};
 }
 
@@ -455,7 +458,7 @@ export function executeStrongAttack(
 	let nextState = result.state;
 
 	// Lv3ノックバック: ヒットして敵が生存していれば吹き飛ばす
-	if (knockback && result.hit && result.enemyId && result.overkill === 0) {
+	if (knockback && result.hit && result.enemyId && !result.defeated) {
 		nextState = applyKnockback(nextState, result.enemyId, direction);
 	}
 
