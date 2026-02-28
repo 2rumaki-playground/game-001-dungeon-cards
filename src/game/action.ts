@@ -206,8 +206,8 @@ export type AttackResult = {
 	enemyId?: string;
 	/** 超過ダメージ量（ミス時は0） */
 	overkill: number;
-	/** 敵が撃破されたか（ミス時はfalse） */
-	defeated?: boolean;
+	/** 敵が撃破されたか（ミス・攻撃判定なし時はfalse） */
+	defeated: boolean;
 	/** 発動したコンボ種別（未発動時はundefined） */
 	comboType?: ComboType;
 };
@@ -243,6 +243,7 @@ function executeAttackBase(
 			state: addActionLog(next, missLog, "player"),
 			hit: false,
 			overkill: 0,
+			defeated: false,
 		};
 	}
 
@@ -323,6 +324,7 @@ export function executeAttack(
 				),
 				hit: false,
 				overkill: 0,
+				defeated: false,
 				comboType: combo ?? undefined,
 			};
 		}
@@ -355,6 +357,7 @@ export function executeAttack(
 			hit: true,
 			enemyId: target.enemyId,
 			overkill: damageResult.overkill,
+			defeated: damageResult.defeated,
 			comboType: combo ?? undefined,
 		};
 	}
@@ -440,6 +443,7 @@ export function executeStrongAttack(
 			}),
 			hit: shockResult.hit,
 			overkill: shockResult.overkill,
+			defeated: shockResult.defeated,
 			enemyId: shockResult.enemyId ?? undefined,
 		};
 	}
