@@ -8,6 +8,10 @@ import {
 	calculateLevel,
 	getExpProgress,
 	getLevelDamageBonus,
+	hasKnockbackEffect,
+	hasPierceEffect,
+	hasRangeExtendEffect,
+	hasShockwaveEffect,
 	isMaxLevel,
 	normalizeCardLevel,
 } from "./cardLevel";
@@ -231,6 +235,46 @@ describe("getLevelDamageBonus", () => {
 		expect(getLevelDamageBonus(card)).toBe(0); // Lv.1相当
 		expect(warnSpy).toHaveBeenCalledOnce();
 		warnSpy.mockRestore();
+	});
+});
+
+describe("hasPierceEffect", () => {
+	it.each([1, 2])("Lv.%i ではfalse", (level) => {
+		expect(hasPierceEffect(makeCard({ level }))).toBe(false);
+	});
+
+	it.each([3, 4, 5])("Lv.%i ではtrue", (level) => {
+		expect(hasPierceEffect(makeCard({ level }))).toBe(true);
+	});
+});
+
+describe("hasRangeExtendEffect", () => {
+	it.each([1, 2, 3, 4])("Lv.%i ではfalse", (level) => {
+		expect(hasRangeExtendEffect(makeCard({ level }))).toBe(false);
+	});
+
+	it("Lv.5ではtrue", () => {
+		expect(hasRangeExtendEffect(makeCard({ level: 5 }))).toBe(true);
+	});
+});
+
+describe("hasKnockbackEffect", () => {
+	it.each([1, 2])("Lv.%i ではfalse", (level) => {
+		expect(hasKnockbackEffect(makeCard({ level }))).toBe(false);
+	});
+
+	it.each([3, 4, 5])("Lv.%i ではtrue", (level) => {
+		expect(hasKnockbackEffect(makeCard({ level }))).toBe(true);
+	});
+});
+
+describe("hasShockwaveEffect", () => {
+	it.each([1, 2, 3, 4])("Lv.%i ではfalse", (level) => {
+		expect(hasShockwaveEffect(makeCard({ level }))).toBe(false);
+	});
+
+	it("Lv.5ではtrue", () => {
+		expect(hasShockwaveEffect(makeCard({ level: 5 }))).toBe(true);
 	});
 });
 
