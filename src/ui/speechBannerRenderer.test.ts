@@ -1,10 +1,21 @@
 import { describe, expect, it } from "vitest";
 import { SpeechBannerRenderer } from "./speechBannerRenderer";
 
+function getMessageText(renderer: SpeechBannerRenderer): {
+	text: string;
+	visible: boolean;
+} {
+	// children[0] = background (Graphics), children[1] = messageText (Text)
+	return renderer.getContainer().children[1] as unknown as {
+		text: string;
+		visible: boolean;
+	};
+}
+
 describe("SpeechBannerRenderer", () => {
-	it("コンテナが取得できる", () => {
+	it("コンテナが背景とテキストの2要素を持つ", () => {
 		const renderer = new SpeechBannerRenderer();
-		expect(renderer.getContainer()).toBeDefined();
+		expect(renderer.getContainer().children.length).toBe(2);
 	});
 
 	it("render()で発話メッセージが鉤括弧付きで表示される", () => {
@@ -14,12 +25,12 @@ describe("SpeechBannerRenderer", () => {
 			eventType: "move_success",
 			timestamp: Date.now(),
 		});
-		const container = renderer.getContainer();
-		// Containerの子要素にTextがある
-		expect(container.children.length).toBeGreaterThan(0);
+		const msg = getMessageText(renderer);
+		expect(msg.text).toBe("「よし、進もう」");
+		expect(msg.visible).toBe(true);
 	});
 
-	it("render(null)でテキストが非表示になる", () => {
+	it("render(null)でテキストが空かつ非表示になる", () => {
 		const renderer = new SpeechBannerRenderer();
 		renderer.render({
 			message: "よし、進もう",
@@ -27,8 +38,9 @@ describe("SpeechBannerRenderer", () => {
 			timestamp: Date.now(),
 		});
 		renderer.render(null);
-		// clear後もコンテナは存在する
-		expect(renderer.getContainer()).toBeDefined();
+		const msg = getMessageText(renderer);
+		expect(msg.text).toBe("");
+		expect(msg.visible).toBe(false);
 	});
 
 	it("show/hideで表示状態が切り替わる", () => {
@@ -39,7 +51,7 @@ describe("SpeechBannerRenderer", () => {
 		expect(renderer.getContainer().visible).toBe(true);
 	});
 
-	it("clear()でテキストが空になる", () => {
+	it("clear()でテキストが空かつ非表示になる", () => {
 		const renderer = new SpeechBannerRenderer();
 		renderer.render({
 			message: "テスト",
@@ -47,6 +59,8 @@ describe("SpeechBannerRenderer", () => {
 			timestamp: Date.now(),
 		});
 		renderer.clear();
-		expect(renderer.getContainer()).toBeDefined();
+		const msg = getMessageText(renderer);
+		expect(msg.text).toBe("");
+		expect(msg.visible).toBe(false);
 	});
 });
