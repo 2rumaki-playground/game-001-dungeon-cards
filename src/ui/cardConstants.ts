@@ -84,11 +84,11 @@ function attackCardDescription(card: Card): string {
 	const bonusText = bonus > 0 ? `(+${bonus})` : "";
 
 	if (hasRangeExtendEffect(card)) {
-		return `2マス先までの敵に${damage}ダメージ${bonusText}。\n貫通: 余剰ダメージが奥の敵に伝播。`;
+		return `2マス先までの敵に${damage}ダメージ${bonusText}。\nマップ外・壁で走査停止、敵不在の場合は空振り。\n貫通: 余剰ダメージが奥の敵に伝播。`;
 	}
 
 	if (hasPierceEffect(card)) {
-		return `隣接1マス先の敵に${damage}ダメージ${bonusText}。\n貫通: 余剰ダメージが奥の敵に伝播。`;
+		return `隣接1マス先の敵に${damage}ダメージ${bonusText}。\nマップ外・壁・敵不在の場合は空振り。\n貫通: 余剰ダメージが奥の敵に伝播。`;
 	}
 
 	return attackDescription(damage, bonus);
@@ -101,7 +101,7 @@ function strongAttackCardDescription(card: Card): string {
 	const bonusText = bonus > 0 ? `(+${bonus})` : "";
 
 	if (hasShockwaveEffect(card)) {
-		return `正面+左右3マスの敵に${damage}ダメージ${bonusText}。\nノックバック: 生存した敵を1マス後方に吹き飛ばす。`;
+		return `正面+左右3マスの敵に${damage}ダメージ${bonusText}。\n正面に敵がいない場合は空振り。\nノックバック: 生存した敵を1マス後方に吹き飛ばす。`;
 	}
 
 	if (hasKnockbackEffect(card)) {
