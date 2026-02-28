@@ -1,5 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { getEnemyCount, INITIAL_FLOOR } from "../constants";
+import {
+	DEFAULT_PERSONALITY,
+	getEnemyCount,
+	INITIAL_FLOOR,
+} from "../constants";
 import { createTitleScreenState } from "../game/state";
 import { deleteSaveData, hasSaveData, loadGame, saveGame } from "./storage";
 
@@ -450,6 +454,54 @@ describe("storage", () => {
 		expect(loaded?.visitedTiles.has("0,1")).toBe(true);
 		expect(loaded?.visitedTiles.has("1,1")).toBe(true);
 		expect(loaded?.visitedTiles.size).toBe(4);
+	});
+
+	it("personalityが正しく保存・復元される", () => {
+		const state = createTitleScreenState(42);
+		const saveData = {
+			...state,
+			screen: "game",
+			personality: "cheerful",
+			rng: state.rng.serialize(),
+		};
+		localStorageMock.setItem("dungeon-cards-save", JSON.stringify(saveData));
+
+		const loaded = loadGame();
+		expect(loaded).not.toBeNull();
+		expect(loaded?.personality).toBe("cheerful");
+	});
+
+	it("旧セーブデータ（personalityなし）はデフォルト性格にフォールバック", () => {
+		const state = createTitleScreenState(42);
+		const saveData = {
+			...state,
+			screen: "game",
+			rng: state.rng.serialize(),
+		};
+		delete (saveData as Record<string, unknown>).personality;
+		localStorageMock.setItem("dungeon-cards-save", JSON.stringify(saveData));
+
+		const loaded = loadGame();
+		expect(loaded).not.toBeNull();
+		expect(loaded?.personality).toBe(DEFAULT_PERSONALITY);
+	});
+
+	it("不正なpersonality値はデフォルト性格にフォールバック", () => {
+		const invalidValues = ["invalid", 123, null, "", "Bold"];
+		for (const value of invalidValues) {
+			const state = createTitleScreenState(42);
+			const saveData = {
+				...state,
+				screen: "game",
+				personality: value,
+				rng: state.rng.serialize(),
+			};
+			localStorageMock.setItem("dungeon-cards-save", JSON.stringify(saveData));
+
+			const loaded = loadGame();
+			expect(loaded).not.toBeNull();
+			expect(loaded?.personality).toBe(DEFAULT_PERSONALITY);
+		}
 	});
 
 	it("不正なvisitedTilesエントリは除外され有効な座標のみ残る", () => {

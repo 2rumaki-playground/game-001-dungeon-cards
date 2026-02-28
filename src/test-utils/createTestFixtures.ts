@@ -1,4 +1,8 @@
-import { ENEMY_PARAMS, PLAYER_INITIAL_HP } from "../constants";
+import {
+	DEFAULT_PERSONALITY,
+	ENEMY_PARAMS,
+	PLAYER_INITIAL_HP,
+} from "../constants";
 import { createInitialCounters } from "../game/cardAcquisition";
 import { createFixedLayoutMap } from "../game/map";
 import type {
@@ -50,6 +54,7 @@ export function createTestState(overrides?: Partial<GameState>): GameState {
 		acquisitionCounters: createInitialCounters(),
 		cardExchangeState: null,
 		comboHistory: null,
+		personality: DEFAULT_PERSONALITY,
 		speechLog: null,
 		...overrides,
 	};

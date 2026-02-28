@@ -17,6 +17,7 @@ export type {
 	ActionLogEntry,
 	GameState,
 	LogActor,
+	Personality,
 	Screen,
 	SpeechEventType,
 	SpeechLogEntry,

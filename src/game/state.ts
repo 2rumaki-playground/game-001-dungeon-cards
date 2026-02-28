@@ -5,9 +5,11 @@
 
 import {
 	ACTION_LOG_LIMIT,
+	DEFAULT_PERSONALITY,
 	ENEMY_PARAMS,
 	getEnemyComposition,
 	INITIAL_FLOOR,
+	PERSONALITIES,
 	PLAYER_INITIAL_HP,
 } from "../constants";
 import type {
@@ -148,6 +150,7 @@ export function createTitleScreenState(seed?: number): GameState {
 		acquisitionCounters: createInitialCounters(),
 		cardExchangeState: null,
 		comboHistory: null,
+		personality: DEFAULT_PERSONALITY,
 		speechLog: null,
 	};
 }
@@ -166,6 +169,9 @@ export function createInitialGameState(
 	const safeFloor = Math.max(INITIAL_FLOOR, normalizedFloor);
 	const { map, rooms, player, enemies } = generateMapPlacement(rng, safeFloor);
 	const initialPlayer = createInitialPlayer();
+
+	const personality =
+		PERSONALITIES[Math.floor(Math.random() * PERSONALITIES.length)];
 
 	return {
 		screen: "game",
@@ -191,6 +197,7 @@ export function createInitialGameState(
 		acquisitionCounters: createInitialCounters(),
 		cardExchangeState: null,
 		comboHistory: null,
+		personality,
 		speechLog: null,
 	};
 }
