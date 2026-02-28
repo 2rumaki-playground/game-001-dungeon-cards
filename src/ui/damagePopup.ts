@@ -60,14 +60,16 @@ export async function animateDamagePopup(
 
 	container.addChild(text);
 
-	await tween(
-		text,
-		{ y: text.y - DAMAGE_POPUP_RISE, alpha: 0 },
-		{ duration: DAMAGE_POPUP_DURATION },
-	);
-
-	container.removeChild(text);
-	text.destroy();
+	try {
+		await tween(
+			text,
+			{ y: text.y - DAMAGE_POPUP_RISE, alpha: 0 },
+			{ duration: DAMAGE_POPUP_DURATION },
+		);
+	} finally {
+		container.removeChild(text);
+		text.destroy();
+	}
 }
 
 /**
@@ -97,12 +99,14 @@ export async function animateMissPopup(
 
 	container.addChild(text);
 
-	await tween(
-		text,
-		{ y: text.y - MISS_POPUP_RISE, alpha: 0 },
-		{ duration: MISS_POPUP_DURATION },
-	);
-
-	container.removeChild(text);
-	text.destroy();
+	try {
+		await tween(
+			text,
+			{ y: text.y - MISS_POPUP_RISE, alpha: 0 },
+			{ duration: MISS_POPUP_DURATION },
+		);
+	} finally {
+		container.removeChild(text);
+		text.destroy();
+	}
 }

@@ -57,20 +57,22 @@ export async function animateComboPopup(
 
 	container.addChild(text);
 
-	// スケールイン
-	await tween(
-		text,
-		{ scaleX: 1, scaleY: 1 },
-		{ duration: 120, easing: Easing.easeOutBack },
-	);
+	try {
+		// スケールイン
+		await tween(
+			text,
+			{ scaleX: 1, scaleY: 1 },
+			{ duration: 120, easing: Easing.easeOutBack },
+		);
 
-	// 上昇フェードアウト
-	await tween(
-		text,
-		{ y: text.y - COMBO_POPUP_RISE, alpha: 0 },
-		{ duration: COMBO_POPUP_DURATION, easing: Easing.easeOut },
-	);
-
-	container.removeChild(text);
-	text.destroy();
+		// 上昇フェードアウト
+		await tween(
+			text,
+			{ y: text.y - COMBO_POPUP_RISE, alpha: 0 },
+			{ duration: COMBO_POPUP_DURATION, easing: Easing.easeOut },
+		);
+	} finally {
+		container.removeChild(text);
+		text.destroy();
+	}
 }
