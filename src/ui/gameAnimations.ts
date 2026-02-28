@@ -141,19 +141,18 @@ export async function updateStateWithBumpAnimation(
 /**
  * プレイヤー攻撃ヒット時のアニメーション付きで状態を更新
  * @param cardType 使用したカードタイプ（ダメージ値算出・パーティクル演出に使用）
- * @param overkill 超過ダメージ量（0で従来同等、正値で撃破演出が段階的に強化される）
- * @param comboBonus コンボボーナスダメージ量（ダメージポップアップに反映）
- * @param levelBonus カードレベルによるダメージボーナス（ダメージポップアップに反映）
+ * @param options.overkill 超過ダメージ量（0で従来同等、正値で撃破演出が段階的に強化される）
+ * @param options.comboBonus コンボボーナスダメージ量（ダメージポップアップに反映）
+ * @param options.levelBonus カードレベルによるダメージボーナス（ダメージポップアップに反映）
  */
 export async function updateStateWithAttackAnimation(
 	ctx: GameContext,
 	newState: GameState,
 	hitEnemyId: string,
 	cardType: AttackCardType = "attack",
-	overkill = 0,
-	comboBonus = 0,
-	levelBonus = 0,
+	options: { overkill?: number; comboBonus?: number; levelBonus?: number } = {},
 ): Promise<void> {
+	const { overkill = 0, comboBonus = 0, levelBonus = 0 } = options;
 	if (ctx.isAnimating) return;
 	ctx.isAnimating = true;
 

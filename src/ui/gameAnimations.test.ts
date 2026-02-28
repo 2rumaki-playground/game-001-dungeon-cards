@@ -89,7 +89,7 @@ describe("updateStateWithAttackAnimation ダメージポップアップ", () => 
 			enemies: [{ id: enemyId, position: { x: 1, y: 0 }, hp: 2 }],
 		} as unknown as GameState;
 
-		await updateStateWithAttackAnimation(ctx, newState, enemyId, "attack", 0);
+		await updateStateWithAttackAnimation(ctx, newState, enemyId, "attack");
 
 		expect(animateAttackHitSpy).toHaveBeenCalledWith(
 			enemyId,
@@ -107,14 +107,9 @@ describe("updateStateWithAttackAnimation ダメージポップアップ", () => 
 			enemies: [{ id: enemyId, position: { x: 1, y: 0 }, hp: 1 }],
 		} as unknown as GameState;
 
-		await updateStateWithAttackAnimation(
-			ctx,
-			newState,
-			enemyId,
-			"attack",
-			0,
+		await updateStateWithAttackAnimation(ctx, newState, enemyId, "attack", {
 			comboBonus,
-		);
+		});
 
 		expect(animateAttackHitSpy).toHaveBeenCalledWith(
 			enemyId,
@@ -136,7 +131,6 @@ describe("updateStateWithAttackAnimation ダメージポップアップ", () => 
 			newState,
 			enemyId,
 			"strong_attack",
-			0,
 		);
 
 		expect(animateAttackHitSpy).toHaveBeenCalledWith(
@@ -155,15 +149,9 @@ describe("updateStateWithAttackAnimation ダメージポップアップ", () => 
 			enemies: [{ id: enemyId, position: { x: 1, y: 0 }, hp: 1 }],
 		} as unknown as GameState;
 
-		await updateStateWithAttackAnimation(
-			ctx,
-			newState,
-			enemyId,
-			"attack",
-			0,
-			0,
+		await updateStateWithAttackAnimation(ctx, newState, enemyId, "attack", {
 			levelBonus,
-		);
+		});
 
 		expect(animateAttackHitSpy).toHaveBeenCalledWith(
 			enemyId,
@@ -186,9 +174,7 @@ describe("updateStateWithAttackAnimation ダメージポップアップ", () => 
 			newState,
 			enemyId,
 			"strong_attack",
-			0,
-			0,
-			levelBonus,
+			{ levelBonus },
 		);
 
 		expect(animateAttackHitSpy).toHaveBeenCalledWith(
@@ -208,15 +194,10 @@ describe("updateStateWithAttackAnimation ダメージポップアップ", () => 
 			enemies: [{ id: enemyId, position: { x: 1, y: 0 }, hp: 1 }],
 		} as unknown as GameState;
 
-		await updateStateWithAttackAnimation(
-			ctx,
-			newState,
-			enemyId,
-			"attack",
-			0,
+		await updateStateWithAttackAnimation(ctx, newState, enemyId, "attack", {
 			comboBonus,
 			levelBonus,
-		);
+		});
 
 		expect(animateAttackHitSpy).toHaveBeenCalledWith(
 			enemyId,

@@ -225,12 +225,14 @@ function executeAttackBase(
 	state: GameState,
 	cardId: string,
 	direction: Direction,
-	damage: number,
+	baseDamage: number,
 	missLog: string,
 	comboBonus: number,
 	comboLog: string | null,
-	levelBonus: number,
 ): AttackResult {
+	// カードレベルによるダメージボーナスはこの関数内で一元的に算出する
+	const levelBonus = getAttackDamageBonus(state, cardId);
+
 	// カードを使用済みへ
 	let next = markCardAsPlayed(state, cardId);
 
@@ -252,7 +254,7 @@ function executeAttackBase(
 	}
 
 	// 敵にダメージ（HP0以下で自動除去）
-	const totalDamage = damage + comboBonus;
+	const totalDamage = baseDamage + levelBonus + comboBonus;
 	const damageResult = applyDamageToEnemy(
 		next,
 		result.enemyId,
@@ -374,11 +376,10 @@ export function executeAttack(
 		state,
 		cardId,
 		direction,
-		PLAYER_ATTACK_DAMAGE + levelBonus,
+		PLAYER_ATTACK_DAMAGE,
 		"攻撃できなかった",
 		comboBonus,
 		comboLog,
-		levelBonus,
 	);
 
 	let nextState = result.state;
@@ -462,11 +463,10 @@ export function executeStrongAttack(
 		state,
 		cardId,
 		direction,
-		totalDamage,
+		PLAYER_STRONG_ATTACK_DAMAGE,
 		"強攻撃できなかった",
 		0,
 		null,
-		levelBonus,
 	);
 
 	let nextState = result.state;
