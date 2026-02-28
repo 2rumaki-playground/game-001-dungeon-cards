@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+	DEFAULT_PERSONALITY,
 	ENEMY_HP,
 	ENEMY_PARAMS,
 	getEnemyCount,
@@ -58,7 +59,7 @@ function createTestState(overrides?: Partial<GameState>): GameState {
 		acquisitionCounters: createInitialCounters(),
 		cardExchangeState: null,
 		comboHistory: null,
-		personality: "brave",
+		personality: DEFAULT_PERSONALITY,
 		speechLog: null,
 		...overrides,
 	};
