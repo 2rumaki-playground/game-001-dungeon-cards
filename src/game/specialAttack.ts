@@ -212,9 +212,6 @@ export function executeShockwave(
 		);
 		if (!enemy) continue;
 
-		// cardExchangeState が既にセット済みなら、追加撃破で上書きされるのを防ぐ
-		if (next.cardExchangeState !== null) break;
-
 		const result = applyDamageToEnemy(next, enemy.id, damage, attackCardId);
 		next = result.state;
 
