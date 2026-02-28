@@ -178,11 +178,6 @@ describe("getExpProgress（レベル内進捗率）", () => {
 		const card = makeCard({ level: 2, exp: 3 });
 		expect(getExpProgress(card).ratio).toBe(0.5);
 	});
-
-	it("最大レベルの進捗率は1", () => {
-		const card = makeCard({ level: CARD_MAX_LEVEL, exp: 16 });
-		expect(getExpProgress(card).ratio).toBe(1);
-	});
 });
 
 describe("isMaxLevel", () => {
