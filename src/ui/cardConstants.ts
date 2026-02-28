@@ -105,7 +105,7 @@ function strongAttackCardDescription(card: Card): string {
 	}
 
 	if (hasKnockbackEffect(card)) {
-		return `隣接1マス先の敵に${damage}ダメージ${bonusText}。\nノックバック: 敵を1マス後方に吹き飛ばす。`;
+		return `隣接1マス先の敵に${damage}ダメージ${bonusText}。\nマップ外・壁・敵不在の場合は空振り。\nノックバック: 生存した敵を1マス後方に吹き飛ばす。`;
 	}
 
 	return attackDescription(damage, bonus);
