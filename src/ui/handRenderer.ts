@@ -4,7 +4,7 @@
  */
 
 import { Container, type FederatedPointerEvent, Graphics, Text } from "pixi.js";
-import { getExpProgress } from "../game/cardLevel";
+import { getLevelProgress } from "../game/cardLevel";
 import type { Card, CardType, ComboHistory, Direction } from "../types";
 import { Easing, tween } from "../utils/tween";
 import {
@@ -391,7 +391,7 @@ export class HandRenderer {
 
 		// XP進捗ゲージ（明色矩形を下から描画）
 		if (enabled) {
-			const { ratio } = getExpProgress(card);
+			const ratio = getLevelProgress(card);
 			if (ratio > 0) {
 				const xpGaugeMask = new Graphics();
 				xpGaugeMask.roundRect(0, 0, CARD_WIDTH, CARD_HEIGHT, CARD_RADIUS);

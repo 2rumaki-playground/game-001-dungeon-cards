@@ -8,6 +8,7 @@ import {
 	calculateLevel,
 	getExpProgress,
 	getLevelDamageBonus,
+	getLevelProgress,
 	hasKnockbackEffect,
 	hasPierceEffect,
 	hasRangeExtendEffect,
@@ -165,6 +166,28 @@ describe("getExpProgress", () => {
 		expect(progress.ratio).toBe(1);
 		expect(warnSpy).toHaveBeenCalled();
 		warnSpy.mockRestore();
+	});
+});
+
+describe("getLevelProgress", () => {
+	it("レベル1の進捗率は0", () => {
+		expect(getLevelProgress(makeCard({ level: 1 }))).toBe(0);
+	});
+
+	it("レベル2の進捗率は0.25", () => {
+		expect(getLevelProgress(makeCard({ level: 2 }))).toBe(0.25);
+	});
+
+	it("レベル3の進捗率は0.5", () => {
+		expect(getLevelProgress(makeCard({ level: 3 }))).toBe(0.5);
+	});
+
+	it("レベル4の進捗率は0.75", () => {
+		expect(getLevelProgress(makeCard({ level: 4 }))).toBe(0.75);
+	});
+
+	it("最大レベルの進捗率は1", () => {
+		expect(getLevelProgress(makeCard({ level: CARD_MAX_LEVEL }))).toBe(1);
 	});
 });
 

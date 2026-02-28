@@ -90,6 +90,15 @@ export function getExpProgress(card: Card): {
 }
 
 /**
+ * レベル全体の進捗率を取得（0〜1）
+ * レベル1→0, 最大レベル→1
+ */
+export function getLevelProgress(card: Card): number {
+	const level = normalizeCardLevel(card);
+	return (level - 1) / (CARD_MAX_LEVEL - 1);
+}
+
+/**
  * カードレベルに応じたダメージボーナスを取得
  */
 export function getLevelDamageBonus(card: Card): number {
