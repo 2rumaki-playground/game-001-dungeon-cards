@@ -11,6 +11,7 @@ import type {
 	DeckState,
 	GameState,
 	Room,
+	SpeechEventType,
 	SpeechLogEntry,
 } from "../types";
 import { RNG } from "./rng";
@@ -146,13 +147,31 @@ function createFullyVisitedTiles(map: unknown): Set<string> {
 /**
  * speechLog をバリデーションし、不正なら null にフォールバック
  */
+const VALID_SPEECH_EVENT_TYPES: ReadonlySet<SpeechEventType> = new Set([
+	"move_success",
+	"move_fail",
+	"attack_miss",
+	"combo_activated",
+	"enemy_defeated",
+	"damage_taken",
+	"game_over",
+	"trap_triggered",
+	"treasure_found",
+	"rest_area_used",
+	"floor_reached",
+	"jump_success",
+]);
+
 function sanitizeSpeechLog(raw: unknown): SpeechLogEntry | null {
 	if (raw == null || typeof raw !== "object") return null;
 	const data = raw as Record<string, unknown>;
 	if (
 		typeof data.message !== "string" ||
 		typeof data.eventType !== "string" ||
-		typeof data.timestamp !== "number"
+		!VALID_SPEECH_EVENT_TYPES.has(data.eventType as SpeechEventType) ||
+		typeof data.timestamp !== "number" ||
+		!Number.isFinite(data.timestamp) ||
+		data.timestamp < 0
 	) {
 		return null;
 	}
