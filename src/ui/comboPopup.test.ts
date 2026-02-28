@@ -4,7 +4,8 @@
 
 import "../test-utils/mapRendererTestSetup";
 import { Container } from "pixi.js";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+import { tween } from "../utils/tween";
 import { animateComboPopup } from "./comboPopup";
 
 describe("animateComboPopup", () => {
@@ -25,6 +26,19 @@ describe("animateComboPopup", () => {
 	it("アニメーション完了後にコンテナから子要素が除去される", async () => {
 		const container = new Container();
 		await animateComboPopup(container, { x: 0, y: 0 }, "charge");
+		expect(container.children).toHaveLength(0);
+	});
+
+	it("tweenがrejectしてもcleanupが実行される", async () => {
+		const tweenMock = vi.mocked(tween);
+		tweenMock.mockRejectedValueOnce(new Error("tween error"));
+
+		const container = new Container();
+		await expect(
+			animateComboPopup(container, { x: 0, y: 0 }, "charge"),
+		).rejects.toThrow("tween error");
+
+		// finally節によりTextがコンテナから除去・破棄されていること
 		expect(container.children).toHaveLength(0);
 	});
 });
