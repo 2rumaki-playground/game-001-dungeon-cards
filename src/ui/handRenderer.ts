@@ -389,7 +389,7 @@ export class HandRenderer {
 
 		cardContainer.addChild(bg);
 
-		// XP進捗ゲージ（明色矩形を下から描画）
+		// カードレベルの進捗ゲージ（明色矩形を下から描画）
 		if (enabled) {
 			const ratio = getLevelProgress(card);
 			if (ratio > 0) {
