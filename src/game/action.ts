@@ -250,6 +250,14 @@ function executeAttackBase(
 }
 
 /**
+ * 手札からカードのレベルボーナスを算出する共通ヘルパー
+ */
+function getAttackDamageBonus(state: GameState, cardId: string): number {
+	const card = state.deck.hand.find((c) => c.id === cardId);
+	return card ? getLevelDamageBonus(card) : 0;
+}
+
+/**
  * コンボ種別に対応するログメッセージ
  */
 const COMBO_LOG_MESSAGE: Record<string, string> = {
@@ -271,9 +279,7 @@ export function executeAttack(
 ): AttackResult {
 	recordCardUsage("attack");
 
-	// レベルボーナス算出
-	const card = state.deck.hand.find((c) => c.id === cardId);
-	const levelBonus = card ? getLevelDamageBonus(card) : 0;
+	const levelBonus = getAttackDamageBonus(state, cardId);
 
 	// コンボ判定（comboHistory更新前に判定）
 	const combo = detectCombo(state.comboHistory, "attack", direction);
@@ -316,9 +322,7 @@ export function executeStrongAttack(
 ): AttackResult {
 	recordCardUsage("strong_attack");
 
-	// レベルボーナス算出
-	const card = state.deck.hand.find((c) => c.id === cardId);
-	const levelBonus = card ? getLevelDamageBonus(card) : 0;
+	const levelBonus = getAttackDamageBonus(state, cardId);
 
 	const result = executeAttackBase(
 		state,
