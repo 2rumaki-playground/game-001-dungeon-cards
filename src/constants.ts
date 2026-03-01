@@ -357,8 +357,35 @@ export const PERSONALITIES: readonly Personality[] = [
 ] as const;
 export const DEFAULT_PERSONALITY: Personality = "brave";
 
-// 発話バナー
-export const SPEECH_BANNER_HEIGHT = 40;
+// キャラクターカード
+export const CHARACTER_CARD_HEIGHT = 80;
+
+// 性格表示ラベル
+export const PERSONALITY_LABEL: Record<Personality, string> = {
+	brave: "勇敢",
+	cautious: "慎重",
+	cheerful: "明朗",
+	stoic: "寡黙",
+	curious: "好奇心旺盛",
+} as const;
+
+// 性格シンボル（Unicode記号）
+export const PERSONALITY_SYMBOL: Record<Personality, string> = {
+	brave: "⚔",
+	cautious: "⛊",
+	cheerful: "☀",
+	stoic: "◆",
+	curious: "？",
+} as const;
+
+// 性格説明文
+export const PERSONALITY_DESCRIPTION: Record<Personality, string> = {
+	brave: "力強い、前向きな口調",
+	cautious: "用心深い、分析的な口調",
+	cheerful: "楽天的、軽い口調",
+	stoic: "短文、体言止め",
+	curious: "疑問形、探究的な口調",
+} as const;
 
 // 描画設定
 export const CELL_SIZE = 64;

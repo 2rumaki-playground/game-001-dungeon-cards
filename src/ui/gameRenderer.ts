@@ -55,7 +55,7 @@ function renderTitleScreen(ctx: GameContext): void {
 	ctx.ui.returnToPlayerButton.hide();
 	ctx.ui.cameraDragController.reset();
 	ctx.ui.actionLogRenderer.hide();
-	ctx.ui.speechBannerRenderer.hide();
+	ctx.ui.characterCardRenderer.hide();
 	ctx.ui.mapRenderer.clear();
 	ctx.ui.handRenderer.clear();
 	hideDebugUI(ctx);
@@ -135,8 +135,11 @@ export function renderGameScreen(
 	ctx.ui.nextFloorButton.render(ctx.state.enemies.length);
 	ctx.ui.actionLogRenderer.show();
 	ctx.ui.actionLogRenderer.render(ctx.state.actionLog);
-	ctx.ui.speechBannerRenderer.show();
-	ctx.ui.speechBannerRenderer.render(ctx.state.speechLog);
+	ctx.ui.characterCardRenderer.show();
+	ctx.ui.characterCardRenderer.render(
+		ctx.state.personality,
+		ctx.state.speechLog,
+	);
 
 	// デバッグカード表示（DEV環境 + デバッグモードON時のみ）
 	if (ctx.debugMode && ctx.ui.debugCardRenderer) {
@@ -183,8 +186,11 @@ function renderGameOverScreen(ctx: GameContext): void {
 	const height = viewportSize.height + HAND_AREA_HEIGHT + STATUS_BAR_HEIGHT;
 	ctx.ui.gameOverScreen.render(ctx.state.floor, width, height);
 	ctx.ui.gameOverScreen.show();
-	ctx.ui.speechBannerRenderer.show();
-	ctx.ui.speechBannerRenderer.render(ctx.state.speechLog);
+	ctx.ui.characterCardRenderer.show();
+	ctx.ui.characterCardRenderer.render(
+		ctx.state.personality,
+		ctx.state.speechLog,
+	);
 	hideDebugUI(ctx);
 }
 
@@ -208,8 +214,11 @@ function renderVictoryScreen(ctx: GameContext): void {
 	const height = viewportSize.height + HAND_AREA_HEIGHT + STATUS_BAR_HEIGHT;
 	ctx.ui.victoryScreen.render(ctx.state.floor, width, height);
 	ctx.ui.victoryScreen.show();
-	ctx.ui.speechBannerRenderer.show();
-	ctx.ui.speechBannerRenderer.render(ctx.state.speechLog);
+	ctx.ui.characterCardRenderer.show();
+	ctx.ui.characterCardRenderer.render(
+		ctx.state.personality,
+		ctx.state.speechLog,
+	);
 	hideDebugUI(ctx);
 }
 

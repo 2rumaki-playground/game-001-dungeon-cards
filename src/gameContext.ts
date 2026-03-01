@@ -8,6 +8,7 @@ import type { Card, GameState } from "./types";
 import type {
 	ActionLogRenderer,
 	CameraDragController,
+	CharacterCardRenderer,
 	DirectionSelector,
 	FloorBanner,
 	GameOverScreen,
@@ -18,7 +19,6 @@ import type {
 	ReturnToPlayerButton,
 	RewardScreen,
 	ScreenTransition,
-	SpeechBannerRenderer,
 	StatsScreen,
 	StatusBar,
 	TitleScreen,
@@ -41,7 +41,7 @@ export interface UIComponents {
 	turnEndButton: TurnEndButton;
 	nextFloorButton: NextFloorButton;
 	actionLogRenderer: ActionLogRenderer;
-	speechBannerRenderer: SpeechBannerRenderer;
+	characterCardRenderer: CharacterCardRenderer;
 	turnBanner: TurnBanner;
 	rewardScreen: RewardScreen;
 	screenTransition: ScreenTransition;

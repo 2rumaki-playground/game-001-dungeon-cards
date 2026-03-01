@@ -4,6 +4,7 @@
 
 export { ActionLogRenderer } from "./actionLogRenderer";
 export { CameraDragController } from "./cameraDragController";
+export { CharacterCardRenderer } from "./characterCardRenderer";
 export { getViewportPixelSize } from "./coordinates";
 export { DirectionSelector } from "./directionSelector";
 export { FloorBanner } from "./floorBanner";
@@ -15,7 +16,6 @@ export { ParticleSystem } from "./particleSystem";
 export { ReturnToPlayerButton } from "./returnToPlayerButton";
 export { RewardScreen } from "./rewardScreen";
 export { ScreenTransition } from "./screenTransition";
-export { SpeechBannerRenderer } from "./speechBannerRenderer";
 export { StatsScreen } from "./statsScreen";
 export { StatusBar } from "./statusBar";
 export { TitleScreen } from "./titleScreen";
