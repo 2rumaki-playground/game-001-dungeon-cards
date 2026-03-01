@@ -11,8 +11,9 @@ import type { CardType, ComboHistory, ComboType, Direction } from "../types";
  *
  * - 突撃（charge）: move → attack（同方向）
  * - 連撃（chain）: attack → attack
+ * - 奇襲（ambush）: jump → attack（同方向）
+ * - 集中攻撃（focus）: wait → attack
  * - 「攻撃」は attack のみ（strong_attack は含まない）
- * - 「移動」は move のみ（jump は含まない）
  */
 export function detectCombo(
 	history: ComboHistory | null,
@@ -37,6 +38,22 @@ export function detectCombo(
 	// 連撃: attack → attack
 	if (history.lastCardType === "attack" && currentCardType === "attack") {
 		return "chain";
+	}
+
+	// 奇襲: jump → attack（同方向）
+	if (
+		history.lastCardType === "jump" &&
+		currentCardType === "attack" &&
+		history.lastDirection !== null &&
+		currentDirection !== null &&
+		history.lastDirection === currentDirection
+	) {
+		return "ambush";
+	}
+
+	// 集中攻撃: wait → attack
+	if (history.lastCardType === "wait" && currentCardType === "attack") {
+		return "focus";
 	}
 
 	return null;

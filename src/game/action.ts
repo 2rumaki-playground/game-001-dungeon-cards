@@ -295,9 +295,11 @@ function getAttackDamageBonus(state: GameState, cardId: string): number {
 /**
  * コンボ種別に対応するログメッセージ
  */
-const COMBO_LOG_MESSAGE: Record<string, string> = {
+const COMBO_LOG_MESSAGE: Record<ComboType, string> = {
 	charge: "突撃コンボ発動！",
 	chain: "連撃コンボ発動！",
+	ambush: "奇襲コンボ発動！",
+	focus: "集中攻撃コンボ発動！",
 };
 
 /**
@@ -324,7 +326,7 @@ export function executeAttack(
 	// コンボ判定（comboHistory更新前に判定）
 	const combo = detectCombo(state.comboHistory, "attack", direction);
 	const comboBonus = combo ? getComboBonus(combo) : 0;
-	const comboLog = combo ? (COMBO_LOG_MESSAGE[combo] ?? null) : null;
+	const comboLog = combo ? COMBO_LOG_MESSAGE[combo] : null;
 
 	// Lv5射程延長: findExtendedRangeTargetで2マス先まで探索
 	if (rangeExtend) {
@@ -544,18 +546,16 @@ export function executeJump(
 	let next = markCardAsPlayed(state, cardId);
 	recordCardUsage("jump");
 
-	// comboHistory更新
-	next = updateComboHistory(next, {
-		lastCardType: "jump",
-		lastDirection: direction,
-	});
-
 	// 着地先（2マス先）の座標を計算
 	const landX = next.player.position.x + delta.x * JUMP_DISTANCE;
 	const landY = next.player.position.y + delta.y * JUMP_DISTANCE;
 
 	// 着地先がマップ外
 	if (!isInBounds(next.map, landX, landY)) {
+		next = updateComboHistory(next, {
+			lastCardType: "jump",
+			lastDirection: null,
+		});
 		return {
 			state: addActionLog(next, "ジャンプできなかった", "player"),
 			jumped: false,
@@ -567,6 +567,10 @@ export function executeJump(
 
 	// 着地先が壁
 	if (next.map[landY][landX].type === "wall") {
+		next = updateComboHistory(next, {
+			lastCardType: "jump",
+			lastDirection: null,
+		});
 		return {
 			state: addActionLog(next, "ジャンプできなかった", "player"),
 			jumped: false,
@@ -580,6 +584,10 @@ export function executeJump(
 	if (
 		next.enemies.some((e) => e.position.x === landX && e.position.y === landY)
 	) {
+		next = updateComboHistory(next, {
+			lastCardType: "jump",
+			lastDirection: null,
+		});
 		return {
 			state: addActionLog(next, "ジャンプできなかった", "player"),
 			jumped: false,
@@ -588,6 +596,12 @@ export function executeJump(
 			gameOver: false,
 		};
 	}
+
+	// 着地成功: comboHistory更新（方向を記録）
+	next = updateComboHistory(next, {
+		lastCardType: "jump",
+		lastDirection: direction,
+	});
 
 	// 着地成功: プレイヤーを2マス先に移動
 	next = updatePlayer(next, (p) => ({
