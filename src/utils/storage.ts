@@ -93,14 +93,13 @@ function sanitizeAcquisitionCounters(raw: unknown): AcquisitionCounters {
 	for (const key of ENEMY_TYPES) {
 		const d = defeatCounts[key];
 		const h = hitCounts[key];
-		if (
-			typeof d !== "number" ||
-			!Number.isFinite(d) ||
-			d < 0 ||
-			typeof h !== "number" ||
-			!Number.isFinite(h) ||
-			h < 0
-		) {
+		// 旧セーブデータ互換: 欠けたキーは0で補完
+		if (d === undefined) defeatCounts[key] = 0;
+		else if (typeof d !== "number" || !Number.isFinite(d) || d < 0) {
+			return createInitialCounters();
+		}
+		if (h === undefined) hitCounts[key] = 0;
+		else if (typeof h !== "number" || !Number.isFinite(h) || h < 0) {
 			return createInitialCounters();
 		}
 	}
