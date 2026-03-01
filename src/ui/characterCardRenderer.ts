@@ -131,7 +131,10 @@ export class CharacterCardRenderer {
 	}
 
 	private buildTooltip(personality: Personality): void {
-		this.tooltipContainer.removeChildren();
+		const removedChildren = this.tooltipContainer.removeChildren();
+		for (const child of removedChildren) {
+			child.destroy();
+		}
 
 		const label = PERSONALITY_LABEL[personality];
 		const description = PERSONALITY_DESCRIPTION[personality];
