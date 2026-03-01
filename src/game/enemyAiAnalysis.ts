@@ -110,12 +110,13 @@ export function analyzeEnemy(state: GameState, enemy: Enemy): EnemyAiAnalysis {
 	const distance = manhattanDistance(enemy.position, state.player.position);
 	const mapWidth = state.map[0]?.length ?? 0;
 	const mapHeight = state.map.length;
-	const attackRange = getAttackRange(enemy.position, mapWidth, mapHeight);
 
 	// 射撃敵は専用の分析パス
 	if (enemy.type === "ranged") {
 		return analyzeRangedEnemy(state, enemy);
 	}
+
+	const attackRange = getAttackRange(enemy.position, mapWidth, mapHeight);
 
 	// スキル予告中
 	if (enemy.pendingSkill) {
