@@ -174,7 +174,7 @@ export function analyzeSummonerEnemy(
 		enemyId: enemy.id,
 		decision: {
 			type: "wait_no_move",
-			reason: `${label}: 待機（cooldown=${enemy.summonCooldown}）`,
+			reason: `${label}: 待機（cooldown=${enemy.summonCooldown ?? SUMMONER_COOLDOWN}）`,
 		},
 		moveCandidates: [],
 		attackRange,
