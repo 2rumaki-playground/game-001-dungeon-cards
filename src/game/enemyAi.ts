@@ -300,7 +300,7 @@ function executeSummonerEnemyAction(
 	}
 
 	// 非隣接 + 召喚ターン（cooldown <= 0）
-	if ((enemy.summonCooldown ?? 0) <= 0) {
+	if ((enemy.summonCooldown ?? SUMMONER_COOLDOWN) <= 0) {
 		const positions = getSummonablePositions(state, enemy);
 		if (positions.length > 0) {
 			// ランダムに1マス選択
