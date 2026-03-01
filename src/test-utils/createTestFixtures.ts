@@ -57,6 +57,7 @@ export function createTestState(overrides?: Partial<GameState>): GameState {
 		personality: DEFAULT_PERSONALITY,
 		speechLog: null,
 		achievedMilestones: new Set(),
+		pendingMilestone: null,
 		...overrides,
 	};
 }

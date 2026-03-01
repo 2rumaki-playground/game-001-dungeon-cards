@@ -58,64 +58,91 @@ function addMilestone(
 }
 
 /**
- * 発話ログを追加（連続発話 > マイルストーン発話 > コンテキスト発話 > レア(デフォルト時) > 通常デフォルトの優先順位）
+ * マイルストーン発話を生成し、pendingMilestoneをクリアした状態を返す
+ */
+function emitMilestoneSpeech(
+	state: GameState,
+	eventType: SpeechEventType,
+	milestone: MilestoneType,
+): GameState {
+	const msVariants = MILESTONE_SPEECH_VARIANTS[state.personality][milestone];
+	const msIndex = Math.floor(Math.random() * msVariants.length);
+	const msState = setSpeechLog(state, eventType, msVariants[msIndex]);
+	return { ...msState, pendingMilestone: null };
+}
+
+/**
+ * 発話ログを追加（pending > 連続発話 > マイルストーン発話 > コンテキスト発話 > レア(デフォルト時) > 通常デフォルトの優先順位）
  *
- * 直前イベントとの組み合わせで連続発話パターンがあればそちらを最優先。
+ * マイルストーン到達は発話選択と独立して常に記録される。
+ * 連続発話等でスキップされた場合はpendingMilestoneに保持し、次回最優先で発話する。
  * Math.random()を使用し、ゲームRNGには影響しない。
  */
 export function addSpeechLog(
 	state: GameState,
 	eventType: SpeechEventType,
 ): GameState {
-	// 1. 連続発話パターン（直前イベント参照）
-	const prevEventType = state.speechLog?.eventType;
-	if (prevEventType) {
-		const key = `${prevEventType}_${eventType}` as const;
-		const seqVariants = SPEECH_SEQUENCE_VARIANTS[state.personality][key];
-		if (seqVariants && seqVariants.length > 0) {
-			const index = Math.floor(Math.random() * seqVariants.length);
-			return setSpeechLog(state, eventType, seqVariants[index]);
-		}
+	// 0. マイルストーン到達の記録（発話選択とは独立して常に判定）
+	let currentState = state;
+	const newMilestone = checkMilestone(state, eventType);
+	if (newMilestone) {
+		currentState = {
+			...currentState,
+			achievedMilestones: addMilestone(
+				currentState.achievedMilestones,
+				newMilestone,
+			),
+			pendingMilestone: currentState.pendingMilestone ?? newMilestone,
+		};
 	}
 
-	// 2. マイルストーン発話（判定→発話→フラグ更新をアトミックに実行）
-	const milestone = checkMilestone(state, eventType);
-	if (milestone) {
-		const msVariants = MILESTONE_SPEECH_VARIANTS[state.personality][milestone];
-		const msIndex = Math.floor(Math.random() * msVariants.length);
-		const msState = setSpeechLog(state, eventType, msVariants[msIndex]);
-		return {
-			...msState,
-			achievedMilestones: addMilestone(msState.achievedMilestones, milestone),
-		};
+	// 1. 保留中マイルストーン発話（最優先）
+	if (currentState.pendingMilestone) {
+		return emitMilestoneSpeech(
+			currentState,
+			eventType,
+			currentState.pendingMilestone,
+		);
+	}
+
+	// 2. 連続発話パターン（直前イベント参照）
+	const prevEventType = currentState.speechLog?.eventType;
+	if (prevEventType) {
+		const key = `${prevEventType}_${eventType}` as const;
+		const seqVariants = SPEECH_SEQUENCE_VARIANTS[currentState.personality][key];
+		if (seqVariants && seqVariants.length > 0) {
+			const index = Math.floor(Math.random() * seqVariants.length);
+			return setSpeechLog(currentState, eventType, seqVariants[index]);
+		}
 	}
 
 	// 3. コンテキスト発話
 	const contextualEntries =
-		CONTEXTUAL_SPEECH_VARIANTS[state.personality][eventType];
+		CONTEXTUAL_SPEECH_VARIANTS[currentState.personality][eventType];
 
 	if (contextualEntries) {
 		for (const entry of contextualEntries) {
-			if (matchesContext(state, entry.context)) {
+			if (matchesContext(currentState, entry.context)) {
 				const index = Math.floor(Math.random() * entry.variants.length);
 				const message = entry.variants[index];
-				return setSpeechLog(state, eventType, message);
+				return setSpeechLog(currentState, eventType, message);
 			}
 		}
 	}
 
 	// 4. フォールバック: レア判定 → デフォルトバリエーション
-	const rareVariants = RARE_SPEECH_VARIANTS[state.personality][eventType];
+	const rareVariants =
+		RARE_SPEECH_VARIANTS[currentState.personality][eventType];
 	if (
 		rareVariants &&
 		rareVariants.length > 0 &&
 		Math.random() < RARE_SPEECH_RATE
 	) {
 		const rareIndex = Math.floor(Math.random() * rareVariants.length);
-		return setSpeechLog(state, eventType, rareVariants[rareIndex]);
+		return setSpeechLog(currentState, eventType, rareVariants[rareIndex]);
 	}
 
-	const variants = SPEECH_VARIANTS[state.personality][eventType];
+	const variants = SPEECH_VARIANTS[currentState.personality][eventType];
 	const index = Math.floor(Math.random() * variants.length);
-	return setSpeechLog(state, eventType, variants[index]);
+	return setSpeechLog(currentState, eventType, variants[index]);
 }

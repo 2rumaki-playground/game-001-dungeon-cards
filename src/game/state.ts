@@ -153,6 +153,7 @@ export function createTitleScreenState(seed?: number): GameState {
 		personality: DEFAULT_PERSONALITY,
 		speechLog: null,
 		achievedMilestones: new Set(),
+		pendingMilestone: null,
 	};
 }
 
@@ -201,6 +202,7 @@ export function createInitialGameState(
 		personality,
 		speechLog: null,
 		achievedMilestones: new Set(),
+		pendingMilestone: null,
 	};
 }
 

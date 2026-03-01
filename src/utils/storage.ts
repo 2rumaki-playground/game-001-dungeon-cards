@@ -205,6 +205,13 @@ function sanitizeAchievedMilestones(raw: unknown): Set<MilestoneType> {
 	return result;
 }
 
+function sanitizePendingMilestone(raw: unknown): MilestoneType | null {
+	if (typeof raw === "string" && VALID_MILESTONES.has(raw as MilestoneType)) {
+		return raw as MilestoneType;
+	}
+	return null;
+}
+
 /**
  * personality をバリデーションし、不正なら DEFAULT_PERSONALITY にフォールバック
  */
@@ -350,6 +357,7 @@ export function loadGame(): GameState | null {
 			personality: sanitizePersonality(data.personality),
 			speechLog: sanitizeSpeechLog(data.speechLog),
 			achievedMilestones: sanitizeAchievedMilestones(data.achievedMilestones),
+			pendingMilestone: sanitizePendingMilestone(data.pendingMilestone),
 		};
 
 		// 旧セーブデータ互換: 3ゾーン形式のデッキを手札形式に変換

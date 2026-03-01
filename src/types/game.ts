@@ -133,4 +133,6 @@ export type GameState = {
 	speechLog: SpeechLogEntry | null;
 	/** 達成済みマイルストーン */
 	achievedMilestones: Set<MilestoneType>;
+	/** 発話保留中のマイルストーン（連続発話等でスキップされた場合に次回優先表示） */
+	pendingMilestone: MilestoneType | null;
 };

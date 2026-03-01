@@ -427,7 +427,7 @@ describe("マイルストーン発話", () => {
 		expect(next.achievedMilestones.has("first_floor_clear")).toBe(true);
 	});
 
-	it("連続発話はマイルストーン発話より優先される", () => {
+	it("連続発話とマイルストーン到達が同時の場合、到達は記録されpendingに保持される", () => {
 		const state = createTestState({
 			speechLog: {
 				eventType: "damage_taken",
@@ -446,11 +446,42 @@ describe("マイルストーン発話", () => {
 			},
 		});
 		const next = addSpeechLog(state, "enemy_defeated");
-		const seqVariants =
-			SPEECH_SEQUENCE_VARIANTS[DEFAULT_PERSONALITY].damage_taken_enemy_defeated;
-		expect(seqVariants).toContain(next.speechLog?.message);
-		// 連続発話が優先されるため、マイルストーンは未達成のまま
-		expect(next.achievedMilestones.has("first_defeat")).toBe(false);
+		// マイルストーン到達は記録される
+		expect(next.achievedMilestones.has("first_defeat")).toBe(true);
+		// 発話はマイルストーン発話（pendingが即消化される）
+		const msVariants =
+			MILESTONE_SPEECH_VARIANTS[DEFAULT_PERSONALITY].first_defeat;
+		expect(msVariants).toContain(next.speechLog?.message);
+		expect(next.pendingMilestone).toBeNull();
+	});
+
+	it("pendingMilestoneがある場合、次回発話で最優先消化される", () => {
+		const state = createTestState({
+			pendingMilestone: "first_defeat",
+			achievedMilestones: new Set<MilestoneType>(["first_defeat"]),
+		});
+		const next = addSpeechLog(state, "move_success");
+		const msVariants =
+			MILESTONE_SPEECH_VARIANTS[DEFAULT_PERSONALITY].first_defeat;
+		expect(msVariants).toContain(next.speechLog?.message);
+		expect(next.pendingMilestone).toBeNull();
+	});
+
+	it("pendingMilestoneは連続発話より優先される", () => {
+		const state = createTestState({
+			pendingMilestone: "first_defeat",
+			achievedMilestones: new Set<MilestoneType>(["first_defeat"]),
+			speechLog: {
+				eventType: "damage_taken",
+				message: "test",
+				timestamp: Date.now(),
+			},
+		});
+		const next = addSpeechLog(state, "enemy_defeated");
+		const msVariants =
+			MILESTONE_SPEECH_VARIANTS[DEFAULT_PERSONALITY].first_defeat;
+		expect(msVariants).toContain(next.speechLog?.message);
+		expect(next.pendingMilestone).toBeNull();
 	});
 
 	it("元のstateのachievedMilestonesは変更されない（イミュータブル）", () => {
