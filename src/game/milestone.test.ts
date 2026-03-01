@@ -12,7 +12,7 @@ describe("getTotalDefeatCount", () => {
 					normal: 3,
 					heavy: 2,
 					scout: 1,
-					ranged: 0,
+					ranged: 1,
 					miniboss: 0,
 					boss: 0,
 				},
@@ -26,7 +26,7 @@ describe("getTotalDefeatCount", () => {
 				},
 			},
 		});
-		expect(getTotalDefeatCount(state)).toBe(6);
+		expect(getTotalDefeatCount(state)).toBe(7);
 	});
 
 	it("初期状態では0を返す", () => {
