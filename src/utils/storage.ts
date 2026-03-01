@@ -67,12 +67,14 @@ const ENEMY_TYPES = [
 	"heavy",
 	"scout",
 	"summoner",
+	"ranged",
 	"miniboss",
 	"boss",
 ] as const;
 
 /**
  * acquisitionCounters をバリデーションし、不正なら初期値にフォールバック
+ * 旧セーブ互換: 欠けているキーは0で補完、不正値のみ0にリセット
  */
 function sanitizeAcquisitionCounters(raw: unknown): AcquisitionCounters {
 	if (raw == null || typeof raw !== "object") return createInitialCounters();
@@ -90,27 +92,29 @@ function sanitizeAcquisitionCounters(raw: unknown): AcquisitionCounters {
 	const defeatCounts = data.defeatCounts as Record<string, unknown>;
 	const hitCounts = data.hitCounts as Record<string, unknown>;
 
-	for (const key of ENEMY_TYPES) {
-		const d = defeatCounts[key];
-		const h = hitCounts[key];
-		// 旧セーブデータ互換: 欠けたキーは0で補完
-		if (d === undefined) defeatCounts[key] = 0;
-		else if (typeof d !== "number" || !Number.isFinite(d) || d < 0) {
-			return createInitialCounters();
-		}
-		if (h === undefined) hitCounts[key] = 0;
-		else if (typeof h !== "number" || !Number.isFinite(h) || h < 0) {
-			return createInitialCounters();
-		}
-	}
-
 	const initial = createInitialCounters();
 	return {
 		defeatCounts: Object.fromEntries(
-			ENEMY_TYPES.map((k) => [k, Math.floor(defeatCounts[k] as number)]),
+			ENEMY_TYPES.map((k) => {
+				const v = defeatCounts[k];
+				return [
+					k,
+					typeof v === "number" && Number.isFinite(v) && v >= 0
+						? Math.floor(v)
+						: initial.defeatCounts[k],
+				];
+			}),
 		) as typeof initial.defeatCounts,
 		hitCounts: Object.fromEntries(
-			ENEMY_TYPES.map((k) => [k, Math.floor(hitCounts[k] as number)]),
+			ENEMY_TYPES.map((k) => {
+				const v = hitCounts[k];
+				return [
+					k,
+					typeof v === "number" && Number.isFinite(v) && v >= 0
+						? Math.floor(v)
+						: initial.hitCounts[k],
+				];
+			}),
 		) as typeof initial.hitCounts,
 	};
 }

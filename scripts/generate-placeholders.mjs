@@ -118,6 +118,7 @@ const assets = [
 	{ path: "enemies/heavy.png", color: 0x8855aa },     // COLORS.enemyHeavy
 	{ path: "enemies/scout.png", color: 0x88cc44 },     // COLORS.enemyScout
 	{ path: "enemies/summoner.png", color: 0x66aacc },  // COLORS.enemySummoner
+	{ path: "enemies/ranged.png", color: 0x44aacc },    // COLORS.enemyRanged
 	{ path: "enemies/miniboss.png", color: 0xdd8833 },  // COLORS.enemyMiniboss
 	{ path: "enemies/boss.png", color: 0xdd3333 },      // COLORS.enemyBoss
 ];

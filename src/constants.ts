@@ -36,6 +36,13 @@ export const ENEMY_PARAMS = {
 	heavy: { hp: 5, attackDamage: 2, moveDistance: 0, senseRange: 3 },
 	scout: { hp: 2, attackDamage: 1, moveDistance: 2, senseRange: 8 },
 	summoner: { hp: 2, attackDamage: 1, moveDistance: 0, senseRange: 5 },
+	ranged: {
+		hp: 2,
+		attackDamage: 1,
+		moveDistance: 0,
+		senseRange: 6,
+		shootRange: 2,
+	},
 	miniboss: { hp: 8, attackDamage: 2, moveDistance: 1, senseRange: 7 },
 	boss: { hp: 15, attackDamage: 3, moveDistance: 1, senseRange: 10 },
 } as const;
@@ -46,6 +53,7 @@ export const ENEMY_TYPE_LABEL: Record<EnemyType, string> = {
 	heavy: "重装敵",
 	scout: "俊敏敵",
 	summoner: "召喚敵",
+	ranged: "射撃敵",
 	miniboss: "ミニボス",
 	boss: "ボス",
 } as const;
@@ -73,6 +81,7 @@ export type EnemyComposition = {
 	heavy: number;
 	scout: number;
 	summoner: number;
+	ranged: number;
 	miniboss: number;
 	boss: number;
 };
@@ -89,6 +98,7 @@ export const ENEMY_COMPOSITION_TABLE: {
 			heavy: 0,
 			scout: 0,
 			summoner: 0,
+			ranged: 0,
 			miniboss: 0,
 			boss: 0,
 		},
@@ -100,6 +110,7 @@ export const ENEMY_COMPOSITION_TABLE: {
 			heavy: 0,
 			scout: 1,
 			summoner: 0,
+			ranged: 0,
 			miniboss: 0,
 			boss: 0,
 		},
@@ -112,6 +123,7 @@ export const ENEMY_COMPOSITION_TABLE: {
 			heavy: 1,
 			scout: 0,
 			summoner: 0,
+			ranged: 0,
 			miniboss: 1,
 			boss: 0,
 		},
@@ -124,6 +136,7 @@ export const ENEMY_COMPOSITION_TABLE: {
 			heavy: 1,
 			scout: 1,
 			summoner: 0,
+			ranged: 0,
 			miniboss: 0,
 			boss: 0,
 		},
@@ -135,6 +148,7 @@ export const ENEMY_COMPOSITION_TABLE: {
 			heavy: 1,
 			scout: 1,
 			summoner: 1,
+			ranged: 0,
 			miniboss: 0,
 			boss: 0,
 		},
@@ -147,6 +161,7 @@ export const ENEMY_COMPOSITION_TABLE: {
 			heavy: 1,
 			scout: 1,
 			summoner: 0,
+			ranged: 0,
 			miniboss: 0,
 			boss: 1,
 		},
@@ -159,6 +174,7 @@ export const ENEMY_COMPOSITION_TABLE: {
 			heavy: 1,
 			scout: 1,
 			summoner: 1,
+			ranged: 0,
 			miniboss: 0,
 			boss: 0,
 		},
@@ -170,6 +186,7 @@ export const ENEMY_COMPOSITION_TABLE: {
 			heavy: 1,
 			scout: 1,
 			summoner: 1,
+			ranged: 0,
 			miniboss: 0,
 			boss: 0,
 		},
@@ -182,6 +199,7 @@ export const ENEMY_COMPOSITION_TABLE: {
 			heavy: 1,
 			scout: 1,
 			summoner: 0,
+			ranged: 0,
 			miniboss: 1,
 			boss: 0,
 		},
@@ -194,6 +212,7 @@ export const ENEMY_COMPOSITION_TABLE: {
 			heavy: 1,
 			scout: 1,
 			summoner: 1,
+			ranged: 0,
 			miniboss: 0,
 			boss: 0,
 		},
@@ -205,6 +224,7 @@ export const ENEMY_COMPOSITION_TABLE: {
 			heavy: 1,
 			scout: 1,
 			summoner: 1,
+			ranged: 0,
 			miniboss: 0,
 			boss: 0,
 		},
@@ -217,6 +237,7 @@ export const ENEMY_COMPOSITION_TABLE: {
 			heavy: 1,
 			scout: 1,
 			summoner: 0,
+			ranged: 0,
 			miniboss: 0,
 			boss: 1,
 		},
@@ -229,6 +250,7 @@ export const ENEMY_COMPOSITION_TABLE: {
 			heavy: 1,
 			scout: 1,
 			summoner: 1,
+			ranged: 0,
 			miniboss: 0,
 			boss: 0,
 		},
@@ -289,6 +311,11 @@ export const ENEMY_ACQUISITION_CONDITIONS: Record<
 	summoner: {
 		cardType: "wait",
 		conditions: [{ type: "defeat_count", threshold: 2 }],
+		conditionLogic: "and",
+	},
+	ranged: {
+		cardType: "move",
+		conditions: [{ type: "defeat_count", threshold: 3 }],
 		conditionLogic: "and",
 	},
 	miniboss: {
@@ -451,6 +478,9 @@ export const BOSS_SKILL = {
 	enrageBonusDamage: 2,
 } as const;
 
+// 射撃敵の射程距離（正典: ENEMY_PARAMS.ranged.shootRange）
+export const RANGED_SHOOT_RANGE = ENEMY_PARAMS.ranged.shootRange;
+
 // キャラクター性格
 export const PERSONALITIES: readonly Personality[] = [
 	"brave",
@@ -525,6 +555,7 @@ export const COLORS = {
 	enemyHeavy: 0x8855aa,
 	enemyScout: 0x88cc44,
 	enemySummoner: 0x66aacc,
+	enemyRanged: 0x44aacc,
 	enemyMiniboss: 0xdd8833,
 	enemyBoss: 0xdd3333,
 	// 後方互換（通常敵カラー）

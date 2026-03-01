@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ENEMY_PARAMS } from "../constants";
+import { ENEMY_PARAMS, RANGED_SHOOT_RANGE } from "../constants";
 import { createTestState } from "../test-utils/createTestFixtures";
 import type { Enemy } from "../types";
 import { analyzeAllEnemies, analyzeEnemy } from "./enemyAiAnalysis";
@@ -334,6 +334,181 @@ describe("analyzeSummonerEnemy", () => {
 
 		const result = analyzeEnemy(state, enemy);
 		expect(result.attackRange).toEqual([]);
+	});
+});
+
+describe("analyzeRangedEnemy（射撃敵の分析）", () => {
+	function createRangedEnemy(overrides: Partial<Enemy> = {}): Enemy {
+		return {
+			id: "ranged-1",
+			type: "ranged",
+			position: { x: 3, y: 1 },
+			hp: ENEMY_PARAMS.ranged.hp,
+			maxHp: ENEMY_PARAMS.ranged.hp,
+			...overrides,
+		};
+	}
+
+	describe("行動判定の分類", () => {
+		it("隣接かつ後退可能な場合はretreat判定になる", () => {
+			const state = createTestState({
+				player: {
+					position: { x: 3, y: 3 },
+					hp: 10,
+					maxHp: 10,
+				},
+			});
+			// 敵は(3,2)でプレイヤー(3,3)の上に隣接、後退先(3,1)は床
+			const enemy = createRangedEnemy({ position: { x: 3, y: 2 } });
+			state.enemies = [enemy];
+
+			const result = analyzeEnemy(state, enemy);
+			expect(result.decision.type).toBe("retreat");
+			expect(result.decision.reason).toContain("後退");
+		});
+
+		it("隣接かつ後退不可の場合はshoot判定になる", () => {
+			const state = createTestState({
+				player: {
+					position: { x: 2, y: 1 },
+					hp: 10,
+					maxHp: 10,
+				},
+			});
+			// 敵は(1,1)でプレイヤー(2,1)の左に隣接、後退先(0,1)は壁
+			const enemy = createRangedEnemy({ position: { x: 1, y: 1 } });
+			state.enemies = [enemy];
+
+			const result = analyzeEnemy(state, enemy);
+			expect(result.decision.type).toBe("shoot");
+			expect(result.decision.reason).toContain("後退不可");
+		});
+
+		it("部屋内でプレイヤーが外にいる場合はwait_room判定になる", () => {
+			const state = createTestState({
+				player: {
+					position: { x: 1, y: 1 },
+					hp: 10,
+					maxHp: 10,
+				},
+				rooms: [{ x: 3, y: 3, width: 3, height: 3 }],
+			});
+			const enemy = createRangedEnemy({ position: { x: 4, y: 4 } });
+			state.enemies = [enemy];
+
+			const result = analyzeEnemy(state, enemy);
+			expect(result.decision.type).toBe("wait_room");
+		});
+
+		it("索敵範囲外ではwait_out_of_range判定になる", () => {
+			const state = createTestState({
+				player: {
+					position: { x: 1, y: 1 },
+					hp: 10,
+					maxHp: 10,
+				},
+			});
+			// ranged: senseRange=6, (1,1)と(5,5)の距離は8で範囲外
+			const enemy = createRangedEnemy({ position: { x: 5, y: 5 } });
+			state.enemies = [enemy];
+
+			const result = analyzeEnemy(state, enemy);
+			expect(result.decision.type).toBe("wait_out_of_range");
+		});
+
+		it("射程内かつ射線ありの場合はshoot判定になる", () => {
+			const state = createTestState({
+				player: {
+					position: { x: 3, y: 3 },
+					hp: 10,
+					maxHp: 10,
+				},
+			});
+			// 敵は(3,1)でプレイヤー(3,3)と同列、距離2=shootRange
+			const enemy = createRangedEnemy({ position: { x: 3, y: 1 } });
+			state.enemies = [enemy];
+
+			const result = analyzeEnemy(state, enemy);
+			expect(result.decision.type).toBe("shoot");
+			expect(result.decision.reason).toContain("射撃");
+			expect(result.decision.reason).toContain("ATK:");
+		});
+
+		it("射程外の場合はwait_no_target判定になる", () => {
+			const state = createTestState({
+				player: {
+					position: { x: 3, y: 5 },
+					hp: 10,
+					maxHp: 10,
+				},
+			});
+			// 敵は(3,1)でプレイヤー(3,5)と同列だが距離4>shootRange=2
+			const enemy = createRangedEnemy({ position: { x: 3, y: 1 } });
+			state.enemies = [enemy];
+
+			const result = analyzeEnemy(state, enemy);
+			expect(result.decision.type).toBe("wait_no_target");
+		});
+
+		it("射線なし（斜め位置）の場合はwait_no_target判定になる", () => {
+			const state = createTestState({
+				player: {
+					position: { x: 4, y: 2 },
+					hp: 10,
+					maxHp: 10,
+				},
+			});
+			// 敵は(3,1)、プレイヤー(4,2)は斜め方向で射線なし、距離2=shootRange
+			const enemy = createRangedEnemy({ position: { x: 3, y: 1 } });
+			state.enemies = [enemy];
+
+			const result = analyzeEnemy(state, enemy);
+			expect(result.decision.type).toBe("wait_no_target");
+		});
+	});
+
+	describe("攻撃範囲（attackRange）の計算", () => {
+		it("射程+射線条件に従って算出される", () => {
+			const state = createTestState({
+				player: {
+					position: { x: 3, y: 3 },
+					hp: 10,
+					maxHp: 10,
+				},
+			});
+			// 敵を(3,3)に配置（中央、射線が通りやすい）
+			const enemy = createRangedEnemy({ position: { x: 3, y: 3 } });
+			state.enemies = [enemy];
+
+			const result = analyzeEnemy(state, enemy);
+
+			// 全タイルが同一x軸またはy軸上にある（直線条件）
+			for (const pos of result.attackRange) {
+				expect(pos.x === enemy.position.x || pos.y === enemy.position.y).toBe(
+					true,
+				);
+			}
+
+			// 全タイルが射程内
+			for (const pos of result.attackRange) {
+				const distance =
+					Math.abs(pos.x - enemy.position.x) +
+					Math.abs(pos.y - enemy.position.y);
+				expect(distance).toBeGreaterThan(0);
+				expect(distance).toBeLessThanOrEqual(RANGED_SHOOT_RANGE);
+			}
+		});
+
+		it("隣接4タイルではなく射程範囲のタイルが返される", () => {
+			const state = createTestState();
+			const enemy = createRangedEnemy({ position: { x: 3, y: 3 } });
+			state.enemies = [enemy];
+
+			const result = analyzeEnemy(state, enemy);
+			// shootRange=2なので、距離1と距離2の直線タイルが含まれる
+			// 中央(3,3)から: 上下左右それぞれ距離1,2の計8タイル
+			expect(result.attackRange.length).toBeGreaterThan(4);
+		});
 	});
 });
 

@@ -22,6 +22,7 @@ export type EnemyType =
 	| "heavy"
 	| "scout"
 	| "summoner"
+	| "ranged"
 	| "miniboss"
 	| "boss";
 

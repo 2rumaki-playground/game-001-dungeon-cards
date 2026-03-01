@@ -13,6 +13,8 @@ describe("getTotalDefeatCount", () => {
 					heavy: 2,
 					scout: 1,
 					summoner: 0,
+					ranged: 1,
+
 					miniboss: 0,
 					boss: 0,
 				},
@@ -21,12 +23,14 @@ describe("getTotalDefeatCount", () => {
 					heavy: 0,
 					scout: 0,
 					summoner: 0,
+					ranged: 0,
+
 					miniboss: 0,
 					boss: 0,
 				},
 			},
 		});
-		expect(getTotalDefeatCount(state)).toBe(6);
+		expect(getTotalDefeatCount(state)).toBe(7);
 	});
 
 	it("初期状態では0を返す", () => {
@@ -45,6 +49,8 @@ describe("checkMilestone", () => {
 						heavy: 0,
 						scout: 0,
 						summoner: 0,
+						ranged: 0,
+
 						miniboss: 0,
 						boss: 0,
 					},
@@ -53,6 +59,8 @@ describe("checkMilestone", () => {
 						heavy: 0,
 						scout: 0,
 						summoner: 0,
+						ranged: 0,
+
 						miniboss: 0,
 						boss: 0,
 					},
@@ -70,6 +78,8 @@ describe("checkMilestone", () => {
 						heavy: 0,
 						scout: 0,
 						summoner: 0,
+						ranged: 0,
+
 						miniboss: 0,
 						boss: 0,
 					},
@@ -78,6 +88,8 @@ describe("checkMilestone", () => {
 						heavy: 0,
 						scout: 0,
 						summoner: 0,
+						ranged: 0,
+
 						miniboss: 0,
 						boss: 0,
 					},
@@ -95,6 +107,8 @@ describe("checkMilestone", () => {
 						heavy: 3,
 						scout: 2,
 						summoner: 0,
+						ranged: 0,
+
 						miniboss: 0,
 						boss: 0,
 					},
@@ -103,6 +117,8 @@ describe("checkMilestone", () => {
 						heavy: 0,
 						scout: 0,
 						summoner: 0,
+						ranged: 0,
+
 						miniboss: 0,
 						boss: 0,
 					},
@@ -121,6 +137,8 @@ describe("checkMilestone", () => {
 						heavy: 0,
 						scout: 0,
 						summoner: 0,
+						ranged: 0,
+
 						miniboss: 0,
 						boss: 0,
 					},
@@ -129,6 +147,8 @@ describe("checkMilestone", () => {
 						heavy: 0,
 						scout: 0,
 						summoner: 0,
+						ranged: 0,
+
 						miniboss: 0,
 						boss: 0,
 					},
@@ -146,6 +166,8 @@ describe("checkMilestone", () => {
 						heavy: 0,
 						scout: 0,
 						summoner: 0,
+						ranged: 0,
+
 						miniboss: 0,
 						boss: 0,
 					},
@@ -154,6 +176,8 @@ describe("checkMilestone", () => {
 						heavy: 0,
 						scout: 0,
 						summoner: 0,
+						ranged: 0,
+
 						miniboss: 0,
 						boss: 0,
 					},
@@ -174,6 +198,8 @@ describe("checkMilestone", () => {
 						heavy: 0,
 						scout: 0,
 						summoner: 0,
+						ranged: 0,
+
 						miniboss: 0,
 						boss: 0,
 					},
@@ -182,6 +208,8 @@ describe("checkMilestone", () => {
 						heavy: 0,
 						scout: 0,
 						summoner: 0,
+						ranged: 0,
+
 						miniboss: 0,
 						boss: 0,
 					},
