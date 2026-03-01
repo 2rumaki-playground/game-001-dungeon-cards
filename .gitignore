@@ -169,3 +169,4 @@ bench-results.json
 # claude-mem auto-generated files
 .claude/commands/CLAUDE.md
 src/ui/CLAUDE.md
+src/test-utils/CLAUDE.md
