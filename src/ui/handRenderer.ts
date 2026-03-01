@@ -533,21 +533,19 @@ export class HandRenderer {
 				this.handleDragEnd(e);
 			});
 
-			if (enabled) {
-				cardContainer.on("pointerover", () => {
-					if (this.isDragging) return;
-					if (this.hoveredCardId === card.id) return;
-					this.hoveredCardId = card.id;
-					this.render(this.currentHand);
-				});
+			cardContainer.on("pointerover", () => {
+				if (this.isDragging) return;
+				if (this.hoveredCardId === card.id) return;
+				this.hoveredCardId = card.id;
+				this.render(this.currentHand);
+			});
 
-				cardContainer.on("pointerout", () => {
-					if (this.isDragging) return;
-					if (this.hoveredCardId !== card.id) return;
-					this.hoveredCardId = null;
-					this.render(this.currentHand);
-				});
-			}
+			cardContainer.on("pointerout", () => {
+				if (this.isDragging) return;
+				if (this.hoveredCardId !== card.id) return;
+				this.hoveredCardId = null;
+				this.render(this.currentHand);
+			});
 		}
 
 		return cardContainer;
@@ -632,9 +630,6 @@ export class HandRenderer {
 
 		const hoveredCard = hand.find((c) => c.id === this.hoveredCardId);
 		if (!hoveredCard) return;
-
-		// 使用済みカードにはツールチップを表示しない
-		if (this.currentUsedCardIds.has(hoveredCard.id)) return;
 
 		const cardIndex = hand.findIndex((c) => c.id === this.hoveredCardId);
 		const totalWidth = hand.length * CARD_WIDTH + (hand.length - 1) * CARD_GAP;
