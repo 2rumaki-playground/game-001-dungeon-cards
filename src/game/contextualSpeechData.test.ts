@@ -80,6 +80,58 @@ describe("CONTEXTUAL_SPEECH_VARIANTS", () => {
 		}
 	});
 
+	it("hp系およびフロア系コンテキストの優先度順を保証する", () => {
+		// 優先度: hp_critical > hp_tension > deep_floor > consecutive_combo
+		const priorityOrder: SpeechContext[] = [
+			"hp_critical",
+			"hp_tension",
+			"deep_floor",
+			"consecutive_combo",
+		];
+
+		type PriorityCtx = (typeof priorityOrder)[number];
+
+		for (const personality of PERSONALITIES) {
+			const events = CONTEXTUAL_SPEECH_VARIANTS[personality];
+
+			for (const [eventType, entries] of Object.entries(events)) {
+				// entries 内での各優先度コンテキストの出現位置を記録
+				const indexByContext = new Map<PriorityCtx, number>();
+
+				for (let i = 0; i < entries.length; i++) {
+					const ctx = entries[i].context;
+					if (priorityOrder.includes(ctx as PriorityCtx)) {
+						// 同じコンテキストが複数回出ても、最初の位置だけ見ればよい
+						if (!indexByContext.has(ctx as PriorityCtx)) {
+							indexByContext.set(ctx as PriorityCtx, i);
+						}
+					}
+				}
+
+				// 優先度の高いものが、低いものよりも前に並んでいることを検証
+				const pairs: [PriorityCtx, PriorityCtx][] = [
+					["hp_critical", "hp_tension"],
+					["hp_tension", "deep_floor"],
+					["deep_floor", "consecutive_combo"],
+				];
+
+				for (const [higher, lower] of pairs) {
+					const higherIndex = indexByContext.get(higher);
+					const lowerIndex = indexByContext.get(lower);
+					if (higherIndex !== undefined && lowerIndex !== undefined) {
+						expect(
+							higherIndex < lowerIndex,
+							[
+								`${personality}.${eventType} において`,
+								`${higher} が ${lower} より後ろに定義されている`,
+							].join(" "),
+						).toBe(true);
+					}
+				}
+			}
+		}
+	});
+
 	it("game_overイベントにはコンテキスト発話が存在しない", () => {
 		for (const personality of PERSONALITIES) {
 			const events = CONTEXTUAL_SPEECH_VARIANTS[personality];
