@@ -639,10 +639,13 @@ export class HandRenderer {
 		const cardCenterX =
 			startX + cardIndex * (CARD_WIDTH + CARD_GAP) + CARD_WIDTH / 2;
 
+		const isUsed = this.currentUsedCardIds.has(hoveredCard.id);
+		const hoverOffset = isUsed ? 0 : HOVER_LIFT;
+
 		const { container: tooltip, height: tooltipHeight } =
 			createCardTooltip(hoveredCard);
 		tooltip.x = cardCenterX - TOOLTIP_WIDTH / 2;
-		tooltip.y = -HOVER_LIFT - tooltipHeight - TOOLTIP_MARGIN;
+		tooltip.y = -hoverOffset - tooltipHeight - TOOLTIP_MARGIN;
 
 		this.tooltipContainer.addChild(tooltip);
 	}
