@@ -195,5 +195,6 @@ export class CharacterCardRenderer {
 
 	hide(): void {
 		this.container.visible = false;
+		this.tooltipContainer.visible = false;
 	}
 }
