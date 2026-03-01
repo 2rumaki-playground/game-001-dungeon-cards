@@ -100,7 +100,7 @@ function sanitizeAcquisitionCounters(raw: unknown): AcquisitionCounters {
 					k,
 					typeof v === "number" && Number.isFinite(v) && v >= 0
 						? Math.floor(v)
-						: 0,
+						: initial.defeatCounts[k],
 				];
 			}),
 		) as typeof initial.defeatCounts,
@@ -111,7 +111,7 @@ function sanitizeAcquisitionCounters(raw: unknown): AcquisitionCounters {
 					k,
 					typeof v === "number" && Number.isFinite(v) && v >= 0
 						? Math.floor(v)
-						: 0,
+						: initial.hitCounts[k],
 				];
 			}),
 		) as typeof initial.hitCounts,
