@@ -10,6 +10,7 @@ import {
 	ENEMY_PARAMS,
 	ENEMY_TYPE_LABEL,
 	RANGED_SHOOT_RANGE,
+	SUMMONER_COOLDOWN,
 } from "../constants";
 import type { Direction, Enemy, GameState, Position } from "../types";
 import { DIRECTION_DELTA } from "../types";
@@ -156,7 +157,7 @@ export function analyzeSummonerEnemy(
 	}
 
 	// 召喚ターン（cooldown=0）
-	if ((enemy.summonCooldown ?? 0) <= 0) {
+	if ((enemy.summonCooldown ?? SUMMONER_COOLDOWN) <= 0) {
 		return {
 			enemyId: enemy.id,
 			decision: {
