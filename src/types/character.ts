@@ -17,7 +17,13 @@ export type Player = {
 /**
  * 敵タイプ
  */
-export type EnemyType = "normal" | "heavy" | "scout" | "miniboss" | "boss";
+export type EnemyType =
+	| "normal"
+	| "heavy"
+	| "scout"
+	| "ranged"
+	| "miniboss"
+	| "boss";
 
 /**
  * ボス特殊スキル種別
