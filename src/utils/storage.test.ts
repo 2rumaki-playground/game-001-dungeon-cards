@@ -504,7 +504,7 @@ describe("storage", () => {
 		}
 	});
 
-	it("achievedMilestonesが正しく保存・復元される", () => {
+	it("achievedMilestonesが正しく保存される", () => {
 		const state = createTitleScreenState(42);
 		state.achievedMilestones = new Set([
 			"first_defeat" as const,
