@@ -47,8 +47,7 @@ describe("addSpeechLog", () => {
 	it.each(
 		PERSONALITIES,
 	)("性格 %s の発話が該当バリエーションから選択される", (personality: Personality) => {
-		// hp=5でfull_hpやhp_tensionを回避（maxHp=10の75%=7.5 → hp=5 < 7.5 → hp_tension該当）
-		// hp=8でhp_tension回避（8 >= 7.5）
+		// HP満タン（PLAYER_INITIAL_HP）でhp_tensionを回避（PLAYER_INITIAL_HP >= maxHp * HP_TENSION_RATIO）、deep_floor/consecutive_comboも非該当の状態
 		const state = createTestState({
 			personality,
 			player: {
