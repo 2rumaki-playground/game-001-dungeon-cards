@@ -12,12 +12,25 @@ import {
 	PERSONALITY_SYMBOL,
 } from "../constants";
 import type { Personality, SpeechLogEntry } from "../types";
+import { drawRoundedRect } from "./graphicsHelpers";
 
 const CARD_PADDING = 8;
-const CARD_BACKGROUND_COLOR = 0x2a3a2a;
-const CARD_BACKGROUND_ALPHA = 0.9;
-const CARD_BORDER_COLOR = 0x4a6a4a;
+const CARD_RADIUS = 8;
+const CARD_BACKGROUND_ALPHA = 0.95;
+const CARD_BORDER_WIDTH = 2;
+const SPEECH_TEXT_COLOR = 0xeeeef0;
 const ICON_FONT_SIZE = 18;
+
+const PERSONALITY_CARD_COLORS: Record<
+	Personality,
+	{ bg: number; border: number }
+> = {
+	brave: { bg: 0x3a2020, border: 0xca5a4a },
+	cautious: { bg: 0x1e2e3e, border: 0x4a8aba },
+	cheerful: { bg: 0x3a3a1e, border: 0xc8a840 },
+	stoic: { bg: 0x2a2a2e, border: 0x7a7a8a },
+	curious: { bg: 0x2a2a3a, border: 0x8a6aba },
+};
 const LABEL_FONT_SIZE = 13;
 const SPEECH_FONT_SIZE = 13;
 const TOOLTIP_PADDING = 6;
@@ -43,14 +56,17 @@ export class CharacterCardRenderer {
 		this.container = new Container();
 		this.container.eventMode = "static";
 
-		// 背景
+		// 背景（デフォルト色で初期描画、render()で性格別に上書き）
 		this.background = new Graphics();
-		this.background.roundRect(0, 0, LOG_AREA_WIDTH, CHARACTER_CARD_HEIGHT, 4);
-		this.background.fill({
-			color: CARD_BACKGROUND_COLOR,
-			alpha: CARD_BACKGROUND_ALPHA,
-		});
-		this.background.stroke({ color: CARD_BORDER_COLOR, width: 1 });
+		const defaultColors = PERSONALITY_CARD_COLORS.brave;
+		drawRoundedRect(
+			this.background,
+			LOG_AREA_WIDTH,
+			CHARACTER_CARD_HEIGHT,
+			CARD_RADIUS,
+			{ color: defaultColors.bg, alpha: CARD_BACKGROUND_ALPHA },
+			{ color: defaultColors.border, width: CARD_BORDER_WIDTH },
+		);
 		this.container.addChild(this.background);
 
 		// アイコン
@@ -72,7 +88,7 @@ export class CharacterCardRenderer {
 			style: {
 				fontSize: LABEL_FONT_SIZE,
 				fontFamily: "sans-serif",
-				fill: 0xaaccaa,
+				fill: PERSONALITY_CARD_COLORS.brave.border,
 			},
 		});
 		this.labelText.x = CARD_PADDING + ICON_FONT_SIZE + 8;
@@ -85,7 +101,7 @@ export class CharacterCardRenderer {
 			style: {
 				fontSize: SPEECH_FONT_SIZE,
 				fontFamily: "sans-serif",
-				fill: 0xccddcc,
+				fill: SPEECH_TEXT_COLOR,
 				wordWrap: true,
 				wordWrapWidth: LOG_AREA_WIDTH - CARD_PADDING * 2,
 			},
@@ -125,6 +141,17 @@ export class CharacterCardRenderer {
 		}
 
 		if (personality !== this.lastPersonality) {
+			const colors = PERSONALITY_CARD_COLORS[personality];
+			this.background.clear();
+			drawRoundedRect(
+				this.background,
+				LOG_AREA_WIDTH,
+				CHARACTER_CARD_HEIGHT,
+				CARD_RADIUS,
+				{ color: colors.bg, alpha: CARD_BACKGROUND_ALPHA },
+				{ color: colors.border, width: CARD_BORDER_WIDTH },
+			);
+			this.labelText.style.fill = colors.border;
 			this.buildTooltip(personality);
 			this.lastPersonality = personality;
 		}
