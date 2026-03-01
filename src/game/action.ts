@@ -295,7 +295,7 @@ function getAttackDamageBonus(state: GameState, cardId: string): number {
 /**
  * コンボ種別に対応するログメッセージ
  */
-const COMBO_LOG_MESSAGE: Record<string, string> = {
+const COMBO_LOG_MESSAGE: Record<ComboType, string> = {
 	charge: "突撃コンボ発動！",
 	chain: "連撃コンボ発動！",
 	ambush: "奇襲コンボ発動！",
@@ -326,7 +326,7 @@ export function executeAttack(
 	// コンボ判定（comboHistory更新前に判定）
 	const combo = detectCombo(state.comboHistory, "attack", direction);
 	const comboBonus = combo ? getComboBonus(combo) : 0;
-	const comboLog = combo ? (COMBO_LOG_MESSAGE[combo] ?? null) : null;
+	const comboLog = combo ? COMBO_LOG_MESSAGE[combo] : null;
 
 	// Lv5射程延長: findExtendedRangeTargetで2マス先まで探索
 	if (rangeExtend) {
