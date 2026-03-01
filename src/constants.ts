@@ -387,6 +387,9 @@ export const PERSONALITY_DESCRIPTION: Record<Personality, string> = {
 	curious: "疑問形、探究的な口調",
 } as const;
 
+// マイルストーン閾値
+export const MILESTONE_DEFEAT_COUNT = 10;
+
 // 発話コンテキスト閾値
 export const HP_TENSION_RATIO = 0.75;
 export const HP_CRITICAL_RATIO = 0.25;

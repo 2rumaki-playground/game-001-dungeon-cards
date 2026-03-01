@@ -11,6 +11,22 @@ import type { ComboHistory } from "./combo";
 import type { GameMap, Room } from "./map";
 
 /**
+ * マイルストーン種別一覧（Single Source of Truth）
+ */
+export const ALL_MILESTONES = [
+	"first_defeat",
+	"ten_defeats",
+	"first_trap",
+	"last_word",
+	"first_floor_clear",
+] as const;
+
+/**
+ * マイルストーン種別
+ */
+export type MilestoneType = (typeof ALL_MILESTONES)[number];
+
+/**
  * キャラクター性格タイプ
  */
 export type Personality =
@@ -115,4 +131,8 @@ export type GameState = {
 	personality: Personality;
 	/** キャラクター発話ログ（最新1件のみ保持） */
 	speechLog: SpeechLogEntry | null;
+	/** 達成済みマイルストーン */
+	achievedMilestones: Set<MilestoneType>;
+	/** 発話保留中のマイルストーン（連続発話等でスキップされた場合に次回優先表示） */
+	pendingMilestone: MilestoneType | null;
 };

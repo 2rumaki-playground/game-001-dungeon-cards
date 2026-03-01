@@ -7,8 +7,9 @@ import {
 	PLAYER_INITIAL_HP,
 } from "../constants";
 import { createTestState } from "../test-utils/createTestFixtures";
-import type { Personality, SpeechEventType } from "../types";
+import type { MilestoneType, Personality, SpeechEventType } from "../types";
 import { CONTEXTUAL_SPEECH_VARIANTS } from "./contextualSpeechData";
+import { MILESTONE_SPEECH_VARIANTS } from "./milestoneSpeechData";
 import { addSpeechLog, matchesContext } from "./speech";
 import {
 	RARE_SPEECH_VARIANTS,
@@ -247,6 +248,7 @@ describe("コンテキスト発話の優先選択", () => {
 				hp: PLAYER_INITIAL_HP,
 				maxHp: PLAYER_INITIAL_HP,
 			},
+			achievedMilestones: new Set<MilestoneType>(["first_floor_clear"]),
 		});
 		const next = addSpeechLog(state, "floor_reached");
 
@@ -268,6 +270,7 @@ describe("コンテキスト発話の優先選択", () => {
 				hp: criticalHp,
 				maxHp: PLAYER_INITIAL_HP,
 			},
+			achievedMilestones: new Set<MilestoneType>(["first_floor_clear"]),
 		});
 		const next = addSpeechLog(state, "floor_reached");
 
@@ -326,10 +329,194 @@ describe("コンテキスト発話の優先選択", () => {
 				hp: criticalHp,
 				maxHp: PLAYER_INITIAL_HP,
 			},
+			achievedMilestones: new Set<MilestoneType>(["last_word"]),
 		});
 		const next = addSpeechLog(state, "game_over");
 		const variants = allDefaultVariants(DEFAULT_PERSONALITY, "game_over");
 		expect(variants).toContain(next.speechLog?.message);
+	});
+});
+
+describe("マイルストーン発話", () => {
+	it("累計撃破数1でマイルストーン発話が選択される", () => {
+		const state = createTestState({
+			acquisitionCounters: {
+				defeatCounts: {
+					normal: 1,
+					heavy: 0,
+					scout: 0,
+					miniboss: 0,
+					boss: 0,
+				},
+				hitCounts: { normal: 0, heavy: 0, scout: 0, miniboss: 0, boss: 0 },
+			},
+		});
+		const next = addSpeechLog(state, "enemy_defeated");
+		const msVariants =
+			MILESTONE_SPEECH_VARIANTS[DEFAULT_PERSONALITY].first_defeat;
+		expect(msVariants).toContain(next.speechLog?.message);
+	});
+
+	it("マイルストーン達成時にachievedMilestonesが更新される", () => {
+		const state = createTestState({
+			acquisitionCounters: {
+				defeatCounts: {
+					normal: 1,
+					heavy: 0,
+					scout: 0,
+					miniboss: 0,
+					boss: 0,
+				},
+				hitCounts: { normal: 0, heavy: 0, scout: 0, miniboss: 0, boss: 0 },
+			},
+		});
+		const next = addSpeechLog(state, "enemy_defeated");
+		expect(next.achievedMilestones.has("first_defeat")).toBe(true);
+	});
+
+	it("マイルストーン達成済みなら通常発話にフォールバックする", () => {
+		const state = createTestState({
+			achievedMilestones: new Set<MilestoneType>(["first_defeat"]),
+			acquisitionCounters: {
+				defeatCounts: {
+					normal: 1,
+					heavy: 0,
+					scout: 0,
+					miniboss: 0,
+					boss: 0,
+				},
+				hitCounts: { normal: 0, heavy: 0, scout: 0, miniboss: 0, boss: 0 },
+			},
+			player: {
+				position: { x: 3, y: 3 },
+				hp: PLAYER_INITIAL_HP,
+				maxHp: PLAYER_INITIAL_HP,
+			},
+		});
+		const next = addSpeechLog(state, "enemy_defeated");
+		const allVariants = [
+			...SPEECH_VARIANTS[DEFAULT_PERSONALITY].enemy_defeated,
+			...(RARE_SPEECH_VARIANTS[DEFAULT_PERSONALITY].enemy_defeated ?? []),
+		];
+		expect(allVariants).toContain(next.speechLog?.message);
+	});
+
+	it("first_trap: 罠初踏みでマイルストーン発話が選択される", () => {
+		const state = createTestState();
+		const next = addSpeechLog(state, "trap_triggered");
+		const msVariants =
+			MILESTONE_SPEECH_VARIANTS[DEFAULT_PERSONALITY].first_trap;
+		expect(msVariants).toContain(next.speechLog?.message);
+		expect(next.achievedMilestones.has("first_trap")).toBe(true);
+	});
+
+	it("last_word: ゲームオーバーでマイルストーン発話が選択される", () => {
+		const state = createTestState();
+		const next = addSpeechLog(state, "game_over");
+		const msVariants = MILESTONE_SPEECH_VARIANTS[DEFAULT_PERSONALITY].last_word;
+		expect(msVariants).toContain(next.speechLog?.message);
+		expect(next.achievedMilestones.has("last_word")).toBe(true);
+	});
+
+	it("first_floor_clear: 階層遷移でマイルストーン発話が選択される", () => {
+		const state = createTestState();
+		const next = addSpeechLog(state, "floor_reached");
+		const msVariants =
+			MILESTONE_SPEECH_VARIANTS[DEFAULT_PERSONALITY].first_floor_clear;
+		expect(msVariants).toContain(next.speechLog?.message);
+		expect(next.achievedMilestones.has("first_floor_clear")).toBe(true);
+	});
+
+	it("連続発話とマイルストーン到達が同時の場合、連続発話が優先されマイルストーンはpendingに保持される", () => {
+		const state = createTestState({
+			speechLog: {
+				eventType: "damage_taken",
+				message: "test",
+				timestamp: Date.now(),
+			},
+			acquisitionCounters: {
+				defeatCounts: {
+					normal: 1,
+					heavy: 0,
+					scout: 0,
+					miniboss: 0,
+					boss: 0,
+				},
+				hitCounts: { normal: 0, heavy: 0, scout: 0, miniboss: 0, boss: 0 },
+			},
+		});
+		const next = addSpeechLog(state, "enemy_defeated");
+		// マイルストーン到達は記録される
+		expect(next.achievedMilestones.has("first_defeat")).toBe(true);
+		// 連続発話が優先される
+		const seqVariants =
+			SPEECH_SEQUENCE_VARIANTS[DEFAULT_PERSONALITY].damage_taken_enemy_defeated;
+		expect(seqVariants).toContain(next.speechLog?.message);
+		// マイルストーンはpendingに保持される
+		expect(next.pendingMilestone).toBe("first_defeat");
+	});
+
+	it("pendingMilestoneがある場合、次回発話で最優先消化される", () => {
+		const state = createTestState({
+			pendingMilestone: "first_defeat",
+			achievedMilestones: new Set<MilestoneType>(["first_defeat"]),
+		});
+		const next = addSpeechLog(state, "move_success");
+		const msVariants =
+			MILESTONE_SPEECH_VARIANTS[DEFAULT_PERSONALITY].first_defeat;
+		expect(msVariants).toContain(next.speechLog?.message);
+		expect(next.pendingMilestone).toBeNull();
+	});
+
+	it("pendingMilestoneは連続発話より優先される", () => {
+		const state = createTestState({
+			pendingMilestone: "first_defeat",
+			achievedMilestones: new Set<MilestoneType>(["first_defeat"]),
+			speechLog: {
+				eventType: "damage_taken",
+				message: "test",
+				timestamp: Date.now(),
+			},
+		});
+		const next = addSpeechLog(state, "enemy_defeated");
+		const msVariants =
+			MILESTONE_SPEECH_VARIANTS[DEFAULT_PERSONALITY].first_defeat;
+		expect(msVariants).toContain(next.speechLog?.message);
+		expect(next.pendingMilestone).toBeNull();
+	});
+
+	it("既存pendingと新規マイルストーン同時到達で、既存pendingを発話し新規をpendingに繰り越す", () => {
+		const state = createTestState({
+			pendingMilestone: "first_defeat",
+			achievedMilestones: new Set<MilestoneType>(["first_defeat"]),
+		});
+		// floor_reached → first_floor_clear マイルストーンが新規到達する
+		const next = addSpeechLog(state, "floor_reached");
+		// 既存pendingのfirst_defeatが発話される
+		const msVariants =
+			MILESTONE_SPEECH_VARIANTS[DEFAULT_PERSONALITY].first_defeat;
+		expect(msVariants).toContain(next.speechLog?.message);
+		// 新規マイルストーンがpendingに繰り越される
+		expect(next.pendingMilestone).toBe("first_floor_clear");
+		// 新規マイルストーンもachievedに記録される
+		expect(next.achievedMilestones.has("first_floor_clear")).toBe(true);
+	});
+
+	it("元のstateのachievedMilestonesは変更されない（イミュータブル）", () => {
+		const state = createTestState({
+			acquisitionCounters: {
+				defeatCounts: {
+					normal: 1,
+					heavy: 0,
+					scout: 0,
+					miniboss: 0,
+					boss: 0,
+				},
+				hitCounts: { normal: 0, heavy: 0, scout: 0, miniboss: 0, boss: 0 },
+			},
+		});
+		addSpeechLog(state, "enemy_defeated");
+		expect(state.achievedMilestones.size).toBe(0);
 	});
 });
 

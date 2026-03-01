@@ -11,14 +11,16 @@ import {
 } from "../constants";
 import { createInitialCounters } from "../game/cardAcquisition";
 import { initCardIdCounterFromDeck } from "../game/deck";
-import type {
-	AcquisitionCounters,
-	DeckState,
-	GameState,
-	Personality,
-	Room,
-	SpeechEventType,
-	SpeechLogEntry,
+import {
+	type AcquisitionCounters,
+	ALL_MILESTONES,
+	type DeckState,
+	type GameState,
+	type MilestoneType,
+	type Personality,
+	type Room,
+	type SpeechEventType,
+	type SpeechLogEntry,
 } from "../types";
 import { RNG } from "./rng";
 
@@ -185,6 +187,32 @@ function sanitizeSpeechLog(raw: unknown): SpeechLogEntry | null {
 }
 
 /**
+ * achievedMilestones をバリデーションし、安全なSetとして再構築
+ */
+const VALID_MILESTONES: ReadonlySet<MilestoneType> = new Set(ALL_MILESTONES);
+
+function sanitizeAchievedMilestones(raw: unknown): Set<MilestoneType> {
+	if (!Array.isArray(raw)) return new Set<MilestoneType>();
+	const result = new Set<MilestoneType>();
+	for (const item of raw) {
+		if (
+			typeof item === "string" &&
+			VALID_MILESTONES.has(item as MilestoneType)
+		) {
+			result.add(item as MilestoneType);
+		}
+	}
+	return result;
+}
+
+function sanitizePendingMilestone(raw: unknown): MilestoneType | null {
+	if (typeof raw === "string" && VALID_MILESTONES.has(raw as MilestoneType)) {
+		return raw as MilestoneType;
+	}
+	return null;
+}
+
+/**
  * personality をバリデーションし、不正なら DEFAULT_PERSONALITY にフォールバック
  */
 const VALID_PERSONALITIES: ReadonlySet<Personality> = new Set(PERSONALITIES);
@@ -207,6 +235,7 @@ export function saveGame(state: GameState): void {
 			...state,
 			rng: state.rng.serialize(),
 			visitedTiles: Array.from(state.visitedTiles),
+			achievedMilestones: Array.from(state.achievedMilestones),
 		};
 		localStorage.setItem(SAVE_KEY, JSON.stringify(saveData));
 	} catch (e) {
@@ -327,6 +356,8 @@ export function loadGame(): GameState | null {
 			comboHistory: null,
 			personality: sanitizePersonality(data.personality),
 			speechLog: sanitizeSpeechLog(data.speechLog),
+			achievedMilestones: sanitizeAchievedMilestones(data.achievedMilestones),
+			pendingMilestone: sanitizePendingMilestone(data.pendingMilestone),
 		};
 
 		// 旧セーブデータ互換: 3ゾーン形式のデッキを手札形式に変換
