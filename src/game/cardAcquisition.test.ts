@@ -17,6 +17,7 @@ describe("createInitialCounters", () => {
 			"normal",
 			"heavy",
 			"scout",
+			"ranged",
 			"miniboss",
 			"boss",
 		] as const) {
