@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { CharacterCardRenderer } from "./characterCardRenderer";
+import {
+	CharacterCardRenderer,
+	PERSONALITY_CARD_COLORS,
+} from "./characterCardRenderer";
 
 function getChildren(renderer: CharacterCardRenderer) {
 	const container = renderer.getContainer();
@@ -7,7 +10,10 @@ function getChildren(renderer: CharacterCardRenderer) {
 	return {
 		background: container.children[0],
 		icon: container.children[1] as unknown as { text: string },
-		label: container.children[2] as unknown as { text: string },
+		label: container.children[2] as unknown as {
+			text: string;
+			style: { fill: number };
+		},
 		speech: container.children[3] as unknown as {
 			text: string;
 			visible: boolean;
@@ -92,6 +98,34 @@ describe("CharacterCardRenderer", () => {
 		expect(label.text).toBe("");
 		expect(speech.text).toBe("");
 		expect(speech.visible).toBe(false);
+	});
+
+	it("性格ごとにラベル色が切り替わる", () => {
+		const renderer = new CharacterCardRenderer();
+		const expectedColors: [Parameters<typeof renderer.render>[0], number][] = [
+			["brave", PERSONALITY_CARD_COLORS.brave.border],
+			["cautious", PERSONALITY_CARD_COLORS.cautious.border],
+			["cheerful", PERSONALITY_CARD_COLORS.cheerful.border],
+			["stoic", PERSONALITY_CARD_COLORS.stoic.border],
+			["curious", PERSONALITY_CARD_COLORS.curious.border],
+		];
+		for (const [personality, expectedColor] of expectedColors) {
+			renderer.render(personality, null);
+			const { label } = getChildren(renderer);
+			expect(label.style.fill).toBe(expectedColor);
+		}
+	});
+
+	it("性格変更時にラベル色が更新される", () => {
+		const renderer = new CharacterCardRenderer();
+		renderer.render("brave", null);
+		expect(getChildren(renderer).label.style.fill).toBe(
+			PERSONALITY_CARD_COLORS.brave.border,
+		);
+		renderer.render("cautious", null);
+		expect(getChildren(renderer).label.style.fill).toBe(
+			PERSONALITY_CARD_COLORS.cautious.border,
+		);
 	});
 
 	it("ツールチップが初期状態で非表示", () => {
