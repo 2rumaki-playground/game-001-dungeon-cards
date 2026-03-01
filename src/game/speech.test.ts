@@ -10,7 +10,7 @@ import { createTestState } from "../test-utils/createTestFixtures";
 import type { Personality } from "../types";
 import { CONTEXTUAL_SPEECH_VARIANTS } from "./contextualSpeechData";
 import { addSpeechLog, matchesContext } from "./speech";
-import { SPEECH_VARIANTS } from "./speechData";
+import { SPEECH_SEQUENCE_VARIANTS, SPEECH_VARIANTS } from "./speechData";
 
 describe("addSpeechLog", () => {
 	it("発話ログがstateに設定される", () => {
@@ -59,6 +59,50 @@ describe("addSpeechLog", () => {
 		const next = addSpeechLog(state, "move_success");
 		const variants = SPEECH_VARIANTS[personality].move_success;
 		expect(variants).toContain(next.speechLog?.message);
+	});
+
+	it("連続パターン一致時にSPEECH_SEQUENCE_VARIANTSから選択される", () => {
+		const state = createTestState();
+		const s1 = addSpeechLog(state, "damage_taken");
+		const s2 = addSpeechLog(s1, "enemy_defeated");
+		const seqVariants =
+			SPEECH_SEQUENCE_VARIANTS[DEFAULT_PERSONALITY].damage_taken_enemy_defeated;
+		expect(seqVariants).toContain(s2.speechLog?.message);
+	});
+
+	it("連続パターン未定義時に通常発話にフォールバックする", () => {
+		const state = createTestState();
+		const s1 = addSpeechLog(state, "move_success");
+		// move_success → move_success は連続パターン未定義
+		const s2 = addSpeechLog(s1, "move_success");
+		const variants = SPEECH_VARIANTS[DEFAULT_PERSONALITY].move_success;
+		expect(variants).toContain(s2.speechLog?.message);
+	});
+
+	it("speechLogがnull（初回）の場合は通常発話が選択される", () => {
+		const state = createTestState();
+		expect(state.speechLog).toBeNull();
+		const next = addSpeechLog(state, "enemy_defeated");
+		const variants = SPEECH_VARIANTS[DEFAULT_PERSONALITY].enemy_defeated;
+		expect(variants).toContain(next.speechLog?.message);
+	});
+
+	it("連続発話でもeventTypeは現在イベントが記録される", () => {
+		const state = createTestState();
+		const s1 = addSpeechLog(state, "damage_taken");
+		const s2 = addSpeechLog(s1, "enemy_defeated");
+		expect(s2.speechLog?.eventType).toBe("enemy_defeated");
+	});
+
+	it.each(
+		PERSONALITIES,
+	)("性格 %s で連続発話が動作する", (personality: Personality) => {
+		const state = createTestState({ personality });
+		const s1 = addSpeechLog(state, "damage_taken");
+		const s2 = addSpeechLog(s1, "enemy_defeated");
+		const seqVariants =
+			SPEECH_SEQUENCE_VARIANTS[personality].damage_taken_enemy_defeated;
+		expect(seqVariants).toContain(s2.speechLog?.message);
 	});
 });
 

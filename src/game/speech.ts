@@ -13,7 +13,7 @@ import {
 	CONTEXTUAL_SPEECH_VARIANTS,
 	type SpeechContext,
 } from "./contextualSpeechData";
-import { SPEECH_VARIANTS } from "./speechData";
+import { SPEECH_SEQUENCE_VARIANTS, SPEECH_VARIANTS } from "./speechData";
 import { setSpeechLog } from "./state";
 
 /**
@@ -39,14 +39,27 @@ export function matchesContext(
 }
 
 /**
- * 発話ログを追加（コンテキスト別バリエーション優先、フォールバックはデフォルト）
+ * 発話ログを追加（連続発話 > コンテキスト発話 > デフォルトの優先順位）
  *
+ * 直前イベントとの組み合わせで連続発話パターンがあればそちらを最優先。
  * Math.random()を使用し、ゲームRNGには影響しない。
  */
 export function addSpeechLog(
 	state: GameState,
 	eventType: SpeechEventType,
 ): GameState {
+	// 1. 連続発話パターン（直前イベント参照）
+	const prevEventType = state.speechLog?.eventType;
+	if (prevEventType) {
+		const key = `${prevEventType}_${eventType}` as const;
+		const seqVariants = SPEECH_SEQUENCE_VARIANTS[state.personality][key];
+		if (seqVariants && seqVariants.length > 0) {
+			const index = Math.floor(Math.random() * seqVariants.length);
+			return setSpeechLog(state, eventType, seqVariants[index]);
+		}
+	}
+
+	// 2. コンテキスト発話
 	const contextualEntries =
 		CONTEXTUAL_SPEECH_VARIANTS[state.personality][eventType];
 
@@ -60,9 +73,8 @@ export function addSpeechLog(
 		}
 	}
 
-	// フォールバック: デフォルトバリエーション
+	// 3. フォールバック: デフォルトバリエーション
 	const variants = SPEECH_VARIANTS[state.personality][eventType];
 	const index = Math.floor(Math.random() * variants.length);
-	const message = variants[index];
-	return setSpeechLog(state, eventType, message);
+	return setSpeechLog(state, eventType, variants[index]);
 }

@@ -392,3 +392,54 @@ export const SPEECH_VARIANTS: Record<
 		],
 	},
 } as const;
+
+/**
+ * 連続発話データ辞書
+ * キーは "直前イベント_現在イベント" 形式
+ * 未定義パターンは通常発話にフォールバック
+ */
+export const SPEECH_SEQUENCE_VARIANTS: Record<
+	Personality,
+	Partial<Record<`${SpeechEventType}_${SpeechEventType}`, readonly string[]>>
+> = {
+	brave: {
+		damage_taken_enemy_defeated: ["やり返したぞ！"],
+		move_fail_move_fail: ["また壁か…別の道を探す！"],
+		trap_triggered_move_success: ["今度は慎重に行くぞ"],
+		enemy_defeated_enemy_defeated: ["止まらないぞ！"],
+		attack_miss_enemy_defeated: ["今度は外さなかったな！"],
+		damage_taken_move_success: ["ここは一旦退くぞ"],
+	},
+	cautious: {
+		damage_taken_enemy_defeated: ["反撃成功、被害を取り戻した"],
+		move_fail_move_fail: ["マップの把握が甘いな…"],
+		trap_triggered_move_success: ["二度と同じ轍は踏まない"],
+		enemy_defeated_enemy_defeated: ["効率よく排除できている"],
+		attack_miss_enemy_defeated: ["修正完了、確実に仕留めた"],
+		damage_taken_move_success: ["被害を最小限に、退避する"],
+	},
+	cheerful: {
+		damage_taken_enemy_defeated: ["やられたらやり返す〜！"],
+		move_fail_move_fail: ["あはは、また壁だ〜！"],
+		trap_triggered_move_success: ["今度は気をつけるぞ〜"],
+		enemy_defeated_enemy_defeated: ["連勝だ〜！すごいすごい！"],
+		attack_miss_enemy_defeated: ["リベンジ成功〜！"],
+		damage_taken_move_success: ["いったん逃げるよ〜！"],
+	},
+	stoic: {
+		damage_taken_enemy_defeated: ["…借りは返した"],
+		move_fail_move_fail: ["…壁ばかりだ"],
+		trap_triggered_move_success: ["…二度はない"],
+		enemy_defeated_enemy_defeated: ["…続けて排除"],
+		attack_miss_enemy_defeated: ["…今度は当てた"],
+		damage_taken_move_success: ["…退く"],
+	},
+	curious: {
+		damage_taken_enemy_defeated: ["さっきの攻撃を分析して倒せた！"],
+		move_fail_move_fail: ["この壁の配置には法則がありそうだ"],
+		trap_triggered_move_success: ["罠の位置を覚えたぞ、次は大丈夫"],
+		enemy_defeated_enemy_defeated: ["連戦データが集まるな！"],
+		attack_miss_enemy_defeated: ["なるほど、こう当てればいいのか"],
+		damage_taken_move_success: ["距離を取って観察しよう"],
+	},
+} as const;
