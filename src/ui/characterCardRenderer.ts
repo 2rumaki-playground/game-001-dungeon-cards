@@ -37,6 +37,7 @@ export class CharacterCardRenderer {
 	private labelText: Text;
 	private speechText: Text;
 	private tooltipContainer: Container;
+	private lastPersonality: Personality | null = null;
 
 	constructor() {
 		this.container = new Container();
@@ -123,7 +124,10 @@ export class CharacterCardRenderer {
 			this.speechText.visible = false;
 		}
 
-		this.buildTooltip(personality);
+		if (personality !== this.lastPersonality) {
+			this.buildTooltip(personality);
+			this.lastPersonality = personality;
+		}
 	}
 
 	private buildTooltip(personality: Personality): void {
