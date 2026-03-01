@@ -11,6 +11,7 @@ import {
 	INITIAL_FLOOR,
 	PERSONALITIES,
 	PLAYER_INITIAL_HP,
+	SUMMONER_COOLDOWN,
 } from "../constants";
 import type {
 	ActionLogEntry,
@@ -91,11 +92,22 @@ export function createEnemiesForFloor(
 		...Array<EnemyType>(composition.normal).fill("normal"),
 		...Array<EnemyType>(composition.heavy).fill("heavy"),
 		...Array<EnemyType>(composition.scout).fill("scout"),
+		...Array<EnemyType>(composition.summoner).fill("summoner"),
 	];
 	return positions.map((position, index) => {
 		const type = types[index] ?? "normal";
 		const { hp } = ENEMY_PARAMS[type];
-		return { id: `enemy-${index + 1}`, type, position, hp, maxHp: hp };
+		const enemy: Enemy = {
+			id: `enemy-${index + 1}`,
+			type,
+			position,
+			hp,
+			maxHp: hp,
+		};
+		if (type === "summoner") {
+			enemy.summonCooldown = SUMMONER_COOLDOWN;
+		}
+		return enemy;
 	});
 }
 

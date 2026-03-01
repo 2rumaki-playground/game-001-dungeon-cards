@@ -22,6 +22,7 @@ export const ENEMY_ASSET_PATHS: Record<EnemyType, string> = {
 	normal: "assets/enemies/normal.png",
 	heavy: "assets/enemies/heavy.png",
 	scout: "assets/enemies/scout.png",
+	summoner: "assets/enemies/summoner.png",
 	miniboss: "assets/enemies/miniboss.png",
 	boss: "assets/enemies/boss.png",
 };
