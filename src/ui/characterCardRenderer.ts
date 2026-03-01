@@ -179,6 +179,14 @@ export class CharacterCardRenderer {
 		this.labelText.text = "";
 		this.speechText.text = "";
 		this.speechText.visible = false;
+
+		const removedChildren = this.tooltipContainer.removeChildren();
+		for (const child of removedChildren) {
+			child.destroy();
+		}
+
+		this.tooltipContainer.visible = false;
+		this.lastPersonality = null;
 	}
 
 	show(): void {
