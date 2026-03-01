@@ -125,15 +125,19 @@ describe("RARE_SPEECH_VARIANTS", () => {
 		expect(rareEvents).toEqual([...EXPECTED_RARE_EVENTS].sort());
 	});
 
-	it("全バリエーションが空文字列でない", () => {
+	it("全バリエーションが1つ以上かつ空文字列でない", () => {
 		for (const personality of PERSONALITIES) {
-			for (const [, variants] of Object.entries(
+			for (const [eventType, variants] of Object.entries(
 				RARE_SPEECH_VARIANTS[personality],
 			)) {
-				if (variants) {
-					for (const variant of variants) {
-						expect(variant.length).toBeGreaterThan(0);
-					}
+				expect(variants, `${personality}.${eventType}`).toBeDefined();
+				const v = variants as readonly string[];
+				expect(
+					v.length,
+					`${personality}.${eventType} の配列が空`,
+				).toBeGreaterThanOrEqual(1);
+				for (const variant of v) {
+					expect(variant.length).toBeGreaterThan(0);
 				}
 			}
 		}
