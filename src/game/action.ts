@@ -108,14 +108,13 @@ export function executeMove(
 	let next = markCardAsPlayed(state, cardId);
 	recordCardUsage("move");
 
-	// comboHistory更新
-	next = updateComboHistory(next, {
-		lastCardType: "move",
-		lastDirection: direction,
-	});
-
 	// 移動判定
 	if (!canMove(state, direction)) {
+		// 移動失敗: 方向をnullで記録（突撃コンボの成立条件を満たさない）
+		next = updateComboHistory(next, {
+			lastCardType: "move",
+			lastDirection: null,
+		});
 		next = addActionLog(next, "移動できなかった", "player");
 		next = addSpeechLog(next, "move_fail");
 		return {
@@ -125,6 +124,12 @@ export function executeMove(
 			gameOver: false,
 		};
 	}
+
+	// 移動成功: comboHistory更新（方向を記録）
+	next = updateComboHistory(next, {
+		lastCardType: "move",
+		lastDirection: direction,
+	});
 
 	// 位置更新
 	const delta = DIRECTION_DELTA[direction];
