@@ -282,6 +282,7 @@
 - HP緊張閾値（`HP_TENSION_RATIO`）：0.75（hp < maxHp × 0.75 で緊張発話が発動）
 - HP瀕死閾値（`HP_CRITICAL_RATIO`）：0.25（hp <= maxHp × 0.25 で瀕死発話が発動）
 - 深層階閾値（`DEEP_FLOOR_THRESHOLD`）：5（floor ≥ 5 で深層発話が発動）
+- レアセリフ出現率（`RARE_SPEECH_RATE`）：0.1（デフォルト発話選択時に10%の確率でレアセリフを使用）
 
 ## プレイ統計
 - 最大保存ラン数：50

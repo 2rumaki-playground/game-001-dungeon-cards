@@ -394,6 +394,67 @@ export const SPEECH_VARIANTS: Record<
 } as const;
 
 /**
+ * レア発話データ辞書
+ * 各性格の"素"が出るギャップ表現（約10%の確率で出現）
+ * デフォルト発話選択時のみ判定される
+ */
+export const RARE_SPEECH_VARIANTS: Record<
+	Personality,
+	Partial<Record<SpeechEventType, readonly string[]>>
+> = {
+	brave: {
+		move_success: ["…本当にこの道で合ってるのかな"],
+		enemy_defeated: ["正直、ちょっと怖かった…"],
+		damage_taken: ["痛い…誰か助けて…"],
+		game_over: ["怖かった…ずっと怖かったんだ"],
+		combo_activated: ["手が震えてるけど…いける！"],
+		treasure_found: ["ほっとした…本当に"],
+		trap_triggered: ["もう帰りたい…"],
+		floor_reached: ["この先…大丈夫かな"],
+	},
+	cautious: {
+		move_success: ["たまには直感で行ってみるか！"],
+		enemy_defeated: ["分析なんていらなかった！"],
+		damage_taken: ["考えてる場合じゃない、走れ！"],
+		game_over: ["計算なんて…無意味だったか"],
+		combo_activated: ["理屈抜きで気持ちいい！"],
+		treasure_found: ["深く考えず、素直に喜ぼう"],
+		trap_triggered: ["えいっ！…って踏んじゃった"],
+		floor_reached: ["今日は勘で進んでみよう"],
+	},
+	cheerful: {
+		move_success: ["…ここ、少し嫌な予感がする"],
+		enemy_defeated: ["もう誰も傷つかないで"],
+		damage_taken: ["…笑えない、かも"],
+		game_over: ["みんなを守れなかった…ごめん"],
+		combo_activated: ["集中…今は絶対に外せない"],
+		treasure_found: ["これで…もう少し頑張れる"],
+		trap_triggered: ["痛い…けど、泣かないよ"],
+		floor_reached: ["ここからは気を引き締めないと"],
+	},
+	stoic: {
+		move_success: ["…この景色、少し好きだ"],
+		enemy_defeated: ["…よくやった、俺"],
+		damage_taken: ["…正直、きつい"],
+		game_over: ["…もう少し、生きたかった"],
+		combo_activated: ["…悪くない、この感覚"],
+		treasure_found: ["…ありがたいな、本当に"],
+		trap_triggered: ["…くそっ"],
+		floor_reached: ["…少しだけ、わくわくする"],
+	},
+	curious: {
+		move_success: ["この道で間違いない、確信がある"],
+		enemy_defeated: ["分かっていた、こうなると"],
+		damage_taken: ["想定内だ、問題ない"],
+		game_over: ["全ては分かっていたのに…"],
+		combo_activated: ["読み通り、完璧な連携だ"],
+		treasure_found: ["ここにあると思っていた"],
+		trap_triggered: ["知っていた…けど避けられなかった"],
+		floor_reached: ["この階層の構造は把握済みだ"],
+	},
+} as const;
+
+/**
  * 連続発話データ辞書
  * キーは "直前イベント_現在イベント" 形式
  * 未定義パターンは通常発話にフォールバック

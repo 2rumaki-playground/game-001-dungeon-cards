@@ -1,7 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { PERSONALITIES } from "../constants";
 import type { Personality, SpeechEventType } from "../types";
-import { SPEECH_SEQUENCE_VARIANTS, SPEECH_VARIANTS } from "./speechData";
+import {
+	RARE_SPEECH_VARIANTS,
+	SPEECH_SEQUENCE_VARIANTS,
+	SPEECH_VARIANTS,
+} from "./speechData";
 
 const eventTypes: SpeechEventType[] = [
 	"move_success",
@@ -96,6 +100,45 @@ describe("SPEECH_SEQUENCE_VARIANTS", () => {
 					for (const variant of variants) {
 						expect(variant.length).toBeGreaterThan(0);
 					}
+				}
+			}
+		}
+	});
+});
+
+describe("RARE_SPEECH_VARIANTS", () => {
+	it.each(
+		PERSONALITIES,
+	)("性格 %s にレアバリエーションが少なくとも1イベント存在する", (personality: Personality) => {
+		const rareEvents = Object.keys(RARE_SPEECH_VARIANTS[personality]);
+		expect(rareEvents.length).toBeGreaterThanOrEqual(1);
+	});
+
+	it("全バリエーションが空文字列でない", () => {
+		for (const personality of PERSONALITIES) {
+			for (const [, variants] of Object.entries(
+				RARE_SPEECH_VARIANTS[personality],
+			)) {
+				if (variants) {
+					for (const variant of variants) {
+						expect(variant.length).toBeGreaterThan(0);
+					}
+				}
+			}
+		}
+	});
+
+	it("レアセリフが通常セリフと重複しない", () => {
+		for (const personality of PERSONALITIES) {
+			for (const [eventType, rareVariants] of Object.entries(
+				RARE_SPEECH_VARIANTS[personality],
+			)) {
+				if (!rareVariants) continue;
+				const normalVariants = new Set(
+					SPEECH_VARIANTS[personality][eventType as SpeechEventType],
+				);
+				for (const rare of rareVariants) {
+					expect(normalVariants.has(rare)).toBe(false);
 				}
 			}
 		}

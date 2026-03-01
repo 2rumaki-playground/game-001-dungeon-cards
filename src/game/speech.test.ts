@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, type MockInstance, vi } from "vitest";
 import {
 	DEEP_FLOOR_THRESHOLD,
 	DEFAULT_PERSONALITY,
@@ -7,10 +7,25 @@ import {
 	PLAYER_INITIAL_HP,
 } from "../constants";
 import { createTestState } from "../test-utils/createTestFixtures";
-import type { Personality } from "../types";
+import type { Personality, SpeechEventType } from "../types";
 import { CONTEXTUAL_SPEECH_VARIANTS } from "./contextualSpeechData";
 import { addSpeechLog, matchesContext } from "./speech";
-import { SPEECH_SEQUENCE_VARIANTS, SPEECH_VARIANTS } from "./speechData";
+import {
+	RARE_SPEECH_VARIANTS,
+	SPEECH_SEQUENCE_VARIANTS,
+	SPEECH_VARIANTS,
+} from "./speechData";
+
+/** デフォルト発話とレア発話の両方を結合した配列を返す */
+function allDefaultVariants(
+	personality: Personality,
+	eventType: SpeechEventType,
+): readonly string[] {
+	return [
+		...SPEECH_VARIANTS[personality][eventType],
+		...(RARE_SPEECH_VARIANTS[personality][eventType] ?? []),
+	];
+}
 
 describe("addSpeechLog", () => {
 	it("発話ログがstateに設定される", () => {
@@ -26,7 +41,7 @@ describe("addSpeechLog", () => {
 	it("発話メッセージがバリエーション内のいずれかである", () => {
 		const state = createTestState();
 		const next = addSpeechLog(state, "enemy_defeated");
-		const variants = SPEECH_VARIANTS[DEFAULT_PERSONALITY].enemy_defeated;
+		const variants = allDefaultVariants(DEFAULT_PERSONALITY, "enemy_defeated");
 		expect(variants).toContain(next.speechLog?.message);
 	});
 
@@ -57,7 +72,7 @@ describe("addSpeechLog", () => {
 			},
 		});
 		const next = addSpeechLog(state, "move_success");
-		const variants = SPEECH_VARIANTS[personality].move_success;
+		const variants = allDefaultVariants(personality, "move_success");
 		expect(variants).toContain(next.speechLog?.message);
 	});
 
@@ -70,20 +85,20 @@ describe("addSpeechLog", () => {
 		expect(seqVariants).toContain(s2.speechLog?.message);
 	});
 
-	it("連続パターン未定義時に通常発話にフォールバックする", () => {
+	it("連続パターン未定義時にデフォルト発話にフォールバックする", () => {
 		const state = createTestState();
 		const s1 = addSpeechLog(state, "move_success");
 		// move_success → move_success は連続パターン未定義
 		const s2 = addSpeechLog(s1, "move_success");
-		const variants = SPEECH_VARIANTS[DEFAULT_PERSONALITY].move_success;
+		const variants = allDefaultVariants(DEFAULT_PERSONALITY, "move_success");
 		expect(variants).toContain(s2.speechLog?.message);
 	});
 
-	it("speechLogがnull（初回）の場合は通常発話が選択される", () => {
+	it("speechLogがnull（初回）の場合はデフォルト発話が選択される", () => {
 		const state = createTestState();
 		expect(state.speechLog).toBeNull();
 		const next = addSpeechLog(state, "enemy_defeated");
-		const variants = SPEECH_VARIANTS[DEFAULT_PERSONALITY].enemy_defeated;
+		const variants = allDefaultVariants(DEFAULT_PERSONALITY, "enemy_defeated");
 		expect(variants).toContain(next.speechLog?.message);
 	});
 
@@ -299,11 +314,11 @@ describe("コンテキスト発話の優先選択", () => {
 			},
 		});
 		const next = addSpeechLog(state, "move_success");
-		const defaultVariants = SPEECH_VARIANTS[DEFAULT_PERSONALITY].move_success;
-		expect(defaultVariants).toContain(next.speechLog?.message);
+		const variants = allDefaultVariants(DEFAULT_PERSONALITY, "move_success");
+		expect(variants).toContain(next.speechLog?.message);
 	});
 
-	it("game_overイベントは常にデフォルトバリエーション", () => {
+	it("game_overイベントは常にデフォルトバリエーション（コンテキスト発話なし）", () => {
 		const criticalHp = Math.floor(PLAYER_INITIAL_HP * HP_CRITICAL_RATIO);
 		const state = createTestState({
 			player: {
@@ -313,7 +328,60 @@ describe("コンテキスト発話の優先選択", () => {
 			},
 		});
 		const next = addSpeechLog(state, "game_over");
-		const defaultVariants = SPEECH_VARIANTS[DEFAULT_PERSONALITY].game_over;
+		const variants = allDefaultVariants(DEFAULT_PERSONALITY, "game_over");
+		expect(variants).toContain(next.speechLog?.message);
+	});
+});
+
+describe("レアセリフ判定", () => {
+	let randomSpy: MockInstance;
+
+	afterEach(() => {
+		randomSpy?.mockRestore();
+	});
+
+	it("Math.random < RARE_SPEECH_RATE のときレアセリフが選択される", () => {
+		// Math.random を固定: 1回目=0.05(レア判定), 2回目=0(バリエーション選択)
+		randomSpy = vi.spyOn(Math, "random").mockReturnValue(0.05);
+		const state = createTestState({
+			player: {
+				position: { x: 3, y: 3 },
+				hp: PLAYER_INITIAL_HP,
+				maxHp: PLAYER_INITIAL_HP,
+			},
+		});
+		const next = addSpeechLog(state, "enemy_defeated");
+		const rareVariants =
+			RARE_SPEECH_VARIANTS[DEFAULT_PERSONALITY].enemy_defeated;
+		expect(rareVariants).toContain(next.speechLog?.message);
+	});
+
+	it("Math.random >= RARE_SPEECH_RATE のとき通常セリフが選択される", () => {
+		randomSpy = vi.spyOn(Math, "random").mockReturnValue(0.5);
+		const state = createTestState({
+			player: {
+				position: { x: 3, y: 3 },
+				hp: PLAYER_INITIAL_HP,
+				maxHp: PLAYER_INITIAL_HP,
+			},
+		});
+		const next = addSpeechLog(state, "enemy_defeated");
+		const defaultVariants = SPEECH_VARIANTS[DEFAULT_PERSONALITY].enemy_defeated;
+		expect(defaultVariants).toContain(next.speechLog?.message);
+	});
+
+	it("レアバリエーション未定義イベントでは通常セリフにフォールバックする", () => {
+		// rest_area_usedはRARE_SPEECH_VARIANTSに未定義
+		randomSpy = vi.spyOn(Math, "random").mockReturnValue(0.05);
+		const state = createTestState({
+			player: {
+				position: { x: 3, y: 3 },
+				hp: PLAYER_INITIAL_HP,
+				maxHp: PLAYER_INITIAL_HP,
+			},
+		});
+		const next = addSpeechLog(state, "rest_area_used");
+		const defaultVariants = SPEECH_VARIANTS[DEFAULT_PERSONALITY].rest_area_used;
 		expect(defaultVariants).toContain(next.speechLog?.message);
 	});
 });
