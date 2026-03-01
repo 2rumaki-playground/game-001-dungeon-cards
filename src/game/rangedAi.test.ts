@@ -111,8 +111,8 @@ describe("getRetreatPosition", () => {
 		expect(pos).toBeNull();
 	});
 
-	it("後退先がマップ外 → null", () => {
-		// プレイヤー(3,3)、敵(1,3) → 左(0,3)は外周壁
+	it("後退先が外周壁タイル → null", () => {
+		// プレイヤー(3,3)、敵(1,3) → 左(0,3)はマップ端の外周壁タイル
 		const enemy = createTestEnemy("ranged", { x: 1, y: 3 });
 		const state = createTestState({ enemies: [enemy] });
 		const pos = getRetreatPosition(state, enemy);
@@ -146,8 +146,8 @@ describe("executeEnemyTurn - 射撃敵行動テーブル", () => {
 	});
 
 	it("非隣接 + 射程外 → 待機（ダメージなし）", () => {
-		// プレイヤー(3,3)、射撃敵(3,1) → 距離2だが、射程外テスト用に距離3
-		// 射撃敵(1,1) → プレイヤーとの距離=4、斜めなので射線なし → 待機
+		// プレイヤー(3,3)、射撃敵(1,1) → 距離4かつ斜め（射線なし）なので射程外として待機を確認
+		// （同軸かつ距離3の射程外ケースは下のテストで別途検証）
 		const enemies: Enemy[] = [
 			{
 				id: "enemy-1",
