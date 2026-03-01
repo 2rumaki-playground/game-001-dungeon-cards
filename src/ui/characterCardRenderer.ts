@@ -157,10 +157,19 @@ export class CharacterCardRenderer {
 				return 0;
 			}
 		};
+		const safeHeight = (t: Text): number => {
+			try {
+				const bounds = t.getLocalBounds();
+				return bounds?.height ?? 0;
+			} catch {
+				return 0;
+			}
+		};
 		const bg = new Graphics();
 		const textWidth = Math.max(TOOLTIP_MIN_WIDTH, safeWidth(tooltipText));
 		const tooltipWidth = textWidth + TOOLTIP_PADDING * 2;
-		const tooltipHeight = TOOLTIP_FONT_SIZE + TOOLTIP_PADDING * 2;
+		const textHeight = Math.max(TOOLTIP_FONT_SIZE, safeHeight(tooltipText));
+		const tooltipHeight = textHeight + TOOLTIP_PADDING * 2;
 		bg.roundRect(0, 0, tooltipWidth, tooltipHeight, 3);
 		bg.fill({
 			color: TOOLTIP_BACKGROUND_COLOR,
