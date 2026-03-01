@@ -22,7 +22,7 @@ const CARD_BORDER_WIDTH = 2;
 const SPEECH_TEXT_COLOR = 0xeeeef0;
 const ICON_FONT_SIZE = 18;
 
-const PERSONALITY_CARD_COLORS: Record<
+export const PERSONALITY_CARD_COLORS: Record<
 	Personality,
 	{ bg: number; border: number }
 > = {
