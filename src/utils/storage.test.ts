@@ -579,6 +579,54 @@ describe("storage", () => {
 		expect(loaded?.achievedMilestones.has("first_trap")).toBe(true);
 	});
 
+	it("pendingMilestoneが有効値のとき正しく復元される", () => {
+		const state = createTitleScreenState(42);
+		const saveData = {
+			...state,
+			screen: "game",
+			rng: state.rng.serialize(),
+			visitedTiles: [],
+			pendingMilestone: "first_defeat",
+		};
+		localStorageMock.setItem("dungeon-cards-save", JSON.stringify(saveData));
+
+		const loaded = loadGame();
+		expect(loaded).not.toBeNull();
+		expect(loaded?.pendingMilestone).toBe("first_defeat");
+	});
+
+	it("pendingMilestoneが不正値のときnullになる", () => {
+		const state = createTitleScreenState(42);
+		const saveData = {
+			...state,
+			screen: "game",
+			rng: state.rng.serialize(),
+			visitedTiles: [],
+			pendingMilestone: "invalid_milestone",
+		};
+		localStorageMock.setItem("dungeon-cards-save", JSON.stringify(saveData));
+
+		const loaded = loadGame();
+		expect(loaded).not.toBeNull();
+		expect(loaded?.pendingMilestone).toBeNull();
+	});
+
+	it("pendingMilestoneが未設定のときnullになる", () => {
+		const state = createTitleScreenState(42);
+		const saveData = {
+			...state,
+			screen: "game",
+			rng: state.rng.serialize(),
+			visitedTiles: [],
+		};
+		delete (saveData as Record<string, unknown>).pendingMilestone;
+		localStorageMock.setItem("dungeon-cards-save", JSON.stringify(saveData));
+
+		const loaded = loadGame();
+		expect(loaded).not.toBeNull();
+		expect(loaded?.pendingMilestone).toBeNull();
+	});
+
 	it("不正なvisitedTilesエントリは除外され有効な座標のみ残る", () => {
 		const state = createTitleScreenState(42);
 		const saveData = {
