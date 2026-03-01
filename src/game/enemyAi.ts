@@ -346,14 +346,24 @@ export function executeEnemyTurn(
 
 		// 射撃敵は専用ロジックで処理
 		if (currentEnemy.type === "ranged") {
-			const enemyRoom = findRoomAt(currentEnemy.position, next.rooms);
-			if (enemyRoom !== null && !isInRoom(next.player.position, enemyRoom)) {
-				// 部屋内の敵 && プレイヤーが同じ部屋にいない → 待機
-			} else if (
-				manhattanDistance(currentEnemy.position, next.player.position) <=
-				params.senseRange
-			) {
+			// 隣接時は部屋境界に関係なく行動（後退/射撃）
+			if (isAdjacent(currentEnemy.position, next.player.position)) {
 				next = executeRangedEnemyAction(next, currentEnemy, applyDmg, verbose);
+			} else {
+				const enemyRoom = findRoomAt(currentEnemy.position, next.rooms);
+				if (enemyRoom !== null && !isInRoom(next.player.position, enemyRoom)) {
+					// 部屋内の敵 && プレイヤーが同じ部屋にいない → 待機
+				} else if (
+					manhattanDistance(currentEnemy.position, next.player.position) <=
+					params.senseRange
+				) {
+					next = executeRangedEnemyAction(
+						next,
+						currentEnemy,
+						applyDmg,
+						verbose,
+					);
+				}
 			}
 			continue;
 		}
