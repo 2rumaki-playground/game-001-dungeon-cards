@@ -223,7 +223,20 @@ function analyzeRangedEnemy(state: GameState, enemy: Enemy): EnemyAiAnalysis {
 	const distance = manhattanDistance(enemy.position, state.player.position);
 	const mapWidth = state.map[0]?.length ?? 0;
 	const mapHeight = state.map.length;
-	const attackRange = getAttackRange(enemy.position, mapWidth, mapHeight);
+
+	// 射撃敵の攻撃範囲は「射程 + 直線条件 + 壁遮蔽なし」の射撃可能タイルとする
+	const attackRange: Position[] = [];
+	for (let y = 0; y < mapHeight; y++) {
+		for (let x = 0; x < mapWidth; x++) {
+			const pos: Position = { x, y };
+			const d = manhattanDistance(enemy.position, pos);
+			if (d === 0) continue;
+			if (d > RANGED_SHOOT_RANGE) continue;
+			if (pos.x !== enemy.position.x && pos.y !== enemy.position.y) continue;
+			if (!hasLineOfSight(state, enemy.position, pos)) continue;
+			attackRange.push(pos);
+		}
+	}
 
 	// 隣接 → 部屋境界に関係なく行動（後退/射撃）
 	if (isAdjacent(enemy.position, state.player.position)) {
