@@ -391,6 +391,7 @@ export const PERSONALITY_DESCRIPTION: Record<Personality, string> = {
 export const HP_TENSION_RATIO = 0.75;
 export const HP_CRITICAL_RATIO = 0.25;
 export const DEEP_FLOOR_THRESHOLD = 5;
+export const RARE_SPEECH_RATE = 0.1;
 
 // 描画設定
 export const CELL_SIZE = 64;

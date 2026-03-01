@@ -1,7 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { PERSONALITIES } from "../constants";
 import type { Personality, SpeechEventType } from "../types";
-import { SPEECH_SEQUENCE_VARIANTS, SPEECH_VARIANTS } from "./speechData";
+import {
+	RARE_SPEECH_VARIANTS,
+	SPEECH_SEQUENCE_VARIANTS,
+	SPEECH_VARIANTS,
+} from "./speechData";
 
 const eventTypes: SpeechEventType[] = [
 	"move_success",
@@ -96,6 +100,60 @@ describe("SPEECH_SEQUENCE_VARIANTS", () => {
 					for (const variant of variants) {
 						expect(variant.length).toBeGreaterThan(0);
 					}
+				}
+			}
+		}
+	});
+});
+
+describe("RARE_SPEECH_VARIANTS", () => {
+	const EXPECTED_RARE_EVENTS: SpeechEventType[] = [
+		"move_success",
+		"enemy_defeated",
+		"damage_taken",
+		"game_over",
+		"combo_activated",
+		"treasure_found",
+		"trap_triggered",
+		"floor_reached",
+	];
+
+	it.each(
+		PERSONALITIES,
+	)("性格 %s にレアバリエーションが全8イベント存在する", (personality: Personality) => {
+		const rareEvents = Object.keys(RARE_SPEECH_VARIANTS[personality]).sort();
+		expect(rareEvents).toEqual([...EXPECTED_RARE_EVENTS].sort());
+	});
+
+	it("全バリエーションが1つ以上かつ空文字列でない", () => {
+		for (const personality of PERSONALITIES) {
+			for (const [eventType, variants] of Object.entries(
+				RARE_SPEECH_VARIANTS[personality],
+			)) {
+				expect(variants, `${personality}.${eventType}`).toBeDefined();
+				const v = variants as readonly string[];
+				expect(
+					v.length,
+					`${personality}.${eventType} の配列が空`,
+				).toBeGreaterThanOrEqual(1);
+				for (const variant of v) {
+					expect(variant.length).toBeGreaterThan(0);
+				}
+			}
+		}
+	});
+
+	it("レアセリフが通常セリフと重複しない", () => {
+		for (const personality of PERSONALITIES) {
+			for (const [eventType, rareVariants] of Object.entries(
+				RARE_SPEECH_VARIANTS[personality],
+			)) {
+				if (!rareVariants) continue;
+				const normalVariants = new Set(
+					SPEECH_VARIANTS[personality][eventType as SpeechEventType],
+				);
+				for (const rare of rareVariants) {
+					expect(normalVariants.has(rare)).toBe(false);
 				}
 			}
 		}

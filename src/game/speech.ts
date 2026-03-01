@@ -7,13 +7,18 @@ import {
 	DEEP_FLOOR_THRESHOLD,
 	HP_CRITICAL_RATIO,
 	HP_TENSION_RATIO,
+	RARE_SPEECH_RATE,
 } from "../constants";
 import type { GameState, SpeechEventType } from "../types";
 import {
 	CONTEXTUAL_SPEECH_VARIANTS,
 	type SpeechContext,
 } from "./contextualSpeechData";
-import { SPEECH_SEQUENCE_VARIANTS, SPEECH_VARIANTS } from "./speechData";
+import {
+	RARE_SPEECH_VARIANTS,
+	SPEECH_SEQUENCE_VARIANTS,
+	SPEECH_VARIANTS,
+} from "./speechData";
 import { setSpeechLog } from "./state";
 
 /**
@@ -39,7 +44,7 @@ export function matchesContext(
 }
 
 /**
- * 発話ログを追加（連続発話 > コンテキスト発話 > デフォルトの優先順位）
+ * 発話ログを追加（連続発話 > コンテキスト発話 > レア(デフォルト時) > 通常デフォルトの優先順位）
  *
  * 直前イベントとの組み合わせで連続発話パターンがあればそちらを最優先。
  * Math.random()を使用し、ゲームRNGには影響しない。
@@ -73,7 +78,17 @@ export function addSpeechLog(
 		}
 	}
 
-	// 3. フォールバック: デフォルトバリエーション
+	// 3. フォールバック: レア判定 → デフォルトバリエーション
+	const rareVariants = RARE_SPEECH_VARIANTS[state.personality][eventType];
+	if (
+		rareVariants &&
+		rareVariants.length > 0 &&
+		Math.random() < RARE_SPEECH_RATE
+	) {
+		const rareIndex = Math.floor(Math.random() * rareVariants.length);
+		return setSpeechLog(state, eventType, rareVariants[rareIndex]);
+	}
+
 	const variants = SPEECH_VARIANTS[state.personality][eventType];
 	const index = Math.floor(Math.random() * variants.length);
 	return setSpeechLog(state, eventType, variants[index]);
