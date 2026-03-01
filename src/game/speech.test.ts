@@ -342,7 +342,10 @@ describe("レアセリフ判定", () => {
 
 	it("Math.random < RARE_SPEECH_RATE のときレアセリフが選択される", () => {
 		// Math.random を固定: 1回目=0.05(レア判定), 2回目=0(バリエーション選択)
-		randomSpy = vi.spyOn(Math, "random").mockReturnValue(0.05);
+		randomSpy = vi
+			.spyOn(Math, "random")
+			.mockReturnValueOnce(0.05)
+			.mockReturnValueOnce(0);
 		const state = createTestState({
 			player: {
 				position: { x: 3, y: 3 },
