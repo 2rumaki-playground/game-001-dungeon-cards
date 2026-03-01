@@ -86,7 +86,7 @@ export function addSpeechLog(
 		const msState = setSpeechLog(state, eventType, msVariants[msIndex]);
 		return {
 			...msState,
-			achievedMilestones: addMilestone(state.achievedMilestones, milestone),
+			achievedMilestones: addMilestone(msState.achievedMilestones, milestone),
 		};
 	}
 
