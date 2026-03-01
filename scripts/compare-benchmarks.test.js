@@ -49,20 +49,21 @@ describe("formatBytes", () => {
 });
 
 describe("formatTime", () => {
-	it("1ms未満の値をμs単位で表示する", () => {
-		expect(formatTime(0.001)).toBe("1.0μs");
-		expect(formatTime(0.0001)).toBe("0.1μs");
-		expect(formatTime(0.1)).toBe("100.0μs");
+	it("常にms単位で表示する", () => {
+		expect(formatTime(1.5)).toBe("1.500");
+		expect(formatTime(10)).toBe("10.000");
+		expect(formatTime(1)).toBe("1.000");
+		expect(formatTime(0.1)).toBe("0.100");
+		expect(formatTime(0.001)).toBe("0.001");
 	});
 
-	it("1ms以上の値をms単位で表示する", () => {
-		expect(formatTime(1.5)).toBe("1.50ms");
-		expect(formatTime(10)).toBe("10.00ms");
-		expect(formatTime(1)).toBe("1.00ms");
+	it("0.001ms未満の値は<0.001と表示する", () => {
+		expect(formatTime(0.0001)).toBe("<0.001");
+		expect(formatTime(0.0009)).toBe("<0.001");
 	});
 
-	it("0を渡した場合はμs単位で0.0μsを返す", () => {
-		expect(formatTime(0)).toBe("0.0μs");
+	it("0を渡した場合は0.000を返す", () => {
+		expect(formatTime(0)).toBe("0.000");
 	});
 });
 
@@ -125,16 +126,18 @@ describe("formatTimeDiff", () => {
 		expect(formatTimeDiff(0.001, "new")).toBe("new");
 	});
 
-	it("μs単位で差分をフォーマットする", () => {
-		expect(formatTimeDiff(0.001, "5.0")).toBe("+1.0μs (+5.0%)");
-	});
-
 	it("ms単位で差分をフォーマットする", () => {
-		expect(formatTimeDiff(1.5, "10.0")).toBe("+1.50ms (+10.0%)");
+		expect(formatTimeDiff(1.5, "10.0")).toBe("+1.500 (+10.0%)");
+		expect(formatTimeDiff(0.005, "5.0")).toBe("+0.005 (+5.0%)");
 	});
 
 	it("差分ゼロの場合は「変化なし」を返す", () => {
 		expect(formatTimeDiff(0, "0.0")).toBe("変化なし");
+	});
+
+	it("差分の絶対値が0.001ms以下の場合は「変化なし」を返す", () => {
+		expect(formatTimeDiff(0.001, "0.5")).toBe("変化なし");
+		expect(formatTimeDiff(-0.0005, "-0.1")).toBe("変化なし");
 	});
 });
 
@@ -249,7 +252,7 @@ describe("compareBenchmarks", () => {
 		}
 	});
 
-	it("時間の単位がμs/msで自動切替される", () => {
+	it("すべての値がms単位で統一表示される", () => {
 		const result = compareBenchmarks(
 			{
 				files: [
@@ -281,8 +284,7 @@ describe("compareBenchmarks", () => {
 			},
 		);
 
-		expect(result.rows).toContain("μs");
-		expect(result.rows).toContain("ms");
+		expect(result.rows).not.toContain("μs");
 	});
 
 	it("20%以上劣化した場合に警告アイコンが表示される", () => {

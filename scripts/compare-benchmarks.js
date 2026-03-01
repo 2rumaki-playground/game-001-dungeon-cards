@@ -24,8 +24,9 @@ export function formatBytes(bytes) {
 }
 
 export function formatTime(ms) {
-	if (ms < 1) return `${(ms * 1000).toFixed(1)}μs`;
-	return `${ms.toFixed(2)}ms`;
+	if (ms === 0) return "0.000";
+	if (ms > 0 && ms < 0.001) return "<0.001";
+	return `${ms.toFixed(3)}`;
 }
 
 export function determineBestUnit(values) {
@@ -59,7 +60,7 @@ export function formatByteDiff(diff, pct) {
 
 export function formatTimeDiff(diff, pct) {
 	if (pct === "new") return "new";
-	if (diff === 0) return "変化なし";
+	if (Math.abs(diff) <= 0.001) return "変化なし";
 	const pctNum = Number(pct);
 	const sign = pctNum > 0 ? "+" : "-";
 	const absPct = Math.abs(pctNum).toFixed(1);
@@ -215,7 +216,7 @@ if (process.argv[1] === __filename) {
 		const bench = compareBenchmarks(base, head);
 		if (bench.rows) {
 			md += "### 実行時間ベンチマーク\n\n";
-			md += "| ベンチマーク | base | head | 差分 |\n";
+			md += "| ベンチマーク | base(ms) | head(ms) | 差分(ms) |\n";
 			md += "|-------------|------|------|------|\n";
 			md += bench.rows;
 			if (bench.hasRegression) {
