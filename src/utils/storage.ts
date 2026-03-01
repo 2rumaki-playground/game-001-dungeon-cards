@@ -15,6 +15,7 @@ import type {
 	AcquisitionCounters,
 	DeckState,
 	GameState,
+	MilestoneType,
 	Personality,
 	Room,
 	SpeechEventType,
@@ -185,6 +186,31 @@ function sanitizeSpeechLog(raw: unknown): SpeechLogEntry | null {
 }
 
 /**
+ * achievedMilestones をバリデーションし、安全なSetとして再構築
+ */
+const VALID_MILESTONES: ReadonlySet<MilestoneType> = new Set([
+	"first_defeat",
+	"ten_defeats",
+	"first_trap",
+	"last_word",
+	"first_floor_clear",
+]);
+
+function sanitizeAchievedMilestones(raw: unknown): Set<MilestoneType> {
+	if (!Array.isArray(raw)) return new Set<MilestoneType>();
+	const result = new Set<MilestoneType>();
+	for (const item of raw) {
+		if (
+			typeof item === "string" &&
+			VALID_MILESTONES.has(item as MilestoneType)
+		) {
+			result.add(item as MilestoneType);
+		}
+	}
+	return result;
+}
+
+/**
  * personality をバリデーションし、不正なら DEFAULT_PERSONALITY にフォールバック
  */
 const VALID_PERSONALITIES: ReadonlySet<Personality> = new Set(PERSONALITIES);
@@ -207,6 +233,7 @@ export function saveGame(state: GameState): void {
 			...state,
 			rng: state.rng.serialize(),
 			visitedTiles: Array.from(state.visitedTiles),
+			achievedMilestones: Array.from(state.achievedMilestones),
 		};
 		localStorage.setItem(SAVE_KEY, JSON.stringify(saveData));
 	} catch (e) {
@@ -327,6 +354,7 @@ export function loadGame(): GameState | null {
 			comboHistory: null,
 			personality: sanitizePersonality(data.personality),
 			speechLog: sanitizeSpeechLog(data.speechLog),
+			achievedMilestones: sanitizeAchievedMilestones(data.achievedMilestones),
 		};
 
 		// 旧セーブデータ互換: 3ゾーン形式のデッキを手札形式に変換

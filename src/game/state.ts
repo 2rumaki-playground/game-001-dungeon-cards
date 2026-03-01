@@ -152,6 +152,7 @@ export function createTitleScreenState(seed?: number): GameState {
 		comboHistory: null,
 		personality: DEFAULT_PERSONALITY,
 		speechLog: null,
+		achievedMilestones: new Set(),
 	};
 }
 
@@ -199,6 +200,7 @@ export function createInitialGameState(
 		comboHistory: null,
 		personality,
 		speechLog: null,
+		achievedMilestones: new Set(),
 	};
 }
 

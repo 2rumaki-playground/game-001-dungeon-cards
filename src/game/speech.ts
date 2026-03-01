@@ -9,11 +9,13 @@ import {
 	HP_TENSION_RATIO,
 	RARE_SPEECH_RATE,
 } from "../constants";
-import type { GameState, SpeechEventType } from "../types";
+import type { GameState, MilestoneType, SpeechEventType } from "../types";
 import {
 	CONTEXTUAL_SPEECH_VARIANTS,
 	type SpeechContext,
 } from "./contextualSpeechData";
+import { checkMilestone } from "./milestone";
+import { MILESTONE_SPEECH_VARIANTS } from "./milestoneSpeechData";
 import {
 	RARE_SPEECH_VARIANTS,
 	SPEECH_SEQUENCE_VARIANTS,
@@ -44,7 +46,19 @@ export function matchesContext(
 }
 
 /**
- * 発話ログを追加（連続発話 > コンテキスト発話 > レア(デフォルト時) > 通常デフォルトの優先順位）
+ * achievedMilestones にマイルストーンを追加した新しいSetを返す
+ */
+function addMilestone(
+	milestones: Set<MilestoneType>,
+	milestone: MilestoneType,
+): Set<MilestoneType> {
+	const next = new Set(milestones);
+	next.add(milestone);
+	return next;
+}
+
+/**
+ * 発話ログを追加（連続発話 > マイルストーン発話 > コンテキスト発話 > レア(デフォルト時) > 通常デフォルトの優先順位）
  *
  * 直前イベントとの組み合わせで連続発話パターンがあればそちらを最優先。
  * Math.random()を使用し、ゲームRNGには影響しない。
@@ -64,7 +78,19 @@ export function addSpeechLog(
 		}
 	}
 
-	// 2. コンテキスト発話
+	// 2. マイルストーン発話（判定→発話→フラグ更新をアトミックに実行）
+	const milestone = checkMilestone(state, eventType);
+	if (milestone) {
+		const msVariants = MILESTONE_SPEECH_VARIANTS[state.personality][milestone];
+		const msIndex = Math.floor(Math.random() * msVariants.length);
+		const msState = setSpeechLog(state, eventType, msVariants[msIndex]);
+		return {
+			...msState,
+			achievedMilestones: addMilestone(state.achievedMilestones, milestone),
+		};
+	}
+
+	// 3. コンテキスト発話
 	const contextualEntries =
 		CONTEXTUAL_SPEECH_VARIANTS[state.personality][eventType];
 
@@ -78,7 +104,7 @@ export function addSpeechLog(
 		}
 	}
 
-	// 3. フォールバック: レア判定 → デフォルトバリエーション
+	// 4. フォールバック: レア判定 → デフォルトバリエーション
 	const rareVariants = RARE_SPEECH_VARIANTS[state.personality][eventType];
 	if (
 		rareVariants &&

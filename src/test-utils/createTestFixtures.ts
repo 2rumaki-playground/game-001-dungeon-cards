@@ -56,6 +56,7 @@ export function createTestState(overrides?: Partial<GameState>): GameState {
 		comboHistory: null,
 		personality: DEFAULT_PERSONALITY,
 		speechLog: null,
+		achievedMilestones: new Set(),
 		...overrides,
 	};
 }

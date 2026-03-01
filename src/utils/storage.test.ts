@@ -504,6 +504,81 @@ describe("storage", () => {
 		}
 	});
 
+	it("achievedMilestonesが正しく保存・復元される", () => {
+		const state = createTitleScreenState(42);
+		state.achievedMilestones = new Set([
+			"first_defeat" as const,
+			"first_trap" as const,
+		]);
+		saveGame(state);
+
+		const saved = JSON.parse(
+			localStorageMock.setItem.mock.calls[0][1] as string,
+		);
+		expect(Array.isArray(saved.achievedMilestones)).toBe(true);
+		expect(saved.achievedMilestones).toContain("first_defeat");
+		expect(saved.achievedMilestones).toContain("first_trap");
+	});
+
+	it("loadGameでachievedMilestonesのArrayがSetに復元される", () => {
+		const state = createTitleScreenState(42);
+		const saveData = {
+			...state,
+			screen: "game",
+			rng: state.rng.serialize(),
+			visitedTiles: [],
+			achievedMilestones: ["first_defeat", "ten_defeats"],
+		};
+		localStorageMock.setItem("dungeon-cards-save", JSON.stringify(saveData));
+
+		const loaded = loadGame();
+		expect(loaded).not.toBeNull();
+		expect(loaded?.achievedMilestones).toBeInstanceOf(Set);
+		expect(loaded?.achievedMilestones.has("first_defeat")).toBe(true);
+		expect(loaded?.achievedMilestones.has("ten_defeats")).toBe(true);
+	});
+
+	it("旧セーブデータ（achievedMilestonesなし）は空Setにフォールバック", () => {
+		const state = createTitleScreenState(42);
+		const saveData = {
+			...state,
+			screen: "game",
+			rng: state.rng.serialize(),
+			visitedTiles: [],
+		};
+		delete (saveData as Record<string, unknown>).achievedMilestones;
+		localStorageMock.setItem("dungeon-cards-save", JSON.stringify(saveData));
+
+		const loaded = loadGame();
+		expect(loaded).not.toBeNull();
+		expect(loaded?.achievedMilestones).toBeInstanceOf(Set);
+		expect(loaded?.achievedMilestones.size).toBe(0);
+	});
+
+	it("不正なachievedMilestonesエントリは除外される", () => {
+		const state = createTitleScreenState(42);
+		const saveData = {
+			...state,
+			screen: "game",
+			rng: state.rng.serialize(),
+			visitedTiles: [],
+			achievedMilestones: [
+				"first_defeat",
+				"invalid_milestone",
+				123,
+				null,
+				"first_trap",
+			],
+		};
+		localStorageMock.setItem("dungeon-cards-save", JSON.stringify(saveData));
+
+		const loaded = loadGame();
+		expect(loaded).not.toBeNull();
+		expect(loaded?.achievedMilestones.size).toBe(2);
+		expect(loaded?.achievedMilestones.has("first_defeat")).toBe(true);
+		expect(loaded?.achievedMilestones.has("first_trap")).toBe(true);
+	});
+
 	it("不正なvisitedTilesエントリは除外され有効な座標のみ残る", () => {
 		const state = createTitleScreenState(42);
 		const saveData = {

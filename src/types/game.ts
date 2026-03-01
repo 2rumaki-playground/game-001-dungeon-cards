@@ -11,6 +11,16 @@ import type { ComboHistory } from "./combo";
 import type { GameMap, Room } from "./map";
 
 /**
+ * マイルストーン種別
+ */
+export type MilestoneType =
+	| "first_defeat"
+	| "ten_defeats"
+	| "first_trap"
+	| "last_word"
+	| "first_floor_clear";
+
+/**
  * キャラクター性格タイプ
  */
 export type Personality =
@@ -115,4 +125,6 @@ export type GameState = {
 	personality: Personality;
 	/** キャラクター発話ログ（最新1件のみ保持） */
 	speechLog: SpeechLogEntry | null;
+	/** 達成済みマイルストーン */
+	achievedMilestones: Set<MilestoneType>;
 };
