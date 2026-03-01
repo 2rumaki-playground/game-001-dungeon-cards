@@ -72,7 +72,7 @@ function emitMilestoneSpeech(
 }
 
 /**
- * 発話ログを追加（pending > 連続発話 > マイルストーン発話 > コンテキスト発話 > レア(デフォルト時) > 通常デフォルトの優先順位）
+ * 発話ログを追加（既存pending > 連続発話 > 新規マイルストーン > コンテキスト発話 > レア(デフォルト時) > 通常デフォルトの優先順位）
  *
  * マイルストーン到達は発話選択と独立して常に記録される。
  * 連続発話等でスキップされた場合はpendingMilestoneに保持し、次回最優先で発話する。
@@ -84,6 +84,7 @@ export function addSpeechLog(
 ): GameState {
 	// 0. マイルストーン到達の記録（発話選択とは独立して常に判定）
 	let currentState = state;
+	const prevPending = state.pendingMilestone;
 	const newMilestone = checkMilestone(state, eventType);
 	if (newMilestone) {
 		currentState = {
@@ -92,17 +93,21 @@ export function addSpeechLog(
 				currentState.achievedMilestones,
 				newMilestone,
 			),
-			pendingMilestone: currentState.pendingMilestone ?? newMilestone,
 		};
 	}
 
-	// 1. 保留中マイルストーン発話（最優先）
-	if (currentState.pendingMilestone) {
-		return emitMilestoneSpeech(
+	// 1. 既存の保留マイルストーン発話（最優先）
+	if (prevPending) {
+		const stateAfterEmit = emitMilestoneSpeech(
 			currentState,
 			eventType,
-			currentState.pendingMilestone,
+			prevPending,
 		);
+		// 既存pendingと同時に新規マイルストーン到達した場合、次回に繰り越す
+		if (newMilestone && newMilestone !== prevPending) {
+			return { ...stateAfterEmit, pendingMilestone: newMilestone };
+		}
+		return stateAfterEmit;
 	}
 
 	// 2. 連続発話パターン（直前イベント参照）
@@ -112,8 +117,22 @@ export function addSpeechLog(
 		const seqVariants = SPEECH_SEQUENCE_VARIANTS[currentState.personality][key];
 		if (seqVariants && seqVariants.length > 0) {
 			const index = Math.floor(Math.random() * seqVariants.length);
-			return setSpeechLog(currentState, eventType, seqVariants[index]);
+			const seqState = setSpeechLog(
+				currentState,
+				eventType,
+				seqVariants[index],
+			);
+			// 新規マイルストーン到達を連続発話がスキップした場合、pendingに保持
+			if (newMilestone) {
+				return { ...seqState, pendingMilestone: newMilestone };
+			}
+			return seqState;
 		}
+	}
+
+	// 3. 新規マイルストーン発話（連続発話が該当しなかった場合）
+	if (newMilestone) {
+		return emitMilestoneSpeech(currentState, eventType, newMilestone);
 	}
 
 	// 3. コンテキスト発話
