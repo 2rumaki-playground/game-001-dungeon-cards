@@ -395,7 +395,7 @@ export const SPEECH_VARIANTS: Record<
 
 /**
  * レア発話データ辞書
- * 各性格の"素"が出るギャップ表現（約10%の確率で出現）
+ * 各性格の"素"が出るギャップ表現（低確率で出現）
  * デフォルト発話選択時のみ判定される
  */
 export const RARE_SPEECH_VARIANTS: Record<
