@@ -387,6 +387,10 @@ export const PERSONALITY_DESCRIPTION: Record<Personality, string> = {
 	curious: "疑問形、探究的な口調",
 } as const;
 
+// 発話コンテキスト閾値
+export const LOW_HP_THRESHOLD = 3;
+export const DEEP_FLOOR_THRESHOLD = 5;
+
 // 描画設定
 export const CELL_SIZE = 64;
 export const CELL_GAP = 4;
