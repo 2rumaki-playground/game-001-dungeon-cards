@@ -28,5 +28,10 @@
   },
   "dependencies": {
     "pixi.js": "^8.15.0"
+  },
+  "pnpm": {
+    "overrides": {
+      "rollup": ">=4.59.0"
+    }
   }
 }
