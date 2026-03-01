@@ -98,12 +98,12 @@ describe("checkMilestone", () => {
 			expect(checkMilestone(state, "enemy_defeated")).toBe("ten_defeats");
 		});
 
-		it("first_defeatとten_defeatsの両方が同時に達成可能な場合、first_defeatが優先される", () => {
-			// 初撃破がちょうど10体目（first_defeatもten_defeatsも未達成の状態で10に到達）
+		it("累計撃破数が1を超えてfirst_defeat未達成の場合はnullを返す", () => {
+			// first_defeatは到達時(total===1)のみ判定されるため、超過後は発火しない
 			const state = createTestState({
 				acquisitionCounters: {
 					defeatCounts: {
-						normal: 10,
+						normal: 2,
 						heavy: 0,
 						scout: 0,
 						miniboss: 0,
@@ -118,7 +118,30 @@ describe("checkMilestone", () => {
 					},
 				},
 			});
-			expect(checkMilestone(state, "enemy_defeated")).toBe("first_defeat");
+			expect(checkMilestone(state, "enemy_defeated")).toBeNull();
+		});
+
+		it("累計撃破数がMILESTONE_DEFEAT_COUNTを超えてten_defeats未達成の場合はnullを返す", () => {
+			const state = createTestState({
+				achievedMilestones: new Set<MilestoneType>(["first_defeat"]),
+				acquisitionCounters: {
+					defeatCounts: {
+						normal: MILESTONE_DEFEAT_COUNT + 1,
+						heavy: 0,
+						scout: 0,
+						miniboss: 0,
+						boss: 0,
+					},
+					hitCounts: {
+						normal: 0,
+						heavy: 0,
+						scout: 0,
+						miniboss: 0,
+						boss: 0,
+					},
+				},
+			});
+			expect(checkMilestone(state, "enemy_defeated")).toBeNull();
 		});
 
 		it("両方とも達成済みならnullを返す", () => {

@@ -33,12 +33,12 @@ export function checkMilestone(
 	switch (eventType) {
 		case "enemy_defeated": {
 			const total = getTotalDefeatCount(state);
-			if (!achievedMilestones.has("first_defeat") && total >= 1) {
+			if (!achievedMilestones.has("first_defeat") && total === 1) {
 				return "first_defeat";
 			}
 			if (
 				!achievedMilestones.has("ten_defeats") &&
-				total >= MILESTONE_DEFEAT_COUNT
+				total === MILESTONE_DEFEAT_COUNT
 			) {
 				return "ten_defeats";
 			}
