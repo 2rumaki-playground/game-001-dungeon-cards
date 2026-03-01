@@ -100,9 +100,8 @@ export function analyzeSummonerEnemy(
 	const label = ENEMY_TYPE_LABEL[enemy.type];
 	const params = ENEMY_PARAMS[enemy.type];
 	const distance = manhattanDistance(enemy.position, state.player.position);
-	const mapWidth = state.map[0]?.length ?? 0;
-	const mapHeight = state.map.length;
-	const attackRange = getAttackRange(enemy.position, mapWidth, mapHeight);
+	// 召喚敵は攻撃しないため、attackRangeは空
+	const attackRange: Position[] = [];
 
 	// 部屋内 & プレイヤー不在 → 待機
 	const enemyRoom = findRoomAt(enemy.position, state.rooms);
