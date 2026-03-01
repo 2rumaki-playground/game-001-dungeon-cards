@@ -1,15 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { PERSONALITIES } from "../constants";
-import type { MilestoneType, Personality } from "../types";
+import { ALL_MILESTONES, type Personality } from "../types";
 import { MILESTONE_SPEECH_VARIANTS } from "./milestoneSpeechData";
-
-const ALL_MILESTONES: MilestoneType[] = [
-	"first_defeat",
-	"ten_defeats",
-	"first_trap",
-	"last_word",
-	"first_floor_clear",
-];
 
 describe("MILESTONE_SPEECH_VARIANTS データ完全性", () => {
 	it("全5性格が定義されている", () => {

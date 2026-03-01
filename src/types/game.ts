@@ -11,14 +11,20 @@ import type { ComboHistory } from "./combo";
 import type { GameMap, Room } from "./map";
 
 /**
+ * マイルストーン種別一覧（Single Source of Truth）
+ */
+export const ALL_MILESTONES = [
+	"first_defeat",
+	"ten_defeats",
+	"first_trap",
+	"last_word",
+	"first_floor_clear",
+] as const;
+
+/**
  * マイルストーン種別
  */
-export type MilestoneType =
-	| "first_defeat"
-	| "ten_defeats"
-	| "first_trap"
-	| "last_word"
-	| "first_floor_clear";
+export type MilestoneType = (typeof ALL_MILESTONES)[number];
 
 /**
  * キャラクター性格タイプ

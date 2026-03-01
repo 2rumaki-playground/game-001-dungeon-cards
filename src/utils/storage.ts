@@ -11,15 +11,16 @@ import {
 } from "../constants";
 import { createInitialCounters } from "../game/cardAcquisition";
 import { initCardIdCounterFromDeck } from "../game/deck";
-import type {
-	AcquisitionCounters,
-	DeckState,
-	GameState,
-	MilestoneType,
-	Personality,
-	Room,
-	SpeechEventType,
-	SpeechLogEntry,
+import {
+	type AcquisitionCounters,
+	ALL_MILESTONES,
+	type DeckState,
+	type GameState,
+	type MilestoneType,
+	type Personality,
+	type Room,
+	type SpeechEventType,
+	type SpeechLogEntry,
 } from "../types";
 import { RNG } from "./rng";
 
@@ -188,13 +189,7 @@ function sanitizeSpeechLog(raw: unknown): SpeechLogEntry | null {
 /**
  * achievedMilestones をバリデーションし、安全なSetとして再構築
  */
-const VALID_MILESTONES: ReadonlySet<MilestoneType> = new Set([
-	"first_defeat",
-	"ten_defeats",
-	"first_trap",
-	"last_word",
-	"first_floor_clear",
-]);
+const VALID_MILESTONES: ReadonlySet<MilestoneType> = new Set(ALL_MILESTONES);
 
 function sanitizeAchievedMilestones(raw: unknown): Set<MilestoneType> {
 	if (!Array.isArray(raw)) return new Set<MilestoneType>();
