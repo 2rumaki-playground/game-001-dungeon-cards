@@ -35,7 +35,13 @@ export const ENEMY_PARAMS = {
 	normal: { hp: 3, attackDamage: 1, moveDistance: 1, senseRange: 5 },
 	heavy: { hp: 5, attackDamage: 2, moveDistance: 0, senseRange: 3 },
 	scout: { hp: 2, attackDamage: 1, moveDistance: 2, senseRange: 8 },
-	ranged: { hp: 2, attackDamage: 1, moveDistance: 0, senseRange: 6 },
+	ranged: {
+		hp: 2,
+		attackDamage: 1,
+		moveDistance: 0,
+		senseRange: 6,
+		shootRange: 2,
+	},
 	miniboss: { hp: 8, attackDamage: 2, moveDistance: 1, senseRange: 7 },
 	boss: { hp: 15, attackDamage: 3, moveDistance: 1, senseRange: 10 },
 } as const;
@@ -446,8 +452,8 @@ export const BOSS_SKILL = {
 	enrageBonusDamage: 2,
 } as const;
 
-// 射撃敵の射程距離
-export const RANGED_SHOOT_RANGE = 2;
+// 射撃敵の射程距離（正典: ENEMY_PARAMS.ranged.shootRange）
+export const RANGED_SHOOT_RANGE = ENEMY_PARAMS.ranged.shootRange;
 
 // キャラクター性格
 export const PERSONALITIES: readonly Personality[] = [
