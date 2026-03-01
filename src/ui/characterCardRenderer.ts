@@ -6,6 +6,7 @@
 import { Container, Graphics, Text } from "pixi.js";
 import {
 	CHARACTER_CARD_HEIGHT,
+	DEFAULT_PERSONALITY,
 	LOG_AREA_WIDTH,
 	PERSONALITY_DESCRIPTION,
 	PERSONALITY_LABEL,
@@ -58,7 +59,7 @@ export class CharacterCardRenderer {
 
 		// 背景（デフォルト色で初期描画、render()で性格別に上書き）
 		this.background = new Graphics();
-		const defaultColors = PERSONALITY_CARD_COLORS.brave;
+		const defaultColors = PERSONALITY_CARD_COLORS[DEFAULT_PERSONALITY];
 		drawRoundedRect(
 			this.background,
 			LOG_AREA_WIDTH,
@@ -88,7 +89,7 @@ export class CharacterCardRenderer {
 			style: {
 				fontSize: LABEL_FONT_SIZE,
 				fontFamily: "sans-serif",
-				fill: PERSONALITY_CARD_COLORS.brave.border,
+				fill: PERSONALITY_CARD_COLORS[DEFAULT_PERSONALITY].border,
 			},
 		});
 		this.labelText.x = CARD_PADDING + ICON_FONT_SIZE + 8;
