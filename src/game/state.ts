@@ -69,13 +69,19 @@ export function createEnemiesFromPositions(
 	type: EnemyType = "normal",
 ): Enemy[] {
 	const { hp } = ENEMY_PARAMS[type];
-	return positions.map((position, index) => ({
-		id: `enemy-${index + 1}`,
-		type,
-		position,
-		hp,
-		maxHp: hp,
-	}));
+	return positions.map((position, index) => {
+		const enemy: Enemy = {
+			id: `enemy-${index + 1}`,
+			type,
+			position,
+			hp,
+			maxHp: hp,
+		};
+		if (type === "summoner") {
+			enemy.summonCooldown = SUMMONER_COOLDOWN;
+		}
+		return enemy;
+	});
 }
 
 /**
