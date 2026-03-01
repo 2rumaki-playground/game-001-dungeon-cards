@@ -181,7 +181,7 @@ describe("transitionFloor", () => {
 		expect(heavyEnemies[0].maxHp).toBe(ENEMY_PARAMS.heavy.hp);
 	});
 
-	it("階層9遷移時にscout×2 + heavy×1の構成になる", () => {
+	it("階層9遷移時にscout×1 + heavy×1 + summoner×1の構成になる", () => {
 		const state = createTestState({ floor: 8 });
 		const result = transitionFloor(state);
 
@@ -189,10 +189,12 @@ describe("transitionFloor", () => {
 		expect(result.enemies).toHaveLength(getEnemyCount(9));
 		const scoutEnemies = result.enemies.filter((e) => e.type === "scout");
 		const heavyEnemies = result.enemies.filter((e) => e.type === "heavy");
-		// 構成テーブルはheavy×1 + scout×2 = 3体分のタイプ比率
+		const summonerEnemies = result.enemies.filter((e) => e.type === "summoner");
+		// 構成テーブルはheavy×1 + scout×1 + summoner×1 = 3体分のタイプ比率
 		// 4体目以降はすべてnormal
-		expect(scoutEnemies).toHaveLength(2);
+		expect(scoutEnemies).toHaveLength(1);
 		expect(heavyEnemies).toHaveLength(1);
+		expect(summonerEnemies).toHaveLength(1);
 	});
 
 	it("階層2→3遷移でマップサイズが9x9から11x11に拡大する", () => {

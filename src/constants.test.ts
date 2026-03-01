@@ -234,31 +234,31 @@ describe("constants", () => {
 			});
 		});
 
-		it("階層7-8: heavy×1 + scout×2", () => {
+		it("階層7-8: heavy×1 + scout×1 + summoner×1", () => {
 			expect(getEnemyComposition(7)).toEqual({
 				normal: 0,
 				heavy: 1,
-				scout: 2,
-				summoner: 0,
+				scout: 1,
+				summoner: 1,
 				miniboss: 0,
 				boss: 0,
 			});
 			expect(getEnemyComposition(8)).toEqual({
 				normal: 0,
 				heavy: 1,
-				scout: 2,
-				summoner: 0,
+				scout: 1,
+				summoner: 1,
 				miniboss: 0,
 				boss: 0,
 			});
 		});
 
-		it("階層9: heavy×1 + scout×2", () => {
+		it("階層9: heavy×1 + scout×1 + summoner×1", () => {
 			expect(getEnemyComposition(9)).toEqual({
 				normal: 0,
 				heavy: 1,
-				scout: 2,
-				summoner: 0,
+				scout: 1,
+				summoner: 1,
 				miniboss: 0,
 				boss: 0,
 			});
