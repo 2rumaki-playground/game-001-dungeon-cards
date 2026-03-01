@@ -179,6 +179,54 @@ describe("checkAcquisitionCondition", () => {
 		expect(checkAcquisitionCondition(counters, "miniboss")).toBe(true);
 	});
 
+	it("ranged: 撃破数2では条件未達", () => {
+		const counters: AcquisitionCounters = {
+			defeatCounts: {
+				normal: 0,
+				heavy: 0,
+				scout: 0,
+				ranged: 2,
+				miniboss: 0,
+				boss: 0,
+			},
+			hitCounts: {
+				normal: 0,
+				heavy: 0,
+				scout: 0,
+				ranged: 0,
+				miniboss: 0,
+				boss: 0,
+			},
+		};
+		expect(checkAcquisitionCondition(counters, "ranged")).toBe(false);
+	});
+
+	it("ranged: 撃破数3で条件達成", () => {
+		const counters: AcquisitionCounters = {
+			defeatCounts: {
+				normal: 0,
+				heavy: 0,
+				scout: 0,
+				ranged: 3,
+				miniboss: 0,
+				boss: 0,
+			},
+			hitCounts: {
+				normal: 0,
+				heavy: 0,
+				scout: 0,
+				ranged: 0,
+				miniboss: 0,
+				boss: 0,
+			},
+		};
+		expect(checkAcquisitionCondition(counters, "ranged")).toBe(true);
+	});
+
+	it("ranged: 獲得カードタイプがmoveである", () => {
+		expect(ENEMY_ACQUISITION_CONDITIONS.ranged.cardType).toBe("move");
+	});
+
 	it("OR条件: いずれか満たす→true", () => {
 		const original = ENEMY_ACQUISITION_CONDITIONS.scout;
 		ENEMY_ACQUISITION_CONDITIONS.scout = {
