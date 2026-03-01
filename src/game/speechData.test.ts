@@ -107,11 +107,22 @@ describe("SPEECH_SEQUENCE_VARIANTS", () => {
 });
 
 describe("RARE_SPEECH_VARIANTS", () => {
+	const EXPECTED_RARE_EVENTS: SpeechEventType[] = [
+		"move_success",
+		"enemy_defeated",
+		"damage_taken",
+		"game_over",
+		"combo_activated",
+		"treasure_found",
+		"trap_triggered",
+		"floor_reached",
+	];
+
 	it.each(
 		PERSONALITIES,
-	)("性格 %s にレアバリエーションが少なくとも1イベント存在する", (personality: Personality) => {
-		const rareEvents = Object.keys(RARE_SPEECH_VARIANTS[personality]);
-		expect(rareEvents.length).toBeGreaterThanOrEqual(1);
+	)("性格 %s にレアバリエーションが全8イベント存在する", (personality: Personality) => {
+		const rareEvents = Object.keys(RARE_SPEECH_VARIANTS[personality]).sort();
+		expect(rareEvents).toEqual([...EXPECTED_RARE_EVENTS].sort());
 	});
 
 	it("全バリエーションが空文字列でない", () => {
