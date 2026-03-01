@@ -1,9 +1,9 @@
 import { Application, Container, Graphics } from "pixi.js";
 import {
+	CHARACTER_CARD_HEIGHT,
 	COLORS,
 	LOG_AREA_GAP,
 	LOG_AREA_WIDTH,
-	SPEECH_BANNER_HEIGHT,
 	STATUS_BAR_HEIGHT,
 } from "./constants";
 import { createTitleScreenState } from "./game";
@@ -12,6 +12,7 @@ import type { GameState } from "./types";
 import {
 	ActionLogRenderer,
 	CameraDragController,
+	CharacterCardRenderer,
 	DirectionSelector,
 	FloorBanner,
 	GameOverScreen,
@@ -23,7 +24,6 @@ import {
 	ReturnToPlayerButton,
 	RewardScreen,
 	ScreenTransition,
-	SpeechBannerRenderer,
 	StatsScreen,
 	StatusBar,
 	TitleScreen,
@@ -119,18 +119,18 @@ async function initializeUIComponents(
 	returnBtnContainer.y = STATUS_BAR_HEIGHT + 8;
 	app.stage.addChild(returnBtnContainer);
 
-	const logHeight = totalHeight - SPEECH_BANNER_HEIGHT;
+	const logHeight = totalHeight - CHARACTER_CARD_HEIGHT;
 	const actionLogRenderer = new ActionLogRenderer(logHeight);
 	const logContainer = actionLogRenderer.getContainer();
 	logContainer.x = viewportSize.width + LOG_AREA_GAP;
 	logContainer.y = 0;
 	app.stage.addChild(logContainer);
 
-	const speechBannerRenderer = new SpeechBannerRenderer();
-	const speechContainer = speechBannerRenderer.getContainer();
-	speechContainer.x = viewportSize.width + LOG_AREA_GAP;
-	speechContainer.y = logHeight;
-	app.stage.addChild(speechContainer);
+	const characterCardRenderer = new CharacterCardRenderer();
+	const cardContainer = characterCardRenderer.getContainer();
+	cardContainer.x = viewportSize.width + LOG_AREA_GAP;
+	cardContainer.y = logHeight;
+	app.stage.addChild(cardContainer);
 
 	const turnBanner = new TurnBanner(
 		viewportSize.width + LOG_AREA_GAP + actionLogRenderer.getWidth(),
@@ -216,7 +216,7 @@ async function initializeUIComponents(
 		turnEndButton,
 		nextFloorButton,
 		actionLogRenderer,
-		speechBannerRenderer,
+		characterCardRenderer,
 		turnBanner,
 		rewardScreen,
 		screenTransition,

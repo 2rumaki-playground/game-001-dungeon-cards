@@ -258,8 +258,11 @@
 
   - 詳細な効果内容は `docs/spec/cards.md` を参照
 
-## 発話バナー
-- バナー高さ：40px（`SPEECH_BANNER_HEIGHT`）
+## キャラクターカード
+- カード高さ：80px（`CHARACTER_CARD_HEIGHT`）
+- 性格ラベル（`PERSONALITY_LABEL`）：勇敢 / 慎重 / 明朗 / 寡黙 / 好奇心旺盛
+- 性格シンボル（`PERSONALITY_SYMBOL`）：⚔ / ⛊ / ☀ / ◆ / ？
+- 性格説明文（`PERSONALITY_DESCRIPTION`）：各性格の口調説明
 
 ## キャラクター性格
 
