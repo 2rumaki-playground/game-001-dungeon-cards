@@ -50,14 +50,14 @@ describe("召喚敵AI", () => {
 				},
 			);
 			const blockers: Enemy[] = [
-				createTestEnemy("normal", { x: 2, y: 2 }),
-				createTestEnemy("normal", { x: 3, y: 2 }),
-				createTestEnemy("normal", { x: 4, y: 2 }),
-				createTestEnemy("normal", { x: 2, y: 3 }),
-				createTestEnemy("normal", { x: 4, y: 3 }),
-				createTestEnemy("normal", { x: 2, y: 4 }),
-				createTestEnemy("normal", { x: 3, y: 4 }),
-				createTestEnemy("normal", { x: 4, y: 4 }),
+				createTestEnemy("heavy", { x: 2, y: 2 }),
+				createTestEnemy("heavy", { x: 3, y: 2 }),
+				createTestEnemy("heavy", { x: 4, y: 2 }),
+				createTestEnemy("heavy", { x: 2, y: 3 }),
+				createTestEnemy("heavy", { x: 4, y: 3 }),
+				createTestEnemy("heavy", { x: 2, y: 4 }),
+				createTestEnemy("heavy", { x: 3, y: 4 }),
+				createTestEnemy("heavy", { x: 4, y: 4 }),
 			];
 			const state = createTestState({
 				// プレイヤーを離れた位置に配置
