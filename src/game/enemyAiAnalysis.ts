@@ -225,6 +225,31 @@ function analyzeRangedEnemy(state: GameState, enemy: Enemy): EnemyAiAnalysis {
 	const mapHeight = state.map.length;
 	const attackRange = getAttackRange(enemy.position, mapWidth, mapHeight);
 
+	// 隣接 → 部屋境界に関係なく行動（後退/射撃）
+	if (isAdjacent(enemy.position, state.player.position)) {
+		const retreatPos = getRetreatPosition(state, enemy);
+		if (retreatPos) {
+			return {
+				enemyId: enemy.id,
+				decision: {
+					type: "retreat",
+					reason: `${label}: 後退（隣接）`,
+				},
+				moveCandidates: [],
+				attackRange,
+			};
+		}
+		return {
+			enemyId: enemy.id,
+			decision: {
+				type: "shoot",
+				reason: `${label}: 射撃（隣接, 後退不可, ATK:${params.attackDamage}）`,
+			},
+			moveCandidates: [],
+			attackRange,
+		};
+	}
+
 	// 部屋内 & プレイヤー不在
 	const enemyRoom = findRoomAt(enemy.position, state.rooms);
 	if (enemyRoom !== null && !isInRoom(state.player.position, enemyRoom)) {
@@ -246,31 +271,6 @@ function analyzeRangedEnemy(state: GameState, enemy: Enemy): EnemyAiAnalysis {
 			decision: {
 				type: "wait_out_of_range",
 				reason: `${label}: 索敵外（距離${distance}, 範囲${params.senseRange}）`,
-			},
-			moveCandidates: [],
-			attackRange,
-		};
-	}
-
-	// 隣接
-	if (isAdjacent(enemy.position, state.player.position)) {
-		const retreatPos = getRetreatPosition(state, enemy);
-		if (retreatPos) {
-			return {
-				enemyId: enemy.id,
-				decision: {
-					type: "retreat",
-					reason: `${label}: 後退（隣接）`,
-				},
-				moveCandidates: [],
-				attackRange,
-			};
-		}
-		return {
-			enemyId: enemy.id,
-			decision: {
-				type: "shoot",
-				reason: `${label}: 射撃（隣接, 後退不可, ATK:${params.attackDamage}）`,
 			},
 			moveCandidates: [],
 			attackRange,
