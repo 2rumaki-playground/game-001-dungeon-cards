@@ -388,7 +388,8 @@ export const PERSONALITY_DESCRIPTION: Record<Personality, string> = {
 } as const;
 
 // 発話コンテキスト閾値
-export const LOW_HP_THRESHOLD = 3;
+export const HP_TENSION_RATIO = 0.75;
+export const HP_CRITICAL_RATIO = 0.25;
 export const DEEP_FLOOR_THRESHOLD = 5;
 
 // 描画設定

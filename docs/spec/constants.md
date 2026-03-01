@@ -279,7 +279,8 @@
 - 各性格 × 12イベント × 各5バリエーション = 計300パターン
 
 ## 発話コンテキスト閾値
-- 低HP閾値（`LOW_HP_THRESHOLD`）：3（0 < hp ≤ 3 で低HP発話が発動）
+- HP緊張閾値（`HP_TENSION_RATIO`）：0.75（hp < maxHp × 0.75 で緊張発話が発動）
+- HP瀕死閾値（`HP_CRITICAL_RATIO`）：0.25（hp <= maxHp × 0.25 で瀕死発話が発動）
 - 深層階閾値（`DEEP_FLOOR_THRESHOLD`）：5（floor ≥ 5 で深層発話が発動）
 
 ## プレイ統計
