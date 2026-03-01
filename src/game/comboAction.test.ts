@@ -58,9 +58,9 @@ describe("コンボ発動（統合テスト）", () => {
 		// 敵のHP: 初期HP - (基本ダメージ + コンボボーナス)
 		const expectedDamage = PLAYER_ATTACK_DAMAGE + COMBO_BONUS.charge;
 		const remainingEnemy = afterAttack.enemies.find((e) => e.id === "enemy-1");
-		if (remainingEnemy) {
-			expect(remainingEnemy.hp).toBe(ENEMY_PARAMS.normal.hp - expectedDamage);
-		}
+		expect(remainingEnemy).toBeDefined();
+		if (!remainingEnemy) return;
+		expect(remainingEnemy.hp).toBe(ENEMY_PARAMS.normal.hp - expectedDamage);
 
 		// 行動ログにコンボ発動メッセージが含まれる
 		const comboLog = afterAttack.actionLog.find(
@@ -89,9 +89,9 @@ describe("コンボ発動（統合テスト）", () => {
 
 		// 敵のHP: 初期HP - 基本ダメージのみ（コンボなし）
 		const enemy = attackResult.state.enemies.find((e) => e.id === "enemy-1");
-		if (enemy) {
-			expect(enemy.hp).toBe(ENEMY_PARAMS.normal.hp - PLAYER_ATTACK_DAMAGE);
-		}
+		expect(enemy).toBeDefined();
+		if (!enemy) return;
+		expect(enemy.hp).toBe(ENEMY_PARAMS.normal.hp - PLAYER_ATTACK_DAMAGE);
 
 		// コンボ発動ログがない
 		const comboLog = attackResult.state.actionLog.find(
@@ -129,9 +129,9 @@ describe("コンボ発動（統合テスト）", () => {
 		const enemyAfter = attackResult.state.enemies.find(
 			(e) => e.id === "enemy-1",
 		);
-		if (enemyAfter) {
-			expect(enemyAfter.hp).toBe(ENEMY_PARAMS.normal.hp - PLAYER_ATTACK_DAMAGE);
-		}
+		expect(enemyAfter).toBeDefined();
+		if (!enemyAfter) return;
+		expect(enemyAfter.hp).toBe(ENEMY_PARAMS.normal.hp - PLAYER_ATTACK_DAMAGE);
 
 		// コンボ発動ログがない
 		const comboLog = attackResult.state.actionLog.find(
@@ -167,9 +167,9 @@ describe("コンボ発動（統合テスト）", () => {
 		// enemy2のHP: 初期HP - (基本ダメージ + コンボボーナス)
 		const expectedDamage = PLAYER_ATTACK_DAMAGE + COMBO_BONUS.chain;
 		const enemy = attack2.state.enemies.find((e) => e.id === "enemy-2");
-		if (enemy) {
-			expect(enemy.hp).toBe(ENEMY_PARAMS.normal.hp - expectedDamage);
-		}
+		expect(enemy).toBeDefined();
+		if (!enemy) return;
+		expect(enemy.hp).toBe(ENEMY_PARAMS.normal.hp - expectedDamage);
 
 		// 連撃コンボログ
 		const comboLog = attack2.state.actionLog.find(
@@ -188,9 +188,9 @@ describe("コンボ発動（統合テスト）", () => {
 
 		// 敵のHP: 初期HP - 基本ダメージのみ
 		const enemy = attackResult.state.enemies.find((e) => e.id === "enemy-1");
-		if (enemy) {
-			expect(enemy.hp).toBe(ENEMY_PARAMS.normal.hp - PLAYER_ATTACK_DAMAGE);
-		}
+		expect(enemy).toBeDefined();
+		if (!enemy) return;
+		expect(enemy.hp).toBe(ENEMY_PARAMS.normal.hp - PLAYER_ATTACK_DAMAGE);
 
 		// コンボログなし
 		const comboLog = attackResult.state.actionLog.find(
@@ -226,20 +226,20 @@ describe("コンボ発動（統合テスト）", () => {
 		// 2枚目: 右方向（連撃コンボ）
 		const attack2 = executeAttack(attack1.state, "test-card-1", "right");
 		const enemy2After = attack2.state.enemies.find((e) => e.id === "enemy-2");
-		if (enemy2After) {
-			expect(enemy2After.hp).toBe(
-				ENEMY_PARAMS.normal.hp - (PLAYER_ATTACK_DAMAGE + COMBO_BONUS.chain),
-			);
-		}
+		expect(enemy2After).toBeDefined();
+		if (!enemy2After) return;
+		expect(enemy2After.hp).toBe(
+			ENEMY_PARAMS.normal.hp - (PLAYER_ATTACK_DAMAGE + COMBO_BONUS.chain),
+		);
 
 		// 3枚目: 下方向（連撃コンボ）
 		const attack3 = executeAttack(attack2.state, "test-card-2", "down");
 		const enemy3After = attack3.state.enemies.find((e) => e.id === "enemy-3");
-		if (enemy3After) {
-			expect(enemy3After.hp).toBe(
-				ENEMY_PARAMS.normal.hp - (PLAYER_ATTACK_DAMAGE + COMBO_BONUS.chain),
-			);
-		}
+		expect(enemy3After).toBeDefined();
+		if (!enemy3After) return;
+		expect(enemy3After.hp).toBe(
+			ENEMY_PARAMS.normal.hp - (PLAYER_ATTACK_DAMAGE + COMBO_BONUS.chain),
+		);
 
 		// コンボログが2回出ている
 		const comboLogs = attack3.state.actionLog.filter(
