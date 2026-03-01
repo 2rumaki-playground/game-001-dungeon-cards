@@ -62,7 +62,14 @@ function sanitizeRooms(raw: unknown): Room[] {
 /**
  * acquisitionCounters のバリデーションに使用する敵タイプ一覧
  */
-const ENEMY_TYPES = ["normal", "heavy", "scout", "miniboss", "boss"] as const;
+const ENEMY_TYPES = [
+	"normal",
+	"heavy",
+	"scout",
+	"ranged",
+	"miniboss",
+	"boss",
+] as const;
 
 /**
  * acquisitionCounters をバリデーションし、不正なら初期値にフォールバック

@@ -68,8 +68,22 @@ describe("checkAcquisitionCondition", () => {
 	it("AND条件: すべて満たす→true", () => {
 		// scoutは defeat_count>=2 AND hit_count>=1
 		const counters: AcquisitionCounters = {
-			defeatCounts: { normal: 0, heavy: 0, scout: 2, miniboss: 0, boss: 0 },
-			hitCounts: { normal: 0, heavy: 0, scout: 1, miniboss: 0, boss: 0 },
+			defeatCounts: {
+				normal: 0,
+				heavy: 0,
+				scout: 2,
+				ranged: 0,
+				miniboss: 0,
+				boss: 0,
+			},
+			hitCounts: {
+				normal: 0,
+				heavy: 0,
+				scout: 1,
+				ranged: 0,
+				miniboss: 0,
+				boss: 0,
+			},
 		};
 		expect(checkAcquisitionCondition(counters, "scout")).toBe(true);
 	});
@@ -77,8 +91,22 @@ describe("checkAcquisitionCondition", () => {
 	it("AND条件: 一部のみ→false", () => {
 		// scoutは defeat_count>=2 AND hit_count>=1、hit_countが0
 		const counters: AcquisitionCounters = {
-			defeatCounts: { normal: 0, heavy: 0, scout: 2, miniboss: 0, boss: 0 },
-			hitCounts: { normal: 0, heavy: 0, scout: 0, miniboss: 0, boss: 0 },
+			defeatCounts: {
+				normal: 0,
+				heavy: 0,
+				scout: 2,
+				ranged: 0,
+				miniboss: 0,
+				boss: 0,
+			},
+			hitCounts: {
+				normal: 0,
+				heavy: 0,
+				scout: 0,
+				ranged: 0,
+				miniboss: 0,
+				boss: 0,
+			},
 		};
 		expect(checkAcquisitionCondition(counters, "scout")).toBe(false);
 	});
@@ -86,24 +114,66 @@ describe("checkAcquisitionCondition", () => {
 	it("単一条件: 閾値到達→true", () => {
 		// normalは defeat_count>=3
 		const counters: AcquisitionCounters = {
-			defeatCounts: { normal: 3, heavy: 0, scout: 0, miniboss: 0, boss: 0 },
-			hitCounts: { normal: 0, heavy: 0, scout: 0, miniboss: 0, boss: 0 },
+			defeatCounts: {
+				normal: 3,
+				heavy: 0,
+				scout: 0,
+				ranged: 0,
+				miniboss: 0,
+				boss: 0,
+			},
+			hitCounts: {
+				normal: 0,
+				heavy: 0,
+				scout: 0,
+				ranged: 0,
+				miniboss: 0,
+				boss: 0,
+			},
 		};
 		expect(checkAcquisitionCondition(counters, "normal")).toBe(true);
 	});
 
 	it("単一条件: 閾値未達→false", () => {
 		const counters: AcquisitionCounters = {
-			defeatCounts: { normal: 2, heavy: 0, scout: 0, miniboss: 0, boss: 0 },
-			hitCounts: { normal: 0, heavy: 0, scout: 0, miniboss: 0, boss: 0 },
+			defeatCounts: {
+				normal: 2,
+				heavy: 0,
+				scout: 0,
+				ranged: 0,
+				miniboss: 0,
+				boss: 0,
+			},
+			hitCounts: {
+				normal: 0,
+				heavy: 0,
+				scout: 0,
+				ranged: 0,
+				miniboss: 0,
+				boss: 0,
+			},
 		};
 		expect(checkAcquisitionCondition(counters, "normal")).toBe(false);
 	});
 
 	it("miniboss: 1体撃破で条件達成", () => {
 		const counters: AcquisitionCounters = {
-			defeatCounts: { normal: 0, heavy: 0, scout: 0, miniboss: 1, boss: 0 },
-			hitCounts: { normal: 0, heavy: 0, scout: 0, miniboss: 0, boss: 0 },
+			defeatCounts: {
+				normal: 0,
+				heavy: 0,
+				scout: 0,
+				ranged: 0,
+				miniboss: 1,
+				boss: 0,
+			},
+			hitCounts: {
+				normal: 0,
+				heavy: 0,
+				scout: 0,
+				ranged: 0,
+				miniboss: 0,
+				boss: 0,
+			},
 		};
 		expect(checkAcquisitionCondition(counters, "miniboss")).toBe(true);
 	});
@@ -120,8 +190,22 @@ describe("checkAcquisitionCondition", () => {
 		};
 		try {
 			const counters: AcquisitionCounters = {
-				defeatCounts: { normal: 0, heavy: 0, scout: 1, miniboss: 0, boss: 0 },
-				hitCounts: { normal: 0, heavy: 0, scout: 1, miniboss: 0, boss: 0 },
+				defeatCounts: {
+					normal: 0,
+					heavy: 0,
+					scout: 1,
+					ranged: 0,
+					miniboss: 0,
+					boss: 0,
+				},
+				hitCounts: {
+					normal: 0,
+					heavy: 0,
+					scout: 1,
+					ranged: 0,
+					miniboss: 0,
+					boss: 0,
+				},
 			};
 			// defeat_count未達だがhit_count達成→OR条件なのでtrue
 			expect(checkAcquisitionCondition(counters, "scout")).toBe(true);
@@ -142,8 +226,22 @@ describe("checkAcquisitionCondition", () => {
 		};
 		try {
 			const counters: AcquisitionCounters = {
-				defeatCounts: { normal: 0, heavy: 0, scout: 1, miniboss: 0, boss: 0 },
-				hitCounts: { normal: 0, heavy: 0, scout: 1, miniboss: 0, boss: 0 },
+				defeatCounts: {
+					normal: 0,
+					heavy: 0,
+					scout: 1,
+					ranged: 0,
+					miniboss: 0,
+					boss: 0,
+				},
+				hitCounts: {
+					normal: 0,
+					heavy: 0,
+					scout: 1,
+					ranged: 0,
+					miniboss: 0,
+					boss: 0,
+				},
 			};
 			// どちらも未達→false
 			expect(checkAcquisitionCondition(counters, "scout")).toBe(false);

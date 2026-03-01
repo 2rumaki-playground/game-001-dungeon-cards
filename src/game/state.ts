@@ -91,6 +91,7 @@ export function createEnemiesForFloor(
 		...Array<EnemyType>(composition.normal).fill("normal"),
 		...Array<EnemyType>(composition.heavy).fill("heavy"),
 		...Array<EnemyType>(composition.scout).fill("scout"),
+		...Array<EnemyType>(composition.ranged).fill("ranged"),
 	];
 	return positions.map((position, index) => {
 		const type = types[index] ?? "normal";

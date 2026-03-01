@@ -3,8 +3,13 @@
  * @see docs/spec/rules.md
  */
 
-import { BOSS_SKILL, ENEMY_PARAMS, ENEMY_TYPE_LABEL } from "../constants";
-import type { Direction, Enemy, GameState } from "../types";
+import {
+	BOSS_SKILL,
+	ENEMY_PARAMS,
+	ENEMY_TYPE_LABEL,
+	RANGED_SHOOT_RANGE,
+} from "../constants";
+import type { Direction, Enemy, GameState, Position } from "../types";
 import { DIRECTION_DELTA } from "../types";
 import {
 	checkEnrage,
@@ -151,6 +156,130 @@ function moveEnemyByType(
 	return next;
 }
 
+/**
+ * 直線上の射線が通っているか判定
+ *
+ * 条件:
+ * - 同じx座標（縦方向）または同じy座標（横方向）にいること
+ * - 間に壁タイルがないこと
+ */
+export function hasLineOfSight(
+	state: GameState,
+	from: Position,
+	to: Position,
+): boolean {
+	if (from.x === to.x) {
+		const minY = Math.min(from.y, to.y);
+		const maxY = Math.max(from.y, to.y);
+		for (let y = minY + 1; y < maxY; y++) {
+			if (state.map[y][from.x].type === "wall") {
+				return false;
+			}
+		}
+		return true;
+	}
+	if (from.y === to.y) {
+		const minX = Math.min(from.x, to.x);
+		const maxX = Math.max(from.x, to.x);
+		for (let x = minX + 1; x < maxX; x++) {
+			if (state.map[from.y][x].type === "wall") {
+				return false;
+			}
+		}
+		return true;
+	}
+	return false;
+}
+
+/**
+ * プレイヤーとの位置関係から後退先を計算
+ *
+ * プレイヤーと反対方向に1マス移動する。
+ * 移動先が壁・敵・マップ外・階段の場合はnullを返す。
+ */
+export function getRetreatPosition(
+	state: GameState,
+	enemy: Enemy,
+): Position | null {
+	const dx = enemy.position.x - state.player.position.x;
+	const dy = enemy.position.y - state.player.position.y;
+
+	// 反対方向を計算（符号で方向判定）
+	let retreatX = enemy.position.x;
+	let retreatY = enemy.position.y;
+
+	if (Math.abs(dx) >= Math.abs(dy)) {
+		retreatX += dx > 0 ? 1 : -1;
+	} else {
+		retreatY += dy > 0 ? 1 : -1;
+	}
+
+	if (!canEnemyMoveTo(state, enemy, retreatX, retreatY)) {
+		return null;
+	}
+
+	return { x: retreatX, y: retreatY };
+}
+
+/**
+ * 射撃敵の行動を実行
+ *
+ * | 状況 | 行動 |
+ * |------|------|
+ * | 非隣接 + 直線上射程内（壁遮蔽なし） | 射撃 |
+ * | 非隣接 + 射程外 or 直線外 or 壁遮蔽 | 待機 |
+ * | 隣接 + 後退可能 | 後退のみ（射撃しない） |
+ * | 隣接 + 後退不可 | その場で射撃 |
+ */
+function executeRangedEnemyAction(
+	state: GameState,
+	enemy: Enemy,
+	applyDmg: typeof applyEnemyDamageToPlayer,
+	verbose: boolean,
+): GameState {
+	const params = ENEMY_PARAMS[enemy.type];
+	const label = ENEMY_TYPE_LABEL[enemy.type];
+	let next = state;
+
+	if (isAdjacent(enemy.position, next.player.position)) {
+		// 隣接: 後退を試みる
+		const retreatPos = getRetreatPosition(next, enemy);
+		if (retreatPos) {
+			// 後退のみ（射撃しない）
+			const newEnemies = next.enemies.map((e) =>
+				e.id === enemy.id ? { ...e, position: retreatPos } : e,
+			);
+			next = setEnemies(next, newEnemies);
+			const msg = verbose ? `${label}が後退した` : "敵が後退した";
+			next = addActionLog(next, msg, "enemy");
+		} else {
+			// 後退不可 → その場で射撃
+			next = applyDmg(next, params.attackDamage, enemy.type);
+			const msg = verbose
+				? `${label}が射撃した（隣接, 後退不可, ATK:${params.attackDamage}）`
+				: "敵が射撃した";
+			next = addActionLog(next, msg, "enemy");
+		}
+	} else {
+		// 非隣接: 射線チェック
+		const distance = manhattanDistance(enemy.position, next.player.position);
+		if (
+			distance <= RANGED_SHOOT_RANGE &&
+			hasLineOfSight(next, enemy.position, next.player.position)
+		) {
+			// 射撃
+			next = applyDmg(next, params.attackDamage, enemy.type);
+			const msg = verbose
+				? `${label}が射撃した（距離${distance}, ATK:${params.attackDamage}）`
+				: "敵が射撃した";
+			next = addActionLog(next, msg, "enemy");
+		}
+		// 射程外 or 射線なし → 待機（何もしない）
+	}
+
+	return next;
+}
+
 /** 敵ターン実行結果 */
 export type EnemyTurnResult = {
 	state: GameState;
@@ -213,6 +342,20 @@ export function executeEnemyTurn(
 			if (skillResult.executed) {
 				continue;
 			}
+		}
+
+		// 射撃敵は専用ロジックで処理
+		if (currentEnemy.type === "ranged") {
+			const enemyRoom = findRoomAt(currentEnemy.position, next.rooms);
+			if (enemyRoom !== null && !isInRoom(next.player.position, enemyRoom)) {
+				// 部屋内の敵 && プレイヤーが同じ部屋にいない → 待機
+			} else if (
+				manhattanDistance(currentEnemy.position, next.player.position) <=
+				params.senseRange
+			) {
+				next = executeRangedEnemyAction(next, currentEnemy, applyDmg, verbose);
+			}
+			continue;
 		}
 
 		const enemyRoom = findRoomAt(currentEnemy.position, next.rooms);
