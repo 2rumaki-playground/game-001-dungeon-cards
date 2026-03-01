@@ -117,12 +117,16 @@ export const COMBO_POPUP_Y_OFFSET = -4;
 export const COMBO_POPUP_TEXT: Record<ComboType, string> = {
 	charge: "突撃!",
 	chain: "連撃!",
+	ambush: "奇襲!",
+	focus: "集中攻撃!",
 };
 
 /** コンボ種別ごとの色 */
 export const COMBO_POPUP_COLORS: Record<ComboType, number> = {
 	charge: 0xffd700,
 	chain: 0x00ddff,
+	ambush: 0xff6600,
+	focus: 0xaa44ff,
 };
 
 /** 残骸パーティクルの色 */

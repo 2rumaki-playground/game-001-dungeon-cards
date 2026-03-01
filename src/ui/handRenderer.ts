@@ -5,7 +5,13 @@
 
 import { Container, type FederatedPointerEvent, Graphics, Text } from "pixi.js";
 import { getExpProgress } from "../game/cardLevel";
-import type { Card, CardType, ComboHistory, Direction } from "../types";
+import type {
+	Card,
+	CardType,
+	ComboHistory,
+	ComboType,
+	Direction,
+} from "../types";
 import { Easing, tween } from "../utils/tween";
 import {
 	CARD_COLORS as BASE_CARD_COLORS,
@@ -412,7 +418,7 @@ export class HandRenderer {
 			const comboPreview = this.getComboPreviewType(card.type);
 			if (comboPreview !== null) {
 				const comboBorderGraphics = new Graphics();
-				if (comboPreview.type === "chain") {
+				if (comboPreview.type === "chain" || comboPreview.type === "focus") {
 					drawRoundedRect(
 						comboBorderGraphics,
 						CARD_WIDTH,
@@ -422,7 +428,7 @@ export class HandRenderer {
 						{ color: CARD_COLORS.comboBorder, width: COMBO_BORDER_WIDTH },
 					);
 				} else if (
-					comboPreview.type === "charge" &&
+					(comboPreview.type === "charge" || comboPreview.type === "ambush") &&
 					comboPreview.direction !== undefined
 				) {
 					drawEdgeLine(
@@ -901,7 +907,7 @@ export class HandRenderer {
 	 * カードに対するコンボ予告表示の種別を判定
 	 */
 	private getComboPreviewType(cardType: CardType): {
-		type: "chain" | "charge";
+		type: ComboType;
 		direction?: Direction;
 	} | null {
 		if (this.currentComboHistory === null) return null;
@@ -915,6 +921,14 @@ export class HandRenderer {
 
 		if (lastCardType === "move" && lastDirection !== null) {
 			return { type: "charge", direction: lastDirection };
+		}
+
+		if (lastCardType === "jump" && lastDirection !== null) {
+			return { type: "ambush", direction: lastDirection };
+		}
+
+		if (lastCardType === "wait") {
+			return { type: "focus" };
 		}
 
 		return null;

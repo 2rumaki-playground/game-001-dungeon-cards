@@ -48,12 +48,20 @@ describe("detectCombo", () => {
 		expect(detectCombo(history, "move", "up")).toBeNull();
 	});
 
-	it("wait→attack はコンボなし", () => {
+	it("wait→attack で集中攻撃コンボ", () => {
 		const history: ComboHistory = {
 			lastCardType: "wait",
 			lastDirection: null,
 		};
-		expect(detectCombo(history, "attack", "up")).toBeNull();
+		expect(detectCombo(history, "attack", "up")).toBe("focus");
+	});
+
+	it("wait→strong_attack はコンボなし", () => {
+		const history: ComboHistory = {
+			lastCardType: "wait",
+			lastDirection: null,
+		};
+		expect(detectCombo(history, "strong_attack", "up")).toBeNull();
 	});
 
 	it("strong_attack→attack はコンボなし（strong_attackはattackではない）", () => {
@@ -80,10 +88,26 @@ describe("detectCombo", () => {
 		expect(detectCombo(history, "strong_attack", "up")).toBeNull();
 	});
 
-	it("jump→attack はコンボなし（jumpはmoveではない）", () => {
+	it("jump→attack 同方向で奇襲コンボ", () => {
 		const history: ComboHistory = {
 			lastCardType: "jump",
 			lastDirection: "up",
+		};
+		expect(detectCombo(history, "attack", "up")).toBe("ambush");
+	});
+
+	it("jump→attack 異方向はコンボなし", () => {
+		const history: ComboHistory = {
+			lastCardType: "jump",
+			lastDirection: "up",
+		};
+		expect(detectCombo(history, "attack", "right")).toBeNull();
+	});
+
+	it("jump失敗→attack 同方向はコンボなし（lastDirection=null）", () => {
+		const history: ComboHistory = {
+			lastCardType: "jump",
+			lastDirection: null,
 		};
 		expect(detectCombo(history, "attack", "up")).toBeNull();
 	});
@@ -112,5 +136,13 @@ describe("getComboBonus", () => {
 
 	it("連撃コンボのボーナスはCOMBO_BONUS.chainと一致", () => {
 		expect(getComboBonus("chain")).toBe(COMBO_BONUS.chain);
+	});
+
+	it("奇襲コンボのボーナスはCOMBO_BONUS.ambushと一致", () => {
+		expect(getComboBonus("ambush")).toBe(COMBO_BONUS.ambush);
+	});
+
+	it("集中攻撃コンボのボーナスはCOMBO_BONUS.focusと一致", () => {
+		expect(getComboBonus("focus")).toBe(COMBO_BONUS.focus);
 	});
 });

@@ -234,6 +234,8 @@ export const CARD_LEVEL_SHOCKWAVE = 5;
 export const COMBO_BONUS = {
 	charge: 1,
 	chain: 1,
+	ambush: 2,
+	focus: 1,
 } as const;
 
 // 特殊タイル効果（v1.3）
