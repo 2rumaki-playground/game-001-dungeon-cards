@@ -535,6 +535,7 @@ export class HandRenderer {
 
 			cardContainer.on("pointerover", () => {
 				if (this.isDragging) return;
+				if (!this.isInteractionEnabled) return;
 				if (this.hoveredCardId === card.id) return;
 				this.hoveredCardId = card.id;
 				this.render(this.currentHand);
@@ -542,6 +543,7 @@ export class HandRenderer {
 
 			cardContainer.on("pointerout", () => {
 				if (this.isDragging) return;
+				if (!this.isInteractionEnabled) return;
 				if (this.hoveredCardId !== card.id) return;
 				this.hoveredCardId = null;
 				this.render(this.currentHand);
