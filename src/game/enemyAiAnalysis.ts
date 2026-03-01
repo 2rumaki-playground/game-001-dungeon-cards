@@ -20,7 +20,9 @@ export type EnemyDecision =
 	| { type: "wait_room"; reason: string }
 	| { type: "wait_out_of_range"; reason: string }
 	| { type: "wait_no_move"; reason: string }
-	| { type: "skill_pending"; reason: string };
+	| { type: "skill_pending"; reason: string }
+	| { type: "summon"; reason: string }
+	| { type: "retreat"; reason: string };
 
 /** 移動候補タイル */
 export type MoveCandidateTile = {
@@ -89,9 +91,92 @@ function getMoveCandidates(
 }
 
 /**
+ * 召喚敵のAI分析
+ */
+export function analyzeSummonerEnemy(
+	state: GameState,
+	enemy: Enemy,
+): EnemyAiAnalysis {
+	const label = ENEMY_TYPE_LABEL[enemy.type];
+	const params = ENEMY_PARAMS[enemy.type];
+	const distance = manhattanDistance(enemy.position, state.player.position);
+	const mapWidth = state.map[0]?.length ?? 0;
+	const mapHeight = state.map.length;
+	const attackRange = getAttackRange(enemy.position, mapWidth, mapHeight);
+
+	// 部屋内 & プレイヤー不在 → 待機
+	const enemyRoom = findRoomAt(enemy.position, state.rooms);
+	if (enemyRoom !== null && !isInRoom(state.player.position, enemyRoom)) {
+		return {
+			enemyId: enemy.id,
+			decision: {
+				type: "wait_room",
+				reason: `${label}: 部屋内待機（プレイヤー不在）`,
+			},
+			moveCandidates: [],
+			attackRange,
+		};
+	}
+
+	// 索敵範囲外 → 待機
+	if (distance > params.senseRange) {
+		return {
+			enemyId: enemy.id,
+			decision: {
+				type: "wait_out_of_range",
+				reason: `${label}: 索敵外（距離${distance}, 範囲${params.senseRange}）`,
+			},
+			moveCandidates: [],
+			attackRange,
+		};
+	}
+
+	// 隣接 → 後退
+	if (isAdjacent(enemy.position, state.player.position)) {
+		return {
+			enemyId: enemy.id,
+			decision: {
+				type: "retreat",
+				reason: `${label}: 隣接, 後退`,
+			},
+			moveCandidates: [],
+			attackRange,
+		};
+	}
+
+	// 召喚ターン（cooldown=0）
+	if ((enemy.summonCooldown ?? 0) <= 0) {
+		return {
+			enemyId: enemy.id,
+			decision: {
+				type: "summon",
+				reason: `${label}: 召喚ターン`,
+			},
+			moveCandidates: [],
+			attackRange,
+		};
+	}
+
+	// 非召喚ターン → 待機
+	return {
+		enemyId: enemy.id,
+		decision: {
+			type: "wait_no_move",
+			reason: `${label}: 待機（cooldown=${enemy.summonCooldown}）`,
+		},
+		moveCandidates: [],
+		attackRange,
+	};
+}
+
+/**
  * 1体の敵のAI分析
  */
 export function analyzeEnemy(state: GameState, enemy: Enemy): EnemyAiAnalysis {
+	if (enemy.type === "summoner") {
+		return analyzeSummonerEnemy(state, enemy);
+	}
+
 	const params = ENEMY_PARAMS[enemy.type];
 	const label = ENEMY_TYPE_LABEL[enemy.type];
 	const distance = manhattanDistance(enemy.position, state.player.position);

@@ -179,6 +179,7 @@ describe("constants", () => {
 				normal: 3,
 				heavy: 0,
 				scout: 0,
+				summoner: 0,
 				miniboss: 0,
 				boss: 0,
 			});
@@ -186,6 +187,7 @@ describe("constants", () => {
 				normal: 3,
 				heavy: 0,
 				scout: 0,
+				summoner: 0,
 				miniboss: 0,
 				boss: 0,
 			});
@@ -196,6 +198,7 @@ describe("constants", () => {
 				normal: 2,
 				heavy: 0,
 				scout: 1,
+				summoner: 0,
 				miniboss: 0,
 				boss: 0,
 			});
@@ -203,6 +206,7 @@ describe("constants", () => {
 				normal: 2,
 				heavy: 0,
 				scout: 1,
+				summoner: 0,
 				miniboss: 0,
 				boss: 0,
 			});
@@ -213,6 +217,7 @@ describe("constants", () => {
 				normal: 1,
 				heavy: 1,
 				scout: 0,
+				summoner: 0,
 				miniboss: 1,
 				boss: 0,
 			});
@@ -223,6 +228,7 @@ describe("constants", () => {
 				normal: 1,
 				heavy: 1,
 				scout: 1,
+				summoner: 0,
 				miniboss: 0,
 				boss: 0,
 			});
@@ -233,6 +239,7 @@ describe("constants", () => {
 				normal: 0,
 				heavy: 1,
 				scout: 2,
+				summoner: 0,
 				miniboss: 0,
 				boss: 0,
 			});
@@ -240,6 +247,7 @@ describe("constants", () => {
 				normal: 0,
 				heavy: 1,
 				scout: 2,
+				summoner: 0,
 				miniboss: 0,
 				boss: 0,
 			});
@@ -250,6 +258,7 @@ describe("constants", () => {
 				normal: 0,
 				heavy: 1,
 				scout: 2,
+				summoner: 0,
 				miniboss: 0,
 				boss: 0,
 			});
@@ -260,6 +269,7 @@ describe("constants", () => {
 				normal: 0,
 				heavy: 1,
 				scout: 1,
+				summoner: 0,
 				miniboss: 0,
 				boss: 1,
 			});
@@ -270,6 +280,7 @@ describe("constants", () => {
 				normal: 0,
 				heavy: 1,
 				scout: 1,
+				summoner: 0,
 				miniboss: 1,
 				boss: 0,
 			});
@@ -280,6 +291,7 @@ describe("constants", () => {
 				normal: 0,
 				heavy: 1,
 				scout: 1,
+				summoner: 0,
 				miniboss: 0,
 				boss: 1,
 			});
@@ -287,8 +299,11 @@ describe("constants", () => {
 
 		it("全エントリの合計が3", () => {
 			for (const entry of ENEMY_COMPOSITION_TABLE) {
-				const { normal, heavy, scout, miniboss, boss } = entry.composition;
-				expect(normal + heavy + scout + miniboss + boss).toBe(ENEMY_COUNT);
+				const { normal, heavy, scout, summoner, miniboss, boss } =
+					entry.composition;
+				expect(normal + heavy + scout + summoner + miniboss + boss).toBe(
+					ENEMY_COUNT,
+				);
 			}
 		});
 	});
