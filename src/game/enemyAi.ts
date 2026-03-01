@@ -354,7 +354,8 @@ export function executeEnemyTurn(
 
 		// 召喚敵の行動
 		if (currentEnemy.type === "summoner") {
-			next = executeSummonerEnemyAction(next, currentEnemy, rng);
+			next = executeSummonerEnemyAction(next, currentEnemy, next.rng);
+			rng = next.rng;
 			continue;
 		}
 
