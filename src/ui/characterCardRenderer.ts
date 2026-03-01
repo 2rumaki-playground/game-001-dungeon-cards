@@ -14,9 +14,9 @@ import {
 } from "../constants";
 import type { Personality, SpeechLogEntry } from "../types";
 import { drawRoundedRect } from "./graphicsHelpers";
+import { CARD_RADIUS } from "./handRenderer";
 
 const CARD_PADDING = 8;
-const CARD_RADIUS = 8;
 const CARD_BACKGROUND_ALPHA = 0.95;
 const CARD_BORDER_WIDTH = 2;
 const SPEECH_TEXT_COLOR = 0xeeeef0;
