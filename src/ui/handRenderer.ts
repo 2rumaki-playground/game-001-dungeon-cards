@@ -533,21 +533,21 @@ export class HandRenderer {
 				this.handleDragEnd(e);
 			});
 
-			if (enabled) {
-				cardContainer.on("pointerover", () => {
-					if (this.isDragging) return;
-					if (this.hoveredCardId === card.id) return;
-					this.hoveredCardId = card.id;
-					this.render(this.currentHand);
-				});
+			cardContainer.on("pointerover", () => {
+				if (this.isDragging) return;
+				if (!this.isInteractionEnabled) return;
+				if (this.hoveredCardId === card.id) return;
+				this.hoveredCardId = card.id;
+				this.render(this.currentHand);
+			});
 
-				cardContainer.on("pointerout", () => {
-					if (this.isDragging) return;
-					if (this.hoveredCardId !== card.id) return;
-					this.hoveredCardId = null;
-					this.render(this.currentHand);
-				});
-			}
+			cardContainer.on("pointerout", () => {
+				if (this.isDragging) return;
+				if (!this.isInteractionEnabled) return;
+				if (this.hoveredCardId !== card.id) return;
+				this.hoveredCardId = null;
+				this.render(this.currentHand);
+			});
 		}
 
 		return cardContainer;
@@ -633,19 +633,19 @@ export class HandRenderer {
 		const hoveredCard = hand.find((c) => c.id === this.hoveredCardId);
 		if (!hoveredCard) return;
 
-		// 使用済みカードにはツールチップを表示しない
-		if (this.currentUsedCardIds.has(hoveredCard.id)) return;
-
 		const cardIndex = hand.findIndex((c) => c.id === this.hoveredCardId);
 		const totalWidth = hand.length * CARD_WIDTH + (hand.length - 1) * CARD_GAP;
 		const startX = -totalWidth / 2;
 		const cardCenterX =
 			startX + cardIndex * (CARD_WIDTH + CARD_GAP) + CARD_WIDTH / 2;
 
+		const isUsed = this.currentUsedCardIds.has(hoveredCard.id);
+		const hoverOffset = isUsed ? 0 : HOVER_LIFT;
+
 		const { container: tooltip, height: tooltipHeight } =
 			createCardTooltip(hoveredCard);
 		tooltip.x = cardCenterX - TOOLTIP_WIDTH / 2;
-		tooltip.y = -HOVER_LIFT - tooltipHeight - TOOLTIP_MARGIN;
+		tooltip.y = -hoverOffset - tooltipHeight - TOOLTIP_MARGIN;
 
 		this.tooltipContainer.addChild(tooltip);
 	}

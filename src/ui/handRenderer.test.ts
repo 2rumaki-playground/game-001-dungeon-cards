@@ -1172,6 +1172,34 @@ describe("HandRenderer ドラッグ＆ドロップ", () => {
 		resolveTween();
 	});
 
+	it("使用済みカードのホバーでツールチップが表示される", () => {
+		const renderer = new HandRenderer();
+		const cards = createTestCards();
+		renderer.setUsedCardIds(new Set(["card-1"]));
+		renderer.render(cards);
+
+		const card0 = findCardContainer(renderer, 0);
+		card0.emit("pointerover", {} as FederatedPointerEvent);
+
+		const tooltipContainer = renderer
+			.getContainer()
+			.children.find((c) => c.label === "tooltip") as Container;
+		expect(tooltipContainer.children.length).toBeGreaterThan(0);
+	});
+
+	it("使用済みカードのホバーでカードが浮き上がらない", () => {
+		const renderer = new HandRenderer();
+		const cards = createTestCards();
+		renderer.setUsedCardIds(new Set(["card-1"]));
+		renderer.render(cards);
+
+		const card0 = findCardContainer(renderer, 0);
+		card0.emit("pointerover", {} as FederatedPointerEvent);
+
+		const card0After = findCardContainer(renderer, 0);
+		expect(card0After.y).toBe(0);
+	});
+
 	it("使用済みカードのクリックはコールバックを呼ばない", async () => {
 		const renderer = new HandRenderer();
 		const cards = createTestCards();
