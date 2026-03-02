@@ -86,7 +86,8 @@ function getCorridorEntrances(room: Room, map: GameMap): Position[] {
 	const mapHeight = map.length;
 	const mapWidth = map[0]?.length ?? 0;
 
-	const isPassable = (t: string) => t !== "wall" && t !== "cracked_wall";
+	const isPassable = (t: GameMap[number][number]["type"]) =>
+		t !== "wall" && t !== "cracked_wall";
 
 	// 上辺の外側1マス
 	const topY = room.y - 1;
