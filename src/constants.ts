@@ -297,7 +297,7 @@ export function getBossType(floor: number): "miniboss" | "boss" | null {
 	return null;
 }
 
-// カード交換（v1.2）
+// カード交換
 export const DECK_MAX_SIZE = 4;
 export const DECK_MIN_SIZE = 4;
 // 敵撃破時カード獲得条件（正典: docs/spec/constants.md）
@@ -361,14 +361,14 @@ export const MAX_PLAY_SESSIONS = 50;
 export const FLOOR_AREA_SIZE = 5; // 5x5
 export const FLOOR_TILE_COUNT = FLOOR_AREA_SIZE * FLOOR_AREA_SIZE; // 25
 
-// カードレベル（v1.5）
+// カードレベル
 export const CARD_MAX_LEVEL = 5;
 /** index = level-1 の値が、そのレベルに到達するのに必要な累計XP */
 export const CARD_XP_TABLE = [0, 2, 6, 14, 30] as const;
 /** index = level-1 の値が、そのレベルで得られるダメージボーナス */
 export const CARD_LEVEL_DAMAGE_BONUS = [0, 1, 1, 2, 3] as const;
 
-// 特殊効果の解放レベル（v1.5）
+// 特殊効果の解放レベル
 /** 攻撃カード: 貫通効果の解放レベル */
 export const CARD_LEVEL_PIERCE = 3;
 /** 攻撃カード: 射程延長の解放レベル */
@@ -380,7 +380,7 @@ export const CARD_LEVEL_KNOCKBACK = 3;
 /** 強攻撃カード: 衝撃波効果の解放レベル */
 export const CARD_LEVEL_SHOCKWAVE = 5;
 
-// コンボボーナス（v1.5）
+// コンボボーナス
 export const COMBO_BONUS = {
 	charge: 1,
 	chain: 1,
@@ -388,7 +388,7 @@ export const COMBO_BONUS = {
 	focus: 1,
 } as const;
 
-// 特殊タイル効果（v1.3）
+// 特殊タイル効果
 export const TRAP_DAMAGE = 1;
 export const TREASURE_HEAL = 3;
 
@@ -432,7 +432,7 @@ export const ZOOM_MAX = 2.0;
 export const ZOOM_DEFAULT = 1.0;
 export const ZOOM_WHEEL_STEP = 0.1;
 
-// 階層別マップサイズ（v1.3）
+// 階層別マップサイズ
 export const MAP_SIZE_TABLE: {
 	maxFloor: number;
 	width: number;
@@ -452,7 +452,7 @@ export function getMapSize(floor: number): { width: number; height: number } {
 	return { width, height };
 }
 
-// 階層別敵配置数（v1.3）
+// 階層別敵配置数
 export const ENEMY_COUNT_TABLE: {
 	maxFloor: number;
 	count: number;
@@ -492,7 +492,7 @@ export function getCrackedWallCount(floor: number): number {
 	return entry.count;
 }
 
-// BSPマップ生成（v1.3）
+// BSPマップ生成
 export const BSP_MIN_PARTITION_SIZE = 5;
 export const BSP_MIN_ROOM_SIZE = 3; // 内部床サイズ（最小幅/高さ）
 export const BSP_CORRIDOR_WIDTH = 1;
@@ -501,7 +501,7 @@ export const BSP_MAX_RETRIES = 10;
 export const BSP_MAP_WIDTH = 12; // 内側領域が 2 * BSP_MIN_PARTITION_SIZE 以上（Issue #211で階層別に変更予定）
 export const BSP_MAP_HEIGHT = 12;
 
-// ボス特殊スキル（v1.4）
+// ボス特殊スキル
 export const BOSS_SKILL = {
 	/** ミニボス: 強化攻撃の発動確率 */
 	powerStrikeChance: 0.3,
