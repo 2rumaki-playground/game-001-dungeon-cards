@@ -30,6 +30,26 @@ describe("markCardAsPlayed", () => {
 		expect(result.deck.usedCardIds).toContain("move-1");
 	});
 
+	it("対象カードのstats.useCountが+1される", () => {
+		const state = createTestState({
+			deck: {
+				hand: [
+					{
+						id: "move-1",
+						type: "move",
+						level: 1,
+						exp: 0,
+						stats: { useCount: 3, defeatCount: 0, maxSingleDamage: 0 },
+					},
+				],
+				usedCardIds: [],
+			},
+		});
+		const result = markCardAsPlayed(state, "move-1");
+
+		expect(result.deck.hand[0].stats.useCount).toBe(4);
+	});
+
 	it("元のGameStateが変更されない（イミュータブル）", () => {
 		const state = createTestState({
 			deck: {
