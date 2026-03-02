@@ -182,6 +182,8 @@ const VALID_SPEECH_EVENT_TYPES: ReadonlySet<SpeechEventType> = new Set([
 	"rest_area_used",
 	"floor_reached",
 	"jump_success",
+	"card_acquired",
+	"card_skipped",
 ]);
 
 function sanitizeSpeechLog(raw: unknown): SpeechLogEntry | null {
