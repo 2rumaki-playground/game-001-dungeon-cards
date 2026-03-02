@@ -43,6 +43,7 @@ export const ENEMY_PARAMS = {
 		senseRange: 6,
 		shootRange: 2,
 	},
+	shielded: { hp: 3, attackDamage: 1, moveDistance: 1, senseRange: 5 },
 	miniboss: { hp: 8, attackDamage: 2, moveDistance: 1, senseRange: 7 },
 	boss: { hp: 15, attackDamage: 3, moveDistance: 1, senseRange: 10 },
 } as const;
@@ -54,6 +55,7 @@ export const ENEMY_TYPE_LABEL: Record<EnemyType, string> = {
 	scout: "俊敏敵",
 	summoner: "召喚敵",
 	ranged: "射撃敵",
+	shielded: "盾持ち敵",
 	miniboss: "ミニボス",
 	boss: "ボス",
 } as const;
@@ -82,6 +84,7 @@ export type EnemyComposition = {
 	scout: number;
 	summoner: number;
 	ranged: number;
+	shielded: number;
 	miniboss: number;
 	boss: number;
 };
@@ -99,6 +102,7 @@ export const ENEMY_COMPOSITION_TABLE: {
 			scout: 0,
 			summoner: 0,
 			ranged: 0,
+			shielded: 0,
 			miniboss: 0,
 			boss: 0,
 		},
@@ -111,6 +115,7 @@ export const ENEMY_COMPOSITION_TABLE: {
 			scout: 1,
 			summoner: 0,
 			ranged: 0,
+			shielded: 0,
 			miniboss: 0,
 			boss: 0,
 		},
@@ -124,6 +129,7 @@ export const ENEMY_COMPOSITION_TABLE: {
 			scout: 0,
 			summoner: 0,
 			ranged: 0,
+			shielded: 0,
 			miniboss: 1,
 			boss: 0,
 		},
@@ -137,6 +143,7 @@ export const ENEMY_COMPOSITION_TABLE: {
 			scout: 0,
 			summoner: 0,
 			ranged: 1,
+			shielded: 0,
 			miniboss: 0,
 			boss: 0,
 		},
@@ -149,6 +156,7 @@ export const ENEMY_COMPOSITION_TABLE: {
 			scout: 1,
 			summoner: 1,
 			ranged: 0,
+			shielded: 0,
 			miniboss: 0,
 			boss: 0,
 		},
@@ -162,6 +170,7 @@ export const ENEMY_COMPOSITION_TABLE: {
 			scout: 1,
 			summoner: 0,
 			ranged: 0,
+			shielded: 0,
 			miniboss: 0,
 			boss: 1,
 		},
@@ -175,6 +184,7 @@ export const ENEMY_COMPOSITION_TABLE: {
 			scout: 1,
 			summoner: 0,
 			ranged: 1,
+			shielded: 0,
 			miniboss: 0,
 			boss: 0,
 		},
@@ -187,6 +197,7 @@ export const ENEMY_COMPOSITION_TABLE: {
 			scout: 1,
 			summoner: 1,
 			ranged: 0,
+			shielded: 0,
 			miniboss: 0,
 			boss: 0,
 		},
@@ -200,6 +211,7 @@ export const ENEMY_COMPOSITION_TABLE: {
 			scout: 1,
 			summoner: 0,
 			ranged: 0,
+			shielded: 0,
 			miniboss: 1,
 			boss: 0,
 		},
@@ -213,6 +225,7 @@ export const ENEMY_COMPOSITION_TABLE: {
 			scout: 1,
 			summoner: 0,
 			ranged: 1,
+			shielded: 0,
 			miniboss: 0,
 			boss: 0,
 		},
@@ -225,6 +238,7 @@ export const ENEMY_COMPOSITION_TABLE: {
 			scout: 1,
 			summoner: 1,
 			ranged: 0,
+			shielded: 0,
 			miniboss: 0,
 			boss: 0,
 		},
@@ -238,6 +252,7 @@ export const ENEMY_COMPOSITION_TABLE: {
 			scout: 1,
 			summoner: 0,
 			ranged: 0,
+			shielded: 0,
 			miniboss: 0,
 			boss: 1,
 		},
@@ -251,6 +266,7 @@ export const ENEMY_COMPOSITION_TABLE: {
 			scout: 1,
 			summoner: 0,
 			ranged: 1,
+			shielded: 0,
 			miniboss: 0,
 			boss: 0,
 		},
@@ -316,6 +332,11 @@ export const ENEMY_ACQUISITION_CONDITIONS: Record<
 	ranged: {
 		cardType: "move",
 		conditions: [{ type: "defeat_count", threshold: 3 }],
+		conditionLogic: "and",
+	},
+	shielded: {
+		cardType: "attack",
+		conditions: [{ type: "defeat_count", threshold: 2 }],
 		conditionLogic: "and",
 	},
 	miniboss: {
@@ -556,6 +577,7 @@ export const COLORS = {
 	enemyScout: 0x88cc44,
 	enemySummoner: 0x66aacc,
 	enemyRanged: 0x44aacc,
+	enemyShielded: 0xaa8844,
 	enemyMiniboss: 0xdd8833,
 	enemyBoss: 0xdd3333,
 	// 後方互換（通常敵カラー）

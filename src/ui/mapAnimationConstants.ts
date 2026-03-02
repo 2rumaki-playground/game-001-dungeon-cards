@@ -87,6 +87,7 @@ export const ENEMY_PADDING: Record<EnemyType, number> = {
 	scout: 16, // 小さめ（パディング大）
 	summoner: 14, // 小さめ
 	ranged: 14, // scoutとnormalの中間
+	shielded: 10, // normalより少し大きめ（盾装備）
 	miniboss: 6, // heavyより大きい
 	boss: 4, // 最大サイズ
 };

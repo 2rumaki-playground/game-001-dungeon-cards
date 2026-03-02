@@ -76,6 +76,8 @@ describe("checkAcquisitionCondition", () => {
 				summoner: 0,
 				ranged: 0,
 
+				shielded: 0,
+
 				miniboss: 0,
 				boss: 0,
 			},
@@ -85,6 +87,8 @@ describe("checkAcquisitionCondition", () => {
 				scout: 1,
 				summoner: 0,
 				ranged: 0,
+
+				shielded: 0,
 
 				miniboss: 0,
 				boss: 0,
@@ -103,6 +107,8 @@ describe("checkAcquisitionCondition", () => {
 				summoner: 0,
 				ranged: 0,
 
+				shielded: 0,
+
 				miniboss: 0,
 				boss: 0,
 			},
@@ -112,6 +118,8 @@ describe("checkAcquisitionCondition", () => {
 				scout: 0,
 				summoner: 0,
 				ranged: 0,
+
+				shielded: 0,
 
 				miniboss: 0,
 				boss: 0,
@@ -130,6 +138,8 @@ describe("checkAcquisitionCondition", () => {
 				summoner: 0,
 				ranged: 0,
 
+				shielded: 0,
+
 				miniboss: 0,
 				boss: 0,
 			},
@@ -139,6 +149,8 @@ describe("checkAcquisitionCondition", () => {
 				scout: 0,
 				summoner: 0,
 				ranged: 0,
+
+				shielded: 0,
 
 				miniboss: 0,
 				boss: 0,
@@ -156,6 +168,8 @@ describe("checkAcquisitionCondition", () => {
 				summoner: 0,
 				ranged: 0,
 
+				shielded: 0,
+
 				miniboss: 0,
 				boss: 0,
 			},
@@ -165,6 +179,8 @@ describe("checkAcquisitionCondition", () => {
 				scout: 0,
 				summoner: 0,
 				ranged: 0,
+
+				shielded: 0,
 
 				miniboss: 0,
 				boss: 0,
@@ -182,6 +198,8 @@ describe("checkAcquisitionCondition", () => {
 				summoner: 0,
 				ranged: 0,
 
+				shielded: 0,
+
 				miniboss: 1,
 				boss: 0,
 			},
@@ -191,6 +209,8 @@ describe("checkAcquisitionCondition", () => {
 				scout: 0,
 				summoner: 0,
 				ranged: 0,
+
+				shielded: 0,
 
 				miniboss: 0,
 				boss: 0,
@@ -207,6 +227,7 @@ describe("checkAcquisitionCondition", () => {
 				scout: 0,
 				summoner: 0,
 				ranged: 2,
+				shielded: 0,
 				miniboss: 0,
 				boss: 0,
 			},
@@ -216,6 +237,7 @@ describe("checkAcquisitionCondition", () => {
 				scout: 0,
 				summoner: 0,
 				ranged: 0,
+				shielded: 0,
 				miniboss: 0,
 				boss: 0,
 			},
@@ -231,6 +253,7 @@ describe("checkAcquisitionCondition", () => {
 				scout: 0,
 				summoner: 0,
 				ranged: 3,
+				shielded: 0,
 				miniboss: 0,
 				boss: 0,
 			},
@@ -240,6 +263,7 @@ describe("checkAcquisitionCondition", () => {
 				scout: 0,
 				summoner: 0,
 				ranged: 0,
+				shielded: 0,
 				miniboss: 0,
 				boss: 0,
 			},
@@ -270,6 +294,8 @@ describe("checkAcquisitionCondition", () => {
 					summoner: 0,
 					ranged: 0,
 
+					shielded: 0,
+
 					miniboss: 0,
 					boss: 0,
 				},
@@ -279,6 +305,8 @@ describe("checkAcquisitionCondition", () => {
 					scout: 1,
 					summoner: 0,
 					ranged: 0,
+
+					shielded: 0,
 
 					miniboss: 0,
 					boss: 0,
@@ -310,6 +338,8 @@ describe("checkAcquisitionCondition", () => {
 					summoner: 0,
 					ranged: 0,
 
+					shielded: 0,
+
 					miniboss: 0,
 					boss: 0,
 				},
@@ -319,6 +349,8 @@ describe("checkAcquisitionCondition", () => {
 					scout: 1,
 					summoner: 0,
 					ranged: 0,
+
+					shielded: 0,
 
 					miniboss: 0,
 					boss: 0,

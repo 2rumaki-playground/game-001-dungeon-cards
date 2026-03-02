@@ -23,6 +23,7 @@ export type EnemyType =
 	| "scout"
 	| "summoner"
 	| "ranged"
+	| "shielded"
 	| "miniboss"
 	| "boss";
 
@@ -59,4 +60,6 @@ export type Enemy = {
 	enraged?: boolean;
 	/** 召喚クールダウン（召喚敵用） */
 	summonCooldown?: number;
+	/** 盾が有効か（盾持ち敵用） */
+	shieldActive?: boolean;
 };
