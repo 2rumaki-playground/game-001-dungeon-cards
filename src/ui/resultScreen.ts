@@ -384,19 +384,36 @@ export class ResultScreen {
 					fontSize: 13,
 					fontFamily: "sans-serif",
 					fill: HIGHLIGHT_TEXT_COLOR,
+					wordWrap: true,
+					wordWrapWidth: panelWidth - PANEL_PADDING * 2,
 				},
 			});
 			text.x = PANEL_PADDING;
 			text.y = lineY;
 			panel.addChild(text);
-			lineY += 20;
+			lineY += safeTextHeight(text, 20);
 		}
 
 		return panel;
 	}
 
 	private getHighlightHeight(highlights: HighlightEntry[]): number {
-		return 22 + highlights.length * 20;
+		const panelWidth = CONTENT_WIDTH;
+		let lineY = 22;
+		for (const h of highlights) {
+			const text = new Text({
+				text: h.text,
+				style: {
+					fontSize: 13,
+					fontFamily: "sans-serif",
+					fill: HIGHLIGHT_TEXT_COLOR,
+					wordWrap: true,
+					wordWrapWidth: panelWidth - PANEL_PADDING * 2,
+				},
+			});
+			lineY += safeTextHeight(text, 20);
+		}
+		return lineY;
 	}
 
 	/**
