@@ -47,11 +47,11 @@ const HIGHLIGHT_TEXT_COLOR = 0xffdd88;
 const MVP_BORDER_COLOR = 0xffd700;
 
 /**
- * テスト環境（Canvas API不在）でも安全にText.heightを取得する
+ * テスト環境（Canvas API不在）でも安全にheightを取得する
  */
-function safeTextHeight(text: Text, fallback: number): number {
+function safeTextHeight(obj: Text | Container, fallback: number): number {
 	try {
-		return text.height;
+		return obj.height;
 	} catch {
 		return fallback;
 	}
@@ -137,10 +137,11 @@ export class ResultScreen {
 		// === 発話パネル ===
 		if (data.speechLog) {
 			const speechPanel = this.createSpeechPanel(data, centerX, currentY);
+			const speechHeight = safeTextHeight(speechPanel, 60);
 			speechPanel.alpha = 0;
 			content.addChild(speechPanel);
 			this.fadeIn(speechPanel, sectionIndex++, signal);
-			currentY += 60 + SECTION_GAP;
+			currentY += speechHeight + SECTION_GAP;
 		}
 
 		// === 基本統計 2×2グリッド ===
