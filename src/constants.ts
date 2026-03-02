@@ -3,7 +3,7 @@
  * @see docs/spec/constants.md
  */
 
-import type { CardDropConfig, EnemyType, Personality } from "./types";
+import type { CardDropConfig, CardType, EnemyType, Personality } from "./types";
 
 // 手札関連
 export const HAND_LIMIT = 4;
@@ -55,6 +55,23 @@ export const ENEMY_TYPE_LABEL: Record<EnemyType, string> = {
 	miniboss: "ミニボス",
 	boss: "ボス",
 } as const;
+
+// カード種別表示名
+export const CARD_TYPE_SYMBOL: Record<CardType, string> = {
+	move: "👟",
+	attack: "⚔",
+	strong_attack: "🔥",
+	jump: "🦘",
+	wait: "⏳",
+};
+
+export const CARD_TYPE_NAME: Record<CardType, string> = {
+	move: "移動",
+	attack: "攻撃",
+	strong_attack: "強攻撃",
+	jump: "ジャンプ",
+	wait: "待機",
+};
 
 // 召喚クールダウン（正典: docs/spec/constants.md）
 export const SUMMONER_COOLDOWN = 2;

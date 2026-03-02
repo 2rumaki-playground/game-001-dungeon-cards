@@ -3,6 +3,8 @@
  */
 
 import {
+	CARD_TYPE_NAME,
+	CARD_TYPE_SYMBOL,
 	ENEMY_TYPE_LABEL,
 	RESULT_HIGHLIGHT_COUNT,
 	RESULT_HIGHLIGHT_MIN,
@@ -16,7 +18,6 @@ import type {
 	RunEvent,
 	RunEventType,
 } from "../types";
-import { CARD_TYPE_NAME, CARD_TYPE_SYMBOL } from "../ui/cardConstants";
 import { getCurrentSession } from "./playStats";
 
 /**
