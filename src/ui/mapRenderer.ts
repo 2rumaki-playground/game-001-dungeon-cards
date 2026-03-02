@@ -132,6 +132,13 @@ export class MapRenderer {
 	}
 
 	/**
+	 * 敵コンテナを取得
+	 */
+	getEnemiesContainer(): Container {
+		return this.enemiesContainer;
+	}
+
+	/**
 	 * 敵AI可視化オーバーレイマネージャを設定（DEV環境でのみ呼び出す）
 	 */
 	setEnemyAiOverlayManager(manager: {
