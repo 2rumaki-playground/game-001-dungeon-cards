@@ -270,6 +270,29 @@ describe("Lv5攻撃カード: 射程延長 + 貫通", () => {
 		expect(result.speechLog?.eventType).toBe("attack_miss");
 	});
 
+	it("突撃コンボで正面のcracked_wallを破壊しミスログが出ない", () => {
+		const state = createTestState({
+			enemies: [],
+			deck: {
+				hand: [makeCard({ id: "atk-1", type: "attack", level: 5, exp: 16 })],
+				usedCardIds: [],
+			},
+			comboHistory: { lastCardType: "move", lastDirection: "right" },
+		});
+		state.map[3][4] = { type: "cracked_wall" };
+
+		const {
+			state: result,
+			hit,
+			comboType,
+		} = executeAttack(state, "atk-1", "right");
+		expect(hit).toBe(false);
+		expect(comboType).toBe("charge");
+		expect(result.map[3][4].type).toBe("floor");
+		// ミスログ/SEが出ないことを確認
+		expect(result.speechLog?.eventType).not.toBe("attack_miss");
+	});
+
 	it("壁越しの敵は攻撃できない", () => {
 		// プレイヤー(3,3)→right, (4,3)床,(5,3)床,(6,3)壁
 		// 射程2なので(4,3),(5,3)のみ探索
@@ -436,6 +459,17 @@ describe("executeShockwave", () => {
 		const moved = result.enemies.find((e) => e.id === enemy.id);
 		expect(moved?.hp).toBe(10 - 3);
 		expect(moved?.position).toEqual({ x: 5, y: 3 });
+	});
+
+	it("正面がひび割れ壁の場合は破壊してcrackedWallDestroyed:trueを返す", () => {
+		const state = createTestState({ enemies: [] });
+		state.map[3][4] = { type: "cracked_wall" };
+
+		const result = executeShockwave(state, "right", 3, "card-1");
+		expect(result.hit).toBe(false);
+		expect(result.crackedWallDestroyed).toBe(true);
+		expect(result.state.map[3][4].type).toBe("floor");
+		expect(result.enemyId).toBeNull();
 	});
 
 	it("サイドが壁/マップ外でも正面のダメージは適用される", () => {

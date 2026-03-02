@@ -9,6 +9,7 @@
 export type TileType =
 	| "floor"
 	| "wall"
+	| "cracked_wall"
 	| "stairs"
 	| "trap"
 	| "treasure"

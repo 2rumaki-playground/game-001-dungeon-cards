@@ -47,7 +47,11 @@ export function canEnemyMoveTo(
 	}
 
 	const tile = state.map[ny][nx];
-	if (tile.type === "wall" || tile.type === "stairs") {
+	if (
+		tile.type === "wall" ||
+		tile.type === "cracked_wall" ||
+		tile.type === "stairs"
+	) {
 		return false;
 	}
 
@@ -173,7 +177,8 @@ export function hasLineOfSight(
 		const minY = Math.min(from.y, to.y);
 		const maxY = Math.max(from.y, to.y);
 		for (let y = minY + 1; y < maxY; y++) {
-			if (state.map[y][from.x].type === "wall") {
+			const t = state.map[y][from.x].type;
+			if (t === "wall" || t === "cracked_wall") {
 				return false;
 			}
 		}
@@ -183,7 +188,8 @@ export function hasLineOfSight(
 		const minX = Math.min(from.x, to.x);
 		const maxX = Math.max(from.x, to.x);
 		for (let x = minX + 1; x < maxX; x++) {
-			if (state.map[from.y][x].type === "wall") {
+			const t = state.map[from.y][x].type;
+			if (t === "wall" || t === "cracked_wall") {
 				return false;
 			}
 		}

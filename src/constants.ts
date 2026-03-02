@@ -472,6 +472,26 @@ export function getEnemyCount(floor: number): number {
 	return entry.count;
 }
 
+// 階層別ひび割れ壁配置数
+export const CRACKED_WALL_TABLE: {
+	maxFloor: number;
+	count: number;
+}[] = [
+	{ maxFloor: 2, count: 0 },
+	{ maxFloor: 4, count: 0 },
+	{ maxFloor: 6, count: 2 },
+	{ maxFloor: 9, count: 3 },
+	{ maxFloor: 14, count: 4 },
+	{ maxFloor: Infinity, count: 5 },
+];
+
+export function getCrackedWallCount(floor: number): number {
+	const entry =
+		CRACKED_WALL_TABLE.find((e) => floor <= e.maxFloor) ??
+		CRACKED_WALL_TABLE[CRACKED_WALL_TABLE.length - 1];
+	return entry.count;
+}
+
 // BSPマップ生成
 export const BSP_MIN_PARTITION_SIZE = 5;
 export const BSP_MIN_ROOM_SIZE = 3; // 内部床サイズ（最小幅/高さ）
@@ -611,6 +631,7 @@ export const COLORS = {
 	trap: 0x9b59b6,
 	treasure: 0xccaa44,
 	restArea: 0x44aa88,
+	crackedWall: 0x6a5a3a,
 	// キャラクター
 	player: 0x4a8cca,
 	// 敵タイプ別カラー

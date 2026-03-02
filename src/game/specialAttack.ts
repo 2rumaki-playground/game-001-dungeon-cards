@@ -8,7 +8,7 @@ import type { Direction, GameMap, GameState, Position } from "../types";
 import { DIRECTION_DELTA } from "../types";
 import { applyDamageToEnemy } from "./combat";
 import { isInBounds } from "./map";
-import { addActionLog, updateEnemy } from "./state";
+import { addActionLog, setTile, updateEnemy } from "./state";
 
 /**
  * 指定方向に走査し、最初の敵を見つける。
@@ -31,7 +31,10 @@ export function findAttackTarget(
 			return null;
 		}
 
-		if (state.map[ny][nx].type === "wall") {
+		if (
+			state.map[ny][nx].type === "wall" ||
+			state.map[ny][nx].type === "cracked_wall"
+		) {
 			return null;
 		}
 
@@ -74,7 +77,10 @@ export function applyPierce(
 	let cy = fromPosition.y + delta.y;
 
 	while (isInBounds(state.map, cx, cy)) {
-		if (state.map[cy][cx].type === "wall") {
+		if (
+			state.map[cy][cx].type === "wall" ||
+			state.map[cy][cx].type === "cracked_wall"
+		) {
 			break;
 		}
 
@@ -132,7 +138,8 @@ function canKnockbackTo(
 	y: number,
 ): boolean {
 	if (!isInBounds(map, x, y)) return false;
-	if (map[y][x].type === "wall") return false;
+	if (map[y][x].type === "wall" || map[y][x].type === "cracked_wall")
+		return false;
 	if (state.player.position.x === x && state.player.position.y === y)
 		return false;
 	if (state.enemies.some((e) => e.position.x === x && e.position.y === y))
@@ -166,7 +173,8 @@ export function getShockwaveTargets(
 
 /**
  * 衝撃波を実行する。
- * 正面に敵必須。正面→サイド(反時計回り)→サイド(時計回り)の順にダメージ。
+ * 正面にひび割れ壁がある場合は破壊して終了（hit:false, crackedWallDestroyed:true）。
+ * それ以外は正面に敵が必須。正面→サイド(反時計回り)→サイド(時計回り)の順にダメージ。
  * 衝撃波後、生存した敵にノックバック。
  */
 export function executeShockwave(
@@ -180,22 +188,56 @@ export function executeShockwave(
 	enemyId: string | null;
 	overkill: number;
 	defeated: boolean;
+	crackedWallDestroyed: boolean;
 } {
 	const targets = getShockwaveTargets(state.player.position, direction);
 	const frontPos = targets[0];
 
-	// 正面に敵が必須
+	// 正面に敵が必須（ひび割れ壁の場合は破壊して終了）
 	if (!isInBounds(state.map, frontPos.x, frontPos.y)) {
-		return { state, hit: false, enemyId: null, overkill: 0, defeated: false };
+		return {
+			state,
+			hit: false,
+			enemyId: null,
+			overkill: 0,
+			defeated: false,
+			crackedWallDestroyed: false,
+		};
 	}
 	if (state.map[frontPos.y][frontPos.x].type === "wall") {
-		return { state, hit: false, enemyId: null, overkill: 0, defeated: false };
+		return {
+			state,
+			hit: false,
+			enemyId: null,
+			overkill: 0,
+			defeated: false,
+			crackedWallDestroyed: false,
+		};
+	}
+	// 正面がひび割れ壁の場合は破壊して miss 扱い（ログは呼び出し元で付与）
+	if (state.map[frontPos.y][frontPos.x].type === "cracked_wall") {
+		const s = setTile(state, frontPos.x, frontPos.y, { type: "floor" });
+		return {
+			state: s,
+			hit: false,
+			enemyId: null,
+			overkill: 0,
+			defeated: false,
+			crackedWallDestroyed: true,
+		};
 	}
 	const frontEnemy = state.enemies.find(
 		(e) => e.position.x === frontPos.x && e.position.y === frontPos.y,
 	);
 	if (!frontEnemy) {
-		return { state, hit: false, enemyId: null, overkill: 0, defeated: false };
+		return {
+			state,
+			hit: false,
+			enemyId: null,
+			overkill: 0,
+			defeated: false,
+			crackedWallDestroyed: false,
+		};
 	}
 
 	let next = addActionLog(state, "衝撃波！", "system");
@@ -207,7 +249,11 @@ export function executeShockwave(
 
 	for (const pos of targets) {
 		if (!isInBounds(next.map, pos.x, pos.y)) continue;
-		if (next.map[pos.y][pos.x].type === "wall") continue;
+		if (
+			next.map[pos.y][pos.x].type === "wall" ||
+			next.map[pos.y][pos.x].type === "cracked_wall"
+		)
+			continue;
 
 		const enemy = next.enemies.find(
 			(e) => e.position.x === pos.x && e.position.y === pos.y,
@@ -239,5 +285,6 @@ export function executeShockwave(
 		enemyId: frontEnemy.id,
 		overkill: frontOverkill,
 		defeated: frontDefeated,
+		crackedWallDestroyed: false,
 	};
 }

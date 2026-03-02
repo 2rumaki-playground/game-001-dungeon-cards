@@ -39,6 +39,7 @@ import { addSpeechLog } from "./speech";
 import {
 	addActionLog,
 	setDeck,
+	setTile,
 	setVisitedTiles,
 	updateComboHistory,
 	updatePlayer,
@@ -65,8 +66,11 @@ function canMove(state: GameState, direction: Direction): boolean {
 		return false;
 	}
 
-	// 壁タイル
-	if (state.map[ny][nx].type === "wall") {
+	// 壁タイル・ひび割れ壁タイル
+	if (
+		state.map[ny][nx].type === "wall" ||
+		state.map[ny][nx].type === "cracked_wall"
+	) {
 		return false;
 	}
 
@@ -192,8 +196,11 @@ function canAttack(
 		return { hit: false };
 	}
 
-	// 壁タイル
-	if (state.map[ny][nx].type === "wall") {
+	// 壁タイル・ひび割れ壁タイル
+	if (
+		state.map[ny][nx].type === "wall" ||
+		state.map[ny][nx].type === "cracked_wall"
+	) {
 		return { hit: false };
 	}
 
@@ -339,8 +346,25 @@ export function executeAttack(
 
 		const target = findExtendedRangeTarget(next, direction);
 		if (!target) {
-			next = addActionLog(next, "攻撃できなかった", "player");
-			next = addSpeechLog(next, "attack_miss");
+			// 突撃コンボ: 方向1マス先のひび割れ壁を破壊
+			let crackedWallDestroyed = false;
+			if (combo === "charge") {
+				const delta = DIRECTION_DELTA[direction];
+				const wx = state.player.position.x + delta.x;
+				const wy = state.player.position.y + delta.y;
+				if (
+					isInBounds(next.map, wx, wy) &&
+					next.map[wy][wx].type === "cracked_wall"
+				) {
+					next = setTile(next, wx, wy, { type: "floor" });
+					next = addActionLog(next, "ひび割れ壁を破壊した", "player");
+					crackedWallDestroyed = true;
+				}
+			}
+			if (!crackedWallDestroyed) {
+				next = addActionLog(next, "攻撃できなかった", "player");
+				next = addSpeechLog(next, "attack_miss");
+			}
 			return {
 				state: updateComboHistory(next, {
 					lastCardType: "attack",
@@ -386,6 +410,36 @@ export function executeAttack(
 			comboType: combo ?? undefined,
 			levelBonus,
 		};
+	}
+
+	// 突撃コンボ: 方向1マス先がひび割れ壁なら破壊（ミスログ/SEを出さない）
+	if (combo === "charge") {
+		const delta = DIRECTION_DELTA[direction];
+		const wx = state.player.position.x + delta.x;
+		const wy = state.player.position.y + delta.y;
+		if (
+			isInBounds(state.map, wx, wy) &&
+			state.map[wy][wx].type === "cracked_wall"
+		) {
+			let next = markCardAsPlayed(state, cardId);
+			if (comboLog) {
+				next = addActionLog(next, comboLog, "system");
+				next = addSpeechLog(next, "combo_activated");
+			}
+			next = setTile(next, wx, wy, { type: "floor" });
+			next = addActionLog(next, "ひび割れ壁を破壊した", "player");
+			return {
+				state: updateComboHistory(next, {
+					lastCardType: "attack",
+					lastDirection: direction,
+				}),
+				hit: false,
+				overkill: 0,
+				defeated: false,
+				comboType: combo,
+				levelBonus,
+			};
+		}
 	}
 
 	// 通常攻撃（Lv1-4）
@@ -459,8 +513,12 @@ export function executeStrongAttack(
 		next = shockResult.state;
 
 		if (!shockResult.hit) {
-			next = addActionLog(next, "強攻撃できなかった", "player");
-			next = addSpeechLog(next, "attack_miss");
+			if (shockResult.crackedWallDestroyed) {
+				next = addActionLog(next, "ひび割れ壁を破壊した", "player");
+			} else {
+				next = addActionLog(next, "強攻撃できなかった", "player");
+				next = addSpeechLog(next, "attack_miss");
+			}
 		}
 
 		return {
@@ -474,6 +532,31 @@ export function executeStrongAttack(
 			enemyId: shockResult.enemyId ?? undefined,
 			levelBonus,
 		};
+	}
+
+	// ひび割れ壁破壊: 方向1マス先がcracked_wallなら破壊（ミスログ/SEを出さない）
+	{
+		const delta = DIRECTION_DELTA[direction];
+		const wx = state.player.position.x + delta.x;
+		const wy = state.player.position.y + delta.y;
+		if (
+			isInBounds(state.map, wx, wy) &&
+			state.map[wy][wx].type === "cracked_wall"
+		) {
+			let next = markCardAsPlayed(state, cardId);
+			next = setTile(next, wx, wy, { type: "floor" });
+			next = addActionLog(next, "ひび割れ壁を破壊した", "player");
+			return {
+				state: updateComboHistory(next, {
+					lastCardType: "strong_attack",
+					lastDirection: direction,
+				}),
+				hit: false,
+				overkill: 0,
+				defeated: false,
+				levelBonus,
+			};
+		}
 	}
 
 	// 通常強攻撃（Lv1-4）
@@ -565,8 +648,11 @@ export function executeJump(
 		};
 	}
 
-	// 着地先が壁
-	if (next.map[landY][landX].type === "wall") {
+	// 着地先が壁・ひび割れ壁
+	if (
+		next.map[landY][landX].type === "wall" ||
+		next.map[landY][landX].type === "cracked_wall"
+	) {
 		next = updateComboHistory(next, {
 			lastCardType: "jump",
 			lastDirection: null,
