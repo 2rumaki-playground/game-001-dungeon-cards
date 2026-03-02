@@ -11,14 +11,18 @@ import {
 } from "../constants";
 import { createInitialCounters } from "../game/cardAcquisition";
 import { initCardIdCounterFromDeck } from "../game/deck";
+import { MAX_EVENT_LOG_LENGTH } from "../game/eventLog";
 import {
 	type AcquisitionCounters,
 	ALL_MILESTONES,
+	type CardType,
 	type DeckState,
 	type GameState,
 	type MilestoneType,
 	type Personality,
 	type Room,
+	type RunEvent,
+	type RunEventType,
 	type SpeechEventType,
 	type SpeechLogEntry,
 } from "../types";
@@ -238,6 +242,121 @@ function sanitizePersonality(raw: unknown): Personality {
 }
 
 /**
+ * RunEvent をバリデーションし、不正な要素を除外して安全な配列として再構築
+ */
+const VALID_RUN_EVENT_TYPES: ReadonlySet<RunEventType> = new Set([
+	"boss_defeated",
+	"miniboss_defeated",
+	"close_call_defeat",
+	"card_level_up",
+	"card_acquired",
+]);
+
+const VALID_CARD_TYPES = new Set([
+	"move",
+	"attack",
+	"strong_attack",
+	"jump",
+	"wait",
+]);
+
+function sanitizeEventLog(raw: unknown): RunEvent[] {
+	if (!Array.isArray(raw)) return [];
+	return raw.slice(-MAX_EVENT_LOG_LENGTH).flatMap((item): RunEvent[] => {
+		if (item == null || typeof item !== "object") return [];
+		const { type, floor, turn, detail } = item as Record<string, unknown>;
+		if (
+			typeof type !== "string" ||
+			!VALID_RUN_EVENT_TYPES.has(type as RunEventType) ||
+			typeof floor !== "number" ||
+			!Number.isFinite(floor) ||
+			floor < 0 ||
+			typeof turn !== "number" ||
+			!Number.isFinite(turn) ||
+			turn < 0 ||
+			detail == null ||
+			typeof detail !== "object"
+		) {
+			return [];
+		}
+		const d = detail as Record<string, unknown>;
+		switch (type) {
+			case "boss_defeated":
+				if (d.enemyType !== "boss") return [];
+				return [
+					{
+						type,
+						floor: Math.floor(floor),
+						turn: Math.floor(turn),
+						detail: { enemyType: "boss" as (typeof ENEMY_TYPES)[number] },
+					},
+				];
+			case "miniboss_defeated":
+				if (d.enemyType !== "miniboss") return [];
+				return [
+					{
+						type,
+						floor: Math.floor(floor),
+						turn: Math.floor(turn),
+						detail: { enemyType: "miniboss" as const },
+					},
+				];
+			case "close_call_defeat":
+				if (
+					!ENEMY_TYPES.includes(d.enemyType as (typeof ENEMY_TYPES)[number]) ||
+					typeof d.remainingHpRatio !== "number" ||
+					!Number.isFinite(d.remainingHpRatio) ||
+					d.remainingHpRatio < 0 ||
+					d.remainingHpRatio > 1
+				)
+					return [];
+				return [
+					{
+						type,
+						floor: Math.floor(floor),
+						turn: Math.floor(turn),
+						detail: {
+							remainingHpRatio: d.remainingHpRatio,
+							enemyType: d.enemyType as (typeof ENEMY_TYPES)[number],
+						},
+					},
+				];
+			case "card_level_up":
+				if (
+					!VALID_CARD_TYPES.has(d.cardType as string) ||
+					typeof d.newLevel !== "number" ||
+					!Number.isFinite(d.newLevel) ||
+					d.newLevel < 1
+				)
+					return [];
+				return [
+					{
+						type,
+						floor: Math.floor(floor),
+						turn: Math.floor(turn),
+						detail: {
+							cardType: d.cardType as CardType,
+							newLevel: Math.floor(d.newLevel),
+						},
+					},
+				];
+			case "card_acquired":
+				if (!VALID_CARD_TYPES.has(d.cardType as string)) return [];
+				return [
+					{
+						type,
+						floor: Math.floor(floor),
+						turn: Math.floor(turn),
+						detail: { cardType: d.cardType as CardType },
+					},
+				];
+			default:
+				return [];
+		}
+	});
+}
+
+/**
  * ゲーム状態を保存
  */
 export function saveGame(state: GameState): void {
@@ -371,6 +490,7 @@ export function loadGame(): GameState | null {
 			speechLog: sanitizeSpeechLog(data.speechLog),
 			achievedMilestones: sanitizeAchievedMilestones(data.achievedMilestones),
 			pendingMilestone: sanitizePendingMilestone(data.pendingMilestone),
+			eventLog: sanitizeEventLog(data.eventLog),
 		};
 
 		// 旧セーブデータ互換: 3ゾーン形式のデッキを手札形式に変換

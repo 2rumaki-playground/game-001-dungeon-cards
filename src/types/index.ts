@@ -24,4 +24,15 @@ export {
 	type Turn,
 } from "./game";
 export type { GameMap, Room, SpecialTileType, Tile, TileType } from "./map";
+export type {
+	BossDefeatedRunEvent,
+	CardAcquiredRunEvent,
+	CardLevelUpRunEvent,
+	CloseCallDefeatRunEvent,
+	HighlightEntry,
+	MinibossDefeatedRunEvent,
+	ResultData,
+	RunEvent,
+	RunEventType,
+} from "./result";
 export type { DeathCause, PlayResult, PlaySession } from "./stats";

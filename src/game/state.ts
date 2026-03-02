@@ -180,6 +180,7 @@ export function createTitleScreenState(seed?: number): GameState {
 		speechLog: null,
 		achievedMilestones: new Set(),
 		pendingMilestone: null,
+		eventLog: [],
 	};
 }
 
@@ -229,6 +230,7 @@ export function createInitialGameState(
 		speechLog: null,
 		achievedMilestones: new Set(),
 		pendingMilestone: null,
+		eventLog: [],
 	};
 }
 

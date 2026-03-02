@@ -1,5 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
-import { CARD_MAX_LEVEL, CARD_XP_TABLE } from "../constants";
+import {
+	CARD_MAX_LEVEL,
+	CARD_XP_TABLE,
+	EVENT_LEVEL_UP_THRESHOLD,
+} from "../constants";
 import { createTestState } from "../test-utils/createTestFixtures";
 import type { Card } from "../types";
 import {
@@ -15,6 +19,7 @@ import {
 	isMaxLevel,
 	normalizeCardLevel,
 } from "./cardLevel";
+import { resetSession, startSession } from "./playStats";
 
 function makeCard(overrides?: Partial<Card>): Card {
 	return {
@@ -372,5 +377,38 @@ describe("awardExpToCard", () => {
 		const next = awardExpToCard(state, "atk-1");
 		expect(next.deck.hand[0].level).toBe(2);
 		expect(next.actionLog[0].message).toContain("Lv.2");
+	});
+
+	it(`Lv.${EVENT_LEVEL_UP_THRESHOLD}到達でeventLogにcard_level_upが記録される`, () => {
+		startSession();
+		const xpForThreshold = CARD_XP_TABLE[EVENT_LEVEL_UP_THRESHOLD - 1];
+		const card = makeCard({
+			id: "atk-1",
+			type: "attack",
+			exp: xpForThreshold - 1,
+			level: EVENT_LEVEL_UP_THRESHOLD - 1,
+		});
+		const state = createTestState({
+			deck: { hand: [card], usedCardIds: [] },
+			floor: 5,
+		});
+		const next = awardExpToCard(state, "atk-1");
+		expect(next.deck.hand[0].level).toBe(EVENT_LEVEL_UP_THRESHOLD);
+		expect(next.eventLog).toHaveLength(1);
+		expect(next.eventLog[0].type).toBe("card_level_up");
+		expect(next.eventLog[0].floor).toBe(5);
+		resetSession();
+	});
+
+	it(`Lv.${EVENT_LEVEL_UP_THRESHOLD}未満のレベルアップではeventLogに記録されない`, () => {
+		startSession();
+		const card = makeCard({ id: "atk-1", type: "attack", exp: 1, level: 1 });
+		const state = createTestState({
+			deck: { hand: [card], usedCardIds: [] },
+		});
+		const next = awardExpToCard(state, "atk-1");
+		expect(next.deck.hand[0].level).toBe(2);
+		expect(next.eventLog).toHaveLength(0);
+		resetSession();
 	});
 });

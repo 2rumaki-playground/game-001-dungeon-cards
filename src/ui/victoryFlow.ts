@@ -5,6 +5,7 @@
 import { STATUS_BAR_HEIGHT } from "../constants";
 import { returnToTitle } from "../game";
 import { endSession } from "../game/playStats";
+import { buildResultData } from "../game/resultBuilder";
 import type { GameContext } from "../gameContext";
 import type { GameState } from "../types";
 import { savePlaySession } from "../utils/statsStorage";
@@ -25,6 +26,7 @@ export function showVictoryScreen(
 	state: GameState,
 ): Promise<"continue" | "title"> {
 	return new Promise((resolve) => {
+		ctx.resultData = buildResultData(state, "clear");
 		const victoryState: GameState = { ...state, screen: "victory" };
 		applyState(ctx, victoryState);
 		render(ctx);
@@ -43,16 +45,22 @@ export function showVictoryScreen(
 			}, CONFETTI_INTERVAL);
 		}
 
+		// 元のコールバックを保存し、勝利フロー終了時に復元する
+		const prevOnContinue = ctx.ui.resultScreen.getOnContinue();
+		const prevOnReturnToTitle = ctx.ui.resultScreen.getOnReturnToTitle();
+
 		const cleanup = (): void => {
 			if (confettiTimer !== undefined) {
 				clearInterval(confettiTimer);
 			}
 			ps?.clear();
-			ctx.ui.victoryScreen.setOnContinue(() => {});
-			ctx.ui.victoryScreen.setOnReturnToTitle(() => {});
+			ctx.resultData = null;
+			if (prevOnContinue) ctx.ui.resultScreen.setOnContinue(prevOnContinue);
+			if (prevOnReturnToTitle)
+				ctx.ui.resultScreen.setOnReturnToTitle(prevOnReturnToTitle);
 		};
 
-		ctx.ui.victoryScreen.setOnContinue(() => {
+		ctx.ui.resultScreen.setOnContinue(() => {
 			cleanup();
 			// ゲーム画面に戻す
 			const continueState: GameState = { ...state, screen: "game" };
@@ -61,7 +69,7 @@ export function showVictoryScreen(
 			resolve("continue");
 		});
 
-		ctx.ui.victoryScreen.setOnReturnToTitle(async () => {
+		ctx.ui.resultScreen.setOnReturnToTitle(async () => {
 			cleanup();
 			const session = endSession("clear", null);
 			if (session) savePlaySession(session);

@@ -3,7 +3,7 @@
  * @see docs/spec/constants.md
  */
 
-import type { CardDropConfig, EnemyType, Personality } from "./types";
+import type { CardDropConfig, CardType, EnemyType, Personality } from "./types";
 
 // 手札関連
 export const HAND_LIMIT = 4;
@@ -55,6 +55,23 @@ export const ENEMY_TYPE_LABEL: Record<EnemyType, string> = {
 	miniboss: "ミニボス",
 	boss: "ボス",
 } as const;
+
+// カード種別表示名
+export const CARD_TYPE_SYMBOL: Record<CardType, string> = {
+	move: "👟",
+	attack: "⚔",
+	strong_attack: "🔥",
+	jump: "🦘",
+	wait: "⏳",
+};
+
+export const CARD_TYPE_NAME: Record<CardType, string> = {
+	move: "移動",
+	attack: "攻撃",
+	strong_attack: "強攻撃",
+	jump: "ジャンプ",
+	wait: "待機",
+};
 
 // 召喚クールダウン（正典: docs/spec/constants.md）
 export const SUMMONER_COOLDOWN = 2;
@@ -560,6 +577,18 @@ export const PERSONALITY_PROFILE: Record<
 		archetype: "研究者",
 	},
 } as const;
+
+// リザルト画面
+/** ハイライト表示件数（最大） */
+export const RESULT_HIGHLIGHT_COUNT = 5;
+/** ハイライト表示の最小件数（これ未満ならセクション非表示） */
+export const RESULT_HIGHLIGHT_MIN = 3;
+/** 同一イベントタイプの最大表示件数 */
+export const RESULT_MAX_SAME_TYPE = 2;
+/** 瀕死撃破判定のHP割合 */
+export const CLOSE_CALL_HP_RATIO = 0.2;
+/** カードレベルアップイベント記録の閾値レベル */
+export const EVENT_LEVEL_UP_THRESHOLD = 3;
 
 // マイルストーン閾値
 export const MILESTONE_DEFEAT_COUNT = 10;

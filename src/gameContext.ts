@@ -4,18 +4,18 @@
 
 import type { Application } from "pixi.js";
 import type { QueuedCard } from "./game/cardQueue";
-import type { Card, GameState } from "./types";
+import type { Card, GameState, ResultData } from "./types";
 import type {
 	ActionLogRenderer,
 	CameraDragController,
 	CharacterCardRenderer,
 	DirectionSelector,
 	FloorBanner,
-	GameOverScreen,
 	HandRenderer,
 	MapRenderer,
 	NextFloorButton,
 	ParticleSystem,
+	ResultScreen,
 	ReturnToPlayerButton,
 	RewardScreen,
 	ScreenTransition,
@@ -24,7 +24,6 @@ import type {
 	TitleScreen,
 	TurnBanner,
 	TurnEndButton,
-	VictoryScreen,
 } from "./ui";
 import type { DebugCardRenderer } from "./ui/debugCardRenderer";
 import type { DebugCheatPanel } from "./ui/debugCheatPanel";
@@ -33,7 +32,7 @@ import type { DebugTargetSelector } from "./ui/debugTargetSelector";
 /** UIコンポーネント参照 */
 export interface UIComponents {
 	titleScreen: TitleScreen;
-	gameOverScreen: GameOverScreen;
+	resultScreen: ResultScreen;
 	statusBar: StatusBar;
 	mapRenderer: MapRenderer;
 	handRenderer: HandRenderer;
@@ -47,7 +46,6 @@ export interface UIComponents {
 	screenTransition: ScreenTransition;
 	floorBanner: FloorBanner;
 	particleSystem: ParticleSystem;
-	victoryScreen: VictoryScreen;
 	statsScreen: StatsScreen;
 	cameraDragController: CameraDragController;
 	returnToPlayerButton: ReturnToPlayerButton;
@@ -69,4 +67,6 @@ export interface GameContext {
 	debugLog: boolean;
 	debugMode: boolean;
 	ui: UIComponents;
+	/** リザルト画面用データ（ラン終了時に設定） */
+	resultData: ResultData | null;
 }

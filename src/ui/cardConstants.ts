@@ -35,23 +35,7 @@ export const CARD_BRIGHT_COLORS: Record<CardType, number> = {
 	wait: 0x6a6a6a,
 };
 
-/** カード種別シンボル */
-export const CARD_TYPE_SYMBOL: Record<CardType, string> = {
-	move: "👟",
-	attack: "⚔",
-	strong_attack: "🔥",
-	jump: "🦘",
-	wait: "⏳",
-};
-
-/** カード種別の日本語名 */
-export const CARD_TYPE_NAME: Record<CardType, string> = {
-	move: "移動",
-	attack: "攻撃",
-	strong_attack: "強攻撃",
-	jump: "ジャンプ",
-	wait: "待機",
-};
+export { CARD_TYPE_NAME, CARD_TYPE_SYMBOL } from "../constants";
 
 /** カードタイプ別発光色（パーティクルエフェクト用） */
 export const CARD_GLOW_COLORS: Record<CardType, number[]> = {

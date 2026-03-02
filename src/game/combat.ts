@@ -3,7 +3,7 @@
  * @see docs/spec/mvp/rules.md
  */
 
-import { ENEMY_TYPE_LABEL } from "../constants";
+import { CLOSE_CALL_HP_RATIO, ENEMY_TYPE_LABEL } from "../constants";
 import type { EnemyType, GameState } from "../types";
 import {
 	checkCardDrop,
@@ -12,7 +12,12 @@ import {
 } from "./cardAcquisition";
 import { awardExpToCard } from "./cardLevel";
 import { recordDefeat, updateMaxDamage } from "./cardStats";
-import { recordDamageDealt, recordDamageTaken } from "./playStats";
+import { addRunEvent } from "./eventLog";
+import {
+	getCurrentSession,
+	recordDamageDealt,
+	recordDamageTaken,
+} from "./playStats";
 import { addSpeechLog } from "./speech";
 import {
 	addActionLog,
@@ -124,6 +129,38 @@ export function applyDamageToEnemy(
 			);
 		} else {
 			next = addActionLog(next, "敵を倒した", "system");
+		}
+
+		// イベントログ記録
+		const turn = getCurrentSession()?.playerTurnCount ?? 0;
+		if (target.type === "boss") {
+			next = addRunEvent(next, {
+				type: "boss_defeated",
+				floor: next.floor,
+				turn,
+				detail: { enemyType: "boss" },
+			});
+		} else if (target.type === "miniboss") {
+			next = addRunEvent(next, {
+				type: "miniboss_defeated",
+				floor: next.floor,
+				turn,
+				detail: { enemyType: "miniboss" },
+			});
+		}
+		if (
+			next.player.hp > 0 &&
+			next.player.hp / next.player.maxHp <= CLOSE_CALL_HP_RATIO
+		) {
+			next = addRunEvent(next, {
+				type: "close_call_defeat",
+				floor: next.floor,
+				turn,
+				detail: {
+					remainingHpRatio: next.player.hp / next.player.maxHp,
+					enemyType: target.type,
+				},
+			});
 		}
 
 		next = addSpeechLog(next, "enemy_defeated");

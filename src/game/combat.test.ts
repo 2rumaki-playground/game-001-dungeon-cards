@@ -1,6 +1,7 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
 	CLEAR_FLOOR,
+	CLOSE_CALL_HP_RATIO,
 	ENEMY_ATTACK_DAMAGE,
 	ENEMY_HP,
 	PLAYER_ATTACK_DAMAGE,
@@ -19,6 +20,7 @@ import {
 	checkGameOver,
 	isDefeated,
 } from "./combat";
+import { resetSession, startSession } from "./playStats";
 
 beforeEach(() => resetTestEnemySeq());
 
@@ -575,6 +577,61 @@ describe("applyDamageToEnemy - カード統計", () => {
 		const result = applyDamageToEnemy(state, enemy.id, 3, "atk-1");
 
 		expect(result.state.deck.hand[0].stats.maxSingleDamage).toBe(5);
+	});
+});
+
+describe("applyDamageToEnemy - イベントログ", () => {
+	beforeEach(() => startSession());
+	afterEach(() => resetSession());
+
+	it("ボス撃破時にboss_defeatedイベントが記録される", () => {
+		const enemy = createTestEnemy("boss", { x: 4, y: 3 }, { hp: 1 });
+		const state = createTestState({ enemies: [enemy], floor: 10 });
+		const result = applyDamageToEnemy(state, enemy.id, PLAYER_ATTACK_DAMAGE);
+
+		const bossEvents = result.state.eventLog.filter(
+			(e) => e.type === "boss_defeated",
+		);
+		expect(bossEvents).toHaveLength(1);
+		expect(bossEvents[0].floor).toBe(10);
+	});
+
+	it("ミニボス撃破時にminiboss_defeatedイベントが記録される", () => {
+		const enemy = createTestEnemy("miniboss", { x: 4, y: 3 }, { hp: 1 });
+		const state = createTestState({ enemies: [enemy], floor: 5 });
+		const result = applyDamageToEnemy(state, enemy.id, PLAYER_ATTACK_DAMAGE);
+
+		const events = result.state.eventLog.filter(
+			(e) => e.type === "miniboss_defeated",
+		);
+		expect(events).toHaveLength(1);
+	});
+
+	it("瀕死状態での撃破でclose_call_defeatイベントが記録される", () => {
+		const lowHp = Math.floor(PLAYER_INITIAL_HP * CLOSE_CALL_HP_RATIO);
+		const enemy = createTestEnemy("normal", { x: 4, y: 3 }, { hp: 1 });
+		const state = createTestState({
+			enemies: [enemy],
+			player: {
+				position: { x: 3, y: 3 },
+				hp: lowHp,
+				maxHp: PLAYER_INITIAL_HP,
+			},
+		});
+		const result = applyDamageToEnemy(state, enemy.id, PLAYER_ATTACK_DAMAGE);
+
+		const events = result.state.eventLog.filter(
+			(e) => e.type === "close_call_defeat",
+		);
+		expect(events).toHaveLength(1);
+	});
+
+	it("通常敵撃破でHP十分ならイベントログは空", () => {
+		const enemy = createTestEnemy("normal", { x: 4, y: 3 }, { hp: 1 });
+		const state = createTestState({ enemies: [enemy] });
+		const result = applyDamageToEnemy(state, enemy.id, PLAYER_ATTACK_DAMAGE);
+
+		expect(result.state.eventLog).toHaveLength(0);
 	});
 });
 
