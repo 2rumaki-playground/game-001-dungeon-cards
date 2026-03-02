@@ -270,6 +270,29 @@ describe("Lv5攻撃カード: 射程延長 + 貫通", () => {
 		expect(result.speechLog?.eventType).toBe("attack_miss");
 	});
 
+	it("突撃コンボで正面のcracked_wallを破壊しミスログが出ない", () => {
+		const state = createTestState({
+			enemies: [],
+			deck: {
+				hand: [makeCard({ id: "atk-1", type: "attack", level: 5, exp: 16 })],
+				usedCardIds: [],
+			},
+			comboHistory: { lastCardType: "move", lastDirection: "right" },
+		});
+		state.map[3][4] = { type: "cracked_wall" };
+
+		const {
+			state: result,
+			hit,
+			comboType,
+		} = executeAttack(state, "atk-1", "right");
+		expect(hit).toBe(false);
+		expect(comboType).toBe("charge");
+		expect(result.map[3][4].type).toBe("floor");
+		// ミスログ/SEが出ないことを確認
+		expect(result.speechLog?.eventType).not.toBe("attack_miss");
+	});
+
 	it("壁越しの敵は攻撃できない", () => {
 		// プレイヤー(3,3)→right, (4,3)床,(5,3)床,(6,3)壁
 		// 射程2なので(4,3),(5,3)のみ探索
