@@ -16,6 +16,7 @@ import {
 	generateMapPlacement,
 	isInBounds,
 } from "./map";
+import { findRoomAt } from "./roomUtils";
 
 describe("isInBounds", () => {
 	const map = createFixedLayoutMap(5, 5);
@@ -283,20 +284,42 @@ describe("map", () => {
 			}
 		});
 
-		it("cracked_wallの配置数がgetCrackedWallCount以下である", () => {
+		it("cracked_wallの配置数がmin(target, 候補数)と一致する", () => {
 			for (const floor of [5, 7, 10]) {
 				const target = getCrackedWallCount(floor);
 				for (let seed = 0; seed < 20; seed++) {
 					const rng = new RNG(seed);
 					const { width, height } = getMapSize(floor);
-					const { map } = generateBSPMapPlacement(rng, width, height, floor);
-					let count = 0;
-					for (const row of map) {
-						for (const tile of row) {
-							if (tile.type === "cracked_wall") count++;
+					const { map, rooms } = generateBSPMapPlacement(
+						rng,
+						width,
+						height,
+						floor,
+					);
+					// 配置済みcracked_wall数をカウント
+					let crackedWallCount = 0;
+					// 候補壁タイル数をカウント（cracked_wall/wallで異なる2部屋を隔てるもの）
+					let candidateCount = 0;
+					for (let y = 1; y < height - 1; y++) {
+						for (let x = 1; x < width - 1; x++) {
+							const tile = map[y][x].type;
+							if (tile === "cracked_wall") {
+								crackedWallCount++;
+							}
+							if (tile !== "wall" && tile !== "cracked_wall") continue;
+							const roomL = findRoomAt({ x: x - 1, y }, rooms);
+							const roomR = findRoomAt({ x: x + 1, y }, rooms);
+							const roomT = findRoomAt({ x, y: y - 1 }, rooms);
+							const roomB = findRoomAt({ x, y: y + 1 }, rooms);
+							if (
+								(roomL && roomR && roomL !== roomR) ||
+								(roomT && roomB && roomT !== roomB)
+							) {
+								candidateCount++;
+							}
 						}
 					}
-					expect(count).toBeLessThanOrEqual(target);
+					expect(crackedWallCount).toBe(Math.min(target, candidateCount));
 				}
 			}
 		});
