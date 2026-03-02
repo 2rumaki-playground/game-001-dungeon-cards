@@ -25,7 +25,12 @@ export {
 } from "./game";
 export type { GameMap, Room, SpecialTileType, Tile, TileType } from "./map";
 export type {
+	BossDefeatedRunEvent,
+	CardAcquiredRunEvent,
+	CardLevelUpRunEvent,
+	CloseCallDefeatRunEvent,
 	HighlightEntry,
+	MinibossDefeatedRunEvent,
 	ResultData,
 	RunEvent,
 	RunEventType,

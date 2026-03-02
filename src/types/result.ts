@@ -18,21 +18,52 @@ export type RunEventType =
 	| "card_acquired";
 
 /**
- * ランイベント（イベントログ用）
+ * ランイベント共通フィールド
  */
-export type RunEvent = {
-	type: RunEventType;
+type BaseRunEvent<TType extends RunEventType, TDetail> = {
+	type: TType;
 	/** 発生した階層 */
 	floor: number;
 	/** 発生したターン */
 	turn: number;
 	/** イベント固有データ */
-	detail:
-		| { enemyType: EnemyType }
-		| { cardType: CardType; newLevel: number }
-		| { cardType: CardType }
-		| { remainingHpRatio: number; enemyType: EnemyType };
+	detail: TDetail;
 };
+
+export type BossDefeatedRunEvent = BaseRunEvent<
+	"boss_defeated",
+	{ enemyType: EnemyType }
+>;
+
+export type MinibossDefeatedRunEvent = BaseRunEvent<
+	"miniboss_defeated",
+	{ enemyType: EnemyType }
+>;
+
+export type CloseCallDefeatRunEvent = BaseRunEvent<
+	"close_call_defeat",
+	{ remainingHpRatio: number; enemyType: EnemyType }
+>;
+
+export type CardLevelUpRunEvent = BaseRunEvent<
+	"card_level_up",
+	{ cardType: CardType; newLevel: number }
+>;
+
+export type CardAcquiredRunEvent = BaseRunEvent<
+	"card_acquired",
+	{ cardType: CardType }
+>;
+
+/**
+ * ランイベント（イベントログ用）
+ */
+export type RunEvent =
+	| BossDefeatedRunEvent
+	| MinibossDefeatedRunEvent
+	| CloseCallDefeatRunEvent
+	| CardLevelUpRunEvent
+	| CardAcquiredRunEvent;
 
 /**
  * ハイライト表示用データ

@@ -30,14 +30,10 @@ function scoreEvent(event: RunEvent): number {
 			return 80;
 		case "close_call_defeat":
 			return 70;
-		case "card_level_up": {
-			const detail = event.detail as { newLevel: number };
-			return 40 + detail.newLevel * 5;
-		}
+		case "card_level_up":
+			return 40 + event.detail.newLevel * 5;
 		case "card_acquired":
 			return 30;
-		default:
-			return 0;
 	}
 }
 
@@ -46,36 +42,16 @@ function scoreEvent(event: RunEvent): number {
  */
 export function formatHighlight(event: RunEvent): string {
 	switch (event.type) {
-		case "boss_defeated": {
-			const d = event.detail as { enemyType: string };
-			return `${event.floor}F: ${ENEMY_TYPE_LABEL[d.enemyType as keyof typeof ENEMY_TYPE_LABEL]}を撃破！`;
-		}
-		case "miniboss_defeated": {
-			const d = event.detail as { enemyType: string };
-			return `${event.floor}F: ${ENEMY_TYPE_LABEL[d.enemyType as keyof typeof ENEMY_TYPE_LABEL]}を撃破！`;
-		}
-		case "close_call_defeat": {
-			const d = event.detail as { enemyType: string };
-			return `${event.floor}F: 瀕死で${ENEMY_TYPE_LABEL[d.enemyType as keyof typeof ENEMY_TYPE_LABEL]}を撃破`;
-		}
-		case "card_level_up": {
-			const d = event.detail as { cardType: string; newLevel: number };
-			const cardName =
-				CARD_TYPE_NAME[d.cardType as keyof typeof CARD_TYPE_NAME];
-			const symbol =
-				CARD_TYPE_SYMBOL[d.cardType as keyof typeof CARD_TYPE_SYMBOL];
-			return `${event.floor}F: ${symbol}${cardName}がLv.${d.newLevel}に成長`;
-		}
-		case "card_acquired": {
-			const d = event.detail as { cardType: string };
-			const cardName =
-				CARD_TYPE_NAME[d.cardType as keyof typeof CARD_TYPE_NAME];
-			const symbol =
-				CARD_TYPE_SYMBOL[d.cardType as keyof typeof CARD_TYPE_SYMBOL];
-			return `${event.floor}F: ${symbol}${cardName}を獲得`;
-		}
-		default:
-			return `${event.floor}F: イベント発生`;
+		case "boss_defeated":
+			return `${event.floor}F: ${ENEMY_TYPE_LABEL[event.detail.enemyType]}を撃破！`;
+		case "miniboss_defeated":
+			return `${event.floor}F: ${ENEMY_TYPE_LABEL[event.detail.enemyType]}を撃破！`;
+		case "close_call_defeat":
+			return `${event.floor}F: 瀕死で${ENEMY_TYPE_LABEL[event.detail.enemyType]}を撃破`;
+		case "card_level_up":
+			return `${event.floor}F: ${CARD_TYPE_SYMBOL[event.detail.cardType]}${CARD_TYPE_NAME[event.detail.cardType]}がLv.${event.detail.newLevel}に成長`;
+		case "card_acquired":
+			return `${event.floor}F: ${CARD_TYPE_SYMBOL[event.detail.cardType]}${CARD_TYPE_NAME[event.detail.cardType]}を獲得`;
 	}
 }
 
