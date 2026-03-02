@@ -54,6 +54,7 @@ export function showVictoryScreen(
 				clearInterval(confettiTimer);
 			}
 			ps?.clear();
+			ctx.resultData = null;
 			if (prevOnContinue) ctx.ui.resultScreen.setOnContinue(prevOnContinue);
 			if (prevOnReturnToTitle)
 				ctx.ui.resultScreen.setOnReturnToTitle(prevOnReturnToTitle);
