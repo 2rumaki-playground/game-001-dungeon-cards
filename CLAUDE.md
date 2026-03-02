@@ -16,6 +16,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 基本方針
 
+### 後方互換性は不要
+- 本プロジェクトはリリース前の開発段階であり、後方互換性を一切考慮しない
+- deprecated マーク、互換shim、リネーム後の再エクスポート等は禁止
+- インターフェース変更時は旧APIを残さず、使用箇所をすべて書き換える
+
 ### 最小差分
 - 必要な範囲だけ変更。関係ない整形・言い回し変更はしない
 - 無関係なリファクタリングは禁止
