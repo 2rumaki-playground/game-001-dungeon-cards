@@ -45,6 +45,10 @@ export function tryMinibossSkill(
 	rng: RNG,
 	applyPlayerDamage: typeof applyEnemyDamageToPlayer = applyEnemyDamageToPlayer,
 ): SkillResult {
+	if (enemy.type !== "miniboss") {
+		return { state, damage: 0, executed: false };
+	}
+
 	const roll = rng.random();
 	if (roll >= BOSS_SKILL.powerStrikeChance) {
 		return { state, damage: 0, executed: false };
@@ -75,6 +79,10 @@ export function tryBossSkill(
 	rng: RNG,
 	applyPlayerDamage: typeof applyEnemyDamageToPlayer = applyEnemyDamageToPlayer,
 ): SkillResult {
+	if (enemy.type !== "boss") {
+		return { state, damage: 0, executed: false };
+	}
+
 	const roll = rng.random();
 	if (roll >= BOSS_SKILL.areaAttackChance) {
 		return { state, damage: 0, executed: false };
