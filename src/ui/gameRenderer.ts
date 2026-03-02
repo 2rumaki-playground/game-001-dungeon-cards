@@ -185,6 +185,10 @@ function renderResultScreen(ctx: GameContext): void {
 		const height = viewportSize.height + HAND_AREA_HEIGHT + STATUS_BAR_HEIGHT;
 		ctx.ui.resultScreen.render(ctx.resultData, width, height);
 		ctx.ui.resultScreen.show();
+	} else {
+		// resultDataが未設定の場合はタイトルへフォールバック
+		ctx.state.screen = "title";
+		renderTitleScreen(ctx);
 	}
 	hideDebugUI(ctx);
 }
