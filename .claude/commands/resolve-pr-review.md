@@ -64,7 +64,7 @@ gh pr view <番号> --json headRefName -q .headRefName
 gh pr checkout <番号>
 
 <コンフリクト解消が承認されている場合のみ>
-「Ref: コンフリクトの解消」の手順に従い、mainブランチとのコンフリクトを解消してコミット・pushする。
+「Ref: コンフリクトの解消」の手順に従い、baseブランチとのコンフリクトを解消してコミット・pushする。
 </コンフリクト解消が承認されている場合のみ>
 
 依存関係をインストールする:
@@ -189,7 +189,7 @@ gh pr checkout <番号>
 
 ステップ3でコンフリクト解消が承認された場合のみ実施する。コンフリクトがない、またはユーザーが解消を承認しなかった場合はスキップ。
 
-[コンフリクトの解消](#ref-コンフリクトの解消) の手順に従い、mainブランチとのコンフリクトを解消してコミット・pushする。
+[コンフリクトの解消](#ref-コンフリクトの解消) の手順に従い、baseブランチとのコンフリクトを解消してコミット・pushする。
 
 ### 5. 実装・コミット・push（1コメントずつ）
 
@@ -323,18 +323,18 @@ gh pr view <番号> --json mergeable,baseRefName -q '{mergeable, baseRefName}'
 
 ### Ref: コンフリクトの解消
 
-PRブランチをチェックアウト済みの状態で、mainブランチをマージしてコンフリクトを解消する:
+PRブランチをチェックアウト済みの状態で、baseブランチ（[コンフリクトの確認](#ref-コンフリクトの確認) で取得した `baseRefName`）をマージしてコンフリクトを解消する:
 
 ```bash
-git fetch origin main
-git merge origin/main
+git fetch origin <baseRefName>
+git merge origin/<baseRefName>
 ```
 
 コンフリクトが発生したファイルを確認し、適切に解決する。解決後:
 
 ```bash
 git add <解決したファイル>
-git commit -m "chore: mainブランチをマージしコンフリクト解決"
+git commit -m "chore: <baseRefName>ブランチをマージしコンフリクト解決"
 git push -u origin <ブランチ名>
 ```
 
