@@ -5,7 +5,7 @@
 import type { GameState, RunEvent } from "../types";
 
 /** ランイベントログの最大保持件数 */
-const MAX_EVENT_LOG_LENGTH = 200;
+export const MAX_EVENT_LOG_LENGTH = 200;
 
 /**
  * ランイベントをイミュータブルに追加

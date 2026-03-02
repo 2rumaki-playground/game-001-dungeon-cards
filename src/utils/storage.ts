@@ -11,6 +11,7 @@ import {
 } from "../constants";
 import { createInitialCounters } from "../game/cardAcquisition";
 import { initCardIdCounterFromDeck } from "../game/deck";
+import { MAX_EVENT_LOG_LENGTH } from "../game/eventLog";
 import {
 	type AcquisitionCounters,
 	ALL_MILESTONES,
@@ -261,7 +262,7 @@ const VALID_CARD_TYPES = new Set([
 
 function sanitizeEventLog(raw: unknown): RunEvent[] {
 	if (!Array.isArray(raw)) return [];
-	return raw.flatMap((item): RunEvent[] => {
+	return raw.slice(-MAX_EVENT_LOG_LENGTH).flatMap((item): RunEvent[] => {
 		if (item == null || typeof item !== "object") return [];
 		const { type, floor, turn, detail } = item as Record<string, unknown>;
 		if (
