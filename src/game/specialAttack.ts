@@ -173,7 +173,8 @@ export function getShockwaveTargets(
 
 /**
  * 衝撃波を実行する。
- * 正面に敵必須。正面→サイド(反時計回り)→サイド(時計回り)の順にダメージ。
+ * 正面にひび割れ壁がある場合は破壊して終了（hit:false, crackedWallDestroyed:true）。
+ * それ以外は正面に敵が必須。正面→サイド(反時計回り)→サイド(時計回り)の順にダメージ。
  * 衝撃波後、生存した敵にノックバック。
  */
 export function executeShockwave(
@@ -192,7 +193,7 @@ export function executeShockwave(
 	const targets = getShockwaveTargets(state.player.position, direction);
 	const frontPos = targets[0];
 
-	// 正面に敵が必須
+	// 正面に敵が必須（ひび割れ壁の場合は破壊して終了）
 	if (!isInBounds(state.map, frontPos.x, frontPos.y)) {
 		return {
 			state,
