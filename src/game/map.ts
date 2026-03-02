@@ -6,6 +6,7 @@
 
 import {
 	BSP_MAX_RETRIES,
+	getCrackedWallCount,
 	getEnemyCount,
 	getMapSize,
 	getSpecialTileComposition,
@@ -26,6 +27,7 @@ import type {
 import type { RNG } from "../utils/rng";
 import { generateBSPMap } from "./bsp";
 import { positionToKey } from "./positionUtils";
+import { findRoomAt } from "./roomUtils";
 
 /**
  * 座標がマップ範囲内かを判定
@@ -134,6 +136,35 @@ export function generateBSPMapPlacement(
 		if (!result) continue;
 
 		const { map, rooms } = result;
+
+		// ひび割れ壁配置: 異なる2部屋を隔てる壁タイルから候補を選出
+		const crackedWallTarget = getCrackedWallCount(floor);
+		if (crackedWallTarget > 0) {
+			const candidates: Position[] = [];
+			for (let y = 1; y < height - 1; y++) {
+				for (let x = 1; x < width - 1; x++) {
+					if (map[y][x].type !== "wall") continue;
+					const roomL = findRoomAt({ x: x - 1, y }, rooms);
+					const roomR = findRoomAt({ x: x + 1, y }, rooms);
+					const roomT = findRoomAt({ x, y: y - 1 }, rooms);
+					const roomB = findRoomAt({ x, y: y + 1 }, rooms);
+					if (
+						(roomL && roomR && roomL !== roomR) ||
+						(roomT && roomB && roomT !== roomB)
+					) {
+						candidates.push({ x, y });
+					}
+				}
+			}
+			const count = Math.min(crackedWallTarget, candidates.length);
+			if (count > 0) {
+				const selected = rng.sample(candidates, count);
+				for (const pos of selected) {
+					map[pos.y][pos.x] = { type: "cracked_wall" };
+				}
+			}
+		}
+
 		const floorPositions = getFloorPositions(map);
 		if (floorPositions.length < requiredCount) continue;
 

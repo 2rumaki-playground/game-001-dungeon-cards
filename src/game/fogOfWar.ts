@@ -57,7 +57,11 @@ function getConnectedCorridorTiles(
 		if (seen.has(key)) continue;
 		seen.add(key);
 
-		if (map[current.y][current.x].type === "wall") continue;
+		if (
+			map[current.y][current.x].type === "wall" ||
+			map[current.y][current.x].type === "cracked_wall"
+		)
+			continue;
 
 		if (findRoomAt(current, rooms)) continue;
 
@@ -82,11 +86,13 @@ function getCorridorEntrances(room: Room, map: GameMap): Position[] {
 	const mapHeight = map.length;
 	const mapWidth = map[0]?.length ?? 0;
 
+	const isPassable = (t: string) => t !== "wall" && t !== "cracked_wall";
+
 	// 上辺の外側1マス
 	const topY = room.y - 1;
 	if (topY >= 0) {
 		for (let x = room.x; x < room.x + room.width; x++) {
-			if (x >= 0 && x < mapWidth && map[topY][x].type !== "wall") {
+			if (x >= 0 && x < mapWidth && isPassable(map[topY][x].type)) {
 				entrances.push({ x, y: topY });
 			}
 		}
@@ -96,7 +102,7 @@ function getCorridorEntrances(room: Room, map: GameMap): Position[] {
 	const bottomY = room.y + room.height;
 	if (bottomY < mapHeight) {
 		for (let x = room.x; x < room.x + room.width; x++) {
-			if (x >= 0 && x < mapWidth && map[bottomY][x].type !== "wall") {
+			if (x >= 0 && x < mapWidth && isPassable(map[bottomY][x].type)) {
 				entrances.push({ x, y: bottomY });
 			}
 		}
@@ -110,7 +116,7 @@ function getCorridorEntrances(room: Room, map: GameMap): Position[] {
 				y >= 0 &&
 				y < mapHeight &&
 				leftX < mapWidth &&
-				map[y][leftX].type !== "wall"
+				isPassable(map[y][leftX].type)
 			) {
 				entrances.push({ x: leftX, y });
 			}
@@ -121,7 +127,7 @@ function getCorridorEntrances(room: Room, map: GameMap): Position[] {
 	const rightX = room.x + room.width;
 	if (rightX < mapWidth) {
 		for (let y = room.y; y < room.y + room.height; y++) {
-			if (y >= 0 && y < mapHeight && map[y][rightX].type !== "wall") {
+			if (y >= 0 && y < mapHeight && isPassable(map[y][rightX].type)) {
 				entrances.push({ x: rightX, y });
 			}
 		}

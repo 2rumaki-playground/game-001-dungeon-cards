@@ -26,9 +26,10 @@ export function bfsFirstStep(
 ): Direction | null {
 	if (from.x === to.x && from.y === to.y) return null;
 
-	// 目的地がwall（通行不可タイル）の場合は到達不可
+	// 目的地がwall/cracked_wall（通行不可タイル）の場合は到達不可
 	const destTile = map[to.y]?.[to.x];
-	if (!destTile || destTile.type === "wall") return null;
+	if (!destTile || destTile.type === "wall" || destTile.type === "cracked_wall")
+		return null;
 
 	const visited = new Set<string>();
 	visited.add(positionToKey(from));
@@ -45,7 +46,12 @@ export function bfsFirstStep(
 		if (nx === to.x && ny === to.y) return dir;
 
 		const tile = map[ny][nx];
-		if (tile.type === "wall" || tile.type === "stairs") continue;
+		if (
+			tile.type === "wall" ||
+			tile.type === "cracked_wall" ||
+			tile.type === "stairs"
+		)
+			continue;
 
 		const key = positionToKey({ x: nx, y: ny });
 		if (visited.has(key)) continue;
@@ -68,7 +74,12 @@ export function bfsFirstStep(
 			if (nx === to.x && ny === to.y) return firstStep;
 
 			const tile = map[ny][nx];
-			if (tile.type === "wall" || tile.type === "stairs") continue;
+			if (
+				tile.type === "wall" ||
+				tile.type === "cracked_wall" ||
+				tile.type === "stairs"
+			)
+				continue;
 
 			const key = positionToKey({ x: nx, y: ny });
 			if (visited.has(key)) continue;
