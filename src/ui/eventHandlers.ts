@@ -24,6 +24,7 @@ import {
 } from "../game/debugMiddleware";
 import { reorderHand } from "../game/deck";
 import { endSession, startSession } from "../game/playStats";
+import { buildResultData } from "../game/resultBuilder";
 import { setDeck } from "../game/state";
 import type { GameContext } from "../gameContext";
 import type {
@@ -175,6 +176,7 @@ async function handleMoveCardExecution(
 		}
 		if (gameOver) {
 			shouldContinueQueue(ctx, false, true);
+			ctx.resultData = buildResultData(next, "death");
 			const session = endSession("death", "trap");
 			if (session) savePlaySession(session);
 			deleteSaveData();
@@ -343,6 +345,7 @@ async function handleJumpCardExecution(
 		}
 		if (result.gameOver) {
 			shouldContinueQueue(ctx, false, true);
+			ctx.resultData = buildResultData(result.state, "death");
 			const session = endSession("death", "trap");
 			if (session) savePlaySession(session);
 			deleteSaveData();
@@ -546,8 +549,8 @@ export function setupEventHandlers(ctx: GameContext): void {
 		}
 	});
 
-	// ゲームオーバー画面のコールバック設定
-	ctx.ui.gameOverScreen.setOnReturnToTitle(async () => {
+	// リザルト画面のコールバック設定
+	ctx.ui.resultScreen.setOnReturnToTitle(async () => {
 		if (ctx.isAnimating) return;
 		ctx.isAnimating = true;
 		try {
@@ -631,6 +634,7 @@ export function setupEventHandlers(ctx: GameContext): void {
 								stairsPos,
 							);
 						} else if (result.gameOver) {
+							ctx.resultData = buildResultData(result.state, "death");
 							const session = endSession("death", "unknown");
 							if (session) savePlaySession(session);
 							deleteSaveData();
@@ -736,6 +740,7 @@ export function setupEventHandlers(ctx: GameContext): void {
 
 				render(ctx);
 			} else {
+				ctx.resultData = buildResultData(next, "death");
 				const session = endSession(
 					"death",
 					"enemy_attack",

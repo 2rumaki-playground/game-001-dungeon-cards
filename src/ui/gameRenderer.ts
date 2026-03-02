@@ -46,8 +46,7 @@ function hideDebugUI(ctx: GameContext): void {
 
 function renderTitleScreen(ctx: GameContext): void {
 	ctx.ui.titleScreen.show();
-	ctx.ui.gameOverScreen.hide();
-	ctx.ui.victoryScreen.hide();
+	ctx.ui.resultScreen.hide();
 	ctx.ui.statsScreen.hide();
 	ctx.ui.statusBar.hide();
 	ctx.ui.turnEndButton.hide();
@@ -107,8 +106,7 @@ export function renderGameScreen(
 	skipEnemies = false,
 ): void {
 	ctx.ui.titleScreen.hide();
-	ctx.ui.gameOverScreen.hide();
-	ctx.ui.victoryScreen.hide();
+	ctx.ui.resultScreen.hide();
 	ctx.ui.statusBar.show();
 	ctx.ui.statusBar.render(ctx.state.floor, ctx.state.isCleared);
 	const visitedTiles =
@@ -167,58 +165,27 @@ export function renderGameScreen(
 }
 
 /**
- * ゲームオーバー画面の描画
+ * リザルト画面の描画（ゲームオーバー・勝利共通）
  */
-function renderGameOverScreen(ctx: GameContext): void {
+function renderResultScreen(ctx: GameContext): void {
 	ctx.ui.titleScreen.hide();
-	ctx.ui.victoryScreen.hide();
 	ctx.ui.statusBar.hide();
 	ctx.ui.turnEndButton.hide();
 	ctx.ui.nextFloorButton.hide();
 	ctx.ui.returnToPlayerButton.hide();
 	ctx.ui.cameraDragController.reset();
 	ctx.ui.actionLogRenderer.hide();
+	ctx.ui.characterCardRenderer.hide();
 	ctx.ui.mapRenderer.clear();
 	ctx.ui.handRenderer.clear();
-	const viewportSize = getViewportPixelSize();
-	const width =
-		viewportSize.width + LOG_AREA_GAP + ctx.ui.actionLogRenderer.getWidth();
-	const height = viewportSize.height + HAND_AREA_HEIGHT + STATUS_BAR_HEIGHT;
-	ctx.ui.gameOverScreen.render(ctx.state.floor, width, height);
-	ctx.ui.gameOverScreen.show();
-	ctx.ui.characterCardRenderer.show();
-	ctx.ui.characterCardRenderer.render(
-		ctx.state.personality,
-		ctx.state.speechLog,
-	);
-	hideDebugUI(ctx);
-}
-
-/**
- * 勝利画面の描画
- */
-function renderVictoryScreen(ctx: GameContext): void {
-	ctx.ui.titleScreen.hide();
-	ctx.ui.gameOverScreen.hide();
-	ctx.ui.statusBar.hide();
-	ctx.ui.turnEndButton.hide();
-	ctx.ui.nextFloorButton.hide();
-	ctx.ui.returnToPlayerButton.hide();
-	ctx.ui.cameraDragController.reset();
-	ctx.ui.actionLogRenderer.hide();
-	ctx.ui.mapRenderer.clear();
-	ctx.ui.handRenderer.clear();
-	const viewportSize = getViewportPixelSize();
-	const width =
-		viewportSize.width + LOG_AREA_GAP + ctx.ui.actionLogRenderer.getWidth();
-	const height = viewportSize.height + HAND_AREA_HEIGHT + STATUS_BAR_HEIGHT;
-	ctx.ui.victoryScreen.render(ctx.state.floor, width, height);
-	ctx.ui.victoryScreen.show();
-	ctx.ui.characterCardRenderer.show();
-	ctx.ui.characterCardRenderer.render(
-		ctx.state.personality,
-		ctx.state.speechLog,
-	);
+	if (ctx.resultData) {
+		const viewportSize = getViewportPixelSize();
+		const width =
+			viewportSize.width + LOG_AREA_GAP + ctx.ui.actionLogRenderer.getWidth();
+		const height = viewportSize.height + HAND_AREA_HEIGHT + STATUS_BAR_HEIGHT;
+		ctx.ui.resultScreen.render(ctx.resultData, width, height);
+		ctx.ui.resultScreen.show();
+	}
 	hideDebugUI(ctx);
 }
 
@@ -245,7 +212,7 @@ export function render(
 	skipEnemies = false,
 ): void {
 	ctx.ui.rewardScreen.hide();
-	ctx.ui.victoryScreen.hide();
+	ctx.ui.resultScreen.hide();
 	ctx.ui.statsScreen.hide();
 	switch (ctx.state.screen) {
 		case "title":
@@ -255,13 +222,13 @@ export function render(
 			renderGameScreen(ctx, skipHand, skipPlayer, skipEnemies);
 			break;
 		case "gameOver":
-			renderGameOverScreen(ctx);
+			renderResultScreen(ctx);
 			break;
 		case "exchange":
 			renderExchangeScreen(ctx);
 			break;
 		case "victory":
-			renderVictoryScreen(ctx);
+			renderResultScreen(ctx);
 			break;
 	}
 }

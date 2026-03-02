@@ -15,12 +15,12 @@ import {
 	CharacterCardRenderer,
 	DirectionSelector,
 	FloorBanner,
-	GameOverScreen,
 	getViewportPixelSize,
 	HandRenderer,
 	MapRenderer,
 	NextFloorButton,
 	ParticleSystem,
+	ResultScreen,
 	ReturnToPlayerButton,
 	RewardScreen,
 	ScreenTransition,
@@ -29,7 +29,6 @@ import {
 	TitleScreen,
 	TurnBanner,
 	TurnEndButton,
-	VictoryScreen,
 } from "./ui";
 import { loadGameAssets } from "./ui/assetLoader";
 import { setupEventHandlers } from "./ui/eventHandlers";
@@ -61,8 +60,8 @@ async function initializeUIComponents(
 	const titleScreen = new TitleScreen();
 	app.stage.addChild(titleScreen.getContainer());
 
-	const gameOverScreen = new GameOverScreen();
-	app.stage.addChild(gameOverScreen.getContainer());
+	const resultScreen = new ResultScreen();
+	app.stage.addChild(resultScreen.getContainer());
 
 	const statusBar = new StatusBar();
 
@@ -148,9 +147,6 @@ async function initializeUIComponents(
 	rewardScreen.setParticleSystem(particleSystem);
 	app.stage.addChild(rewardScreen.getContainer());
 
-	const victoryScreen = new VictoryScreen();
-	app.stage.addChild(victoryScreen.getContainer());
-
 	// 統計画面（オーバーレイ）
 	const statsScreen = new StatsScreen();
 	app.stage.addChild(statsScreen.getContainer());
@@ -208,7 +204,7 @@ async function initializeUIComponents(
 
 	return {
 		titleScreen,
-		gameOverScreen,
+		resultScreen,
 		statusBar,
 		mapRenderer,
 		handRenderer,
@@ -222,7 +218,6 @@ async function initializeUIComponents(
 		screenTransition,
 		floorBanner,
 		particleSystem,
-		victoryScreen,
 		statsScreen,
 		cameraDragController,
 		returnToPlayerButton,

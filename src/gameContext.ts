@@ -11,11 +11,11 @@ import type {
 	CharacterCardRenderer,
 	DirectionSelector,
 	FloorBanner,
-	GameOverScreen,
 	HandRenderer,
 	MapRenderer,
 	NextFloorButton,
 	ParticleSystem,
+	ResultScreen,
 	ReturnToPlayerButton,
 	RewardScreen,
 	ScreenTransition,
@@ -24,7 +24,6 @@ import type {
 	TitleScreen,
 	TurnBanner,
 	TurnEndButton,
-	VictoryScreen,
 } from "./ui";
 import type { DebugCardRenderer } from "./ui/debugCardRenderer";
 import type { DebugCheatPanel } from "./ui/debugCheatPanel";
@@ -33,7 +32,7 @@ import type { DebugTargetSelector } from "./ui/debugTargetSelector";
 /** UIコンポーネント参照 */
 export interface UIComponents {
 	titleScreen: TitleScreen;
-	gameOverScreen: GameOverScreen;
+	resultScreen: ResultScreen;
 	statusBar: StatusBar;
 	mapRenderer: MapRenderer;
 	handRenderer: HandRenderer;
@@ -47,7 +46,6 @@ export interface UIComponents {
 	screenTransition: ScreenTransition;
 	floorBanner: FloorBanner;
 	particleSystem: ParticleSystem;
-	victoryScreen: VictoryScreen;
 	statsScreen: StatsScreen;
 	cameraDragController: CameraDragController;
 	returnToPlayerButton: ReturnToPlayerButton;
