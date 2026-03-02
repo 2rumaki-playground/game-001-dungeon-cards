@@ -47,6 +47,17 @@ const HIGHLIGHT_TEXT_COLOR = 0xffdd88;
 const MVP_BORDER_COLOR = 0xffd700;
 
 /**
+ * テスト環境（Canvas API不在）でも安全にText.heightを取得する
+ */
+function safeTextHeight(text: Text, fallback: number): number {
+	try {
+		return text.height;
+	} catch {
+		return fallback;
+	}
+}
+
+/**
  * リザルト画面レンダラー
  */
 export class ResultScreen {
@@ -236,16 +247,6 @@ export class ResultScreen {
 		panel.y = y;
 
 		const colors = PERSONALITY_CARD_COLORS[data.personality];
-		const bg = new Graphics();
-		drawRoundedRect(
-			bg,
-			panelWidth,
-			50,
-			6,
-			{ color: colors.bg, alpha: 0.9 },
-			{ color: colors.border, width: 1 },
-		);
-		panel.addChild(bg);
 
 		const icon = new Text({
 			text: `${PERSONALITY_SYMBOL[data.personality]} ${PERSONALITY_LABEL[data.personality]}`,
@@ -257,8 +258,8 @@ export class ResultScreen {
 		});
 		icon.x = PANEL_PADDING;
 		icon.y = 6;
-		panel.addChild(icon);
 
+		let panelHeight = 26 + PANEL_PADDING;
 		if (data.speechLog) {
 			const speech = new Text({
 				text: `「${data.speechLog.message}」`,
@@ -272,8 +273,21 @@ export class ResultScreen {
 			});
 			speech.x = PANEL_PADDING;
 			speech.y = 26;
+			panelHeight = 26 + safeTextHeight(speech, 20) + PANEL_PADDING;
 			panel.addChild(speech);
 		}
+
+		const bg = new Graphics();
+		drawRoundedRect(
+			bg,
+			panelWidth,
+			panelHeight,
+			6,
+			{ color: colors.bg, alpha: 0.9 },
+			{ color: colors.border, width: 1 },
+		);
+		panel.addChildAt(bg, 0);
+		panel.addChild(icon);
 
 		return panel;
 	}
