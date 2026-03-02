@@ -45,13 +45,18 @@ export function showVictoryScreen(
 			}, CONFETTI_INTERVAL);
 		}
 
+		// 元のコールバックを保存し、勝利フロー終了時に復元する
+		const prevOnContinue = ctx.ui.resultScreen.getOnContinue();
+		const prevOnReturnToTitle = ctx.ui.resultScreen.getOnReturnToTitle();
+
 		const cleanup = (): void => {
 			if (confettiTimer !== undefined) {
 				clearInterval(confettiTimer);
 			}
 			ps?.clear();
-			ctx.ui.resultScreen.setOnContinue(() => {});
-			ctx.ui.resultScreen.setOnReturnToTitle(() => {});
+			if (prevOnContinue) ctx.ui.resultScreen.setOnContinue(prevOnContinue);
+			if (prevOnReturnToTitle)
+				ctx.ui.resultScreen.setOnReturnToTitle(prevOnReturnToTitle);
 		};
 
 		ctx.ui.resultScreen.setOnContinue(() => {

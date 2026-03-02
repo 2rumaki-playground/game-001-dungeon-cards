@@ -74,8 +74,16 @@ export class ResultScreen {
 		return this.container;
 	}
 
+	getOnContinue(): (() => void) | null {
+		return this.onContinue;
+	}
+
 	setOnContinue(callback: () => void): void {
 		this.onContinue = callback;
+	}
+
+	getOnReturnToTitle(): (() => void) | null {
+		return this.onReturnToTitle;
 	}
 
 	setOnReturnToTitle(callback: () => void): void {
