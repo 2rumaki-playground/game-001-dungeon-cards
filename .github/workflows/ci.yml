@@ -2,10 +2,24 @@ name: CI
 
 on:
   pull_request:
-    types: [opened, ready_for_review]
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths:
+      - "src/**"
+      - "e2e/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "vite.config.*"
+      - "tsconfig*.json"
+      - "biome.json"
+      - "playwright.config.*"
+      - ".github/workflows/ci.yml"
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  lint:
+  check:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -34,24 +48,9 @@ jobs:
         if: steps.changed.outputs.files != ''
         run: npx biome check ${{ steps.changed.outputs.files }}
 
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10
-
-      - uses: actions/setup-node@v6
-        with:
-          node-version: 24
-          cache: pnpm
-          cache-dependency-path: pnpm-lock.yaml
-
-      - run: pnpm install --frozen-lockfile
-
       - run: pnpm test:run
+
+      - run: pnpm build
 
   e2e:
     runs-on: ubuntu-latest
@@ -70,7 +69,17 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      - name: Cache Playwright browsers
+        id: pw-cache
+        uses: actions/cache@v5
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-ms-playwright-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-ms-playwright-
+
       - name: Install Playwright browsers
+        if: steps.pw-cache.outputs.cache-hit != 'true'
         run: npx playwright install --with-deps chromium
 
       - name: Run E2E tests
@@ -84,10 +93,14 @@ jobs:
           path: |
             playwright-report/
             test-results/
-          retention-days: 30
+          retention-days: 7
 
-  build:
+  preview-deploy:
+    needs: check
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
     steps:
       - uses: actions/checkout@v6
 
@@ -103,4 +116,11 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      - run: pnpm build
+      - name: Build
+        run: pnpm build
+        env:
+          BASE_PATH: /game-001-dungeon-cards/pr-preview/pr-${{ github.event.number }}/
+
+      - uses: rossjrw/pr-preview-action@v1
+        with:
+          source-dir: dist/
