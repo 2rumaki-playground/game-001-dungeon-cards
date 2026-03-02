@@ -321,5 +321,12 @@
 - 深層階閾値（`DEEP_FLOOR_THRESHOLD`）：5（floor ≥ 5 で深層発話が発動）
 - レアセリフ出現率（`RARE_SPEECH_RATE`）：0.1（デフォルト発話選択時に10%の確率でレアセリフを使用）
 
+## リザルト画面
+- ハイライト表示件数（`RESULT_HIGHLIGHT_COUNT`）：5
+- ハイライト表示最小件数（`RESULT_HIGHLIGHT_MIN`）：3（イベントがこの件数未満の場合、ハイライトセクションを非表示）
+- 同一タイプ最大件数（`RESULT_MAX_SAME_TYPE`）：2
+- 瀕死撃破判定HP比率（`CLOSE_CALL_HP_RATIO`）：0.20（残HP / maxHP がこの値以下で撃破した場合にイベント記録）
+- レベルアップイベント記録閾値（`EVENT_LEVEL_UP_THRESHOLD`）：3（カードがこのレベル以上に到達した場合にイベント記録）
+
 ## プレイ統計
 - 最大保存ラン数：50
