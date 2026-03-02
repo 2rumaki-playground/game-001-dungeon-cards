@@ -109,7 +109,7 @@ describe("checkCardDrop", () => {
 	});
 
 	it("落選時にnullを返す", () => {
-		// dropRate=0の敵を想定してテスト: seedを多数試し、normalで落選するものを見つける
+		// normal(dropRate=0.25)の落選ケースを検証: seedを多数試し、normalで落選するものを見つける
 		let foundNull = false;
 		for (let seed = 0; seed < 100; seed++) {
 			const rng = new RNG(seed);
