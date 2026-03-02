@@ -96,6 +96,66 @@ describe("createCardTooltip", () => {
 		expect(hasMaxLabel).toBe(true);
 	});
 
+	it("useCount>0の場合、使用回数が表示される", () => {
+		const card: Card = {
+			id: "card-1",
+			type: "move",
+			level: 1,
+			exp: 0,
+			stats: { useCount: 5, defeatCount: 0, maxSingleDamage: 0 },
+		};
+		const result = createCardTooltip(card);
+		const texts = getAllTextsRecursive(result.container);
+		const hasUseCount = texts.some((t) => t.text.includes("使用: 5回"));
+		expect(hasUseCount).toBe(true);
+	});
+
+	it("useCount=0の場合、統計セクションが表示されない", () => {
+		const card: Card = {
+			id: "card-1",
+			type: "attack",
+			level: 1,
+			exp: 0,
+			stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+		};
+		const result = createCardTooltip(card);
+		const texts = getAllTextsRecursive(result.container);
+		const hasUseCount = texts.some((t) => t.text.includes("使用:"));
+		expect(hasUseCount).toBe(false);
+	});
+
+	it("attack系カードでは撃破数・最大ダメージが表示される", () => {
+		const card: Card = {
+			id: "card-1",
+			type: "attack",
+			level: 1,
+			exp: 0,
+			stats: { useCount: 3, defeatCount: 2, maxSingleDamage: 7 },
+		};
+		const result = createCardTooltip(card);
+		const texts = getAllTextsRecursive(result.container);
+		const hasDefeat = texts.some((t) => t.text.includes("撃破: 2体"));
+		const hasMaxDmg = texts.some((t) => t.text.includes("最大: 7ダメージ"));
+		expect(hasDefeat).toBe(true);
+		expect(hasMaxDmg).toBe(true);
+	});
+
+	it("非attack系カードでは撃破数・最大ダメージが表示されない", () => {
+		const card: Card = {
+			id: "card-1",
+			type: "move",
+			level: 1,
+			exp: 0,
+			stats: { useCount: 3, defeatCount: 0, maxSingleDamage: 0 },
+		};
+		const result = createCardTooltip(card);
+		const texts = getAllTextsRecursive(result.container);
+		const hasDefeat = texts.some((t) => t.text.includes("撃破:"));
+		const hasMaxDmg = texts.some((t) => t.text.includes("最大:"));
+		expect(hasDefeat).toBe(false);
+		expect(hasMaxDmg).toBe(false);
+	});
+
 	it("card.levelが範囲外でも正規化されたレベルが表示される", () => {
 		const card: Card = {
 			id: "card-1",
