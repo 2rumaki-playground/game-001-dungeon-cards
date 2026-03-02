@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Codex CLI によるコードレビュー
 # 未コミットの変更を対象にレビューを実行し、結果をファイルに保存する
 set -euo pipefail
