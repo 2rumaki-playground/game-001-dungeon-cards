@@ -85,27 +85,6 @@ describe("analyzeEnemy", () => {
 			expect(result.decision.type).toBe("wait_room");
 		});
 
-		it("スキル予告中はskill_pending判定になる", () => {
-			const state = createTestState({
-				player: {
-					position: { x: 3, y: 3 },
-					hp: 10,
-					maxHp: 10,
-				},
-			});
-			const enemy = createEnemy({
-				position: { x: 3, y: 1 },
-				type: "miniboss",
-				hp: 8,
-				maxHp: 8,
-				pendingSkill: { type: "power_strike" },
-			});
-			state.enemies = [enemy];
-
-			const result = analyzeEnemy(state, enemy);
-			expect(result.decision.type).toBe("skill_pending");
-		});
-
 		it("移動不可（moveDistance=0）ではwait_no_move判定になる", () => {
 			const state = createTestState({
 				player: {

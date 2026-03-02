@@ -102,7 +102,7 @@ describe("MapRenderer Fog of War", () => {
 			renderer.render(map, player, enemies, false, false, {}, visitedTiles);
 
 			const container = renderer.getContainer();
-			const enemiesContainer = container.children[4];
+			const enemiesContainer = container.children[3];
 			expect(enemiesContainer.children.length).toBe(1);
 		});
 
@@ -123,7 +123,7 @@ describe("MapRenderer Fog of War", () => {
 			renderer.render(map, player, enemies, false, false, {}, visitedTiles);
 
 			const container = renderer.getContainer();
-			const enemiesContainer = container.children[4];
+			const enemiesContainer = container.children[3];
 			expect(enemiesContainer.children.length).toBe(0);
 		});
 
@@ -149,7 +149,7 @@ describe("MapRenderer Fog of War", () => {
 			renderer.render(map, player, enemies);
 
 			const container = renderer.getContainer();
-			const enemiesContainer = container.children[4];
+			const enemiesContainer = container.children[3];
 			expect(enemiesContainer.children.length).toBe(2);
 		});
 	});

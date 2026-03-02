@@ -1,7 +1,7 @@
 /**
  * 敵AI可視化オーバーレイ（DEV環境限定）
  * 移動候補タイルと攻撃範囲をハイライト表示する。
- * SkillForecastEffectManagerと同様のパターンで実装。
+ * SpecialTileEffectManagerと同様のパターンで実装。
  */
 
 import { Container, Graphics, Ticker } from "pixi.js";

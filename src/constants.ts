@@ -463,11 +463,11 @@ export const BOSS_SKILL = {
 	/** ミニボス: 強化攻撃の発動確率 */
 	powerStrikeChance: 0.3,
 	/** ミニボス: 強化攻撃のダメージ倍率 */
-	powerStrikeMultiplier: 2,
+	powerStrikeMultiplier: 1.5,
 	/** ボス: 範囲攻撃の発動確率 */
 	areaAttackChance: 0.25,
 	/** ボス: 範囲攻撃のダメージ */
-	areaAttackDamage: 2,
+	areaAttackDamage: 1,
 	/** ボス: 範囲攻撃の射程（マンハッタン距離） */
 	areaAttackRange: 2,
 	/** ボス: 激昂発動のHP閾値（maxHpに対する割合） */
@@ -602,9 +602,6 @@ export const COLORS = {
 	enemyBoss: 0xdd3333,
 	// 後方互換（通常敵カラー）
 	enemy: 0xca4a4a,
-	// スキル予告
-	skillPowerStrike: 0xdd8833,
-	skillAreaAttack: 0xdd3333,
 	// システム（行動ログ等）
 	system: 0x888888,
 	// デバッグ: 敵AI可視化

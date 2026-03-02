@@ -12,12 +12,7 @@ import {
 } from "../constants";
 import type { Direction, Enemy, GameState, Position } from "../types";
 import { DIRECTION_DELTA } from "../types";
-import {
-	checkEnrage,
-	decideBossSkill,
-	decideMinibossSkill,
-	executePendingSkill,
-} from "./bossSkill";
+import { checkEnrage, tryBossSkill, tryMinibossSkill } from "./bossSkill";
 import { applyEnemyDamageToPlayer, checkGameOver, isDefeated } from "./combat";
 import { DIRECTION_LABEL } from "./enemyAiAnalysis";
 import { isInBounds } from "./map";
@@ -456,20 +451,6 @@ export function executeEnemyTurn(
 		// 激昂後の敵状態を再取得（enrageBonus等に反映するため）
 		const currentEnemy = next.enemies[idx];
 
-		// 予告済みスキルの発動
-		if (currentEnemy.pendingSkill) {
-			const skillResult = executePendingSkill(next, currentEnemy, applyDmg);
-			next = skillResult.state;
-
-			// ゲームオーバー判定
-			next = checkGameOver(next);
-
-			// スキルが実際に発動したターンのみ、通常行動をスキップする
-			if (skillResult.executed) {
-				continue;
-			}
-		}
-
 		// 召喚敵の行動
 		if (currentEnemy.type === "summoner") {
 			next = executeSummonerEnemyAction(next, currentEnemy, next.rng);
@@ -527,19 +508,19 @@ export function executeEnemyTurn(
 			next = moveEnemyByType(next, currentEnemy, params.moveDistance, verbose);
 			rng = next.rng;
 
-			// ボス/ミニボス: スキル予告判定（移動後の敵をインデックスで取得）
+			// ボス/ミニボス: スキル即発動判定（移動後の敵をインデックスで取得）
 			const movedEnemy = next.enemies[idx];
 			if (movedEnemy.type === "miniboss") {
-				const updated = decideMinibossSkill(movedEnemy, rng);
-				if (updated.pendingSkill) {
-					next = updateEnemy(next, movedEnemy.id, () => updated);
-					next = addActionLog(next, "ミニボスが力を溜めている…", "enemy");
+				const skillResult = tryMinibossSkill(next, movedEnemy, rng, applyDmg);
+				next = skillResult.state;
+				if (skillResult.executed) {
+					next = checkGameOver(next);
 				}
 			} else if (movedEnemy.type === "boss") {
-				const updated = decideBossSkill(movedEnemy, rng);
-				if (updated.pendingSkill) {
-					next = updateEnemy(next, movedEnemy.id, () => updated);
-					next = addActionLog(next, "ボスが大技を構えている…", "enemy");
+				const skillResult = tryBossSkill(next, movedEnemy, rng, applyDmg);
+				next = skillResult.state;
+				if (skillResult.executed) {
+					next = checkGameOver(next);
 				}
 			}
 		}
