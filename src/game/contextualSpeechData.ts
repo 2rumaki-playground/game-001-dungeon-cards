@@ -595,7 +595,7 @@ export const CONTEXTUAL_SPEECH_VARIANTS: Record<
 				context: "hp_critical",
 				variants: [
 					"いたっ…！もう…ダメかも…",
-					"うぅ…がんばれ私…",
+					"うぅ…がんばれ…がんばれ…",
 					"痛い…でも…まだ…",
 				],
 			},
@@ -668,7 +668,7 @@ export const CONTEXTUAL_SPEECH_VARIANTS: Record<
 				variants: [
 					"新しい階…大丈夫かな…",
 					"次の階に来たけど…体力が…",
-					"頑張れ…私…！",
+					"頑張れ…まだ…いけるよ…！",
 				],
 			},
 			{
