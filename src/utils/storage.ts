@@ -10,10 +10,7 @@ import {
 	PERSONALITIES,
 } from "../constants";
 import { createInitialCounters } from "../game/cardAcquisition";
-import {
-	createInitialCardStats,
-	initCardIdCounterFromDeck,
-} from "../game/deck";
+import { initCardIdCounterFromDeck } from "../game/deck";
 import {
 	type AcquisitionCounters,
 	ALL_MILESTONES,
@@ -390,16 +387,6 @@ export function loadGame(): GameState | null {
 				hand: [...drawPile, ...hand, ...discardPile],
 				usedCardIds: [],
 			} as DeckState;
-		}
-
-		// 旧セーブデータの後方互換: statsフィールドが未設定のカードに初期値を補完
-		if (state.deck && Array.isArray(state.deck.hand)) {
-			state.deck = {
-				...state.deck,
-				hand: state.deck.hand.map((card) =>
-					card.stats ? card : { ...card, stats: createInitialCardStats() },
-				),
-			};
 		}
 
 		// カードIDカウンターをデッキの最大IDで初期化
