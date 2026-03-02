@@ -56,19 +56,15 @@ gh pr view <番号> --json headRefName -q .headRefName
 
 ## 実装手順
 
-まずPRブランチをチェックアウトし、依存関係をインストールする:
+まずPRブランチをチェックアウトする:
 gh pr checkout <番号>
-pnpm install
 
 <コンフリクト解消が承認されている場合のみ>
-mainブランチとのコンフリクトを解消する:
-git fetch origin main
-git merge origin/main
-コンフリクトがあるファイルを確認し、適切に解決してからコミットする:
-git add <解決したファイル>
-git commit -m "merge: mainブランチをマージしコンフリクト解決"
-git push -u origin <ブランチ名>
+「Ref: コンフリクトの解消」の手順に従い、mainブランチとのコンフリクトを解消してコミット・pushする。
 </コンフリクト解消が承認されている場合のみ>
+
+依存関係をインストールする:
+pnpm install
 
 レビューコメント1件ごとに以下のサイクルを繰り返す:
 
@@ -317,6 +313,7 @@ gh pr view <番号> --json mergeable -q .mergeable
 ```
 
 結果が `CONFLICTING` の場合はコンフリクトあり。`MERGEABLE` の場合はコンフリクトなし。
+`UNKNOWN` の場合はGitHub側でマージ可能状態の計算が完了していない可能性が高いため、数秒待ってから同じコマンドを再実行する。それでも複数回 `UNKNOWN` のままの場合は、ブラウザ上でPRのコンフリクト状態を直接確認する。
 
 ### Ref: コンフリクトの解消
 
@@ -331,11 +328,11 @@ git merge origin/main
 
 ```bash
 git add <解決したファイル>
-git commit -m "merge: mainブランチをマージしコンフリクト解決"
+git commit -m "chore: mainブランチをマージしコンフリクト解決"
 git push -u origin <ブランチ名>
 ```
 
 **注意**:
 - コンフリクト解消はレビューコメント対応の**前に**行う（クリーンな状態でレビュー修正を行うため）
-- マージコミットメッセージは上記の形式を使う（Conventional Commits形式のスコープなし）
+- マージコミットメッセージは上記の形式を使う（`chore` タイプ、スコープなし）
 - コンフリクト解消後、`pnpm build` と `pnpm test:run` で動作確認を行うこと
