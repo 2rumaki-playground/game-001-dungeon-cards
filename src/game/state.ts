@@ -80,6 +80,9 @@ export function createEnemiesFromPositions(
 		if (type === "summoner") {
 			enemy.summonCooldown = SUMMONER_COOLDOWN;
 		}
+		if (type === "shielded") {
+			enemy.shieldActive = true;
+		}
 		return enemy;
 	});
 }
@@ -100,6 +103,7 @@ export function createEnemiesForFloor(
 		...Array<EnemyType>(composition.scout).fill("scout"),
 		...Array<EnemyType>(composition.summoner).fill("summoner"),
 		...Array<EnemyType>(composition.ranged).fill("ranged"),
+		...Array<EnemyType>(composition.shielded).fill("shielded"),
 	];
 	return positions.map((position, index) => {
 		const type = types[index] ?? "normal";
@@ -113,6 +117,9 @@ export function createEnemiesForFloor(
 		};
 		if (type === "summoner") {
 			enemy.summonCooldown = SUMMONER_COOLDOWN;
+		}
+		if (type === "shielded") {
+			enemy.shieldActive = true;
 		}
 		return enemy;
 	});

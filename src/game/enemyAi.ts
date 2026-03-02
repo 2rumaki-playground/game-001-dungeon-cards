@@ -424,7 +424,12 @@ export function executeEnemyTurn(
 	let rng = state.rng.clone();
 	const order = rng.shuffle(state.enemies.map((_e, i) => i));
 
-	let next = { ...state, enemies: state.enemies.map((e) => ({ ...e })), rng };
+	// 盾持ち敵の盾をリセット（毎敵ターン開始時）
+	const resetEnemies = state.enemies.map((e) =>
+		e.type === "shielded" ? { ...e, shieldActive: true } : { ...e },
+	);
+
+	let next = { ...state, enemies: resetEnemies, rng };
 
 	for (const idx of order) {
 		// プレイヤーが死亡していたら残りの敵は行動しない

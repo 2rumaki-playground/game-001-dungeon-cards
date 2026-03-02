@@ -58,13 +58,22 @@ export function applyDamageToEnemy(
 		return { state, overkill: 0, defeated: false };
 	}
 
-	const overkill = Math.max(0, damage - enemy.hp);
+	// 盾持ち敵: 盾が有効なら初撃ダメージ半減（端数切り捨て）
+	let effectiveDamage = damage;
+	let shieldConsumed = false;
+	if (enemy.type === "shielded" && enemy.shieldActive !== false) {
+		effectiveDamage = Math.floor(damage / 2);
+		shieldConsumed = true;
+	}
 
-	recordDamageDealt(Math.min(damage, enemy.hp));
+	const overkill = Math.max(0, effectiveDamage - enemy.hp);
+
+	recordDamageDealt(Math.min(effectiveDamage, enemy.hp));
 
 	let next = updateEnemy(state, enemyId, (e) => ({
 		...e,
-		hp: e.hp - damage,
+		hp: e.hp - effectiveDamage,
+		...(shieldConsumed && { shieldActive: false }),
 	}));
 
 	const target = next.enemies.find((e) => e.id === enemyId);
