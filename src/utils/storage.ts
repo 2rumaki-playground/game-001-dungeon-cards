@@ -303,7 +303,9 @@ function sanitizeEventLog(raw: unknown): RunEvent[] {
 				if (
 					!ENEMY_TYPES.includes(d.enemyType as (typeof ENEMY_TYPES)[number]) ||
 					typeof d.remainingHpRatio !== "number" ||
-					!Number.isFinite(d.remainingHpRatio)
+					!Number.isFinite(d.remainingHpRatio) ||
+					d.remainingHpRatio < 0 ||
+					d.remainingHpRatio > 1
 				)
 					return [];
 				return [
