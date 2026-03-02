@@ -280,15 +280,23 @@ function sanitizeEventLog(raw: unknown): RunEvent[] {
 		const d = detail as Record<string, unknown>;
 		switch (type) {
 			case "boss_defeated":
-			case "miniboss_defeated":
-				if (!ENEMY_TYPES.includes(d.enemyType as (typeof ENEMY_TYPES)[number]))
-					return [];
+				if (d.enemyType !== "boss") return [];
 				return [
 					{
 						type,
 						floor: Math.floor(floor),
 						turn: Math.floor(turn),
-						detail: { enemyType: d.enemyType as (typeof ENEMY_TYPES)[number] },
+						detail: { enemyType: "boss" as (typeof ENEMY_TYPES)[number] },
+					},
+				];
+			case "miniboss_defeated":
+				if (d.enemyType !== "miniboss") return [];
+				return [
+					{
+						type,
+						floor: Math.floor(floor),
+						turn: Math.floor(turn),
+						detail: { enemyType: "miniboss" as (typeof ENEMY_TYPES)[number] },
 					},
 				];
 			case "close_call_defeat":
