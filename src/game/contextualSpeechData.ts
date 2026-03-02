@@ -82,7 +82,7 @@ export const CONTEXTUAL_SPEECH_VARIANTS: Record<
 			{
 				context: "hp_critical",
 				variants: [
-					"くそ…外すわけには…！",
+					"くそ…剣を振る力が…！",
 					"次は必ず…当てる！",
 					"手が震えて…いや、まだだ！",
 				],
@@ -92,7 +92,7 @@ export const CONTEXTUAL_SPEECH_VARIANTS: Record<
 				variants: [
 					"焦りが出たか…落ち着け",
 					"次こそ仕留める！",
-					"甘い攻撃だった…集中しろ",
+					"甘い剣筋だった…集中しろ",
 				],
 			},
 		],
@@ -128,7 +128,7 @@ export const CONTEXTUAL_SPEECH_VARIANTS: Record<
 				variants: [
 					"倒した…が、体がもたない…",
 					"ギリギリだ…次は耐えられるか",
-					"勝ったが…限界が近い",
+					"勝ったが…剣を持つ手が震える",
 				],
 			},
 			{
@@ -164,7 +164,7 @@ export const CONTEXTUAL_SPEECH_VARIANTS: Record<
 				variants: [
 					"罠…！この状態で…！",
 					"しまった…致命的だ…",
-					"うぅ…これ以上は…",
+					"うぅ…この体が重い…",
 				],
 			},
 			{
@@ -389,7 +389,7 @@ export const CONTEXTUAL_SPEECH_VARIANTS: Record<
 				variants: [
 					"罠…！この体力で…致命的だ",
 					"見落とした…最悪のタイミング",
-					"あと一撃で…もう受けられない",
+					"眼鏡越しに見えなかった…不覚",
 				],
 			},
 			{
@@ -822,7 +822,7 @@ export const CONTEXTUAL_SPEECH_VARIANTS: Record<
 			},
 			{
 				context: "deep_floor",
-				variants: ["…深層か", "ここからが真の戦場", "…油断は死を招く"],
+				variants: ["…深層か", "ここからが真の戦場", "…かつての戦場を思い出す"],
 			},
 		],
 		jump_success: [
@@ -895,7 +895,7 @@ export const CONTEXTUAL_SPEECH_VARIANTS: Record<
 				context: "hp_tension",
 				variants: [
 					"外れた…距離感がズレてるかな",
-					"この敵の回避パターンは…メモメモ",
+					"この敵の回避パターンは…手帳に記録",
 					"なるほど、そう避けるのか",
 				],
 			},
@@ -913,7 +913,7 @@ export const CONTEXTUAL_SPEECH_VARIANTS: Record<
 				context: "hp_tension",
 				variants: [
 					"この組み合わせが効くんだ！",
-					"面白い連携だ！メモしておこう",
+					"面白い連携だ！手帳にメモしておこう",
 					"なるほど、こう繋がるのか！",
 				],
 			},
@@ -967,7 +967,7 @@ export const CONTEXTUAL_SPEECH_VARIANTS: Record<
 				context: "hp_critical",
 				variants: [
 					"罠…！この体力で…構造が気になるけど逃げないと",
-					"面白い仕掛けだけど…死にそう",
+					"面白い仕掛けだけど…倒れそう",
 					"この罠の…いや、今は生き延びることが先",
 				],
 			},
@@ -1010,7 +1010,7 @@ export const CONTEXTUAL_SPEECH_VARIANTS: Record<
 			{
 				context: "hp_tension",
 				variants: [
-					"休憩しながら観察しよう",
+					"休憩しながら手帳を整理しよう",
 					"この休憩所の成り立ちが気になるな",
 					"回復しつつ次の探索計画を",
 				],
