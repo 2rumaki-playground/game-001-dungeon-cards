@@ -29,7 +29,7 @@
 - フロント：TypeScript + Vite
 - 描画：PixiJS（2Dタイル描画）
 - UI：HTML/CSS で必要最小限
-- バック：ASP.NET Core (.NET 10) Minimal API（導入予定）
+- バック：ASP.NET Core (.NET 10) Minimal API（将来導入検討中／現スコープ外・未導入）
 - テスト：Vitest
 
 ## 現在のスコープ
