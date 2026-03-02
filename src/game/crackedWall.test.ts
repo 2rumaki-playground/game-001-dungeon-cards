@@ -191,17 +191,17 @@ describe("ひび割れ壁: 敵AI", () => {
 
 describe("ひび割れ壁: BFS経路探索", () => {
 	it("cracked_wallを迂回する経路を探索する", () => {
-		// from(1,1) to(3,1), cracked_wall at (2,1)
-		// BFSは (2,1) を通れないので迂回するか null を返す
+		// createFixedLayoutMap のデフォルトマップでは (1,1)→(3,1) は迂回可能
+		// BFS は cracked_wall を避けて必ず non-null の経路を返すことを確認する
 		const state = createTestState();
 		const map = state.map.map((row) => [...row]);
 		map[1][2] = { type: "cracked_wall" };
 
 		const result = bfsFirstStep(map, { x: 1, y: 1 }, { x: 3, y: 1 });
-		// 迂回可能な場合は上か下に向かう（直進はcracked_wallで不可）
-		if (result !== null) {
-			expect(result).not.toBe("right");
-		}
+		// 到達可能であること（BFS が退化して常に null を返さないこと）を検証する
+		expect(result).not.toBeNull();
+		// 直進（right）は cracked_wall で塞がれているので最初の一手にはならない
+		expect(result).not.toBe("right");
 	});
 
 	it("目的地がcracked_wallの場合は到達不可", () => {
