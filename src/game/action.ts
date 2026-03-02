@@ -51,6 +51,10 @@ import { applyTileEffect, type TileEffectResult } from "./tileEffect";
  * カードを使用済みにする共通ヘルパー
  */
 export function markCardAsPlayed(state: GameState, cardId: string): GameState {
+	// 既に使用済みのカードであれば何もしない（冪等性の確保）
+	if (state.deck.usedCardIds.includes(cardId)) {
+		return state;
+	}
 	let next = setDeck(state, markCardUsed(state.deck, cardId));
 	next = incrementUseCount(next, cardId);
 	return next;
