@@ -215,3 +215,29 @@
 - 攻撃/強攻撃カードはレベルに応じてダメージボーナスが加算される（数値は [constants.md](./constants.md) の `CARD_LEVEL_DAMAGE_BONUS` を参照）
 
 ---
+
+## カード統計
+
+### 概要
+各カードは統計情報（`stats`）を保持し、ツールチップに表示する。手札4枚の少数精鋭構成に「一緒に戦ってきた」という物語性を持たせることが目的。
+
+### CardStats型
+すべてのカードは以下の統計フィールドを持つ（初期値はすべて0）：
+- `useCount` — 使用回数
+- `defeatCount` — 撃破数
+- `maxSingleDamage` — 最大単発ダメージ
+
+### 記録タイミング
+- **useCount**: カードが使用済みになるタイミング（`markCardAsPlayed`）で+1。全カード種別が対象
+- **defeatCount**: 敵撃破時、その攻撃に使用したカードの撃破数を+1。`attack` / `strong_attack` のみ対象
+- **maxSingleDamage**: 敵にダメージを与えた際、実効ダメージ（`min(effectiveDamage, enemy.hp)`）が既存の最大値を超えた場合に更新。`attack` / `strong_attack` のみ対象
+
+### ツールチップ表示
+- カードが1回以上使用された場合（`useCount > 0`）にのみ統計セクションを表示
+- 使用回数は全カード種別で表示
+- 撃破数・最大ダメージは `attack` / `strong_attack` のみ表示
+
+### セーブデータ互換
+- 旧セーブデータで `stats` フィールドが存在しないカードには、ロード時に初期値を補完する
+
+---
