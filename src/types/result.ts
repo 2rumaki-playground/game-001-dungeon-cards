@@ -37,7 +37,7 @@ export type BossDefeatedRunEvent = BaseRunEvent<
 
 export type MinibossDefeatedRunEvent = BaseRunEvent<
 	"miniboss_defeated",
-	{ enemyType: EnemyType }
+	{ enemyType: "miniboss" }
 >;
 
 export type CloseCallDefeatRunEvent = BaseRunEvent<

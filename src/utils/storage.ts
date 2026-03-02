@@ -297,7 +297,7 @@ function sanitizeEventLog(raw: unknown): RunEvent[] {
 						type,
 						floor: Math.floor(floor),
 						turn: Math.floor(turn),
-						detail: { enemyType: "miniboss" as (typeof ENEMY_TYPES)[number] },
+						detail: { enemyType: "miniboss" as const },
 					},
 				];
 			case "close_call_defeat":
