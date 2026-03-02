@@ -5,8 +5,8 @@ set -euo pipefail
 
 REVIEW_FILE=".codex-review-result.md"
 
-# 変更がなければスキップ
-if git diff --quiet && git diff --cached --quiet; then
+# 変更がなければスキップ（untracked を含めて判定）
+if [ -z "$(git status --porcelain)" ]; then
 	echo "レビュー対象の変更がありません。"
 	exit 0
 fi
