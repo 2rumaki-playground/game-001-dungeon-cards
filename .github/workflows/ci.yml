@@ -14,12 +14,11 @@ on:
       - "playwright.config.*"
       - ".github/workflows/ci.yml"
 
-concurrency:
-  group: ci-${{ github.ref }}
-  cancel-in-progress: true
-
 jobs:
   check:
+    concurrency:
+      group: check-${{ github.ref }}
+      cancel-in-progress: true
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -53,6 +52,9 @@ jobs:
       - run: pnpm build
 
   e2e:
+    concurrency:
+      group: e2e-${{ github.ref }}
+      cancel-in-progress: true
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -100,6 +102,7 @@ jobs:
 
   preview-deploy:
     needs: [check, e2e]
+    concurrency: preview-${{ github.ref }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
