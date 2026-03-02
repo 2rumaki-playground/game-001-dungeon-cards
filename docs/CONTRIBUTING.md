@@ -19,6 +19,7 @@
 - [mise](https://mise.jdx.dev/)
 - [Node.js](https://nodejs.org/) (v24)
 - [pnpm](https://pnpm.io/) (v10、`mise.toml` で管理)
+- bash（`pnpm review` 等のシェルスクリプト実行に必要）
 
 ### インストール
 
