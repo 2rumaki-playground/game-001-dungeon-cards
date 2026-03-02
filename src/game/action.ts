@@ -534,6 +534,31 @@ export function executeStrongAttack(
 		};
 	}
 
+	// ひび割れ壁破壊: 方向1マス先がcracked_wallなら破壊（ミスログ/SEを出さない）
+	{
+		const delta = DIRECTION_DELTA[direction];
+		const wx = state.player.position.x + delta.x;
+		const wy = state.player.position.y + delta.y;
+		if (
+			isInBounds(state.map, wx, wy) &&
+			state.map[wy][wx].type === "cracked_wall"
+		) {
+			let next = markCardAsPlayed(state, cardId);
+			next = setTile(next, wx, wy, { type: "floor" });
+			next = addActionLog(next, "ひび割れ壁を破壊した", "player");
+			return {
+				state: updateComboHistory(next, {
+					lastCardType: "strong_attack",
+					lastDirection: direction,
+				}),
+				hit: false,
+				overkill: 0,
+				defeated: false,
+				levelBonus,
+			};
+		}
+	}
+
 	// 通常強攻撃（Lv1-4）
 	const result = executeAttackBase(
 		state,
@@ -546,20 +571,6 @@ export function executeStrongAttack(
 	);
 
 	let nextState = result.state;
-
-	// ひび割れ壁破壊: 強攻撃ミス時、方向1マス先がcracked_wallなら破壊
-	if (!result.hit) {
-		const delta = DIRECTION_DELTA[direction];
-		const wx = state.player.position.x + delta.x;
-		const wy = state.player.position.y + delta.y;
-		if (
-			isInBounds(nextState.map, wx, wy) &&
-			nextState.map[wy][wx].type === "cracked_wall"
-		) {
-			nextState = setTile(nextState, wx, wy, { type: "floor" });
-			nextState = addActionLog(nextState, "ひび割れ壁を破壊した", "player");
-		}
-	}
 
 	// Lv3ノックバック: ヒットして敵が生存していれば吹き飛ばす
 	if (knockback && result.hit && result.enemyId && !result.defeated) {
