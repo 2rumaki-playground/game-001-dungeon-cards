@@ -4,7 +4,7 @@
 
 import type { Application } from "pixi.js";
 import type { QueuedCard } from "./game/cardQueue";
-import type { Card, GameState } from "./types";
+import type { Card, GameState, ResultData } from "./types";
 import type {
 	ActionLogRenderer,
 	CameraDragController,
@@ -69,4 +69,6 @@ export interface GameContext {
 	debugLog: boolean;
 	debugMode: boolean;
 	ui: UIComponents;
+	/** リザルト画面用データ（ラン終了時に設定） */
+	resultData: ResultData | null;
 }

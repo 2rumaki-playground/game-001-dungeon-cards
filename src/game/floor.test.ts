@@ -63,6 +63,7 @@ function createTestState(overrides?: Partial<GameState>): GameState {
 		speechLog: null,
 		achievedMilestones: new Set(),
 		pendingMilestone: null,
+		eventLog: [],
 		...overrides,
 	};
 }

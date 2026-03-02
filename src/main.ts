@@ -319,6 +319,7 @@ async function main() {
 		debugLog: import.meta.env.DEV,
 		debugMode: false,
 		ui,
+		resultData: null,
 	};
 
 	// イベントハンドラの設定

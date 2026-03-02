@@ -371,6 +371,7 @@ export function loadGame(): GameState | null {
 			speechLog: sanitizeSpeechLog(data.speechLog),
 			achievedMilestones: sanitizeAchievedMilestones(data.achievedMilestones),
 			pendingMilestone: sanitizePendingMilestone(data.pendingMilestone),
+			eventLog: Array.isArray(data.eventLog) ? data.eventLog : [],
 		};
 
 		// 旧セーブデータ互換: 3ゾーン形式のデッキを手札形式に変換

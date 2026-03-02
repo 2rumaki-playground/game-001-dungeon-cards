@@ -561,6 +561,18 @@ export const PERSONALITY_PROFILE: Record<
 	},
 } as const;
 
+// リザルト画面
+/** ハイライト表示件数（最大） */
+export const RESULT_HIGHLIGHT_COUNT = 5;
+/** ハイライト表示の最小件数（これ未満ならセクション非表示） */
+export const RESULT_HIGHLIGHT_MIN = 3;
+/** 同一イベントタイプの最大表示件数 */
+export const RESULT_MAX_SAME_TYPE = 2;
+/** 瀕死撃破判定のHP割合 */
+export const CLOSE_CALL_HP_RATIO = 0.2;
+/** カードレベルアップイベント記録の閾値レベル */
+export const EVENT_LEVEL_UP_THRESHOLD = 3;
+
 // マイルストーン閾値
 export const MILESTONE_DEFEAT_COUNT = 10;
 
