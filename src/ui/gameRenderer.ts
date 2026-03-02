@@ -187,7 +187,7 @@ function renderResultScreen(ctx: GameContext): void {
 		ctx.ui.resultScreen.show();
 	} else {
 		// resultDataが未設定の場合はタイトルへフォールバック
-		ctx.state.screen = "title";
+		applyState(ctx, { ...ctx.state, screen: "title" });
 		renderTitleScreen(ctx);
 	}
 	hideDebugUI(ctx);
