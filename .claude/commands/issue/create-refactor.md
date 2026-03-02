@@ -88,4 +88,4 @@ EOF
 | 1 | #xxx | refactor: ... | なし |
 | 2 | #yyy | refactor: ... | #xxx |
 
-「Issue番号の若い順に `/create-pr-from-issue` で対応すれば依存関係が自然に解決される」ことを確認してください。
+「Issue番号の若い順に `/pr:create-from-issue` で対応すれば依存関係が自然に解決される」ことを確認してください。
