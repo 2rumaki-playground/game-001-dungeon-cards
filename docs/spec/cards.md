@@ -62,11 +62,11 @@
 - 解放レベル: 3（`CARD_LEVEL_PIERCE`、数値は [constants.md](./constants.md) 参照）
 - 攻撃方向の最初の敵にダメージを与え、撃破時に余剰ダメージ（overkill）が発生した場合、同方向の次の敵にoverkillダメージを適用する
 - 伝播は1回のみ（連鎖しない）
-- 次の敵の探索は射程制限なし（壁またはマップ外まで走査）
+- 次の敵の探索は射程制限なし（壁/ひび割れ壁またはマップ外まで走査）
 
 ### Lv5特殊効果: 射程延長
 - 解放レベル: 5（`CARD_LEVEL_RANGE_EXTEND`、射程: `ATTACK_EXTENDED_RANGE`、具体値は [constants.md](./constants.md) 参照）
-- `ATTACK_EXTENDED_RANGE` マス先までの最初の敵を攻撃対象とする（壁で走査停止）
+- `ATTACK_EXTENDED_RANGE` マス先までの最初の敵を攻撃対象とする（壁/ひび割れ壁で走査停止）
 - このレベルでは、攻撃カードの基本仕様における「指定方向1マス先に敵がいること」という成立条件は、「指定方向最大 `ATTACK_EXTENDED_RANGE` マス先までの最初の敵が存在すること」に置き換わる
 - Lv3の貫通効果も保持される（射程 `ATTACK_EXTENDED_RANGE` でヒットした敵を撃破時、さらに奥の敵にoverkill伝播）
 
