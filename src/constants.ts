@@ -542,6 +542,48 @@ export const PERSONALITY_DESCRIPTION: Record<Personality, string> = {
 	curious: "疑問形、探究的な口調",
 } as const;
 
+// キャラクタープロフィール
+export const PERSONALITY_PROFILE: Record<
+	Personality,
+	{
+		gender: string;
+		ageRange: string;
+		physicalTraits: string;
+		archetype: string;
+	}
+> = {
+	brave: {
+		gender: "男性",
+		ageRange: "20代前半",
+		physicalTraits: "がっしりした体格",
+		archetype: "剣士",
+	},
+	cautious: {
+		gender: "女性",
+		ageRange: "不詳",
+		physicalTraits: "眼鏡",
+		archetype: "分析者",
+	},
+	cheerful: {
+		gender: "女性",
+		ageRange: "10代後半",
+		physicalTraits: "小柄で身軽",
+		archetype: "冒険好き",
+	},
+	stoic: {
+		gender: "男性",
+		ageRange: "30代",
+		physicalTraits: "長身・引き締まった体格",
+		archetype: "歴戦の戦士",
+	},
+	curious: {
+		gender: "女性",
+		ageRange: "20代",
+		physicalTraits: "学者風の装い",
+		archetype: "研究者",
+	},
+} as const;
+
 // マイルストーン閾値
 export const MILESTONE_DEFEAT_COUNT = 10;
 
