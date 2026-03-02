@@ -161,15 +161,12 @@ export class ResultScreen {
 
 		// === ハイライト ===
 		if (data.highlights.length >= RESULT_HIGHLIGHT_MIN) {
-			const highlightPanel = this.createHighlightPanel(
-				data.highlights,
-				centerX,
-				currentY,
-			);
+			const { panel: highlightPanel, height: highlightHeight } =
+				this.createHighlightPanel(data.highlights, centerX, currentY);
 			highlightPanel.alpha = 0;
 			content.addChild(highlightPanel);
 			this.fadeIn(highlightPanel, sectionIndex++, signal);
-			currentY += this.getHighlightHeight(data.highlights) + SECTION_GAP;
+			currentY += highlightHeight + SECTION_GAP;
 		}
 
 		// === 手札統計 + MVP ===
@@ -365,7 +362,7 @@ export class ResultScreen {
 		highlights: HighlightEntry[],
 		centerX: number,
 		y: number,
-	): Container {
+	): { panel: Container; height: number } {
 		const panel = new Container();
 		const panelWidth = CONTENT_WIDTH;
 		panel.x = centerX - panelWidth / 2;
@@ -402,26 +399,7 @@ export class ResultScreen {
 			lineY += safeTextHeight(text, 20);
 		}
 
-		return panel;
-	}
-
-	private getHighlightHeight(highlights: HighlightEntry[]): number {
-		const panelWidth = CONTENT_WIDTH;
-		let lineY = 22;
-		for (const h of highlights) {
-			const text = new Text({
-				text: h.text,
-				style: {
-					fontSize: 13,
-					fontFamily: "sans-serif",
-					fill: HIGHLIGHT_TEXT_COLOR,
-					wordWrap: true,
-					wordWrapWidth: panelWidth - PANEL_PADDING * 2,
-				},
-			});
-			lineY += safeTextHeight(text, 20);
-		}
-		return lineY;
+		return { panel, height: lineY };
 	}
 
 	/**
