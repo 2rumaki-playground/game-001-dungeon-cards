@@ -3,11 +3,7 @@
  * @see docs/spec/constants.md
  */
 
-import type {
-	EnemyCardAcquisitionConfig,
-	EnemyType,
-	Personality,
-} from "./types";
+import type { CardDropConfig, EnemyType, Personality } from "./types";
 
 // 手札関連
 export const HAND_LIMIT = 4;
@@ -300,55 +296,16 @@ export function getBossType(floor: number): "miniboss" | "boss" | null {
 // カード交換
 export const DECK_MAX_SIZE = 4;
 export const DECK_MIN_SIZE = 4;
-// 敵撃破時カード獲得条件（正典: docs/spec/constants.md）
-// カードマッピングは各エントリの cardType を参照
-export const ENEMY_ACQUISITION_CONDITIONS: Record<
-	EnemyType,
-	EnemyCardAcquisitionConfig
-> = {
-	normal: {
-		cardType: "move",
-		conditions: [{ type: "defeat_count", threshold: 3 }],
-		conditionLogic: "and",
-	},
-	heavy: {
-		cardType: "strong_attack",
-		conditions: [{ type: "defeat_count", threshold: 2 }],
-		conditionLogic: "and",
-	},
-	scout: {
-		cardType: "jump",
-		conditions: [
-			{ type: "defeat_count", threshold: 2 },
-			{ type: "hit_count", threshold: 1 },
-		],
-		conditionLogic: "and",
-	},
-	summoner: {
-		cardType: "wait",
-		conditions: [{ type: "defeat_count", threshold: 2 }],
-		conditionLogic: "and",
-	},
-	ranged: {
-		cardType: "move",
-		conditions: [{ type: "defeat_count", threshold: 3 }],
-		conditionLogic: "and",
-	},
-	shielded: {
-		cardType: "attack",
-		conditions: [{ type: "defeat_count", threshold: 2 }],
-		conditionLogic: "and",
-	},
-	miniboss: {
-		cardType: "attack",
-		conditions: [{ type: "defeat_count", threshold: 1 }],
-		conditionLogic: "and",
-	},
-	boss: {
-		cardType: "wait",
-		conditions: [{ type: "defeat_count", threshold: 1 }],
-		conditionLogic: "and",
-	},
+// 敵撃破時カードドロップ確率テーブル（正典: docs/spec/constants.md）
+export const CARD_DROP_TABLE: Record<EnemyType, CardDropConfig> = {
+	normal: { cardType: "move", dropRate: 0.25 },
+	ranged: { cardType: "move", dropRate: 0.25 },
+	heavy: { cardType: "strong_attack", dropRate: 0.35 },
+	scout: { cardType: "jump", dropRate: 0.35 },
+	summoner: { cardType: "wait", dropRate: 0.35 },
+	shielded: { cardType: "attack", dropRate: 0.35 },
+	miniboss: { cardType: "attack", dropRate: 0.75 },
+	boss: { cardType: "wait", dropRate: 1.0 },
 };
 
 // 行動ログ

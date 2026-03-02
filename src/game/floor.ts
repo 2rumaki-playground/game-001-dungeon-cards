@@ -67,7 +67,7 @@ export function transitionFloor(state: GameState): GameState {
 		...next,
 		rng: next.rng.clone(),
 		defeatedEnemyCount: 0,
-		cardExchangeState: null,
+		cardExchangeQueue: [],
 		remnants: {},
 		visitedTiles: revealAtPosition(
 			createEmptyVisitedTiles(),

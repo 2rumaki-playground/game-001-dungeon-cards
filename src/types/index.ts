@@ -4,11 +4,9 @@
 
 export type { Card, CardType, DeckState } from "./card";
 export type {
-	AcquisitionCondition,
-	AcquisitionConditionType,
 	AcquisitionCounters,
-	CardExchangeState,
-	EnemyCardAcquisitionConfig,
+	CardDropConfig,
+	CardExchangeEntry,
 } from "./cardAcquisition";
 export type { Enemy, EnemyType, PendingSkillType, Player } from "./character";
 export type { ComboHistory, ComboType } from "./combo";

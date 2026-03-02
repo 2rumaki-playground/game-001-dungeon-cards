@@ -3,10 +3,10 @@
  * @see docs/spec/mvp/rules.md
  */
 
-import { ENEMY_ACQUISITION_CONDITIONS, ENEMY_TYPE_LABEL } from "../constants";
+import { ENEMY_TYPE_LABEL } from "../constants";
 import type { EnemyType, GameState } from "../types";
 import {
-	checkAcquisitionCondition,
+	checkCardDrop,
 	updateDefeatCounter,
 	updateHitCounter,
 } from "./cardAcquisition";
@@ -98,18 +98,12 @@ export function applyDamageToEnemy(
 			next = awardExpToCard(next, attackCardId);
 		}
 
-		// カード獲得条件の判定（既存のcardExchangeStateがある場合は維持）
-		if (
-			next.cardExchangeState === null &&
-			checkAcquisitionCondition(updatedCounters, target.type)
-		) {
-			const config = ENEMY_ACQUISITION_CONDITIONS[target.type];
+		// カードドロップ判定（確率制）
+		const dropResult = checkCardDrop(next.rng, target.type);
+		if (dropResult) {
 			next = {
 				...next,
-				cardExchangeState: {
-					acquiredCardType: config.cardType,
-					defeatedEnemyType: target.type,
-				},
+				cardExchangeQueue: [...next.cardExchangeQueue, dropResult],
 			};
 			const label = ENEMY_TYPE_LABEL[target.type];
 			next = addActionLog(

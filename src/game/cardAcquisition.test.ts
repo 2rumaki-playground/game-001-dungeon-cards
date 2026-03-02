@@ -1,9 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { ENEMY_ACQUISITION_CONDITIONS } from "../constants";
+import { CARD_DROP_TABLE } from "../constants";
 import { createTestState } from "../test-utils/createTestFixtures";
-import type { AcquisitionCounters, Card } from "../types";
+import type { Card } from "../types";
+import { RNG } from "../utils/rng";
 import {
-	checkAcquisitionCondition,
+	checkCardDrop,
 	createInitialCounters,
 	exchangeCardInDeck,
 	updateDefeatCounter,
@@ -65,302 +66,74 @@ describe("updateHitCounter", () => {
 	});
 });
 
-describe("checkAcquisitionCondition", () => {
-	it("AND条件: すべて満たす→true", () => {
-		// scoutは defeat_count>=2 AND hit_count>=1
-		const counters: AcquisitionCounters = {
-			defeatCounts: {
-				normal: 0,
-				heavy: 0,
-				scout: 2,
-				summoner: 0,
-				ranged: 0,
-
-				shielded: 0,
-
-				miniboss: 0,
-				boss: 0,
-			},
-			hitCounts: {
-				normal: 0,
-				heavy: 0,
-				scout: 1,
-				summoner: 0,
-				ranged: 0,
-
-				shielded: 0,
-
-				miniboss: 0,
-				boss: 0,
-			},
-		};
-		expect(checkAcquisitionCondition(counters, "scout")).toBe(true);
+describe("checkCardDrop", () => {
+	it("boss(100%)は必ずドロップする", () => {
+		const rng = new RNG(12345);
+		const result = checkCardDrop(rng, "boss");
+		expect(result).not.toBeNull();
+		expect(result?.acquiredCardType).toBe("wait");
+		expect(result?.defeatedEnemyType).toBe("boss");
 	});
 
-	it("AND条件: 一部のみ→false", () => {
-		// scoutは defeat_count>=2 AND hit_count>=1、hit_countが0
-		const counters: AcquisitionCounters = {
-			defeatCounts: {
-				normal: 0,
-				heavy: 0,
-				scout: 2,
-				summoner: 0,
-				ranged: 0,
-
-				shielded: 0,
-
-				miniboss: 0,
-				boss: 0,
-			},
-			hitCounts: {
-				normal: 0,
-				heavy: 0,
-				scout: 0,
-				summoner: 0,
-				ranged: 0,
-
-				shielded: 0,
-
-				miniboss: 0,
-				boss: 0,
-			},
-		};
-		expect(checkAcquisitionCondition(counters, "scout")).toBe(false);
+	it("ドロップ確率テーブルのカードタイプが正しい", () => {
+		expect(CARD_DROP_TABLE.normal.cardType).toBe("move");
+		expect(CARD_DROP_TABLE.ranged.cardType).toBe("move");
+		expect(CARD_DROP_TABLE.heavy.cardType).toBe("strong_attack");
+		expect(CARD_DROP_TABLE.scout.cardType).toBe("jump");
+		expect(CARD_DROP_TABLE.summoner.cardType).toBe("wait");
+		expect(CARD_DROP_TABLE.shielded.cardType).toBe("attack");
+		expect(CARD_DROP_TABLE.miniboss.cardType).toBe("attack");
+		expect(CARD_DROP_TABLE.boss.cardType).toBe("wait");
 	});
 
-	it("単一条件: 閾値到達→true", () => {
-		// normalは defeat_count>=3
-		const counters: AcquisitionCounters = {
-			defeatCounts: {
-				normal: 3,
-				heavy: 0,
-				scout: 0,
-				summoner: 0,
-				ranged: 0,
-
-				shielded: 0,
-
-				miniboss: 0,
-				boss: 0,
-			},
-			hitCounts: {
-				normal: 0,
-				heavy: 0,
-				scout: 0,
-				summoner: 0,
-				ranged: 0,
-
-				shielded: 0,
-
-				miniboss: 0,
-				boss: 0,
-			},
-		};
-		expect(checkAcquisitionCondition(counters, "normal")).toBe(true);
-	});
-
-	it("単一条件: 閾値未達→false", () => {
-		const counters: AcquisitionCounters = {
-			defeatCounts: {
-				normal: 2,
-				heavy: 0,
-				scout: 0,
-				summoner: 0,
-				ranged: 0,
-
-				shielded: 0,
-
-				miniboss: 0,
-				boss: 0,
-			},
-			hitCounts: {
-				normal: 0,
-				heavy: 0,
-				scout: 0,
-				summoner: 0,
-				ranged: 0,
-
-				shielded: 0,
-
-				miniboss: 0,
-				boss: 0,
-			},
-		};
-		expect(checkAcquisitionCondition(counters, "normal")).toBe(false);
-	});
-
-	it("miniboss: 1体撃破で条件達成", () => {
-		const counters: AcquisitionCounters = {
-			defeatCounts: {
-				normal: 0,
-				heavy: 0,
-				scout: 0,
-				summoner: 0,
-				ranged: 0,
-
-				shielded: 0,
-
-				miniboss: 1,
-				boss: 0,
-			},
-			hitCounts: {
-				normal: 0,
-				heavy: 0,
-				scout: 0,
-				summoner: 0,
-				ranged: 0,
-
-				shielded: 0,
-
-				miniboss: 0,
-				boss: 0,
-			},
-		};
-		expect(checkAcquisitionCondition(counters, "miniboss")).toBe(true);
-	});
-
-	it("ranged: 撃破数2では条件未達", () => {
-		const counters: AcquisitionCounters = {
-			defeatCounts: {
-				normal: 0,
-				heavy: 0,
-				scout: 0,
-				summoner: 0,
-				ranged: 2,
-				shielded: 0,
-				miniboss: 0,
-				boss: 0,
-			},
-			hitCounts: {
-				normal: 0,
-				heavy: 0,
-				scout: 0,
-				summoner: 0,
-				ranged: 0,
-				shielded: 0,
-				miniboss: 0,
-				boss: 0,
-			},
-		};
-		expect(checkAcquisitionCondition(counters, "ranged")).toBe(false);
-	});
-
-	it("ranged: 撃破数3で条件達成", () => {
-		const counters: AcquisitionCounters = {
-			defeatCounts: {
-				normal: 0,
-				heavy: 0,
-				scout: 0,
-				summoner: 0,
-				ranged: 3,
-				shielded: 0,
-				miniboss: 0,
-				boss: 0,
-			},
-			hitCounts: {
-				normal: 0,
-				heavy: 0,
-				scout: 0,
-				summoner: 0,
-				ranged: 0,
-				shielded: 0,
-				miniboss: 0,
-				boss: 0,
-			},
-		};
-		expect(checkAcquisitionCondition(counters, "ranged")).toBe(true);
-	});
-
-	it("ranged: 獲得カードタイプがmoveである", () => {
-		expect(ENEMY_ACQUISITION_CONDITIONS.ranged.cardType).toBe("move");
-	});
-
-	it("OR条件: いずれか満たす→true", () => {
-		const original = ENEMY_ACQUISITION_CONDITIONS.scout;
-		ENEMY_ACQUISITION_CONDITIONS.scout = {
-			cardType: "jump",
-			conditions: [
-				{ type: "defeat_count", threshold: 5 },
-				{ type: "hit_count", threshold: 1 },
-			],
-			conditionLogic: "or",
-		};
-		try {
-			const counters: AcquisitionCounters = {
-				defeatCounts: {
-					normal: 0,
-					heavy: 0,
-					scout: 1,
-					summoner: 0,
-					ranged: 0,
-
-					shielded: 0,
-
-					miniboss: 0,
-					boss: 0,
-				},
-				hitCounts: {
-					normal: 0,
-					heavy: 0,
-					scout: 1,
-					summoner: 0,
-					ranged: 0,
-
-					shielded: 0,
-
-					miniboss: 0,
-					boss: 0,
-				},
-			};
-			// defeat_count未達だがhit_count達成→OR条件なのでtrue
-			expect(checkAcquisitionCondition(counters, "scout")).toBe(true);
-		} finally {
-			ENEMY_ACQUISITION_CONDITIONS.scout = original;
+	it("RNGシード制御で当選を検証できる", () => {
+		// boss(dropRate=1.0)は常に当選
+		let dropCount = 0;
+		for (let seed = 0; seed < 100; seed++) {
+			const rng = new RNG(seed);
+			if (checkCardDrop(rng, "boss") !== null) dropCount++;
 		}
+		expect(dropCount).toBe(100);
 	});
 
-	it("OR条件: どちらも未達→false", () => {
-		const original = ENEMY_ACQUISITION_CONDITIONS.scout;
-		ENEMY_ACQUISITION_CONDITIONS.scout = {
-			cardType: "jump",
-			conditions: [
-				{ type: "defeat_count", threshold: 5 },
-				{ type: "hit_count", threshold: 3 },
-			],
-			conditionLogic: "or",
-		};
-		try {
-			const counters: AcquisitionCounters = {
-				defeatCounts: {
-					normal: 0,
-					heavy: 0,
-					scout: 1,
-					summoner: 0,
-					ranged: 0,
-
-					shielded: 0,
-
-					miniboss: 0,
-					boss: 0,
-				},
-				hitCounts: {
-					normal: 0,
-					heavy: 0,
-					scout: 1,
-					summoner: 0,
-					ranged: 0,
-
-					shielded: 0,
-
-					miniboss: 0,
-					boss: 0,
-				},
-			};
-			// どちらも未達→false
-			expect(checkAcquisitionCondition(counters, "scout")).toBe(false);
-		} finally {
-			ENEMY_ACQUISITION_CONDITIONS.scout = original;
+	it("RNGシード制御で当選と落選が両方発生する", () => {
+		// normal(dropRate=0.25)は一部当選・一部落選
+		let dropCount = 0;
+		for (let seed = 0; seed < 100; seed++) {
+			const rng = new RNG(seed);
+			if (checkCardDrop(rng, "normal") !== null) dropCount++;
 		}
+		// 25%なので0%や100%にはならない
+		expect(dropCount).toBeGreaterThan(0);
+		expect(dropCount).toBeLessThan(100);
+	});
+
+	it("落選時にnullを返す", () => {
+		// dropRate=0の敵を想定してテスト: seedを多数試し、normalで落選するものを見つける
+		let foundNull = false;
+		for (let seed = 0; seed < 100; seed++) {
+			const rng = new RNG(seed);
+			if (checkCardDrop(rng, "normal") === null) {
+				foundNull = true;
+				break;
+			}
+		}
+		expect(foundNull).toBe(true);
+	});
+
+	it("当選時に正しいCardExchangeEntryを返す", () => {
+		// miniboss(75%)で当選するseedを探す
+		for (let seed = 0; seed < 100; seed++) {
+			const rng = new RNG(seed);
+			const result = checkCardDrop(rng, "miniboss");
+			if (result !== null) {
+				expect(result.acquiredCardType).toBe("attack");
+				expect(result.defeatedEnemyType).toBe("miniboss");
+				return;
+			}
+		}
+		// 75%で100回試せば必ず当選するはず
+		expect.unreachable("miniboss should have dropped at least once");
 	});
 });
 
