@@ -55,6 +55,7 @@ gh pr view <番号> --json headRefName -q .headRefName
 <コメント一覧（スレッドID、databaseId、ファイル、要約、対応方針）>
 
 ## コンフリクト状態
+- baseRefName: <baseブランチ名>
 - mergeable: <MERGEABLE / CONFLICTING / UNKNOWN>
 - コンフリクト解消: <実施する / 実施しない（ユーザー承認結果）>
 
