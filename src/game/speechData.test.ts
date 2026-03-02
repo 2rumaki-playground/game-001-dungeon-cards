@@ -20,6 +20,8 @@ const eventTypes: SpeechEventType[] = [
 	"rest_area_used",
 	"floor_reached",
 	"jump_success",
+	"card_acquired",
+	"card_skipped",
 ];
 
 describe("SPEECH_VARIANTS", () => {
@@ -116,11 +118,13 @@ describe("RARE_SPEECH_VARIANTS", () => {
 		"treasure_found",
 		"trap_triggered",
 		"floor_reached",
+		"card_acquired",
+		"card_skipped",
 	];
 
 	it.each(
 		PERSONALITIES,
-	)("性格 %s にレアバリエーションが全8イベント存在する", (personality: Personality) => {
+	)("性格 %s にレアバリエーションが全10イベント存在する", (personality: Personality) => {
 		const rareEvents = Object.keys(RARE_SPEECH_VARIANTS[personality]).sort();
 		expect(rareEvents).toEqual([...EXPECTED_RARE_EVENTS].sort());
 	});
