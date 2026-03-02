@@ -212,10 +212,11 @@ export async function updateStateWithAttackAnimation(
 			// 撃破後、敵描画を反映
 			render(ctx);
 
-			// カード交換条件達成時に交換UIを表示
-			if (newState.cardExchangeState) {
-				const exchangedState = await executeExchangeFlow(ctx, newState);
-				applyState(ctx, exchangedState);
+			// カードドロップがある場合、キューが空になるまで交換UIを順次表示
+			let currentState = newState;
+			while (currentState.cardExchangeQueue.length > 0) {
+				currentState = await executeExchangeFlow(ctx, currentState);
+				applyState(ctx, currentState);
 				render(ctx);
 			}
 		}

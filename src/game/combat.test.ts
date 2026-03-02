@@ -11,6 +11,7 @@ import {
 	createTestState,
 	resetTestEnemySeq,
 } from "../test-utils/createTestFixtures";
+import { RNG } from "../utils/rng";
 import {
 	applyDamageToEnemy,
 	applyDamageToPlayer,
@@ -307,7 +308,7 @@ describe("checkGameOver", () => {
 	});
 });
 
-describe("applyDamageToEnemy - カード獲得条件", () => {
+describe("applyDamageToEnemy - カードドロップ", () => {
 	it("敵撃破時に撃破カウンターが更新される", () => {
 		const enemy = createTestEnemy("normal", { x: 4, y: 3 }, { hp: 1 });
 		const state = createTestState({ enemies: [enemy] });
@@ -316,24 +317,44 @@ describe("applyDamageToEnemy - カード獲得条件", () => {
 		expect(result.state.acquisitionCounters.defeatCounts.normal).toBe(1);
 	});
 
-	it("条件達成時にcardExchangeStateがセットされる", () => {
-		const enemy = createTestEnemy("miniboss", { x: 4, y: 3 }, { hp: 1 });
-		// minibossは1体撃破で条件達成
+	it("boss撃破時にcardExchangeQueueにエントリが追加される", () => {
+		const enemy = createTestEnemy("boss", { x: 4, y: 3 }, { hp: 1 });
+		// boss(100%)は必ずドロップ
 		const state = createTestState({ enemies: [enemy] });
 		const result = applyDamageToEnemy(state, enemy.id, PLAYER_ATTACK_DAMAGE);
 
-		expect(result.state.cardExchangeState).not.toBeNull();
-		expect(result.state.cardExchangeState?.acquiredCardType).toBe("attack");
-		expect(result.state.cardExchangeState?.defeatedEnemyType).toBe("miniboss");
+		expect(result.state.cardExchangeQueue).toHaveLength(1);
+		expect(result.state.cardExchangeQueue[0].acquiredCardType).toBe("wait");
+		expect(result.state.cardExchangeQueue[0].defeatedEnemyType).toBe("boss");
 	});
 
-	it("条件未達時にcardExchangeStateがnullのまま", () => {
-		const enemy = createTestEnemy("normal", { x: 4, y: 3 }, { hp: 1 });
-		// normalは3体撃破が必要、1体では未達
-		const state = createTestState({ enemies: [enemy] });
-		const result = applyDamageToEnemy(state, enemy.id, PLAYER_ATTACK_DAMAGE);
-
-		expect(result.state.cardExchangeState).toBeNull();
+	it("ドロップ確率に応じてcardExchangeQueueが変化する", () => {
+		// normal(25%)を多数のseedで試す
+		let withDrop = 0;
+		let withoutDrop = 0;
+		for (let seed = 0; seed < 100; seed++) {
+			const enemy = createTestEnemy(
+				"normal",
+				{ x: 4, y: 3 },
+				{
+					id: `enemy-test-${seed}`,
+					hp: 1,
+				},
+			);
+			const state = createTestState({
+				enemies: [enemy],
+				rng: new RNG(seed),
+			});
+			const result = applyDamageToEnemy(state, enemy.id, PLAYER_ATTACK_DAMAGE);
+			if (result.state.cardExchangeQueue.length > 0) {
+				withDrop++;
+			} else {
+				withoutDrop++;
+			}
+		}
+		// 当選と落選の両方が発生する
+		expect(withDrop).toBeGreaterThan(0);
+		expect(withoutDrop).toBeGreaterThan(0);
 	});
 });
 

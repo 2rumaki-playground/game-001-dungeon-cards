@@ -12,17 +12,18 @@ import { getGameAreaSize, getScreenSize } from "./gameAnimations";
 import { applyState, render } from "./gameRenderer";
 
 /**
- * カード交換フローを実行する
+ * カード交換フローを実行する（キューの先頭1件を処理）
  *
- * 敵撃破で条件達成した場合、既存デッキカードとの交換画面を表示する。
- * @returns 交換後のGameState
+ * @returns 交換後のGameState（キューから処理済みエントリを除去）
  */
 export async function executeExchangeFlow(
 	ctx: GameContext,
 	state: GameState,
 ): Promise<GameState> {
-	const exchange = state.cardExchangeState;
-	if (!exchange) return state;
+	if (state.cardExchangeQueue.length === 0) return state;
+
+	const exchange = state.cardExchangeQueue[0];
+	const remaining = state.cardExchangeQueue.slice(1);
 
 	const { width: screenWidth, height: screenHeight } = getScreenSize(ctx);
 	const gameArea = getGameAreaSize(ctx);
@@ -50,14 +51,14 @@ export async function executeExchangeFlow(
 		);
 		return {
 			...newState,
-			cardExchangeState: null,
+			cardExchangeQueue: remaining,
 		};
 	}
 
 	// スキップ（交換しない）
 	return {
 		...state,
-		cardExchangeState: null,
+		cardExchangeQueue: remaining,
 	};
 }
 

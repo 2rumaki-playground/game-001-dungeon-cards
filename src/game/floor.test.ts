@@ -57,7 +57,7 @@ function createTestState(overrides?: Partial<GameState>): GameState {
 		visitedTiles: new Set<string>(),
 		lastAttackerEnemyType: null,
 		acquisitionCounters: createInitialCounters(),
-		cardExchangeState: null,
+		cardExchangeQueue: [],
 		comboHistory: null,
 		personality: DEFAULT_PERSONALITY,
 		speechLog: null,

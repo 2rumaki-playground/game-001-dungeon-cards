@@ -363,7 +363,7 @@ export function loadGame(): GameState | null {
 			acquisitionCounters: sanitizeAcquisitionCounters(
 				data.acquisitionCounters,
 			),
-			cardExchangeState: null,
+			cardExchangeQueue: [],
 			comboHistory: null,
 			personality: sanitizePersonality(data.personality),
 			speechLog: sanitizeSpeechLog(data.speechLog),
