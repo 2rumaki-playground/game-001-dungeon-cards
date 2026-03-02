@@ -68,6 +68,7 @@ const ENEMY_TYPES = [
 	"scout",
 	"summoner",
 	"ranged",
+	"shielded",
 	"miniboss",
 	"boss",
 ] as const;

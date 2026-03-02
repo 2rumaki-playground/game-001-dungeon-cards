@@ -181,7 +181,7 @@ describe("constants", () => {
 				scout: 0,
 				summoner: 0,
 				ranged: 0,
-
+				shielded: 0,
 				miniboss: 0,
 				boss: 0,
 			});
@@ -191,7 +191,7 @@ describe("constants", () => {
 				scout: 0,
 				summoner: 0,
 				ranged: 0,
-
+				shielded: 0,
 				miniboss: 0,
 				boss: 0,
 			});
@@ -204,7 +204,7 @@ describe("constants", () => {
 				scout: 1,
 				summoner: 0,
 				ranged: 0,
-
+				shielded: 0,
 				miniboss: 0,
 				boss: 0,
 			});
@@ -214,7 +214,7 @@ describe("constants", () => {
 				scout: 1,
 				summoner: 0,
 				ranged: 0,
-
+				shielded: 0,
 				miniboss: 0,
 				boss: 0,
 			});
@@ -227,7 +227,7 @@ describe("constants", () => {
 				scout: 0,
 				summoner: 0,
 				ranged: 0,
-
+				shielded: 0,
 				miniboss: 1,
 				boss: 0,
 			});
@@ -240,7 +240,7 @@ describe("constants", () => {
 				scout: 1,
 				summoner: 0,
 				ranged: 0,
-
+				shielded: 0,
 				miniboss: 0,
 				boss: 0,
 			});
@@ -253,6 +253,7 @@ describe("constants", () => {
 				scout: 1,
 				summoner: 1,
 				ranged: 0,
+				shielded: 0,
 				miniboss: 0,
 				boss: 0,
 			});
@@ -262,6 +263,7 @@ describe("constants", () => {
 				scout: 1,
 				summoner: 1,
 				ranged: 0,
+				shielded: 0,
 				miniboss: 0,
 				boss: 0,
 			});
@@ -274,6 +276,7 @@ describe("constants", () => {
 				scout: 1,
 				summoner: 1,
 				ranged: 0,
+				shielded: 0,
 				miniboss: 0,
 				boss: 0,
 			});
@@ -286,7 +289,7 @@ describe("constants", () => {
 				scout: 1,
 				summoner: 0,
 				ranged: 0,
-
+				shielded: 0,
 				miniboss: 0,
 				boss: 1,
 			});
@@ -299,7 +302,7 @@ describe("constants", () => {
 				scout: 1,
 				summoner: 0,
 				ranged: 0,
-
+				shielded: 0,
 				miniboss: 1,
 				boss: 0,
 			});
@@ -312,7 +315,7 @@ describe("constants", () => {
 				scout: 1,
 				summoner: 0,
 				ranged: 0,
-
+				shielded: 0,
 				miniboss: 0,
 				boss: 1,
 			});
@@ -320,10 +323,25 @@ describe("constants", () => {
 
 		it("全エントリの合計が3", () => {
 			for (const entry of ENEMY_COMPOSITION_TABLE) {
-				const { normal, heavy, scout, summoner, ranged, miniboss, boss } =
-					entry.composition;
+				const {
+					normal,
+					heavy,
+					scout,
+					summoner,
+					ranged,
+					shielded,
+					miniboss,
+					boss,
+				} = entry.composition;
 				expect(
-					normal + heavy + scout + summoner + ranged + miniboss + boss,
+					normal +
+						heavy +
+						scout +
+						summoner +
+						ranged +
+						shielded +
+						miniboss +
+						boss,
 				).toBe(ENEMY_COUNT);
 			}
 		});

@@ -348,6 +348,8 @@ describe("マイルストーン発話", () => {
 					summoner: 0,
 					ranged: 0,
 
+					shielded: 0,
+
 					miniboss: 0,
 					boss: 0,
 				},
@@ -357,6 +359,8 @@ describe("マイルストーン発話", () => {
 					scout: 0,
 					summoner: 0,
 					ranged: 0,
+
+					shielded: 0,
 
 					miniboss: 0,
 					boss: 0,
@@ -379,6 +383,8 @@ describe("マイルストーン発話", () => {
 					summoner: 0,
 					ranged: 0,
 
+					shielded: 0,
+
 					miniboss: 0,
 					boss: 0,
 				},
@@ -388,6 +394,8 @@ describe("マイルストーン発話", () => {
 					scout: 0,
 					summoner: 0,
 					ranged: 0,
+
+					shielded: 0,
 
 					miniboss: 0,
 					boss: 0,
@@ -409,6 +417,8 @@ describe("マイルストーン発話", () => {
 					summoner: 0,
 					ranged: 0,
 
+					shielded: 0,
+
 					miniboss: 0,
 					boss: 0,
 				},
@@ -418,6 +428,8 @@ describe("マイルストーン発話", () => {
 					scout: 0,
 					summoner: 0,
 					ranged: 0,
+
+					shielded: 0,
 
 					miniboss: 0,
 					boss: 0,
@@ -478,6 +490,8 @@ describe("マイルストーン発話", () => {
 					summoner: 0,
 					ranged: 0,
 
+					shielded: 0,
+
 					miniboss: 0,
 					boss: 0,
 				},
@@ -487,6 +501,8 @@ describe("マイルストーン発話", () => {
 					scout: 0,
 					summoner: 0,
 					ranged: 0,
+
+					shielded: 0,
 
 					miniboss: 0,
 					boss: 0,
@@ -560,6 +576,8 @@ describe("マイルストーン発話", () => {
 					summoner: 0,
 					ranged: 0,
 
+					shielded: 0,
+
 					miniboss: 0,
 					boss: 0,
 				},
@@ -569,6 +587,8 @@ describe("マイルストーン発話", () => {
 					scout: 0,
 					summoner: 0,
 					ranged: 0,
+
+					shielded: 0,
 
 					miniboss: 0,
 					boss: 0,
