@@ -250,6 +250,93 @@ describe("analyzeEnemy", () => {
 	});
 });
 
+describe("analyzeSummonerEnemy", () => {
+	function createSummoner(overrides: Partial<Enemy> = {}): Enemy {
+		return {
+			id: "enemy-1",
+			type: "summoner",
+			position: { x: 3, y: 1 },
+			hp: ENEMY_PARAMS.summoner.hp,
+			maxHp: ENEMY_PARAMS.summoner.hp,
+			summonCooldown: 2,
+			...overrides,
+		};
+	}
+
+	it("隣接時はretreat判定になる（攻撃しない）", () => {
+		const state = createTestState({
+			player: { position: { x: 3, y: 3 }, hp: 10, maxHp: 10 },
+		});
+		const enemy = createSummoner({ position: { x: 3, y: 2 } });
+		state.enemies = [enemy];
+
+		const result = analyzeEnemy(state, enemy);
+		expect(result.decision.type).toBe("retreat");
+	});
+
+	it("召喚ターン（cooldown=0）ではsummon判定になる", () => {
+		const state = createTestState({
+			player: { position: { x: 3, y: 3 }, hp: 10, maxHp: 10 },
+		});
+		const enemy = createSummoner({
+			position: { x: 3, y: 1 },
+			summonCooldown: 0,
+		});
+		state.enemies = [enemy];
+
+		const result = analyzeEnemy(state, enemy);
+		expect(result.decision.type).toBe("summon");
+	});
+
+	it("非召喚ターン（cooldown>0）ではwait_no_move判定になる", () => {
+		const state = createTestState({
+			player: { position: { x: 3, y: 3 }, hp: 10, maxHp: 10 },
+		});
+		const enemy = createSummoner({
+			position: { x: 3, y: 1 },
+			summonCooldown: 1,
+		});
+		state.enemies = [enemy];
+
+		const result = analyzeEnemy(state, enemy);
+		expect(result.decision.type).toBe("wait_no_move");
+	});
+
+	it("索敵範囲外ではwait_out_of_range判定になる", () => {
+		const state = createTestState({
+			player: { position: { x: 1, y: 1 }, hp: 10, maxHp: 10 },
+		});
+		const enemy = createSummoner({ position: { x: 5, y: 5 } });
+		state.enemies = [enemy];
+
+		const result = analyzeEnemy(state, enemy);
+		expect(result.decision.type).toBe("wait_out_of_range");
+	});
+
+	it("部屋内でプレイヤー不在時はwait_room判定になる", () => {
+		const state = createTestState({
+			player: { position: { x: 1, y: 1 }, hp: 10, maxHp: 10 },
+			rooms: [{ x: 3, y: 3, width: 3, height: 3 }],
+		});
+		const enemy = createSummoner({ position: { x: 4, y: 4 } });
+		state.enemies = [enemy];
+
+		const result = analyzeEnemy(state, enemy);
+		expect(result.decision.type).toBe("wait_room");
+	});
+
+	it("attackRangeは空配列を返す", () => {
+		const state = createTestState({
+			player: { position: { x: 3, y: 3 }, hp: 10, maxHp: 10 },
+		});
+		const enemy = createSummoner({ position: { x: 3, y: 1 } });
+		state.enemies = [enemy];
+
+		const result = analyzeEnemy(state, enemy);
+		expect(result.attackRange).toEqual([]);
+	});
+});
+
 describe("analyzeRangedEnemy（射撃敵の分析）", () => {
 	function createRangedEnemy(overrides: Partial<Enemy> = {}): Enemy {
 		return {

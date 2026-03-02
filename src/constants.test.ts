@@ -179,7 +179,9 @@ describe("constants", () => {
 				normal: 3,
 				heavy: 0,
 				scout: 0,
+				summoner: 0,
 				ranged: 0,
+
 				miniboss: 0,
 				boss: 0,
 			});
@@ -187,7 +189,9 @@ describe("constants", () => {
 				normal: 3,
 				heavy: 0,
 				scout: 0,
+				summoner: 0,
 				ranged: 0,
+
 				miniboss: 0,
 				boss: 0,
 			});
@@ -198,7 +202,9 @@ describe("constants", () => {
 				normal: 2,
 				heavy: 0,
 				scout: 1,
+				summoner: 0,
 				ranged: 0,
+
 				miniboss: 0,
 				boss: 0,
 			});
@@ -206,7 +212,9 @@ describe("constants", () => {
 				normal: 2,
 				heavy: 0,
 				scout: 1,
+				summoner: 0,
 				ranged: 0,
+
 				miniboss: 0,
 				boss: 0,
 			});
@@ -217,7 +225,9 @@ describe("constants", () => {
 				normal: 1,
 				heavy: 1,
 				scout: 0,
+				summoner: 0,
 				ranged: 0,
+
 				miniboss: 1,
 				boss: 0,
 			});
@@ -228,17 +238,20 @@ describe("constants", () => {
 				normal: 1,
 				heavy: 1,
 				scout: 1,
+				summoner: 0,
 				ranged: 0,
+
 				miniboss: 0,
 				boss: 0,
 			});
 		});
 
-		it("階層7-8: heavy×1 + scout×2", () => {
+		it("階層7-8: heavy×1 + scout×1 + summoner×1", () => {
 			expect(getEnemyComposition(7)).toEqual({
 				normal: 0,
 				heavy: 1,
-				scout: 2,
+				scout: 1,
+				summoner: 1,
 				ranged: 0,
 				miniboss: 0,
 				boss: 0,
@@ -246,18 +259,20 @@ describe("constants", () => {
 			expect(getEnemyComposition(8)).toEqual({
 				normal: 0,
 				heavy: 1,
-				scout: 2,
+				scout: 1,
+				summoner: 1,
 				ranged: 0,
 				miniboss: 0,
 				boss: 0,
 			});
 		});
 
-		it("階層9: heavy×1 + scout×2", () => {
+		it("階層9: heavy×1 + scout×1 + summoner×1", () => {
 			expect(getEnemyComposition(9)).toEqual({
 				normal: 0,
 				heavy: 1,
-				scout: 2,
+				scout: 1,
+				summoner: 1,
 				ranged: 0,
 				miniboss: 0,
 				boss: 0,
@@ -269,7 +284,9 @@ describe("constants", () => {
 				normal: 0,
 				heavy: 1,
 				scout: 1,
+				summoner: 0,
 				ranged: 0,
+
 				miniboss: 0,
 				boss: 1,
 			});
@@ -280,7 +297,9 @@ describe("constants", () => {
 				normal: 0,
 				heavy: 1,
 				scout: 1,
+				summoner: 0,
 				ranged: 0,
+
 				miniboss: 1,
 				boss: 0,
 			});
@@ -291,7 +310,9 @@ describe("constants", () => {
 				normal: 0,
 				heavy: 1,
 				scout: 1,
+				summoner: 0,
 				ranged: 0,
+
 				miniboss: 0,
 				boss: 1,
 			});
@@ -299,11 +320,11 @@ describe("constants", () => {
 
 		it("全エントリの合計が3", () => {
 			for (const entry of ENEMY_COMPOSITION_TABLE) {
-				const { normal, heavy, scout, ranged, miniboss, boss } =
+				const { normal, heavy, scout, summoner, ranged, miniboss, boss } =
 					entry.composition;
-				expect(normal + heavy + scout + ranged + miniboss + boss).toBe(
-					ENEMY_COUNT,
-				);
+				expect(
+					normal + heavy + scout + summoner + ranged + miniboss + boss,
+				).toBe(ENEMY_COUNT);
 			}
 		});
 	});

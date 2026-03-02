@@ -35,6 +35,7 @@ export const ENEMY_PARAMS = {
 	normal: { hp: 3, attackDamage: 1, moveDistance: 1, senseRange: 5 },
 	heavy: { hp: 5, attackDamage: 2, moveDistance: 0, senseRange: 3 },
 	scout: { hp: 2, attackDamage: 1, moveDistance: 2, senseRange: 8 },
+	summoner: { hp: 2, attackDamage: 1, moveDistance: 0, senseRange: 5 },
 	ranged: {
 		hp: 2,
 		attackDamage: 1,
@@ -51,10 +52,14 @@ export const ENEMY_TYPE_LABEL: Record<EnemyType, string> = {
 	normal: "通常敵",
 	heavy: "重装敵",
 	scout: "俊敏敵",
+	summoner: "召喚敵",
 	ranged: "射撃敵",
 	miniboss: "ミニボス",
 	boss: "ボス",
 } as const;
+
+// 召喚クールダウン（正典: docs/spec/constants.md）
+export const SUMMONER_COOLDOWN = 2;
 
 // 後方互換（通常敵のパラメータ）
 export const ENEMY_HP = ENEMY_PARAMS.normal.hp;
@@ -75,6 +80,7 @@ export type EnemyComposition = {
 	normal: number;
 	heavy: number;
 	scout: number;
+	summoner: number;
 	ranged: number;
 	miniboss: number;
 	boss: number;
@@ -91,6 +97,7 @@ export const ENEMY_COMPOSITION_TABLE: {
 			normal: 3,
 			heavy: 0,
 			scout: 0,
+			summoner: 0,
 			ranged: 0,
 			miniboss: 0,
 			boss: 0,
@@ -102,6 +109,7 @@ export const ENEMY_COMPOSITION_TABLE: {
 			normal: 2,
 			heavy: 0,
 			scout: 1,
+			summoner: 0,
 			ranged: 0,
 			miniboss: 0,
 			boss: 0,
@@ -114,6 +122,7 @@ export const ENEMY_COMPOSITION_TABLE: {
 			normal: 1,
 			heavy: 1,
 			scout: 0,
+			summoner: 0,
 			ranged: 0,
 			miniboss: 1,
 			boss: 0,
@@ -126,6 +135,7 @@ export const ENEMY_COMPOSITION_TABLE: {
 			normal: 1,
 			heavy: 1,
 			scout: 1,
+			summoner: 0,
 			ranged: 0,
 			miniboss: 0,
 			boss: 0,
@@ -136,7 +146,8 @@ export const ENEMY_COMPOSITION_TABLE: {
 		composition: {
 			normal: 0,
 			heavy: 1,
-			scout: 2,
+			scout: 1,
+			summoner: 1,
 			ranged: 0,
 			miniboss: 0,
 			boss: 0,
@@ -149,6 +160,7 @@ export const ENEMY_COMPOSITION_TABLE: {
 			normal: 0,
 			heavy: 1,
 			scout: 1,
+			summoner: 0,
 			ranged: 0,
 			miniboss: 0,
 			boss: 1,
@@ -160,7 +172,8 @@ export const ENEMY_COMPOSITION_TABLE: {
 		composition: {
 			normal: 0,
 			heavy: 1,
-			scout: 2,
+			scout: 1,
+			summoner: 1,
 			ranged: 0,
 			miniboss: 0,
 			boss: 0,
@@ -170,8 +183,9 @@ export const ENEMY_COMPOSITION_TABLE: {
 		maxFloor: 14,
 		composition: {
 			normal: 0,
-			heavy: 2,
+			heavy: 1,
 			scout: 1,
+			summoner: 1,
 			ranged: 0,
 			miniboss: 0,
 			boss: 0,
@@ -184,6 +198,7 @@ export const ENEMY_COMPOSITION_TABLE: {
 			normal: 0,
 			heavy: 1,
 			scout: 1,
+			summoner: 0,
 			ranged: 0,
 			miniboss: 1,
 			boss: 0,
@@ -194,8 +209,9 @@ export const ENEMY_COMPOSITION_TABLE: {
 		maxFloor: 18,
 		composition: {
 			normal: 0,
-			heavy: 2,
+			heavy: 1,
 			scout: 1,
+			summoner: 1,
 			ranged: 0,
 			miniboss: 0,
 			boss: 0,
@@ -206,7 +222,8 @@ export const ENEMY_COMPOSITION_TABLE: {
 		composition: {
 			normal: 0,
 			heavy: 1,
-			scout: 2,
+			scout: 1,
+			summoner: 1,
 			ranged: 0,
 			miniboss: 0,
 			boss: 0,
@@ -219,6 +236,7 @@ export const ENEMY_COMPOSITION_TABLE: {
 			normal: 0,
 			heavy: 1,
 			scout: 1,
+			summoner: 0,
 			ranged: 0,
 			miniboss: 0,
 			boss: 1,
@@ -229,8 +247,9 @@ export const ENEMY_COMPOSITION_TABLE: {
 		maxFloor: Infinity,
 		composition: {
 			normal: 0,
-			heavy: 2,
+			heavy: 1,
 			scout: 1,
+			summoner: 1,
 			ranged: 0,
 			miniboss: 0,
 			boss: 0,
@@ -287,6 +306,11 @@ export const ENEMY_ACQUISITION_CONDITIONS: Record<
 			{ type: "defeat_count", threshold: 2 },
 			{ type: "hit_count", threshold: 1 },
 		],
+		conditionLogic: "and",
+	},
+	summoner: {
+		cardType: "wait",
+		conditions: [{ type: "defeat_count", threshold: 2 }],
 		conditionLogic: "and",
 	},
 	ranged: {
@@ -530,6 +554,7 @@ export const COLORS = {
 	enemyNormal: 0xca4a4a,
 	enemyHeavy: 0x8855aa,
 	enemyScout: 0x88cc44,
+	enemySummoner: 0x66aacc,
 	enemyRanged: 0x44aacc,
 	enemyMiniboss: 0xdd8833,
 	enemyBoss: 0xdd3333,

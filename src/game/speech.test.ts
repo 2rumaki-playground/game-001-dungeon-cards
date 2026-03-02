@@ -345,7 +345,9 @@ describe("マイルストーン発話", () => {
 					normal: 1,
 					heavy: 0,
 					scout: 0,
+					summoner: 0,
 					ranged: 0,
+
 					miniboss: 0,
 					boss: 0,
 				},
@@ -353,7 +355,9 @@ describe("マイルストーン発話", () => {
 					normal: 0,
 					heavy: 0,
 					scout: 0,
+					summoner: 0,
 					ranged: 0,
+
 					miniboss: 0,
 					boss: 0,
 				},
@@ -372,7 +376,9 @@ describe("マイルストーン発話", () => {
 					normal: 1,
 					heavy: 0,
 					scout: 0,
+					summoner: 0,
 					ranged: 0,
+
 					miniboss: 0,
 					boss: 0,
 				},
@@ -380,7 +386,9 @@ describe("マイルストーン発話", () => {
 					normal: 0,
 					heavy: 0,
 					scout: 0,
+					summoner: 0,
 					ranged: 0,
+
 					miniboss: 0,
 					boss: 0,
 				},
@@ -398,7 +406,9 @@ describe("マイルストーン発話", () => {
 					normal: 1,
 					heavy: 0,
 					scout: 0,
+					summoner: 0,
 					ranged: 0,
+
 					miniboss: 0,
 					boss: 0,
 				},
@@ -406,7 +416,9 @@ describe("マイルストーン発話", () => {
 					normal: 0,
 					heavy: 0,
 					scout: 0,
+					summoner: 0,
 					ranged: 0,
+
 					miniboss: 0,
 					boss: 0,
 				},
@@ -463,7 +475,9 @@ describe("マイルストーン発話", () => {
 					normal: 1,
 					heavy: 0,
 					scout: 0,
+					summoner: 0,
 					ranged: 0,
+
 					miniboss: 0,
 					boss: 0,
 				},
@@ -471,7 +485,9 @@ describe("マイルストーン発話", () => {
 					normal: 0,
 					heavy: 0,
 					scout: 0,
+					summoner: 0,
 					ranged: 0,
+
 					miniboss: 0,
 					boss: 0,
 				},
@@ -541,7 +557,9 @@ describe("マイルストーン発話", () => {
 					normal: 1,
 					heavy: 0,
 					scout: 0,
+					summoner: 0,
 					ranged: 0,
+
 					miniboss: 0,
 					boss: 0,
 				},
@@ -549,7 +567,9 @@ describe("マイルストーン発話", () => {
 					normal: 0,
 					heavy: 0,
 					scout: 0,
+					summoner: 0,
 					ranged: 0,
+
 					miniboss: 0,
 					boss: 0,
 				},

@@ -21,6 +21,7 @@ export type EnemyType =
 	| "normal"
 	| "heavy"
 	| "scout"
+	| "summoner"
 	| "ranged"
 	| "miniboss"
 	| "boss";
@@ -56,4 +57,6 @@ export type Enemy = {
 	pendingSkill?: PendingSkill;
 	/** 激昂状態（攻撃力UP） */
 	enraged?: boolean;
+	/** 召喚クールダウン（召喚敵用） */
+	summonCooldown?: number;
 };

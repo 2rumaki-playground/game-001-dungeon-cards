@@ -8,6 +8,7 @@ import {
 	ENEMY_PARAMS,
 	ENEMY_TYPE_LABEL,
 	RANGED_SHOOT_RANGE,
+	SUMMONER_COOLDOWN,
 } from "../constants";
 import type { Direction, Enemy, GameState, Position } from "../types";
 import { DIRECTION_DELTA } from "../types";
@@ -221,6 +222,120 @@ export function getRetreatPosition(
 	return { x: retreatX, y: retreatY };
 }
 
+/** 8近傍の相対座標 */
+const EIGHT_NEIGHBORS = [
+	{ x: -1, y: -1 },
+	{ x: 0, y: -1 },
+	{ x: 1, y: -1 },
+	{ x: -1, y: 0 },
+	{ x: 1, y: 0 },
+	{ x: -1, y: 1 },
+	{ x: 0, y: 1 },
+	{ x: 1, y: 1 },
+];
+
+/**
+ * 8近傍の召喚可能マスを取得
+ */
+function getSummonablePositions(state: GameState, enemy: Enemy): Position[] {
+	return EIGHT_NEIGHBORS.flatMap((delta) => {
+		const nx = enemy.position.x + delta.x;
+		const ny = enemy.position.y + delta.y;
+		if (canEnemyMoveTo(state, enemy, nx, ny)) {
+			return [{ x: nx, y: ny }];
+		}
+		return [];
+	});
+}
+
+/**
+ * 次の敵IDを生成（既存IDの最大番号+1）
+ */
+function getNextEnemyId(enemies: Enemy[]): string {
+	let maxNum = 0;
+	for (const e of enemies) {
+		const match = e.id.match(/^enemy-(\d+)$/);
+		if (match) {
+			maxNum = Math.max(maxNum, Number(match[1]));
+		}
+	}
+	return `enemy-${maxNum + 1}`;
+}
+
+/**
+ * 召喚敵の行動を実行
+ */
+function executeSummonerEnemyAction(
+	state: GameState,
+	enemy: Enemy,
+	rng: import("../utils/rng").RNG,
+): GameState {
+	const params = ENEMY_PARAMS[enemy.type];
+	const distance = manhattanDistance(enemy.position, state.player.position);
+
+	// 部屋内 & プレイヤー不在 → 待機
+	const enemyRoom = findRoomAt(enemy.position, state.rooms);
+	if (enemyRoom !== null && !isInRoom(state.player.position, enemyRoom)) {
+		return state;
+	}
+
+	// 索敵範囲外 → 待機
+	if (distance > params.senseRange) {
+		return state;
+	}
+
+	// 隣接 → 後退（攻撃しない）
+	if (isAdjacent(enemy.position, state.player.position)) {
+		const retreatPos = getRetreatPosition(state, enemy);
+		if (retreatPos) {
+			const newEnemies = state.enemies.map((e) =>
+				e.id === enemy.id ? { ...e, position: retreatPos } : e,
+			);
+			let next = setEnemies(state, newEnemies);
+			next = addActionLog(next, "召喚敵が後退した", "enemy");
+			return next;
+		}
+		// 後退不可 → 待機
+		return state;
+	}
+
+	// 非隣接 + 召喚ターン（cooldown <= 0）
+	if ((enemy.summonCooldown ?? SUMMONER_COOLDOWN) <= 0) {
+		const positions = getSummonablePositions(state, enemy);
+		if (positions.length > 0) {
+			// ランダムに1マス選択
+			const pos = positions[rng.randomInt(0, positions.length)];
+			const normalParams = ENEMY_PARAMS.normal;
+			const newEnemy: Enemy = {
+				id: getNextEnemyId(state.enemies),
+				type: "normal",
+				position: pos,
+				hp: normalParams.hp,
+				maxHp: normalParams.hp,
+			};
+			const updatedEnemies = [
+				...state.enemies.map((e) =>
+					e.id === enemy.id ? { ...e, summonCooldown: SUMMONER_COOLDOWN } : e,
+				),
+				newEnemy,
+			];
+			let next = setEnemies(state, updatedEnemies);
+			next = addActionLog(next, "召喚敵が通常敵を召喚した", "enemy");
+			return next;
+		}
+		// 空きマスなし → 待機（cooldown消費しない）
+		return state;
+	}
+
+	// 非召喚ターン → cooldown減算して待機
+	const newEnemies = state.enemies.map((e) =>
+		e.id === enemy.id
+			? { ...e, summonCooldown: (e.summonCooldown ?? 0) - 1 }
+			: e,
+	);
+	return setEnemies(state, newEnemies);
+}
+
 /**
  * 射撃敵の行動を実行
  *
@@ -342,6 +457,13 @@ export function executeEnemyTurn(
 			if (skillResult.executed) {
 				continue;
 			}
+		}
+
+		// 召喚敵の行動
+		if (currentEnemy.type === "summoner") {
+			next = executeSummonerEnemyAction(next, currentEnemy, next.rng);
+			rng = next.rng;
+			continue;
 		}
 
 		// 射撃敵は専用ロジックで処理

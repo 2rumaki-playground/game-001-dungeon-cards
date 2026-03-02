@@ -165,7 +165,10 @@ pnpm-debug.log*
 
 # Benchmark results
 bench-results.json
+report.md
+bundle-size.json
 
 # claude-mem auto-generated files
 .claude/commands/CLAUDE.md
 src/ui/CLAUDE.md
+src/test-utils/CLAUDE.md

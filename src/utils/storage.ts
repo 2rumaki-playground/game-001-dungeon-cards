@@ -66,6 +66,7 @@ const ENEMY_TYPES = [
 	"normal",
 	"heavy",
 	"scout",
+	"summoner",
 	"ranged",
 	"miniboss",
 	"boss",
