@@ -14,6 +14,7 @@ import { initCardIdCounterFromDeck } from "../game/deck";
 import {
 	type AcquisitionCounters,
 	ALL_MILESTONES,
+	type CardType,
 	type DeckState,
 	type GameState,
 	type MilestoneType,
@@ -333,7 +334,7 @@ function sanitizeEventLog(raw: unknown): RunEvent[] {
 						floor: Math.floor(floor),
 						turn: Math.floor(turn),
 						detail: {
-							cardType: d.cardType as "attack",
+							cardType: d.cardType as CardType,
 							newLevel: Math.floor(d.newLevel),
 						},
 					},
@@ -345,7 +346,7 @@ function sanitizeEventLog(raw: unknown): RunEvent[] {
 						type,
 						floor: Math.floor(floor),
 						turn: Math.floor(turn),
-						detail: { cardType: d.cardType as "attack" },
+						detail: { cardType: d.cardType as CardType },
 					},
 				];
 			default:
