@@ -99,7 +99,7 @@ jobs:
           retention-days: 7
 
   preview-deploy:
-    needs: check
+    needs: [check, e2e]
     runs-on: ubuntu-latest
     permissions:
       contents: write
