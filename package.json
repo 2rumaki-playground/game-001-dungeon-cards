@@ -15,7 +15,8 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "bench": "vitest bench --run",
-    "bench:json": "vitest bench --run --outputJson bench-results.json"
+    "bench:json": "vitest bench --run --outputJson bench-results.json",
+    "review": "bash scripts/codex-review.sh"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.3.13",

@@ -163,6 +163,9 @@ pnpm-debug.log*
 .claude/skills/
 .agents/
 
+# Codex CLI review results
+.codex-review-result.md
+
 # Benchmark results
 bench-results.json
 report.md
