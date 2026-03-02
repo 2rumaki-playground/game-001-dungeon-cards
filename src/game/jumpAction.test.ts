@@ -16,7 +16,15 @@ describe("executeJump", () => {
 				maxHp: PLAYER_INITIAL_HP,
 			},
 			deck: {
-				hand: [{ id: "jump-1", type: "jump", level: 1, exp: 0 }],
+				hand: [
+					{
+						id: "jump-1",
+						type: "jump",
+						level: 1,
+						exp: 0,
+						stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+					},
+				],
 				usedCardIds: [],
 			},
 		});
@@ -79,7 +87,15 @@ describe("executeJump", () => {
 			},
 			...createOverrides(),
 			deck: {
-				hand: [{ id: "jump-1", type: "jump", level: 1, exp: 0 }],
+				hand: [
+					{
+						id: "jump-1",
+						type: "jump",
+						level: 1,
+						exp: 0,
+						stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+					},
+				],
 				usedCardIds: [],
 			},
 		});
@@ -132,7 +148,15 @@ describe("executeJump", () => {
 				maxHp: PLAYER_INITIAL_HP,
 			},
 			deck: {
-				hand: [{ id: "jump-1", type: "jump", level: 1, exp: 0 }],
+				hand: [
+					{
+						id: "jump-1",
+						type: "jump",
+						level: 1,
+						exp: 0,
+						stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+					},
+				],
 				usedCardIds: [],
 			},
 		});
@@ -161,7 +185,15 @@ describe("executeJump", () => {
 				maxHp: PLAYER_INITIAL_HP,
 			},
 			deck: {
-				hand: [{ id: "jump-1", type: "jump", level: 1, exp: 0 }],
+				hand: [
+					{
+						id: "jump-1",
+						type: "jump",
+						level: 1,
+						exp: 0,
+						stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+					},
+				],
 				usedCardIds: [],
 			},
 		});
@@ -188,7 +220,15 @@ describe("executeJump", () => {
 				maxHp: PLAYER_INITIAL_HP,
 			},
 			deck: {
-				hand: [{ id: "jump-1", type: "jump", level: 1, exp: 0 }],
+				hand: [
+					{
+						id: "jump-1",
+						type: "jump",
+						level: 1,
+						exp: 0,
+						stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+					},
+				],
 				usedCardIds: [],
 			},
 		});
@@ -211,7 +251,15 @@ describe("executeJump", () => {
 				maxHp: PLAYER_INITIAL_HP,
 			},
 			deck: {
-				hand: [{ id: "jump-1", type: "jump", level: 1, exp: 0 }],
+				hand: [
+					{
+						id: "jump-1",
+						type: "jump",
+						level: 1,
+						exp: 0,
+						stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+					},
+				],
 				usedCardIds: [],
 			},
 		});
@@ -236,7 +284,15 @@ describe("executeJump", () => {
 				maxHp: PLAYER_INITIAL_HP,
 			},
 			deck: {
-				hand: [{ id: "jump-1", type: "jump", level: 1, exp: 0 }],
+				hand: [
+					{
+						id: "jump-1",
+						type: "jump",
+						level: 1,
+						exp: 0,
+						stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+					},
+				],
 				usedCardIds: [],
 			},
 		});
@@ -266,7 +322,15 @@ describe("executeJump", () => {
 				maxHp: PLAYER_INITIAL_HP,
 			},
 			deck: {
-				hand: [{ id: "jump-1", type: "jump", level: 1, exp: 0 }],
+				hand: [
+					{
+						id: "jump-1",
+						type: "jump",
+						level: 1,
+						exp: 0,
+						stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+					},
+				],
 				usedCardIds: [],
 			},
 		});
@@ -292,7 +356,15 @@ describe("executeJump", () => {
 				maxHp: PLAYER_INITIAL_HP,
 			},
 			deck: {
-				hand: [{ id: "jump-1", type: "jump", level: 1, exp: 0 }],
+				hand: [
+					{
+						id: "jump-1",
+						type: "jump",
+						level: 1,
+						exp: 0,
+						stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+					},
+				],
 				usedCardIds: [],
 			},
 		});
@@ -305,7 +377,15 @@ describe("executeJump", () => {
 	it("元のGameStateが変更されない（イミュータブル）", () => {
 		const state = createTestState({
 			deck: {
-				hand: [{ id: "jump-1", type: "jump", level: 1, exp: 0 }],
+				hand: [
+					{
+						id: "jump-1",
+						type: "jump",
+						level: 1,
+						exp: 0,
+						stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+					},
+				],
 				usedCardIds: [],
 			},
 		});
@@ -322,7 +402,15 @@ describe("executeJump - visitedTiles", () => {
 	it("ジャンプ着地時に着地先が訪問済みに追加される", () => {
 		const state = createTestState({
 			deck: {
-				hand: [{ id: "jump-1", type: "jump", level: 1, exp: 0 }],
+				hand: [
+					{
+						id: "jump-1",
+						type: "jump",
+						level: 1,
+						exp: 0,
+						stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+					},
+				],
 				usedCardIds: [],
 			},
 		});
@@ -338,7 +426,15 @@ describe("executeJump - visitedTiles", () => {
 				maxHp: PLAYER_INITIAL_HP,
 			},
 			deck: {
-				hand: [{ id: "jump-1", type: "jump", level: 1, exp: 0 }],
+				hand: [
+					{
+						id: "jump-1",
+						type: "jump",
+						level: 1,
+						exp: 0,
+						stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+					},
+				],
 				usedCardIds: [],
 			},
 		});

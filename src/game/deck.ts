@@ -5,7 +5,7 @@
  */
 
 import { INITIAL_DECK } from "../constants";
-import type { Card, CardType, DeckState } from "../types";
+import type { Card, CardStats, CardType, DeckState } from "../types";
 
 /**
  * 手札の全カードを取得
@@ -46,11 +46,24 @@ export function initCardIdCounterFromDeck(deck: DeckState): void {
 }
 
 /**
+ * カード統計の初期値を生成
+ */
+export function createInitialCardStats(): CardStats {
+	return { useCount: 0, defeatCount: 0, maxSingleDamage: 0 };
+}
+
+/**
  * カードを1枚生成
  */
 export function createCard(type: CardType): Card {
 	cardIdCounter++;
-	return { id: `card-${cardIdCounter}`, type, level: 1, exp: 0 };
+	return {
+		id: `card-${cardIdCounter}`,
+		type,
+		level: 1,
+		exp: 0,
+		stats: createInitialCardStats(),
+	};
 }
 
 /**

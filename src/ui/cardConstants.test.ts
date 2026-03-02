@@ -84,6 +84,7 @@ describe("cardConstants", () => {
 				type: "attack",
 				level: 1,
 				exp: 0,
+				stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
 				...overrides,
 			};
 		}

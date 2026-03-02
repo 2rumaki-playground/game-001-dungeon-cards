@@ -86,6 +86,34 @@ describe("addSpeechLog", () => {
 		expect(seqVariants).toContain(s2.speechLog?.message);
 	});
 
+	it("card_acquiredイベントでバリエーション内の発話が選択される", () => {
+		const state = createTestState({
+			player: {
+				position: { x: 3, y: 3 },
+				hp: PLAYER_INITIAL_HP,
+				maxHp: PLAYER_INITIAL_HP,
+			},
+		});
+		const next = addSpeechLog(state, "card_acquired");
+		const variants = allDefaultVariants(DEFAULT_PERSONALITY, "card_acquired");
+		expect(variants).toContain(next.speechLog?.message);
+		expect(next.speechLog?.eventType).toBe("card_acquired");
+	});
+
+	it("card_skippedイベントでバリエーション内の発話が選択される", () => {
+		const state = createTestState({
+			player: {
+				position: { x: 3, y: 3 },
+				hp: PLAYER_INITIAL_HP,
+				maxHp: PLAYER_INITIAL_HP,
+			},
+		});
+		const next = addSpeechLog(state, "card_skipped");
+		const variants = allDefaultVariants(DEFAULT_PERSONALITY, "card_skipped");
+		expect(variants).toContain(next.speechLog?.message);
+		expect(next.speechLog?.eventType).toBe("card_skipped");
+	});
+
 	it("連続パターン未定義時にデフォルト発話にフォールバックする", () => {
 		const state = createTestState();
 		const s1 = addSpeechLog(state, "move_success");

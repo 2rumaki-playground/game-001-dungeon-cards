@@ -11,6 +11,7 @@ import {
 	updateHitCounter,
 } from "./cardAcquisition";
 import { awardExpToCard } from "./cardLevel";
+import { recordDefeat, updateMaxDamage } from "./cardStats";
 import { recordDamageDealt, recordDamageTaken } from "./playStats";
 import { addSpeechLog } from "./speech";
 import {
@@ -76,6 +77,15 @@ export function applyDamageToEnemy(
 		...(shieldConsumed && { shieldActive: false }),
 	}));
 
+	// カード統計: 最大単発ダメージを記録（実効ダメージ = min(effectiveDamage, enemy.hp)）
+	if (attackCardId) {
+		next = updateMaxDamage(
+			next,
+			attackCardId,
+			Math.min(effectiveDamage, enemy.hp),
+		);
+	}
+
 	const target = next.enemies.find((e) => e.id === enemyId);
 	if (target && isDefeated(target.hp)) {
 		next = addRemnant(next, target.position);
@@ -93,9 +103,10 @@ export function applyDamageToEnemy(
 			acquisitionCounters: updatedCounters,
 		};
 
-		// 攻撃カードへのXP付与
+		// 攻撃カードへのXP付与 + 撃破数記録
 		if (attackCardId) {
 			next = awardExpToCard(next, attackCardId);
+			next = recordDefeat(next, attackCardId);
 		}
 
 		// カードドロップ判定（確率制）

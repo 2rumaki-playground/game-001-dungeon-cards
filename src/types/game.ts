@@ -51,7 +51,9 @@ export type SpeechEventType =
 	| "treasure_found"
 	| "rest_area_used"
 	| "floor_reached"
-	| "jump_success";
+	| "jump_success"
+	| "card_acquired"
+	| "card_skipped";
 
 /**
  * 発話ログエントリ

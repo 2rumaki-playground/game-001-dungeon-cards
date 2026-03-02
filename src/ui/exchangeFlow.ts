@@ -5,6 +5,7 @@
 
 import { ENEMY_TYPE_LABEL } from "../constants";
 import { exchangeCardInDeck } from "../game/cardAcquisition";
+import { addSpeechLog } from "../game/speech";
 import type { GameContext } from "../gameContext";
 import type { CardType, GameState } from "../types";
 import { CARD_TYPE_NAME } from "./cardConstants";
@@ -32,6 +33,8 @@ export async function executeExchangeFlow(
 	const enemyName = ENEMY_TYPE_LABEL[exchange.defeatedEnemyType];
 	const title = `${enemyName}を倒して${cardName}を獲得！交換するカードを選択`;
 
+	state = addSpeechLog(state, "card_acquired");
+
 	const exchangeResult = await showExchangeSelection(
 		ctx,
 		state,
@@ -56,8 +59,9 @@ export async function executeExchangeFlow(
 	}
 
 	// スキップ（交換しない）
+	const skippedState = addSpeechLog(state, "card_skipped");
 	return {
-		...state,
+		...skippedState,
 		cardExchangeQueue: remaining,
 	};
 }

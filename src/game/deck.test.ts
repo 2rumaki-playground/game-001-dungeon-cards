@@ -71,8 +71,20 @@ describe("deck", () => {
 		it("カードを使用済みにする", () => {
 			const deck: DeckState = {
 				hand: [
-					{ id: "card-1", type: "move", level: 1, exp: 0 },
-					{ id: "card-2", type: "attack", level: 1, exp: 0 },
+					{
+						id: "card-1",
+						type: "move",
+						level: 1,
+						exp: 0,
+						stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+					},
+					{
+						id: "card-2",
+						type: "attack",
+						level: 1,
+						exp: 0,
+						stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+					},
 				],
 				usedCardIds: [],
 			};
@@ -83,7 +95,15 @@ describe("deck", () => {
 
 		it("既に使用済みのカードを再度マークしても変化しない", () => {
 			const deck: DeckState = {
-				hand: [{ id: "card-1", type: "move", level: 1, exp: 0 }],
+				hand: [
+					{
+						id: "card-1",
+						type: "move",
+						level: 1,
+						exp: 0,
+						stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+					},
+				],
 				usedCardIds: ["card-1"],
 			};
 			const result = markCardUsed(deck, "card-1");
@@ -95,8 +115,20 @@ describe("deck", () => {
 		it("使用済みカードIDリストをリセットする", () => {
 			const deck: DeckState = {
 				hand: [
-					{ id: "card-1", type: "move", level: 1, exp: 0 },
-					{ id: "card-2", type: "attack", level: 1, exp: 0 },
+					{
+						id: "card-1",
+						type: "move",
+						level: 1,
+						exp: 0,
+						stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+					},
+					{
+						id: "card-2",
+						type: "attack",
+						level: 1,
+						exp: 0,
+						stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+					},
 				],
 				usedCardIds: ["card-1", "card-2"],
 			};
@@ -109,7 +141,15 @@ describe("deck", () => {
 	describe("isCardUsed", () => {
 		it("使用済みカードの場合trueを返す", () => {
 			const deck: DeckState = {
-				hand: [{ id: "card-1", type: "move", level: 1, exp: 0 }],
+				hand: [
+					{
+						id: "card-1",
+						type: "move",
+						level: 1,
+						exp: 0,
+						stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+					},
+				],
 				usedCardIds: ["card-1"],
 			};
 			expect(isCardUsed(deck, "card-1")).toBe(true);
@@ -117,7 +157,15 @@ describe("deck", () => {
 
 		it("未使用カードの場合falseを返す", () => {
 			const deck: DeckState = {
-				hand: [{ id: "card-1", type: "move", level: 1, exp: 0 }],
+				hand: [
+					{
+						id: "card-1",
+						type: "move",
+						level: 1,
+						exp: 0,
+						stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+					},
+				],
 				usedCardIds: [],
 			};
 			expect(isCardUsed(deck, "card-1")).toBe(false);
@@ -128,8 +176,20 @@ describe("deck", () => {
 		it("手札の全カードを返す", () => {
 			const deck: DeckState = {
 				hand: [
-					{ id: "card-1", type: "move", level: 1, exp: 0 },
-					{ id: "card-2", type: "attack", level: 1, exp: 0 },
+					{
+						id: "card-1",
+						type: "move",
+						level: 1,
+						exp: 0,
+						stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+					},
+					{
+						id: "card-2",
+						type: "attack",
+						level: 1,
+						exp: 0,
+						stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+					},
 				],
 				usedCardIds: [],
 			};
@@ -151,9 +211,27 @@ describe("deck", () => {
 		it("手札の枚数を返す", () => {
 			const deck: DeckState = {
 				hand: [
-					{ id: "card-1", type: "move", level: 1, exp: 0 },
-					{ id: "card-2", type: "attack", level: 1, exp: 0 },
-					{ id: "card-3", type: "wait", level: 1, exp: 0 },
+					{
+						id: "card-1",
+						type: "move",
+						level: 1,
+						exp: 0,
+						stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+					},
+					{
+						id: "card-2",
+						type: "attack",
+						level: 1,
+						exp: 0,
+						stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+					},
+					{
+						id: "card-3",
+						type: "wait",
+						level: 1,
+						exp: 0,
+						stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+					},
 				],
 				usedCardIds: [],
 			};
@@ -173,10 +251,34 @@ describe("deck", () => {
 		it("カードを前方から後方に移動する", () => {
 			const deck: DeckState = {
 				hand: [
-					{ id: "card-1", type: "move", level: 1, exp: 0 },
-					{ id: "card-2", type: "attack", level: 1, exp: 0 },
-					{ id: "card-3", type: "wait", level: 1, exp: 0 },
-					{ id: "card-4", type: "move", level: 1, exp: 0 },
+					{
+						id: "card-1",
+						type: "move",
+						level: 1,
+						exp: 0,
+						stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+					},
+					{
+						id: "card-2",
+						type: "attack",
+						level: 1,
+						exp: 0,
+						stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+					},
+					{
+						id: "card-3",
+						type: "wait",
+						level: 1,
+						exp: 0,
+						stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+					},
+					{
+						id: "card-4",
+						type: "move",
+						level: 1,
+						exp: 0,
+						stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+					},
 				],
 				usedCardIds: [],
 			};
@@ -192,10 +294,34 @@ describe("deck", () => {
 		it("カードを後方から前方に移動する", () => {
 			const deck: DeckState = {
 				hand: [
-					{ id: "card-1", type: "move", level: 1, exp: 0 },
-					{ id: "card-2", type: "attack", level: 1, exp: 0 },
-					{ id: "card-3", type: "wait", level: 1, exp: 0 },
-					{ id: "card-4", type: "move", level: 1, exp: 0 },
+					{
+						id: "card-1",
+						type: "move",
+						level: 1,
+						exp: 0,
+						stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+					},
+					{
+						id: "card-2",
+						type: "attack",
+						level: 1,
+						exp: 0,
+						stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+					},
+					{
+						id: "card-3",
+						type: "wait",
+						level: 1,
+						exp: 0,
+						stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+					},
+					{
+						id: "card-4",
+						type: "move",
+						level: 1,
+						exp: 0,
+						stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+					},
 				],
 				usedCardIds: [],
 			};
@@ -211,8 +337,20 @@ describe("deck", () => {
 		it("同一インデックスの場合は元のdeckを返す", () => {
 			const deck: DeckState = {
 				hand: [
-					{ id: "card-1", type: "move", level: 1, exp: 0 },
-					{ id: "card-2", type: "attack", level: 1, exp: 0 },
+					{
+						id: "card-1",
+						type: "move",
+						level: 1,
+						exp: 0,
+						stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+					},
+					{
+						id: "card-2",
+						type: "attack",
+						level: 1,
+						exp: 0,
+						stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+					},
 				],
 				usedCardIds: [],
 			};
@@ -223,8 +361,20 @@ describe("deck", () => {
 		it("範囲外インデックスの場合は元のdeckを返す", () => {
 			const deck: DeckState = {
 				hand: [
-					{ id: "card-1", type: "move", level: 1, exp: 0 },
-					{ id: "card-2", type: "attack", level: 1, exp: 0 },
+					{
+						id: "card-1",
+						type: "move",
+						level: 1,
+						exp: 0,
+						stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+					},
+					{
+						id: "card-2",
+						type: "attack",
+						level: 1,
+						exp: 0,
+						stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+					},
 				],
 				usedCardIds: [],
 			};
@@ -235,9 +385,27 @@ describe("deck", () => {
 		it("イミュータブル: 元のdeckが変更されない", () => {
 			const deck: DeckState = {
 				hand: [
-					{ id: "card-1", type: "move", level: 1, exp: 0 },
-					{ id: "card-2", type: "attack", level: 1, exp: 0 },
-					{ id: "card-3", type: "wait", level: 1, exp: 0 },
+					{
+						id: "card-1",
+						type: "move",
+						level: 1,
+						exp: 0,
+						stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+					},
+					{
+						id: "card-2",
+						type: "attack",
+						level: 1,
+						exp: 0,
+						stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+					},
+					{
+						id: "card-3",
+						type: "wait",
+						level: 1,
+						exp: 0,
+						stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+					},
 				],
 				usedCardIds: ["card-1"],
 			};

@@ -101,5 +101,6 @@ export function createTestHand(cards: CardType[]): Card[] {
 		type,
 		level: 1,
 		exp: 0,
+		stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
 	}));
 }

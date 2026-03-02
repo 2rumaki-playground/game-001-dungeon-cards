@@ -138,9 +138,27 @@ describe("getDirectionFromClickPosition", () => {
 describe("HandRenderer ホバー・選択演出", () => {
 	function createTestCards(): Card[] {
 		return [
-			{ id: "card-1", type: "move", level: 1, exp: 0 },
-			{ id: "card-2", type: "attack", level: 1, exp: 0 },
-			{ id: "card-3", type: "wait", level: 1, exp: 0 },
+			{
+				id: "card-1",
+				type: "move",
+				level: 1,
+				exp: 0,
+				stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+			},
+			{
+				id: "card-2",
+				type: "attack",
+				level: 1,
+				exp: 0,
+				stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+			},
+			{
+				id: "card-3",
+				type: "wait",
+				level: 1,
+				exp: 0,
+				stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+			},
 		];
 	}
 
@@ -537,9 +555,27 @@ describe("HandRenderer ホバー・選択演出", () => {
 describe("HandRenderer キュー表示", () => {
 	function createTestCards(): Card[] {
 		return [
-			{ id: "card-1", type: "move", level: 1, exp: 0 },
-			{ id: "card-2", type: "attack", level: 1, exp: 0 },
-			{ id: "card-3", type: "wait", level: 1, exp: 0 },
+			{
+				id: "card-1",
+				type: "move",
+				level: 1,
+				exp: 0,
+				stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+			},
+			{
+				id: "card-2",
+				type: "attack",
+				level: 1,
+				exp: 0,
+				stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+			},
+			{
+				id: "card-3",
+				type: "wait",
+				level: 1,
+				exp: 0,
+				stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+			},
 		];
 	}
 
@@ -648,7 +684,15 @@ describe("カード種別ビジュアル差別化", () => {
 
 	function renderSingleCard(type: CardType): Container {
 		const renderer = new HandRenderer();
-		const cards: Card[] = [{ id: `card-${type}`, type, level: 1, exp: 0 }];
+		const cards: Card[] = [
+			{
+				id: `card-${type}`,
+				type,
+				level: 1,
+				exp: 0,
+				stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+			},
+		];
 		renderer.render(cards);
 		const cardsContainer = renderer
 			.getContainer()
@@ -697,9 +741,27 @@ describe("カード種別ビジュアル差別化", () => {
 describe("HandRenderer ツールチップ表示", () => {
 	function createTestCards(): Card[] {
 		return [
-			{ id: "card-1", type: "move", level: 1, exp: 0 },
-			{ id: "card-2", type: "attack", level: 1, exp: 0 },
-			{ id: "card-3", type: "strong_attack", level: 1, exp: 0 },
+			{
+				id: "card-1",
+				type: "move",
+				level: 1,
+				exp: 0,
+				stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+			},
+			{
+				id: "card-2",
+				type: "attack",
+				level: 1,
+				exp: 0,
+				stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+			},
+			{
+				id: "card-3",
+				type: "strong_attack",
+				level: 1,
+				exp: 0,
+				stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+			},
 		];
 	}
 
@@ -839,10 +901,34 @@ describe("HandRenderer ツールチップ表示", () => {
 describe("HandRenderer コンボ予告表示", () => {
 	function createTestCards(): Card[] {
 		return [
-			{ id: "card-1", type: "move", level: 1, exp: 0 },
-			{ id: "card-2", type: "attack", level: 1, exp: 0 },
-			{ id: "card-3", type: "strong_attack", level: 1, exp: 0 },
-			{ id: "card-4", type: "wait", level: 1, exp: 0 },
+			{
+				id: "card-1",
+				type: "move",
+				level: 1,
+				exp: 0,
+				stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+			},
+			{
+				id: "card-2",
+				type: "attack",
+				level: 1,
+				exp: 0,
+				stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+			},
+			{
+				id: "card-3",
+				type: "strong_attack",
+				level: 1,
+				exp: 0,
+				stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+			},
+			{
+				id: "card-4",
+				type: "wait",
+				level: 1,
+				exp: 0,
+				stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+			},
 		];
 	}
 
@@ -857,7 +943,15 @@ describe("HandRenderer コンボ予告表示", () => {
 	function getBaseChildCount(cardType: CardType): number {
 		const renderer = new HandRenderer();
 		renderer.setComboHistory(null);
-		renderer.render([{ id: "base-card", type: cardType, level: 1, exp: 0 }]);
+		renderer.render([
+			{
+				id: "base-card",
+				type: cardType,
+				level: 1,
+				exp: 0,
+				stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+			},
+		]);
 		const cardsContainer = renderer
 			.getContainer()
 			.children.find((c) => c.label === "cards") as Container;
@@ -975,10 +1069,34 @@ describe("HandRenderer コンボ予告表示", () => {
 describe("HandRenderer ドラッグ＆ドロップ", () => {
 	function createTestCards(): Card[] {
 		return [
-			{ id: "card-1", type: "move", level: 1, exp: 0 },
-			{ id: "card-2", type: "attack", level: 1, exp: 0 },
-			{ id: "card-3", type: "wait", level: 1, exp: 0 },
-			{ id: "card-4", type: "move", level: 1, exp: 0 },
+			{
+				id: "card-1",
+				type: "move",
+				level: 1,
+				exp: 0,
+				stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+			},
+			{
+				id: "card-2",
+				type: "attack",
+				level: 1,
+				exp: 0,
+				stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+			},
+			{
+				id: "card-3",
+				type: "wait",
+				level: 1,
+				exp: 0,
+				stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+			},
+			{
+				id: "card-4",
+				type: "move",
+				level: 1,
+				exp: 0,
+				stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+			},
 		];
 	}
 

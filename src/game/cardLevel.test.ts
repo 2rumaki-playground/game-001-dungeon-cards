@@ -17,7 +17,14 @@ import {
 } from "./cardLevel";
 
 function makeCard(overrides?: Partial<Card>): Card {
-	return { id: "card-1", type: "attack", level: 1, exp: 0, ...overrides };
+	return {
+		id: "card-1",
+		type: "attack",
+		level: 1,
+		exp: 0,
+		stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+		...overrides,
+	};
 }
 
 describe("calculateLevel", () => {

@@ -365,6 +365,7 @@ describe("applyDamageToEnemy - XP付与", () => {
 			type: "attack" as const,
 			level: 1,
 			exp: 0,
+			stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
 		};
 		const enemy = createTestEnemy("normal", { x: 4, y: 3 }, { hp: 1 });
 		const state = createTestState({
@@ -387,6 +388,7 @@ describe("applyDamageToEnemy - XP付与", () => {
 			type: "attack" as const,
 			level: 1,
 			exp: 0,
+			stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
 		};
 		const enemy = createTestEnemy("normal", { x: 4, y: 3 }, { hp: 1 });
 		const state = createTestState({
@@ -404,6 +406,7 @@ describe("applyDamageToEnemy - XP付与", () => {
 			type: "attack" as const,
 			level: 1,
 			exp: 0,
+			stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
 		};
 		const enemy = createTestEnemy("normal", { x: 4, y: 3 });
 		const state = createTestState({
@@ -426,6 +429,7 @@ describe("applyDamageToEnemy - XP付与", () => {
 			type: "attack" as const,
 			level: 1,
 			exp: 1,
+			stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
 		};
 		const enemy = createTestEnemy("normal", { x: 4, y: 3 }, { hp: 1 });
 		const state = createTestState({
@@ -443,6 +447,134 @@ describe("applyDamageToEnemy - XP付与", () => {
 			l.message.includes("Lv."),
 		);
 		expect(levelUpLog).toBeDefined();
+	});
+});
+
+describe("applyDamageToEnemy - カード統計", () => {
+	it("撃破時にdefeatCountが増加する", () => {
+		const card = {
+			id: "atk-1",
+			type: "attack" as const,
+			level: 1,
+			exp: 0,
+			stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+		};
+		const enemy = createTestEnemy("normal", { x: 4, y: 3 }, { hp: 1 });
+		const state = createTestState({
+			enemies: [enemy],
+			deck: { hand: [card], usedCardIds: [] },
+		});
+		const result = applyDamageToEnemy(
+			state,
+			enemy.id,
+			PLAYER_ATTACK_DAMAGE,
+			"atk-1",
+		);
+
+		expect(result.state.deck.hand[0].stats.defeatCount).toBe(1);
+	});
+
+	it("非撃破時にdefeatCountは変わらない", () => {
+		const card = {
+			id: "atk-1",
+			type: "attack" as const,
+			level: 1,
+			exp: 0,
+			stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+		};
+		const enemy = createTestEnemy("normal", { x: 4, y: 3 });
+		const state = createTestState({
+			enemies: [enemy],
+			deck: { hand: [card], usedCardIds: [] },
+		});
+		const result = applyDamageToEnemy(
+			state,
+			enemy.id,
+			PLAYER_ATTACK_DAMAGE,
+			"atk-1",
+		);
+
+		expect(result.state.deck.hand[0].stats.defeatCount).toBe(0);
+	});
+
+	it("maxSingleDamageが実効ダメージで更新される", () => {
+		const card = {
+			id: "atk-1",
+			type: "attack" as const,
+			level: 1,
+			exp: 0,
+			stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+		};
+		const enemy = createTestEnemy("normal", { x: 4, y: 3 });
+		const state = createTestState({
+			enemies: [enemy],
+			deck: { hand: [card], usedCardIds: [] },
+		});
+		const result = applyDamageToEnemy(
+			state,
+			enemy.id,
+			PLAYER_ATTACK_DAMAGE,
+			"atk-1",
+		);
+
+		expect(result.state.deck.hand[0].stats.maxSingleDamage).toBe(
+			PLAYER_ATTACK_DAMAGE,
+		);
+	});
+
+	it("overkill時はmin(effectiveDamage, enemy.hp)でクランプされる", () => {
+		const card = {
+			id: "atk-1",
+			type: "attack" as const,
+			level: 1,
+			exp: 0,
+			stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+		};
+		const enemy = createTestEnemy("normal", { x: 4, y: 3 }, { hp: 2 });
+		const state = createTestState({
+			enemies: [enemy],
+			deck: { hand: [card], usedCardIds: [] },
+		});
+		const result = applyDamageToEnemy(state, enemy.id, 10, "atk-1");
+
+		expect(result.state.deck.hand[0].stats.maxSingleDamage).toBe(2);
+	});
+
+	it("盾持ち敵へのダメージは半減後の実効値で記録される", () => {
+		const card = {
+			id: "atk-1",
+			type: "attack" as const,
+			level: 1,
+			exp: 0,
+			stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+		};
+		const enemy = createTestEnemy("shielded", { x: 4, y: 3 }, { hp: 10 });
+		const state = createTestState({
+			enemies: [enemy],
+			deck: { hand: [card], usedCardIds: [] },
+		});
+		const result = applyDamageToEnemy(state, enemy.id, 6, "atk-1");
+
+		// 6 / 2 = 3 (盾半減)
+		expect(result.state.deck.hand[0].stats.maxSingleDamage).toBe(3);
+	});
+
+	it("既存値より小さいダメージではmaxSingleDamageは更新されない", () => {
+		const card = {
+			id: "atk-1",
+			type: "attack" as const,
+			level: 1,
+			exp: 0,
+			stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 5 },
+		};
+		const enemy = createTestEnemy("normal", { x: 4, y: 3 });
+		const state = createTestState({
+			enemies: [enemy],
+			deck: { hand: [card], usedCardIds: [] },
+		});
+		const result = applyDamageToEnemy(state, enemy.id, 3, "atk-1");
+
+		expect(result.state.deck.hand[0].stats.maxSingleDamage).toBe(5);
 	});
 });
 

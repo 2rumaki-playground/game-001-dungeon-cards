@@ -95,8 +95,20 @@ describe("executeDebugOneshotKill", () => {
 			],
 			deck: {
 				hand: [
-					{ id: "card-1", type: "move", level: 1, exp: 0 },
-					{ id: "card-2", type: "attack", level: 1, exp: 0 },
+					{
+						id: "card-1",
+						type: "move",
+						level: 1,
+						exp: 0,
+						stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+					},
+					{
+						id: "card-2",
+						type: "attack",
+						level: 1,
+						exp: 0,
+						stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+					},
 				],
 				usedCardIds: [],
 			},
@@ -121,8 +133,20 @@ describe("executeDebugTeleport", () => {
 		const state = createTestState({
 			deck: {
 				hand: [
-					{ id: "card-1", type: "move", level: 1, exp: 0 },
-					{ id: "card-2", type: "attack", level: 1, exp: 0 },
+					{
+						id: "card-1",
+						type: "move",
+						level: 1,
+						exp: 0,
+						stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+					},
+					{
+						id: "card-2",
+						type: "attack",
+						level: 1,
+						exp: 0,
+						stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+					},
 				],
 				usedCardIds: [],
 			},

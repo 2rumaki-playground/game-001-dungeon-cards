@@ -28,7 +28,15 @@ describe("executeAttack", () => {
 		const state = createTestState({
 			enemies,
 			deck: {
-				hand: [{ id: "attack-1", type: "attack", level: 1, exp: 0 }],
+				hand: [
+					{
+						id: "attack-1",
+						type: "attack",
+						level: 1,
+						exp: 0,
+						stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+					},
+				],
 				usedCardIds: [],
 			},
 		});
@@ -61,7 +69,15 @@ describe("executeAttack", () => {
 		const state = createTestState({
 			enemies,
 			deck: {
-				hand: [{ id: "attack-1", type: "attack", level: 1, exp: 0 }],
+				hand: [
+					{
+						id: "attack-1",
+						type: "attack",
+						level: 1,
+						exp: 0,
+						stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+					},
+				],
 				usedCardIds: [],
 			},
 		});
@@ -96,7 +112,15 @@ describe("executeAttack", () => {
 					}
 				: {}),
 			deck: {
-				hand: [{ id: "attack-1", type: "attack", level: 1, exp: 0 }],
+				hand: [
+					{
+						id: "attack-1",
+						type: "attack",
+						level: 1,
+						exp: 0,
+						stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+					},
+				],
 				usedCardIds: [],
 			},
 		});
@@ -121,7 +145,15 @@ describe("executeAttack", () => {
 		const state = createTestState({
 			enemies,
 			deck: {
-				hand: [{ id: "attack-1", type: "attack", level: 1, exp: 0 }],
+				hand: [
+					{
+						id: "attack-1",
+						type: "attack",
+						level: 1,
+						exp: 0,
+						stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+					},
+				],
 				usedCardIds: [],
 			},
 		});
@@ -146,7 +178,15 @@ describe("executeAttack", () => {
 		const state = createTestState({
 			enemies,
 			deck: {
-				hand: [{ id: "attack-1", type: "attack", level: 2, exp: 2 }],
+				hand: [
+					{
+						id: "attack-1",
+						type: "attack",
+						level: 2,
+						exp: 2,
+						stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+					},
+				],
 				usedCardIds: [],
 			},
 		});
@@ -162,7 +202,15 @@ describe("executeWait", () => {
 	it("待機成功: カード使用済み記録・行動ログ", () => {
 		const state = createTestState({
 			deck: {
-				hand: [{ id: "wait-1", type: "wait", level: 1, exp: 0 }],
+				hand: [
+					{
+						id: "wait-1",
+						type: "wait",
+						level: 1,
+						exp: 0,
+						stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+					},
+				],
 				usedCardIds: [],
 			},
 		});
@@ -180,7 +228,15 @@ describe("executeWait", () => {
 	it("元のGameStateが変更されない（イミュータブル）", () => {
 		const state = createTestState({
 			deck: {
-				hand: [{ id: "wait-1", type: "wait", level: 1, exp: 0 }],
+				hand: [
+					{
+						id: "wait-1",
+						type: "wait",
+						level: 1,
+						exp: 0,
+						stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+					},
+				],
 				usedCardIds: [],
 			},
 		});
@@ -206,7 +262,15 @@ describe("executeStrongAttack", () => {
 		const state = createTestState({
 			enemies,
 			deck: {
-				hand: [{ id: "strong-1", type: "strong_attack", level: 1, exp: 0 }],
+				hand: [
+					{
+						id: "strong-1",
+						type: "strong_attack",
+						level: 1,
+						exp: 0,
+						stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+					},
+				],
 				usedCardIds: [],
 			},
 		});
@@ -238,7 +302,15 @@ describe("executeStrongAttack", () => {
 		const state = createTestState({
 			enemies,
 			deck: {
-				hand: [{ id: "strong-1", type: "strong_attack", level: 1, exp: 0 }],
+				hand: [
+					{
+						id: "strong-1",
+						type: "strong_attack",
+						level: 1,
+						exp: 0,
+						stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+					},
+				],
 				usedCardIds: [],
 			},
 		});
@@ -273,7 +345,15 @@ describe("executeStrongAttack", () => {
 					}
 				: {}),
 			deck: {
-				hand: [{ id: "strong-1", type: "strong_attack", level: 1, exp: 0 }],
+				hand: [
+					{
+						id: "strong-1",
+						type: "strong_attack",
+						level: 1,
+						exp: 0,
+						stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+					},
+				],
 				usedCardIds: [],
 			},
 		});
@@ -302,7 +382,15 @@ describe("executeStrongAttack", () => {
 		const state = createTestState({
 			enemies,
 			deck: {
-				hand: [{ id: "strong-1", type: "strong_attack", level: 3, exp: 4 }],
+				hand: [
+					{
+						id: "strong-1",
+						type: "strong_attack",
+						level: 3,
+						exp: 4,
+						stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+					},
+				],
 				usedCardIds: [],
 			},
 		});
@@ -330,7 +418,15 @@ describe("executeStrongAttack", () => {
 		const state = createTestState({
 			enemies,
 			deck: {
-				hand: [{ id: "strong-1", type: "strong_attack", level: 1, exp: 0 }],
+				hand: [
+					{
+						id: "strong-1",
+						type: "strong_attack",
+						level: 1,
+						exp: 0,
+						stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+					},
+				],
 				usedCardIds: [],
 			},
 		});
@@ -347,7 +443,15 @@ describe("markCardAsPlayed", () => {
 	it("カードが使用済みに記録される", () => {
 		const state = createTestState({
 			deck: {
-				hand: [{ id: "move-1", type: "move", level: 1, exp: 0 }],
+				hand: [
+					{
+						id: "move-1",
+						type: "move",
+						level: 1,
+						exp: 0,
+						stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+					},
+				],
 				usedCardIds: [],
 			},
 		});
