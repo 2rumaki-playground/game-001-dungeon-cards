@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
 	BSP_MAP_HEIGHT,
 	BSP_MAP_WIDTH,
+	getCrackedWallCount,
 	getEnemyCount,
 	getMapSize,
 	getSpecialTileCount,
@@ -279,6 +280,55 @@ describe("map", () => {
 				expect(map[stairs.y][stairs.x].type).toBe("stairs");
 				expect(enemies.length).toBe(getEnemyCount(floor));
 				expect(specialTiles.length).toBe(getSpecialTileCount(floor));
+			}
+		});
+
+		it("cracked_wallの配置数がgetCrackedWallCount以下である", () => {
+			for (const floor of [5, 7, 10]) {
+				const target = getCrackedWallCount(floor);
+				for (let seed = 0; seed < 20; seed++) {
+					const rng = new RNG(seed);
+					const { width, height } = getMapSize(floor);
+					const { map } = generateBSPMapPlacement(rng, width, height, floor);
+					let count = 0;
+					for (const row of map) {
+						for (const tile of row) {
+							if (tile.type === "cracked_wall") count++;
+						}
+					}
+					expect(count).toBeLessThanOrEqual(target);
+				}
+			}
+		});
+
+		it("cracked_wallは外周1マスには配置されない", () => {
+			for (const floor of [5, 7]) {
+				for (let seed = 0; seed < 20; seed++) {
+					const rng = new RNG(seed);
+					const { width, height } = getMapSize(floor);
+					const { map } = generateBSPMapPlacement(rng, width, height, floor);
+					for (let x = 0; x < width; x++) {
+						expect(map[0][x].type).not.toBe("cracked_wall");
+						expect(map[height - 1][x].type).not.toBe("cracked_wall");
+					}
+					for (let y = 0; y < height; y++) {
+						expect(map[y][0].type).not.toBe("cracked_wall");
+						expect(map[y][width - 1].type).not.toBe("cracked_wall");
+					}
+				}
+			}
+		});
+
+		it("階層1-4ではcracked_wallが配置されない", () => {
+			for (const floor of [1, 2, 3, 4]) {
+				const rng = new RNG(42);
+				const { width, height } = getMapSize(floor);
+				const { map } = generateBSPMapPlacement(rng, width, height, floor);
+				for (const row of map) {
+					for (const tile of row) {
+						expect(tile.type).not.toBe("cracked_wall");
+					}
+				}
 			}
 		});
 
