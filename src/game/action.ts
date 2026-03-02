@@ -347,6 +347,7 @@ export function executeAttack(
 		const target = findExtendedRangeTarget(next, direction);
 		if (!target) {
 			// 突撃コンボ: 方向1マス先のひび割れ壁を破壊
+			let crackedWallDestroyed = false;
 			if (combo === "charge") {
 				const delta = DIRECTION_DELTA[direction];
 				const wx = state.player.position.x + delta.x;
@@ -357,10 +358,13 @@ export function executeAttack(
 				) {
 					next = setTile(next, wx, wy, { type: "floor" });
 					next = addActionLog(next, "ひび割れ壁を破壊した", "player");
+					crackedWallDestroyed = true;
 				}
 			}
-			next = addActionLog(next, "攻撃できなかった", "player");
-			next = addSpeechLog(next, "attack_miss");
+			if (!crackedWallDestroyed) {
+				next = addActionLog(next, "攻撃できなかった", "player");
+				next = addSpeechLog(next, "attack_miss");
+			}
 			return {
 				state: updateComboHistory(next, {
 					lastCardType: "attack",
