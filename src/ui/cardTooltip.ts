@@ -183,7 +183,7 @@ export function createCardTooltip(cardOrType: Card | CardType): {
 
 	const tooltipHeight = yOffset + TOOLTIP_PADDING;
 
-	// 背景
+	// 背景（最背面に配置）
 	const bg = new Graphics();
 	drawRoundedRect(
 		bg,
@@ -196,7 +196,7 @@ export function createCardTooltip(cardOrType: Card | CardType): {
 			width: 1,
 		},
 	);
-	tooltip.addChild(bg);
+	tooltip.addChildAt(bg, 0);
 
 	// テキスト要素を追加
 	tooltip.addChild(nameText);
