@@ -11,6 +11,13 @@ if [ -z "$(git status --porcelain)" ]; then
 	exit 0
 fi
 
+if ! command -v codex &>/dev/null; then
+	echo "エラー: codex コマンドが見つかりません。"
+	echo "インストール: npm install -g @openai/codex"
+	echo "インストール後、codex auth でログインしてください。"
+	exit 1
+fi
+
 echo "Codex CLI でコードレビューを実行中..."
 
 codex exec review \
