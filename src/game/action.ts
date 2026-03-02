@@ -497,8 +497,12 @@ export function executeStrongAttack(
 		next = shockResult.state;
 
 		if (!shockResult.hit) {
-			next = addActionLog(next, "強攻撃できなかった", "player");
-			next = addSpeechLog(next, "attack_miss");
+			if (shockResult.crackedWallDestroyed) {
+				next = addActionLog(next, "ひび割れ壁を破壊した", "player");
+			} else {
+				next = addActionLog(next, "強攻撃できなかった", "player");
+				next = addSpeechLog(next, "attack_miss");
+			}
 		}
 
 		return {
