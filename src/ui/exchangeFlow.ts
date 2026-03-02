@@ -5,6 +5,8 @@
 
 import { ENEMY_TYPE_LABEL } from "../constants";
 import { exchangeCardInDeck } from "../game/cardAcquisition";
+import { addRunEvent } from "../game/eventLog";
+import { getCurrentSession } from "../game/playStats";
 import { addSpeechLog } from "../game/speech";
 import type { GameContext } from "../gameContext";
 import type { CardType, GameState } from "../types";
@@ -47,11 +49,17 @@ export async function executeExchangeFlow(
 
 	if (exchangeResult !== null) {
 		// 交換を実行
-		const newState = exchangeCardInDeck(
+		let newState = exchangeCardInDeck(
 			state,
 			exchangeResult,
 			exchange.acquiredCardType,
 		);
+		newState = addRunEvent(newState, {
+			type: "card_acquired",
+			floor: newState.floor,
+			turn: getCurrentSession()?.playerTurnCount ?? 0,
+			detail: { cardType: exchange.acquiredCardType },
+		});
 		return {
 			...newState,
 			cardExchangeQueue: remaining,

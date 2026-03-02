@@ -12,8 +12,11 @@ import {
 	CARD_LEVEL_SHOCKWAVE,
 	CARD_MAX_LEVEL,
 	CARD_XP_TABLE,
+	EVENT_LEVEL_UP_THRESHOLD,
 } from "../constants";
 import type { Card, GameState } from "../types";
+import { addRunEvent } from "./eventLog";
+import { getCurrentSession } from "./playStats";
 import { addActionLog } from "./state";
 
 /**
@@ -171,6 +174,14 @@ export function awardExpToCard(
 			`カードがLv.${updatedCard.level}になった`,
 			"system",
 		);
+		if (updatedCard.level >= EVENT_LEVEL_UP_THRESHOLD) {
+			next = addRunEvent(next, {
+				type: "card_level_up",
+				floor: next.floor,
+				turn: getCurrentSession()?.playerTurnCount ?? 0,
+				detail: { cardType: updatedCard.type, newLevel: updatedCard.level },
+			});
+		}
 	}
 
 	return next;
