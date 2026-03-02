@@ -412,6 +412,36 @@ export function executeAttack(
 		};
 	}
 
+	// 突撃コンボ: 方向1マス先がひび割れ壁なら破壊（ミスログ/SEを出さない）
+	if (combo === "charge") {
+		const delta = DIRECTION_DELTA[direction];
+		const wx = state.player.position.x + delta.x;
+		const wy = state.player.position.y + delta.y;
+		if (
+			isInBounds(state.map, wx, wy) &&
+			state.map[wy][wx].type === "cracked_wall"
+		) {
+			let next = markCardAsPlayed(state, cardId);
+			if (comboLog) {
+				next = addActionLog(next, comboLog, "system");
+				next = addSpeechLog(next, "combo_activated");
+			}
+			next = setTile(next, wx, wy, { type: "floor" });
+			next = addActionLog(next, "ひび割れ壁を破壊した", "player");
+			return {
+				state: updateComboHistory(next, {
+					lastCardType: "attack",
+					lastDirection: direction,
+				}),
+				hit: false,
+				overkill: 0,
+				defeated: false,
+				comboType: combo,
+				levelBonus,
+			};
+		}
+	}
+
 	// 通常攻撃（Lv1-4）
 	const result = executeAttackBase(
 		state,
@@ -424,20 +454,6 @@ export function executeAttack(
 	);
 
 	let nextState = result.state;
-
-	// 突撃コンボ: 攻撃ミス時、方向1マス先のひび割れ壁を破壊
-	if (!result.hit && combo === "charge") {
-		const delta = DIRECTION_DELTA[direction];
-		const wx = state.player.position.x + delta.x;
-		const wy = state.player.position.y + delta.y;
-		if (
-			isInBounds(nextState.map, wx, wy) &&
-			nextState.map[wy][wx].type === "cracked_wall"
-		) {
-			nextState = setTile(nextState, wx, wy, { type: "floor" });
-			nextState = addActionLog(nextState, "ひび割れ壁を破壊した", "player");
-		}
-	}
 
 	// Lv3貫通: 撃破時に余剰ダメージを奥の敵に伝播
 	if (pierce && result.hit && result.overkill > 0) {
