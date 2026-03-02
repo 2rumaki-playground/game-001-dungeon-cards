@@ -233,13 +233,13 @@ describe("constants", () => {
 			});
 		});
 
-		it("階層6: normal×1 + heavy×1 + scout×1", () => {
+		it("階層6: normal×1 + heavy×1 + ranged×1", () => {
 			expect(getEnemyComposition(6)).toEqual({
 				normal: 1,
 				heavy: 1,
-				scout: 1,
+				scout: 0,
 				summoner: 0,
-				ranged: 0,
+				ranged: 1,
 
 				miniboss: 0,
 				boss: 0,
