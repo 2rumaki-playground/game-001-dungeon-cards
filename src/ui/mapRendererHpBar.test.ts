@@ -31,8 +31,7 @@ describe("MapRenderer HPゲージ", () => {
 		};
 		renderer.render(map, player, enemies);
 
-		const container = renderer.getContainer();
-		const enemiesContainer = container.children[4];
+		const enemiesContainer = renderer.getEnemiesContainer();
 		// 敵コンテナ1つ
 		expect(enemiesContainer.children.length).toBe(1);
 		// 敵コンテナ内にSprite(1) + HPゲージ(1) = 2
@@ -61,8 +60,7 @@ describe("MapRenderer HPゲージ", () => {
 		};
 		renderer.render(map, player, enemies);
 
-		const container = renderer.getContainer();
-		const enemiesContainer = container.children[4];
+		const enemiesContainer = renderer.getEnemiesContainer();
 		expect(enemiesContainer.children.length).toBe(1);
 		// 敵コンテナ内にSprite(1) + HPゲージ(1) = 2
 		const enemyContainer = enemiesContainer.children[0];
@@ -90,8 +88,7 @@ describe("MapRenderer HPゲージ", () => {
 		};
 		renderer.render(map, player, enemies);
 
-		const container = renderer.getContainer();
-		const enemiesContainer = container.children[4];
+		const enemiesContainer = renderer.getEnemiesContainer();
 		expect(enemiesContainer.children.length).toBe(1);
 		// 敵コンテナ内にSprite(1) + HPゲージ(1) = 2
 		const enemyContainer = enemiesContainer.children[0];
@@ -119,8 +116,7 @@ describe("MapRenderer HPゲージ", () => {
 		};
 		renderer.render(map, player, enemies);
 
-		const container = renderer.getContainer();
-		const enemiesContainer = container.children[4];
+		const enemiesContainer = renderer.getEnemiesContainer();
 		expect(enemiesContainer.children.length).toBe(1);
 		// 敵コンテナ内にSprite(1) + HPゲージ(1) = 2
 		const enemyContainer = enemiesContainer.children[0];
@@ -148,8 +144,7 @@ describe("MapRenderer HPゲージ", () => {
 		};
 		renderer.render(map, player, enemies);
 
-		const container = renderer.getContainer();
-		const enemiesContainer = container.children[4];
+		const enemiesContainer = renderer.getEnemiesContainer();
 		expect(enemiesContainer.children.length).toBe(1);
 		// 敵コンテナ内にSprite(1) + HPゲージ(1) = 2
 		const enemyContainer = enemiesContainer.children[0];
@@ -236,8 +231,7 @@ describe("MapRenderer HPゲージ", () => {
 		renderer.render(map, player, enemies);
 		renderer.clear();
 
-		const container = renderer.getContainer();
-		const enemiesContainer = container.children[4];
+		const enemiesContainer = renderer.getEnemiesContainer();
 		expect(enemiesContainer.children.length).toBe(0);
 	});
 });
@@ -332,8 +326,7 @@ describe("MapRenderer 敵ホバーツールチップ", () => {
 		};
 		renderer.render(map, player, enemies);
 
-		const container = renderer.getContainer();
-		const enemiesContainer = container.children[4];
+		const enemiesContainer = renderer.getEnemiesContainer();
 		const enemyContainer = enemiesContainer.children[0];
 		expect(enemyContainer.eventMode).toBe("static");
 	});
@@ -359,8 +352,7 @@ describe("MapRenderer 敵ホバーツールチップ", () => {
 		};
 		renderer.render(map, player, enemies);
 
-		const container = renderer.getContainer();
-		const enemiesContainer = container.children[4];
+		const enemiesContainer = renderer.getEnemiesContainer();
 		const enemyContainer = enemiesContainer.children[0];
 		expect(enemyContainer.listenerCount("pointerover")).toBe(1);
 		expect(enemyContainer.listenerCount("pointerout")).toBe(1);
@@ -388,7 +380,7 @@ describe("MapRenderer 敵ホバーツールチップ", () => {
 		renderer.render(map, player, enemies);
 
 		const container = renderer.getContainer();
-		const enemiesContainer = container.children[4];
+		const enemiesContainer = renderer.getEnemiesContainer();
 		const enemyContainer = enemiesContainer.children[0];
 		// 敵ツールチップは最上位から3番目（プレイヤー・タイルツールチップが上位）
 		const tooltipContainer = container.children.at(-3);

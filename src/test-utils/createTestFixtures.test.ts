@@ -105,14 +105,12 @@ describe("createTestEnemy", () => {
 			{
 				id: "custom-boss",
 				hp: 7,
-				pendingSkill: { type: "area_attack" },
 				enraged: true,
 			},
 		);
 		expect(enemy.id).toBe("custom-boss");
 		expect(enemy.hp).toBe(7);
 		expect(enemy.maxHp).toBe(ENEMY_PARAMS.boss.hp);
-		expect(enemy.pendingSkill).toEqual({ type: "area_attack" });
 		expect(enemy.enraged).toBe(true);
 	});
 

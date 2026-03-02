@@ -8,7 +8,7 @@ export type {
 	CardDropConfig,
 	CardExchangeEntry,
 } from "./cardAcquisition";
-export type { Enemy, EnemyType, PendingSkillType, Player } from "./character";
+export type { Enemy, EnemyType, Player } from "./character";
 export type { ComboHistory, ComboType } from "./combo";
 export { DIRECTION_DELTA, type Direction, type Position } from "./direction";
 export {

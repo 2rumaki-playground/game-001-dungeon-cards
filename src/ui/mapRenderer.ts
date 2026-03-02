@@ -37,7 +37,6 @@ import {
 	type TileHoverCallbacks,
 } from "./mapTileRenderer";
 import { PlayerTooltip } from "./playerTooltip";
-import { SkillForecastEffectManager } from "./skillForecastEffect";
 import { SpecialTileEffectManager } from "./specialTileEffect";
 import { TileTooltip } from "./tileTooltip";
 
@@ -62,7 +61,6 @@ export class MapRenderer {
 	private lastPlayer: Player | null = null;
 	private lastVisitedTiles: Set<string> | undefined;
 	private specialTileEffectManager: SpecialTileEffectManager;
-	private skillForecastEffectManager: SkillForecastEffectManager;
 	private characterRenderer: CharacterRenderer;
 	private enemyAiOverlayManager: {
 		getContainer(): Container;
@@ -84,7 +82,6 @@ export class MapRenderer {
 		this.playerTooltip = new PlayerTooltip();
 		this.tileTooltip = new TileTooltip();
 		this.specialTileEffectManager = new SpecialTileEffectManager();
-		this.skillForecastEffectManager = new SkillForecastEffectManager();
 
 		this.characterRenderer = new CharacterRenderer(
 			this.playerContainer,
@@ -105,11 +102,7 @@ export class MapRenderer {
 		this.container.addChild(this.tilesContainer);
 		this.container.addChild(this.specialTileEffectManager.getContainer());
 		this.container.addChild(this.remnantsGraphics);
-		this.container.addChild(
-			this.skillForecastEffectManager.getRangeContainer(),
-		);
 		this.container.addChild(enemiesContainer);
-		this.container.addChild(this.skillForecastEffectManager.getIconContainer());
 		this.container.addChild(this.fogGraphics);
 		this.container.addChild(this.playerContainer);
 		this.container.addChild(this.enemyTooltip.getContainer());
@@ -136,6 +129,13 @@ export class MapRenderer {
 	 */
 	getPlayerContainer(): Container {
 		return this.playerContainer;
+	}
+
+	/**
+	 * 敵コンテナを取得
+	 */
+	getEnemiesContainer(): Container {
+		return this.enemiesContainer;
 	}
 
 	/**
@@ -202,20 +202,7 @@ export class MapRenderer {
 	 * 敵を描画（永続管理）
 	 */
 	renderEnemies(enemies: Enemy[], visitedTiles?: Set<string>): void {
-		const visibleEnemies = this.characterRenderer.renderEnemies(
-			enemies,
-			visitedTiles,
-		);
-
-		// スキル予告エフェクト更新
-		const mapWidth = this.lastRenderedMap?.[0]?.length ?? 0;
-		const mapHeight = this.lastRenderedMap?.length ?? 0;
-		this.skillForecastEffectManager.update(
-			visibleEnemies,
-			mapWidth,
-			mapHeight,
-			visitedTiles,
-		);
+		this.characterRenderer.renderEnemies(enemies, visitedTiles);
 	}
 
 	/**
@@ -373,7 +360,6 @@ export class MapRenderer {
 		this.hideTileTooltip();
 		this.lastVisitedTiles = undefined;
 		this.specialTileEffectManager.clear();
-		this.skillForecastEffectManager.clear();
 		this.enemyAiOverlayManager?.clear();
 		this.enemyAiAnalyses.clear();
 	}

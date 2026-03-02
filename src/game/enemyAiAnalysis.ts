@@ -34,7 +34,6 @@ export type EnemyDecision =
 	| { type: "wait_out_of_range"; reason: string }
 	| { type: "wait_no_move"; reason: string }
 	| { type: "wait_no_target"; reason: string }
-	| { type: "skill_pending"; reason: string }
 	| { type: "summon"; reason: string };
 
 /** 移動候補タイル */
@@ -201,19 +200,6 @@ export function analyzeEnemy(state: GameState, enemy: Enemy): EnemyAiAnalysis {
 	}
 
 	const attackRange = getAttackRange(enemy.position, mapWidth, mapHeight);
-
-	// スキル予告中
-	if (enemy.pendingSkill) {
-		return {
-			enemyId: enemy.id,
-			decision: {
-				type: "skill_pending",
-				reason: `${label}: スキル予告中（${enemy.pendingSkill.type}）`,
-			},
-			moveCandidates: [],
-			attackRange,
-		};
-	}
 
 	// 隣接 → 攻撃
 	if (isAdjacent(enemy.position, state.player.position)) {

@@ -6,12 +6,7 @@ import {
 	resetTestEnemySeq,
 } from "../test-utils/createTestFixtures";
 import type { RNG } from "../utils/rng";
-import {
-	checkEnrage,
-	decideBossSkill,
-	decideMinibossSkill,
-	executePendingSkill,
-} from "./bossSkill";
+import { checkEnrage, tryBossSkill, tryMinibossSkill } from "./bossSkill";
 
 /** random()が固定値を返すスタブRNG */
 function createStubRng(value: number): RNG {
@@ -64,251 +59,93 @@ describe("checkEnrage", () => {
 	});
 });
 
-describe("decideMinibossSkill", () => {
-	it("確率に基づいてpower_strikeスキルを予告する", () => {
+describe("tryMinibossSkill", () => {
+	it("確率判定成功かつ隣接時に即ダメージを与える", () => {
 		const rng = createStubRng(BOSS_SKILL.powerStrikeChance - 0.001);
-		const enemy = createTestEnemy("miniboss");
-		const result = decideMinibossSkill(enemy, rng);
-		expect(result.pendingSkill).toEqual({ type: "power_strike" });
-	});
-
-	it("確率外ではスキルを予告しない", () => {
-		const rng = createStubRng(BOSS_SKILL.powerStrikeChance);
-		const enemy = createTestEnemy("miniboss");
-		const result = decideMinibossSkill(enemy, rng);
-		expect(result.pendingSkill).toBeUndefined();
-	});
-
-	it("既に予告中のスキルがある場合は新しいスキルを予告しない", () => {
-		const rng = createStubRng(0);
-		const enemy = createTestEnemy(
-			"miniboss",
-			{ x: 4, y: 3 },
-			{
-				pendingSkill: { type: "power_strike" },
-			},
-		);
-		const result = decideMinibossSkill(enemy, rng);
-		expect(result.pendingSkill).toEqual({ type: "power_strike" });
-	});
-});
-
-describe("decideBossSkill", () => {
-	it("確率に基づいてarea_attackスキルを予告する", () => {
-		const rng = createStubRng(BOSS_SKILL.areaAttackChance - 0.001);
-		const enemy = createTestEnemy("boss");
-		const result = decideBossSkill(enemy, rng);
-		expect(result.pendingSkill).toEqual({ type: "area_attack" });
-	});
-
-	it("確率外ではスキルを予告しない", () => {
-		const rng = createStubRng(BOSS_SKILL.areaAttackChance);
-		const enemy = createTestEnemy("boss");
-		const result = decideBossSkill(enemy, rng);
-		expect(result.pendingSkill).toBeUndefined();
-	});
-
-	it("既に予告中のスキルがある場合は新しいスキルを予告しない", () => {
-		const rng = createStubRng(0);
-		const enemy = createTestEnemy(
-			"boss",
-			{ x: 4, y: 3 },
-			{
-				pendingSkill: { type: "area_attack" },
-			},
-		);
-		const result = decideBossSkill(enemy, rng);
-		expect(result.pendingSkill).toEqual({ type: "area_attack" });
-	});
-});
-
-describe("executePendingSkill", () => {
-	describe("power_strike", () => {
-		it("隣接プレイヤーに2倍ダメージを与える", () => {
-			const enemy = createTestEnemy(
-				"miniboss",
-				{ x: 4, y: 3 },
-				{
-					pendingSkill: { type: "power_strike" },
-				},
-			);
-			const state = createTestState({ enemies: [enemy] });
-			const result = executePendingSkill(state, enemy);
-
-			const expectedDamage =
-				ENEMY_PARAMS.miniboss.attackDamage * BOSS_SKILL.powerStrikeMultiplier;
-			expect(result.state.player.hp).toBe(state.player.hp - expectedDamage);
-			expect(result.damage).toBe(expectedDamage);
-			expect(result.executed).toBe(true);
-			expect(result.state.lastAttackerEnemyType).toBe("miniboss");
-		});
-
-		it("隣接していない場合はスキルを発動しない", () => {
-			const enemy = createTestEnemy(
-				"miniboss",
-				{ x: 5, y: 5 },
-				{
-					pendingSkill: { type: "power_strike" },
-				},
-			);
-			const state = createTestState({ enemies: [enemy] });
-			const result = executePendingSkill(state, enemy);
-
-			expect(result.state.player.hp).toBe(state.player.hp);
-			expect(result.damage).toBe(0);
-			expect(result.executed).toBe(false);
-		});
-
-		it("発動後にpendingSkillがクリアされる", () => {
-			const enemy = createTestEnemy(
-				"miniboss",
-				{ x: 4, y: 3 },
-				{
-					pendingSkill: { type: "power_strike" },
-				},
-			);
-			const state = createTestState({ enemies: [enemy] });
-			const result = executePendingSkill(state, enemy);
-
-			const updatedEnemy = result.state.enemies.find((e) => e.id === enemy.id);
-			expect(updatedEnemy?.pendingSkill).toBeUndefined();
-		});
-	});
-
-	describe("area_attack", () => {
-		it("隣接プレイヤーに範囲ダメージを与える", () => {
-			const enemy = createTestEnemy(
-				"boss",
-				{ x: 4, y: 3 },
-				{
-					pendingSkill: { type: "area_attack" },
-				},
-			);
-			const state = createTestState({ enemies: [enemy] });
-			const result = executePendingSkill(state, enemy);
-
-			expect(result.state.player.hp).toBe(
-				state.player.hp - BOSS_SKILL.areaAttackDamage,
-			);
-			expect(result.damage).toBe(BOSS_SKILL.areaAttackDamage);
-			expect(result.executed).toBe(true);
-			expect(result.state.lastAttackerEnemyType).toBe("boss");
-		});
-
-		it("マンハッタン距離2以内のプレイヤーにダメージを与える", () => {
-			const enemy = createTestEnemy(
-				"boss",
-				{ x: 5, y: 3 },
-				{
-					pendingSkill: { type: "area_attack" },
-				},
-			);
-			// プレイヤー(3,3)、ボス(5,3) → 距離2 → 範囲内
-			const state = createTestState({ enemies: [enemy] });
-			const result = executePendingSkill(state, enemy);
-
-			expect(result.state.player.hp).toBe(
-				state.player.hp - BOSS_SKILL.areaAttackDamage,
-			);
-			expect(result.executed).toBe(true);
-		});
-
-		it("マンハッタン距離3以上のプレイヤーにはダメージを与えない", () => {
-			const enemy = createTestEnemy(
-				"boss",
-				{ x: 1, y: 1 },
-				{
-					pendingSkill: { type: "area_attack" },
-				},
-			);
-			// プレイヤー(3,3)、ボス(1,1) → 距離4 → 範囲外
-			const state = createTestState({ enemies: [enemy] });
-			const result = executePendingSkill(state, enemy);
-
-			expect(result.state.player.hp).toBe(state.player.hp);
-			expect(result.damage).toBe(0);
-			expect(result.executed).toBe(false);
-		});
-
-		it("発動後にpendingSkillがクリアされる", () => {
-			const enemy = createTestEnemy(
-				"boss",
-				{ x: 4, y: 3 },
-				{
-					pendingSkill: { type: "area_attack" },
-				},
-			);
-			const state = createTestState({ enemies: [enemy] });
-			const result = executePendingSkill(state, enemy);
-
-			const updatedEnemy = result.state.enemies.find((e) => e.id === enemy.id);
-			expect(updatedEnemy?.pendingSkill).toBeUndefined();
-		});
-	});
-
-	describe("enemy.typeとスキルの不整合ガード", () => {
-		it("通常敵がpower_strikeを持つ場合はpendingSkillクリアで未実行", () => {
-			const enemy = createTestEnemy(
-				"normal",
-				{ x: 4, y: 3 },
-				{
-					pendingSkill: { type: "power_strike" },
-				},
-			);
-			const state = createTestState({ enemies: [enemy] });
-			const result = executePendingSkill(state, enemy);
-
-			const updatedEnemy = result.state.enemies.find((e) => e.id === enemy.id);
-			expect(updatedEnemy?.pendingSkill).toBeUndefined();
-			expect(result.executed).toBe(false);
-			expect(result.damage).toBe(0);
-		});
-
-		it("通常敵がarea_attackを持つ場合はpendingSkillクリアで未実行", () => {
-			const enemy = createTestEnemy(
-				"normal",
-				{ x: 4, y: 3 },
-				{
-					pendingSkill: { type: "area_attack" },
-				},
-			);
-			const state = createTestState({ enemies: [enemy] });
-			const result = executePendingSkill(state, enemy);
-
-			const updatedEnemy = result.state.enemies.find((e) => e.id === enemy.id);
-			expect(updatedEnemy?.pendingSkill).toBeUndefined();
-			expect(result.executed).toBe(false);
-			expect(result.damage).toBe(0);
-		});
-	});
-
-	describe("想定外のスキルタイプ", () => {
-		it("未知のスキルタイプはpendingSkillをクリアして未実行扱い", () => {
-			const enemy = createTestEnemy(
-				"boss",
-				{ x: 4, y: 3 },
-				{
-					hp: 5,
-					pendingSkill: { type: "unknown" as never },
-				},
-			);
-			const state = createTestState({ enemies: [enemy] });
-			const result = executePendingSkill(state, enemy);
-
-			const updatedEnemy = result.state.enemies.find((e) => e.id === enemy.id);
-			expect(updatedEnemy?.pendingSkill).toBeUndefined();
-			expect(result.executed).toBe(false);
-			expect(result.damage).toBe(0);
-		});
-	});
-
-	it("pendingSkillがない場合は何もしない", () => {
-		const enemy = createTestEnemy("boss");
+		const enemy = createTestEnemy("miniboss", { x: 4, y: 3 });
 		const state = createTestState({ enemies: [enemy] });
-		const result = executePendingSkill(state, enemy);
+		const result = tryMinibossSkill(state, enemy, rng);
 
-		expect(result.state).toBe(state);
+		const expectedDamage = Math.floor(
+			ENEMY_PARAMS.miniboss.attackDamage * BOSS_SKILL.powerStrikeMultiplier,
+		);
+		expect(result.state.player.hp).toBe(state.player.hp - expectedDamage);
+		expect(result.damage).toBe(expectedDamage);
+		expect(result.executed).toBe(true);
+		expect(result.state.lastAttackerEnemyType).toBe("miniboss");
+	});
+
+	it("確率判定不発でダメージなし", () => {
+		const rng = createStubRng(BOSS_SKILL.powerStrikeChance);
+		const enemy = createTestEnemy("miniboss", { x: 4, y: 3 });
+		const state = createTestState({ enemies: [enemy] });
+		const result = tryMinibossSkill(state, enemy, rng);
+
+		expect(result.state.player.hp).toBe(state.player.hp);
 		expect(result.damage).toBe(0);
 		expect(result.executed).toBe(false);
+	});
+
+	it("確率判定成功でも非隣接ならダメージなし", () => {
+		const rng = createStubRng(BOSS_SKILL.powerStrikeChance - 0.001);
+		const enemy = createTestEnemy("miniboss", { x: 5, y: 5 });
+		const state = createTestState({ enemies: [enemy] });
+		const result = tryMinibossSkill(state, enemy, rng);
+
+		expect(result.state.player.hp).toBe(state.player.hp);
+		expect(result.damage).toBe(0);
+		expect(result.executed).toBe(false);
+	});
+});
+
+describe("tryBossSkill", () => {
+	it("確率判定成功かつ射程内で即ダメージを与える", () => {
+		const rng = createStubRng(BOSS_SKILL.areaAttackChance - 0.001);
+		// プレイヤー(3,3)、ボス(5,3) → 距離2 → 範囲内
+		const enemy = createTestEnemy("boss", { x: 5, y: 3 });
+		const state = createTestState({ enemies: [enemy] });
+		const result = tryBossSkill(state, enemy, rng);
+
+		expect(result.state.player.hp).toBe(
+			state.player.hp - BOSS_SKILL.areaAttackDamage,
+		);
+		expect(result.damage).toBe(BOSS_SKILL.areaAttackDamage);
+		expect(result.executed).toBe(true);
+		expect(result.state.lastAttackerEnemyType).toBe("boss");
+	});
+
+	it("確率判定不発でダメージなし", () => {
+		const rng = createStubRng(BOSS_SKILL.areaAttackChance);
+		const enemy = createTestEnemy("boss", { x: 5, y: 3 });
+		const state = createTestState({ enemies: [enemy] });
+		const result = tryBossSkill(state, enemy, rng);
+
+		expect(result.state.player.hp).toBe(state.player.hp);
+		expect(result.damage).toBe(0);
+		expect(result.executed).toBe(false);
+	});
+
+	it("確率判定成功でも射程外ならダメージなし", () => {
+		const rng = createStubRng(BOSS_SKILL.areaAttackChance - 0.001);
+		// プレイヤー(3,3)、ボス(1,1) → 距離4 → 範囲外
+		const enemy = createTestEnemy("boss", { x: 1, y: 1 });
+		const state = createTestState({ enemies: [enemy] });
+		const result = tryBossSkill(state, enemy, rng);
+
+		expect(result.state.player.hp).toBe(state.player.hp);
+		expect(result.damage).toBe(0);
+		expect(result.executed).toBe(false);
+	});
+
+	it("隣接プレイヤーにも範囲ダメージを与える", () => {
+		const rng = createStubRng(BOSS_SKILL.areaAttackChance - 0.001);
+		const enemy = createTestEnemy("boss", { x: 4, y: 3 });
+		const state = createTestState({ enemies: [enemy] });
+		const result = tryBossSkill(state, enemy, rng);
+
+		expect(result.state.player.hp).toBe(
+			state.player.hp - BOSS_SKILL.areaAttackDamage,
+		);
+		expect(result.executed).toBe(true);
 	});
 });

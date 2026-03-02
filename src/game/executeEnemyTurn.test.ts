@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+	BOSS_SKILL,
 	ENEMY_ATTACK_DAMAGE,
 	ENEMY_HP,
 	ENEMY_PARAMS,
@@ -380,5 +381,72 @@ describe("executeEnemyTurn", () => {
 		const enemy = result.enemies.find((e) => e.id === "enemy-1");
 		// BFSで迂回: left(2,3)に移動
 		expect(enemy?.position).toEqual({ x: 2, y: 3 });
+	});
+
+	it("ミニボスが移動後に強化攻撃を発動する", () => {
+		// seed=7: 最初のrandom()=0.0117 < powerStrikeChance(0.3) → スキル発動
+		const minibossHp = ENEMY_PARAMS.miniboss.hp;
+		const enemies: Enemy[] = [
+			{
+				id: "enemy-1",
+				type: "miniboss",
+				position: { x: 5, y: 3 },
+				hp: minibossHp,
+				maxHp: minibossHp,
+			},
+		];
+		const state = createTestState({
+			turn: "enemy",
+			enemies,
+			rng: new RNG(7),
+		});
+		const { state: result } = executeEnemyTurn(state);
+
+		// 移動後に隣接 → 強化攻撃が発動
+		expect(
+			result.actionLog.some((l) => l.message === "ミニボスが強化攻撃を放った"),
+		).toBe(true);
+		// 通常攻撃は行われない
+		expect(result.actionLog.some((l) => l.message === "敵が攻撃した")).toBe(
+			false,
+		);
+		// 強化攻撃のダメージが入っている
+		const expectedDamage = Math.floor(
+			ENEMY_PARAMS.miniboss.attackDamage * BOSS_SKILL.powerStrikeMultiplier,
+		);
+		expect(result.player.hp).toBe(PLAYER_INITIAL_HP - expectedDamage);
+	});
+
+	it("ボスが移動後に範囲攻撃を発動する", () => {
+		// seed=7: 最初のrandom()=0.0117 < areaAttackChance(0.25) → スキル発動
+		const bossHp = ENEMY_PARAMS.boss.hp;
+		const enemies: Enemy[] = [
+			{
+				id: "enemy-1",
+				type: "boss",
+				position: { x: 5, y: 3 },
+				hp: bossHp,
+				maxHp: bossHp,
+			},
+		];
+		const state = createTestState({
+			turn: "enemy",
+			enemies,
+			rng: new RNG(7),
+		});
+		const { state: result } = executeEnemyTurn(state);
+
+		// 移動後に射程内 → 範囲攻撃が発動
+		expect(
+			result.actionLog.some((l) => l.message === "ボスが範囲攻撃を放った"),
+		).toBe(true);
+		// 通常攻撃は行われない
+		expect(result.actionLog.some((l) => l.message === "敵が攻撃した")).toBe(
+			false,
+		);
+		// 範囲攻撃のダメージが入っている
+		expect(result.player.hp).toBe(
+			PLAYER_INITIAL_HP - BOSS_SKILL.areaAttackDamage,
+		);
 	});
 });
