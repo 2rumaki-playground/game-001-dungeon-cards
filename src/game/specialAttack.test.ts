@@ -438,6 +438,17 @@ describe("executeShockwave", () => {
 		expect(moved?.position).toEqual({ x: 5, y: 3 });
 	});
 
+	it("正面がひび割れ壁の場合は破壊してcrackedWallDestroyed:trueを返す", () => {
+		const state = createTestState({ enemies: [] });
+		state.map[3][4] = { type: "cracked_wall" };
+
+		const result = executeShockwave(state, "right", 3, "card-1");
+		expect(result.hit).toBe(false);
+		expect(result.crackedWallDestroyed).toBe(true);
+		expect(result.state.map[3][4].type).toBe("floor");
+		expect(result.enemyId).toBeNull();
+	});
+
 	it("サイドが壁/マップ外でも正面のダメージは適用される", () => {
 		// プレイヤー(1,1)→down→正面(1,2), サイド反時計回り(2,1), サイド時計回り(0,1)壁
 		const enemy = createTestEnemy("normal", { x: 1, y: 2 }, { hp: 3 });
