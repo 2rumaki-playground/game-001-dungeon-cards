@@ -139,13 +139,14 @@ describe("checkCardDrop", () => {
 
 describe("exchangeCardInDeck", () => {
 	function createTestCards(): Card[] {
+		const stats = { useCount: 0, defeatCount: 0, maxSingleDamage: 0 };
 		return [
-			{ id: "test-card-1", type: "move", level: 1, exp: 0 },
-			{ id: "test-card-2", type: "move", level: 1, exp: 0 },
-			{ id: "test-card-3", type: "move", level: 1, exp: 0 },
-			{ id: "test-card-4", type: "attack", level: 1, exp: 0 },
-			{ id: "test-card-5", type: "attack", level: 1, exp: 0 },
-			{ id: "test-card-6", type: "wait", level: 1, exp: 0 },
+			{ id: "test-card-1", type: "move", level: 1, exp: 0, stats },
+			{ id: "test-card-2", type: "move", level: 1, exp: 0, stats },
+			{ id: "test-card-3", type: "move", level: 1, exp: 0, stats },
+			{ id: "test-card-4", type: "attack", level: 1, exp: 0, stats },
+			{ id: "test-card-5", type: "attack", level: 1, exp: 0, stats },
+			{ id: "test-card-6", type: "wait", level: 1, exp: 0, stats },
 		];
 	}
 

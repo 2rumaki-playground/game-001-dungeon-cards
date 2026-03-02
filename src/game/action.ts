@@ -23,6 +23,7 @@ import {
 	hasRangeExtendEffect,
 	hasShockwaveEffect,
 } from "./cardLevel";
+import { incrementUseCount } from "./cardStats";
 import { applyDamageToEnemy } from "./combat";
 import { detectCombo, getComboBonus } from "./combo";
 import { markCardUsed } from "./deck";
@@ -50,7 +51,9 @@ import { applyTileEffect, type TileEffectResult } from "./tileEffect";
  * カードを使用済みにする共通ヘルパー
  */
 export function markCardAsPlayed(state: GameState, cardId: string): GameState {
-	return setDeck(state, markCardUsed(state.deck, cardId));
+	let next = setDeck(state, markCardUsed(state.deck, cardId));
+	next = incrementUseCount(next, cardId);
+	return next;
 }
 
 /**

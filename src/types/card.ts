@@ -9,6 +9,18 @@
 export type CardType = "move" | "attack" | "strong_attack" | "jump" | "wait";
 
 /**
+ * カード統計情報
+ */
+export type CardStats = {
+	/** 使用回数 */
+	useCount: number;
+	/** 撃破数 */
+	defeatCount: number;
+	/** 最大単発ダメージ */
+	maxSingleDamage: number;
+};
+
+/**
  * カード
  */
 export type Card = {
@@ -16,6 +28,7 @@ export type Card = {
 	type: CardType;
 	level: number;
 	exp: number;
+	stats: CardStats;
 };
 
 /**

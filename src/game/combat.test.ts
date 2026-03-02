@@ -365,6 +365,7 @@ describe("applyDamageToEnemy - XP付与", () => {
 			type: "attack" as const,
 			level: 1,
 			exp: 0,
+			stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
 		};
 		const enemy = createTestEnemy("normal", { x: 4, y: 3 }, { hp: 1 });
 		const state = createTestState({
@@ -387,6 +388,7 @@ describe("applyDamageToEnemy - XP付与", () => {
 			type: "attack" as const,
 			level: 1,
 			exp: 0,
+			stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
 		};
 		const enemy = createTestEnemy("normal", { x: 4, y: 3 }, { hp: 1 });
 		const state = createTestState({
@@ -404,6 +406,7 @@ describe("applyDamageToEnemy - XP付与", () => {
 			type: "attack" as const,
 			level: 1,
 			exp: 0,
+			stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
 		};
 		const enemy = createTestEnemy("normal", { x: 4, y: 3 });
 		const state = createTestState({
@@ -426,6 +429,7 @@ describe("applyDamageToEnemy - XP付与", () => {
 			type: "attack" as const,
 			level: 1,
 			exp: 1,
+			stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
 		};
 		const enemy = createTestEnemy("normal", { x: 4, y: 3 }, { hp: 1 });
 		const state = createTestState({

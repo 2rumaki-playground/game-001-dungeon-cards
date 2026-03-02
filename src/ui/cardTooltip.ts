@@ -119,6 +119,68 @@ export function createCardTooltip(cardOrType: Card | CardType): {
 	}
 	yOffset += descHeight + 8;
 
+	// 統計情報（Cardオブジェクトかつ1回以上使用された場合のみ表示）
+	if (card && card.stats.useCount > 0) {
+		// セパレータ
+		const sepText = new Text({
+			text: "─────────────",
+			style: {
+				fontSize: 10,
+				fontFamily: "sans-serif",
+				fill: 0x555577,
+			},
+		});
+		sepText.x = TOOLTIP_PADDING;
+		sepText.y = yOffset;
+		yOffset += 14;
+		tooltip.addChild(sepText);
+
+		// 使用回数（全カード共通）
+		const useText = new Text({
+			text: `使用: ${card.stats.useCount}回`,
+			style: {
+				fontSize: 10,
+				fontFamily: "sans-serif",
+				fill: 0x999999,
+			},
+		});
+		useText.x = TOOLTIP_PADDING;
+		useText.y = yOffset;
+		yOffset += 13;
+		tooltip.addChild(useText);
+
+		// 撃破数・最大ダメージ（attack/strong_attack のみ）
+		if (card.type === "attack" || card.type === "strong_attack") {
+			const defeatText = new Text({
+				text: `撃破: ${card.stats.defeatCount}体`,
+				style: {
+					fontSize: 10,
+					fontFamily: "sans-serif",
+					fill: 0x999999,
+				},
+			});
+			defeatText.x = TOOLTIP_PADDING;
+			defeatText.y = yOffset;
+			yOffset += 13;
+			tooltip.addChild(defeatText);
+
+			const maxDmgText = new Text({
+				text: `最大: ${card.stats.maxSingleDamage}ダメージ`,
+				style: {
+					fontSize: 10,
+					fontFamily: "sans-serif",
+					fill: 0x999999,
+				},
+			});
+			maxDmgText.x = TOOLTIP_PADDING;
+			maxDmgText.y = yOffset;
+			yOffset += 13;
+			tooltip.addChild(maxDmgText);
+		}
+
+		yOffset += 2;
+	}
+
 	const tooltipHeight = yOffset + TOOLTIP_PADDING;
 
 	// 背景

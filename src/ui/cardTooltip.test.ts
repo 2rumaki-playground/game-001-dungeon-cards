@@ -56,6 +56,7 @@ describe("createCardTooltip", () => {
 			type: "attack",
 			level: 2,
 			exp: 2,
+			stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
 		};
 		const result = createCardTooltip(card);
 		const texts = getAllTextsRecursive(result.container);
@@ -71,6 +72,7 @@ describe("createCardTooltip", () => {
 			type: "attack",
 			level: 2,
 			exp: 2,
+			stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
 		};
 		const result = createCardTooltip(card);
 		const texts = getAllTextsRecursive(result.container);
@@ -84,6 +86,7 @@ describe("createCardTooltip", () => {
 			type: "attack",
 			level: CARD_MAX_LEVEL,
 			exp: 0,
+			stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
 		};
 		const result = createCardTooltip(card);
 		const texts = getAllTextsRecursive(result.container);
@@ -99,6 +102,7 @@ describe("createCardTooltip", () => {
 			type: "attack",
 			level: CARD_MAX_LEVEL + 1,
 			exp: 99,
+			stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
 		};
 		const result = createCardTooltip(card);
 		const texts = getAllTextsRecursive(result.container);

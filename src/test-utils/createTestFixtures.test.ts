@@ -137,18 +137,21 @@ describe("createTestHand", () => {
 			type: "move",
 			level: 1,
 			exp: 0,
+			stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
 		});
 		expect(hand[1]).toEqual({
 			id: "test-card-1",
 			type: "attack",
 			level: 1,
 			exp: 0,
+			stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
 		});
 		expect(hand[2]).toEqual({
 			id: "test-card-2",
 			type: "jump",
 			level: 1,
 			exp: 0,
+			stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
 		});
 	});
 

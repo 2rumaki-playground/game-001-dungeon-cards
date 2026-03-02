@@ -105,8 +105,20 @@ describe("ひび割れ壁: 突撃コンボ", () => {
 			createTestState({
 				deck: {
 					hand: [
-						{ id: "move-1", type: "move", level: 1, exp: 0 },
-						{ id: "attack-1", type: "attack", level: 1, exp: 0 },
+						{
+							id: "move-1",
+							type: "move",
+							level: 1,
+							exp: 0,
+							stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+						},
+						{
+							id: "attack-1",
+							type: "attack",
+							level: 1,
+							exp: 0,
+							stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+						},
 					],
 					usedCardIds: [],
 				},
@@ -260,8 +272,20 @@ describe("ひび割れ壁: 破壊後", () => {
 			createTestState({
 				deck: {
 					hand: [
-						{ id: "sa-1", type: "strong_attack", level: 1, exp: 0 },
-						{ id: "move-1", type: "move", level: 1, exp: 0 },
+						{
+							id: "sa-1",
+							type: "strong_attack",
+							level: 1,
+							exp: 0,
+							stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+						},
+						{
+							id: "move-1",
+							type: "move",
+							level: 1,
+							exp: 0,
+							stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+						},
 					],
 					usedCardIds: [],
 				},
