@@ -3,7 +3,7 @@
  * @see docs/spec/cards.md - カード統計
  */
 
-import type { GameState } from "../types";
+import type { CardStats, GameState } from "../types";
 
 /**
  * hand配列からcardIdで検索し、statsをイミュータブルに更新する共通処理
@@ -11,15 +11,7 @@ import type { GameState } from "../types";
 function updateCardStats(
 	state: GameState,
 	cardId: string,
-	updater: (stats: {
-		useCount: number;
-		defeatCount: number;
-		maxSingleDamage: number;
-	}) => {
-		useCount: number;
-		defeatCount: number;
-		maxSingleDamage: number;
-	} | null,
+	updater: (stats: CardStats) => CardStats | null,
 ): GameState {
 	const cardIndex = state.deck.hand.findIndex((c) => c.id === cardId);
 	if (cardIndex < 0) return state;
