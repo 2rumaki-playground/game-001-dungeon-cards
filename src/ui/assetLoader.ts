@@ -11,7 +11,8 @@ import type { TileType } from "../types/map";
 export const TILE_ASSET_PATHS: Record<TileType, string> = {
 	floor: "assets/tiles/floor.png",
 	wall: "assets/tiles/wall.png",
-	cracked_wall: "assets/tiles/cracked_wall.png",
+	// FIXME: cracked_wall 専用のアセットが追加されたらパスを修正すること
+	cracked_wall: "assets/tiles/wall.png",
 	stairs: "assets/tiles/stairs.png",
 	trap: "assets/tiles/trap.png",
 	treasure: "assets/tiles/treasure.png",
