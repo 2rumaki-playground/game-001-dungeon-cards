@@ -26,6 +26,7 @@ function updateCardStats(
 	return {
 		...state,
 		deck: { ...state.deck, hand: newHand },
+		rng: state.rng.clone(),
 	};
 }
 
