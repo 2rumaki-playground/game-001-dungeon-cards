@@ -218,6 +218,7 @@ export function render(
 	ctx.ui.cardRemoveScreen.hide();
 	ctx.ui.resultScreen.hide();
 	ctx.ui.statsScreen.hide();
+	ctx.ui.rewardSelectScreen.hide();
 	switch (ctx.state.screen) {
 		case "title":
 			renderTitleScreen(ctx);
