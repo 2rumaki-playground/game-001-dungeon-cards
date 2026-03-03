@@ -109,23 +109,23 @@ describe("cardConstants", () => {
 			}
 		});
 
-		it("Lv.1の攻撃カードではボーナス表示なし", () => {
+		it("Lv.1のファイアボルトではボーナス表示なし", () => {
 			const desc = getCardDescription(makeCard({ type: "fire", level: 1 }));
 			expect(desc).toContain(`${PLAYER_FIRE_DAMAGE}ダメージ`);
 			expect(desc).not.toContain("(+");
 		});
 
-		it("Lv.2の攻撃カードでは+1ボーナスが表示される", () => {
+		it("Lv.2のファイアボルトでは+1ボーナスが表示される", () => {
 			const desc = getCardDescription(makeCard({ type: "fire", level: 2 }));
 			expect(desc).toContain(`${PLAYER_FIRE_DAMAGE + 1}ダメージ(+1)`);
 		});
 
-		it("Lv.5の攻撃カードでは+3ボーナスが表示される", () => {
+		it("Lv.5のファイアボルトでは+3ボーナスが表示される", () => {
 			const desc = getCardDescription(makeCard({ type: "fire", level: 5 }));
 			expect(desc).toContain(`${PLAYER_FIRE_DAMAGE + 3}ダメージ(+3)`);
 		});
 
-		it("Lv.2の強攻撃カードでは+1ボーナスが表示される", () => {
+		it("Lv.2のサンダーでは+1ボーナスが表示される", () => {
 			const desc = getCardDescription(makeCard({ type: "thunder", level: 2 }));
 			expect(desc).toContain(`${PLAYER_THUNDER_DAMAGE + 1}ダメージ(+1)`);
 		});
@@ -135,37 +135,37 @@ describe("cardConstants", () => {
 			expect(desc).toBe(CARD_DESCRIPTION.move);
 		});
 
-		it("Lv.3の攻撃カードでは貫通の説明が表示される", () => {
+		it("Lv.3のファイアボルトでは貫通の説明が表示される", () => {
 			const desc = getCardDescription(makeCard({ type: "fire", level: 3 }));
 			expect(desc).toContain("貫通");
 			expect(desc).toContain("隣接1マス先");
 		});
 
-		it("Lv.5の攻撃カードでは射程延長+貫通の説明が表示される", () => {
+		it("Lv.5のファイアボルトでは射程延長+貫通の説明が表示される", () => {
 			const desc = getCardDescription(makeCard({ type: "fire", level: 5 }));
 			expect(desc).toContain("2マス先まで");
 			expect(desc).toContain("貫通");
 		});
 
-		it("Lv.3の強攻撃カードではノックバックの説明が表示される", () => {
+		it("Lv.3のサンダーではノックバックの説明が表示される", () => {
 			const desc = getCardDescription(makeCard({ type: "thunder", level: 3 }));
 			expect(desc).toContain("ノックバック");
 			expect(desc).toContain("隣接1マス先");
 		});
 
-		it("Lv.5の強攻撃カードでは衝撃波の説明が表示される", () => {
+		it("Lv.5のサンダーでは衝撃波の説明が表示される", () => {
 			const desc = getCardDescription(makeCard({ type: "thunder", level: 5 }));
 			expect(desc).toContain("正面+左右3マス");
 			expect(desc).toContain("ノックバック");
 		});
 
-		it("Lv.1-2の攻撃カードでは特殊効果の説明がない", () => {
+		it("Lv.1-2のファイアボルトでは特殊効果の説明がない", () => {
 			const desc = getCardDescription(makeCard({ type: "fire", level: 2 }));
 			expect(desc).not.toContain("貫通");
 			expect(desc).not.toContain("ノックバック");
 		});
 
-		it("Lv.1-2の強攻撃カードでは特殊効果の説明がない", () => {
+		it("Lv.1-2のサンダーでは特殊効果の説明がない", () => {
 			const desc = getCardDescription(makeCard({ type: "thunder", level: 2 }));
 			expect(desc).not.toContain("ノックバック");
 			expect(desc).not.toContain("衝撃波");
