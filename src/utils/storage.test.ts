@@ -643,4 +643,68 @@ describe("storage", () => {
 		expect(loaded?.visitedTiles.size).toBe(1);
 		expect(loaded?.visitedTiles.has("1,2")).toBe(true);
 	});
+
+	it("eventLogのfire/thunderカードタイプがloadGame()で保持される", () => {
+		const state = createTitleScreenState(42);
+		const saveData = {
+			...state,
+			screen: "game",
+			rng: state.rng.serialize(),
+			eventLog: [
+				{
+					type: "card_level_up",
+					floor: 1,
+					turn: 5,
+					detail: { cardType: "fire", newLevel: 2 },
+				},
+				{
+					type: "card_level_up",
+					floor: 2,
+					turn: 10,
+					detail: { cardType: "thunder", newLevel: 3 },
+				},
+				{
+					type: "card_acquired",
+					floor: 3,
+					turn: 1,
+					detail: { cardType: "fire" },
+				},
+				{
+					type: "card_acquired",
+					floor: 4,
+					turn: 1,
+					detail: { cardType: "thunder" },
+				},
+			],
+		};
+		localStorageMock.setItem("dungeon-cards-save", JSON.stringify(saveData));
+
+		const loaded = loadGame();
+		expect(loaded).not.toBeNull();
+		expect(loaded?.eventLog).toHaveLength(4);
+		expect(loaded?.eventLog[0]).toEqual({
+			type: "card_level_up",
+			floor: 1,
+			turn: 5,
+			detail: { cardType: "fire", newLevel: 2 },
+		});
+		expect(loaded?.eventLog[1]).toEqual({
+			type: "card_level_up",
+			floor: 2,
+			turn: 10,
+			detail: { cardType: "thunder", newLevel: 3 },
+		});
+		expect(loaded?.eventLog[2]).toEqual({
+			type: "card_acquired",
+			floor: 3,
+			turn: 1,
+			detail: { cardType: "fire" },
+		});
+		expect(loaded?.eventLog[3]).toEqual({
+			type: "card_acquired",
+			floor: 4,
+			turn: 1,
+			detail: { cardType: "thunder" },
+		});
+	});
 });

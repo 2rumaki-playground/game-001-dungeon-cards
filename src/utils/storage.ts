@@ -252,13 +252,7 @@ const VALID_RUN_EVENT_TYPES: ReadonlySet<RunEventType> = new Set([
 	"card_acquired",
 ]);
 
-const VALID_CARD_TYPES = new Set([
-	"move",
-	"attack",
-	"strong_attack",
-	"jump",
-	"wait",
-]);
+const VALID_CARD_TYPES = new Set(["move", "fire", "thunder", "jump", "wait"]);
 
 function sanitizeEventLog(raw: unknown): RunEvent[] {
 	if (!Array.isArray(raw)) return [];
