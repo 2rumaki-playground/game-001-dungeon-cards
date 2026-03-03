@@ -47,10 +47,16 @@ const ACQUIRE_SCALE_DURATION = 200;
 const ACQUIRE_SHRINK_DURATION = 300;
 const ACQUIRE_PARTICLE_COUNT = 20;
 
+/** カード取得アニメーション：拡大スケール */
+const ACQUIRE_EXPAND_SCALE = 1.15;
+
 /** カード除去アニメーション定数 */
 const REMOVE_FADE_DURATION = 400;
 const REMOVE_PARTICLE_COLORS = [0xff4444, 0xff6644, 0xcc2222];
 const REMOVE_PARTICLE_COUNT = 15;
+
+/** カード除去アニメーション：縮小スケール */
+const REMOVE_SHRINK_SCALE = 0.8;
 
 /** グリッドレイアウト定数 */
 const GRID_COLUMNS = 4;
@@ -803,7 +809,7 @@ export class RewardScreen {
 
 		await tween(
 			cardContainer,
-			{ scaleX: 1.15, scaleY: 1.15 },
+			{ scaleX: ACQUIRE_EXPAND_SCALE, scaleY: ACQUIRE_EXPAND_SCALE },
 			{ duration: ACQUIRE_SCALE_DURATION, easing: Easing.easeOutBack },
 		);
 
@@ -843,7 +849,7 @@ export class RewardScreen {
 
 		await tween(
 			itemContainer,
-			{ alpha: 0, scaleX: 0.8, scaleY: 0.8 },
+			{ alpha: 0, scaleX: REMOVE_SHRINK_SCALE, scaleY: REMOVE_SHRINK_SCALE },
 			{ duration: REMOVE_FADE_DURATION, easing: Easing.easeInOut },
 		);
 	}
