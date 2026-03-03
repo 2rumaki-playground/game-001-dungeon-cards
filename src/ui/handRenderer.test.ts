@@ -963,15 +963,15 @@ describe("HandRenderer コンボ予告表示", () => {
 		expect(attackCard.children.length).toBe(baseCount);
 	});
 
-	it("chain予告: attack後のattackカードに追加Graphicsが描画される", () => {
+	it("chain予告: fire後のfireカードに追加Graphicsが描画される", () => {
 		const baseCount = getBaseChildCount("fire");
 
 		const renderer = new HandRenderer();
 		renderer.setComboHistory({ lastCardType: "fire", lastDirection: null });
 		renderer.render(createTestCards());
 
-		const attackCard = findCardContainer(renderer, 1);
-		expect(attackCard.children.length).toBe(baseCount + 1);
+		const fireCard = findCardContainer(renderer, 1);
+		expect(fireCard.children.length).toBe(baseCount + 1);
 	});
 
 	it("moveカードにはコンボ予告が表示されない", () => {
@@ -985,18 +985,18 @@ describe("HandRenderer コンボ予告表示", () => {
 		expect(moveCard.children.length).toBe(baseCount);
 	});
 
-	it("strong_attackカードにはコンボ予告が表示されない", () => {
+	it("thunderカードにはコンボ予告が表示されない", () => {
 		const baseCount = getBaseChildCount("thunder");
 
 		const renderer = new HandRenderer();
 		renderer.setComboHistory({ lastCardType: "fire", lastDirection: null });
 		renderer.render(createTestCards());
 
-		const strongAttackCard = findCardContainer(renderer, 2);
-		expect(strongAttackCard.children.length).toBe(baseCount);
+		const thunderCard = findCardContainer(renderer, 2);
+		expect(thunderCard.children.length).toBe(baseCount);
 	});
 
-	it("選択中のattackカードにはコンボ予告が表示されない（金枠が優先）", () => {
+	it("選択中のfireカードにはコンボ予告が表示されない（金枠が優先）", () => {
 		const baseCount = getBaseChildCount("fire");
 
 		const renderer = new HandRenderer();
@@ -1004,25 +1004,25 @@ describe("HandRenderer コンボ予告表示", () => {
 		renderer.setSelectedCard("card-2");
 		renderer.render(createTestCards());
 
-		const attackCard = findCardContainer(renderer, 1);
-		expect(attackCard.children.length).toBe(baseCount);
+		const fireCard = findCardContainer(renderer, 1);
+		expect(fireCard.children.length).toBe(baseCount);
 	});
 
-	it("キュー内のattackカードにはコンボ予告が表示されない（金枠が優先）", () => {
+	it("キュー内のfireカードにはコンボ予告が表示されない（金枠が優先）", () => {
 		const renderer = new HandRenderer();
 		renderer.setComboHistory({ lastCardType: "fire", lastDirection: null });
 		renderer.setQueuedCards(new Map([["card-2", 1]]));
 		renderer.render(createTestCards());
 
-		const attackCard = findCardContainer(renderer, 1);
+		const fireCard = findCardContainer(renderer, 1);
 
 		// キューバッジ(2要素)は追加されるが、コンボ予告は追加されない
 		renderer.setComboHistory(null);
 		renderer.setQueuedCards(new Map([["card-2", 1]]));
 		renderer.render(createTestCards());
-		const attackCardNoCombo = findCardContainer(renderer, 1);
+		const fireCardNoCombo = findCardContainer(renderer, 1);
 
-		expect(attackCard.children.length).toBe(attackCardNoCombo.children.length);
+		expect(fireCard.children.length).toBe(fireCardNoCombo.children.length);
 	});
 
 	it("clear()でコンボ予告状態がリセットされる", () => {
