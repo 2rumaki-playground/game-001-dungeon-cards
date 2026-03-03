@@ -25,7 +25,7 @@ describe("コンボ発動（統合テスト）", () => {
 		});
 	});
 
-	it("移動失敗→攻撃（同方向）では突撃コンボが発動しない", () => {
+	it("移動失敗→ファイアボルト（同方向）ではコンボが発動しない", () => {
 		// プレイヤー(3,3)、敵(3,2)=上方向（移動が敵でブロックされる）
 		// 移動: 上方向 (3,3)→(3,2)は敵がいるので移動失敗
 		const moveResult = executeMove(state, "test-card-0", "up");
@@ -37,7 +37,7 @@ describe("コンボ発動（統合テスト）", () => {
 			lastDirection: null,
 		});
 
-		// 攻撃: 上方向→突撃コンボは発動しない
+		// ファイアボルト: 上方向→コンボは発動しない
 		const attackResult = executeFire(afterMove, "test-card-1", "up");
 
 		expect(attackResult.hit).toBe(true);
