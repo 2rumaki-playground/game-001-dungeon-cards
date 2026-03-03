@@ -149,7 +149,7 @@ export function createCardTooltip(cardOrType: Card | CardType): {
 		yOffset += 13;
 		tooltip.addChild(useText);
 
-		// 撃破数・最大ダメージ（attack/strong_attack のみ）
+		// 撃破数・最大ダメージ（fire/thunder のみ）
 		if (card.type === "fire" || card.type === "thunder") {
 			const defeatText = new Text({
 				text: `撃破: ${card.stats.defeatCount}体`,
