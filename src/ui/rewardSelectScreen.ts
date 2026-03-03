@@ -13,12 +13,6 @@ import {
 	TOOLTIP_WIDTH,
 } from "./cardTooltip";
 import {
-	createOverlay,
-	drawRoundedRect,
-	makeInteractive,
-} from "./graphicsHelpers";
-import type { ParticleSystem } from "./particleSystem";
-import {
 	BUTTON_HEIGHT,
 	BUTTON_RADIUS,
 	BUTTON_WIDTH,
@@ -30,7 +24,13 @@ import {
 	REWARD_CARD_RADIUS,
 	REWARD_CARD_WIDTH,
 	unhighlightCard,
-} from "./rewardScreenHelpers";
+} from "./deckbuildingScreenHelpers";
+import {
+	createOverlay,
+	drawRoundedRect,
+	makeInteractive,
+} from "./graphicsHelpers";
+import type { ParticleSystem } from "./particleSystem";
 import {
 	UI_COLOR_GOLD,
 	UI_COLORS_BUTTON_SECONDARY,
