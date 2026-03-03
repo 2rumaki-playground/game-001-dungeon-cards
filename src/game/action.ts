@@ -138,29 +138,25 @@ export function executeMove(
 		const delta = DIRECTION_DELTA[direction];
 		const nx = state.player.position.x + delta.x;
 		const ny = state.player.position.y + delta.y;
-		if (
-			isInBounds(state.map, nx, ny) &&
-			!isWallTile(state.map[ny][nx]) &&
-			findEnemyAt(next.enemies, nx, ny)
-		) {
-			const enemy = findEnemyAt(next.enemies, nx, ny) as NonNullable<
-				ReturnType<typeof findEnemyAt>
-			>;
-			// 敵ダメージ（attackCardIdなし: XP付与なし）
-			next = applyDamageToEnemy(next, enemy.id, BODY_SLAM_DAMAGE).state;
-			// 自傷ダメージ
-			next = applyDamageToPlayer(next, BODY_SLAM_RECOIL);
-			next = addActionLog(next, "体当たりした", "player");
-			next = addSpeechLog(next, "body_slam");
-			// ゲームオーバー判定
-			next = checkGameOver(next);
-			return {
-				state: next,
-				reachedStairs: false,
-				tileEffect: null,
-				gameOver: next.screen === "gameOver",
-				bodySlam: true,
-			};
+		if (isInBounds(state.map, nx, ny) && !isWallTile(state.map[ny][nx])) {
+			const enemy = findEnemyAt(next.enemies, nx, ny);
+			if (enemy) {
+				// 敵ダメージ（attackCardIdなし: XP付与なし）
+				next = applyDamageToEnemy(next, enemy.id, BODY_SLAM_DAMAGE).state;
+				// 自傷ダメージ
+				next = applyDamageToPlayer(next, BODY_SLAM_RECOIL);
+				next = addActionLog(next, "体当たりした", "player");
+				next = addSpeechLog(next, "body_slam");
+				// ゲームオーバー判定
+				next = checkGameOver(next);
+				return {
+					state: next,
+					reachedStairs: false,
+					tileEffect: null,
+					gameOver: next.screen === "gameOver",
+					bodySlam: true,
+				};
+			}
 		}
 
 		next = addActionLog(next, "移動できなかった", "player");
