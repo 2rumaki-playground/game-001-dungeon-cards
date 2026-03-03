@@ -312,17 +312,17 @@ describe("hasRangeExtendEffect", () => {
 });
 
 describe("hasKnockbackEffect", () => {
-	it.each([1, 2])("強攻撃カードLv.%i ではfalse", (level) => {
+	it.each([1, 2])("サンダーLv.%i ではfalse", (level) => {
 		expect(hasKnockbackEffect(makeCard({ type: "thunder", level }))).toBe(
 			false,
 		);
 	});
 
-	it.each([3, 4, 5])("強攻撃カードLv.%i ではtrue", (level) => {
+	it.each([3, 4, 5])("サンダーLv.%i ではtrue", (level) => {
 		expect(hasKnockbackEffect(makeCard({ type: "thunder", level }))).toBe(true);
 	});
 
-	it("強攻撃カード以外ではレベルに関係なくfalse", () => {
+	it("サンダー以外ではレベルに関係なくfalse", () => {
 		expect(hasKnockbackEffect(makeCard({ type: "fire", level: 5 }))).toBe(
 			false,
 		);
@@ -330,19 +330,19 @@ describe("hasKnockbackEffect", () => {
 });
 
 describe("hasShockwaveEffect", () => {
-	it.each([1, 2, 3, 4])("強攻撃カードLv.%i ではfalse", (level) => {
+	it.each([1, 2, 3, 4])("サンダーLv.%i ではfalse", (level) => {
 		expect(hasShockwaveEffect(makeCard({ type: "thunder", level }))).toBe(
 			false,
 		);
 	});
 
-	it("強攻撃カードLv.5ではtrue", () => {
+	it("サンダーLv.5ではtrue", () => {
 		expect(hasShockwaveEffect(makeCard({ type: "thunder", level: 5 }))).toBe(
 			true,
 		);
 	});
 
-	it("強攻撃カード以外ではレベルに関係なくfalse", () => {
+	it("サンダー以外ではレベルに関係なくfalse", () => {
 		expect(hasShockwaveEffect(makeCard({ type: "fire", level: 5 }))).toBe(
 			false,
 		);
