@@ -239,6 +239,23 @@ export const speechVariants: Record<SpeechEventType, readonly string[]> = {
 		"…パスする",
 		"このままでいい",
 	],
+	body_slam: [
+		"…体で押す",
+		"突進",
+		"…ぶつかる",
+		"体当たり",
+		"…反動は承知",
+		"押し通る",
+		"…仕方ない",
+		"体で排除",
+		"…痛みは些事",
+		"突破する",
+		"…力ずく",
+		"接触排除",
+		"…退かないなら",
+		"体で語る",
+		"…覚悟の上",
+	],
 };
 
 export const rareSpeechVariants: Partial<

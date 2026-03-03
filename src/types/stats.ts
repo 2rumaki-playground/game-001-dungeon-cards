@@ -13,7 +13,7 @@ export type PlayResult = "clear" | "death";
 /**
  * 死因
  */
-export type DeathCause = "enemy_attack" | "trap" | "unknown";
+export type DeathCause = "enemy_attack" | "trap" | "body_slam" | "unknown";
 
 /**
  * 1ランのプレイセッション共通フィールド

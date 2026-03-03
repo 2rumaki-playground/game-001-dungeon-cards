@@ -4,6 +4,8 @@
  */
 
 import {
+	BODY_SLAM_DAMAGE,
+	BODY_SLAM_RECOIL,
 	FIRE_EXTENDED_RANGE,
 	JUMP_DISTANCE,
 	PLAYER_FIRE_DAMAGE,
@@ -25,10 +27,14 @@ import {
 	hasShockwaveEffect,
 } from "./cardLevel";
 import { incrementUseCount } from "./cardStats";
-import { applyDamageToEnemy } from "./combat";
+import {
+	applyDamageToEnemy,
+	applyDamageToPlayer,
+	checkGameOver,
+} from "./combat";
 import { detectCombo, getComboBonus } from "./combo";
 import { markCardUsed } from "./deck";
-import { hasEnemyAt } from "./enemyUtils";
+import { findEnemyAt, hasEnemyAt } from "./enemyUtils";
 import { revealAtPosition } from "./fogOfWar";
 import { isInBounds, isWallTile } from "./map";
 import { recordCardUsage } from "./playStats";
@@ -95,8 +101,10 @@ export type MoveResult = {
 	reachedStairs: boolean;
 	/** 発動した特殊タイル効果 */
 	tileEffect: SpecialTileType | null;
-	/** 特殊タイル効果によるゲームオーバー */
+	/** ゲームオーバー */
 	gameOver: boolean;
+	/** 体当たりが発生したか */
+	bodySlam: boolean;
 };
 
 /**
@@ -125,6 +133,32 @@ export function executeMove(
 			lastCardType: "move",
 			lastDirection: null,
 		});
+
+		// 体当たり判定: 移動先が範囲内・壁でない・敵がいる場合
+		const delta = DIRECTION_DELTA[direction];
+		const nx = state.player.position.x + delta.x;
+		const ny = state.player.position.y + delta.y;
+		if (isInBounds(state.map, nx, ny) && !isWallTile(state.map[ny][nx])) {
+			const enemy = findEnemyAt(next.enemies, nx, ny);
+			if (enemy) {
+				// 敵ダメージ（attackCardIdなし: XP付与なし）
+				next = applyDamageToEnemy(next, enemy.id, BODY_SLAM_DAMAGE).state;
+				// 自傷ダメージ
+				next = applyDamageToPlayer(next, BODY_SLAM_RECOIL);
+				next = addActionLog(next, "体当たりした", "player");
+				next = addSpeechLog(next, "body_slam");
+				// ゲームオーバー判定
+				next = checkGameOver(next);
+				return {
+					state: next,
+					reachedStairs: false,
+					tileEffect: null,
+					gameOver: next.screen === "gameOver",
+					bodySlam: true,
+				};
+			}
+		}
+
 		next = addActionLog(next, "移動できなかった", "player");
 		next = addSpeechLog(next, "move_fail");
 		return {
@@ -132,6 +166,7 @@ export function executeMove(
 			reachedStairs: false,
 			tileEffect: null,
 			gameOver: false,
+			bodySlam: false,
 		};
 	}
 
@@ -167,6 +202,7 @@ export function executeMove(
 			reachedStairs: true,
 			tileEffect: null,
 			gameOver: false,
+			bodySlam: false,
 		};
 	}
 
@@ -178,6 +214,7 @@ export function executeMove(
 		reachedStairs: false,
 		tileEffect: effect.triggeredTile,
 		gameOver: effect.gameOver,
+		bodySlam: false,
 	};
 }
 

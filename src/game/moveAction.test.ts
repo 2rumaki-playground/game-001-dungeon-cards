@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { PLAYER_INITIAL_HP, TRAP_DAMAGE, TREASURE_HEAL } from "../constants";
+import {
+	BODY_SLAM_DAMAGE,
+	BODY_SLAM_RECOIL,
+	PLAYER_INITIAL_HP,
+	TRAP_DAMAGE,
+	TREASURE_HEAL,
+} from "../constants";
 import {
 	createTestMap,
 	createTestState,
@@ -139,7 +145,7 @@ describe("executeMove", () => {
 		expect(result.actionLog.length).toBeGreaterThan(0);
 	});
 
-	it("敵がいるマスへの移動失敗: 位置変更なし・カード使用済み", () => {
+	it("敵がいるマスへの移動で体当たり: 位置変更なし・カード使用済み", () => {
 		const enemies: Enemy[] = [
 			{
 				id: "enemy-1",
@@ -409,5 +415,207 @@ describe("executeMove - visitedTiles", () => {
 		expect(result.state.visitedTiles.has("5,2")).toBe(true);
 		expect(result.state.visitedTiles.has("4,3")).toBe(true);
 		expect(result.state.visitedTiles.has("5,3")).toBe(true);
+	});
+});
+
+describe("executeMove - 体当たり", () => {
+	const makeCard = () => ({
+		id: "move-1",
+		type: "move" as const,
+		level: 1,
+		exp: 0,
+		stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+	});
+
+	it("敵がいるマスへの移動でbodySlam: true", () => {
+		const enemies: Enemy[] = [
+			{
+				id: "enemy-1",
+				position: { x: 4, y: 3 },
+				hp: 3,
+				maxHp: 3,
+				type: "normal",
+			},
+		];
+		const state = createTestState({
+			enemies,
+			deck: { hand: [makeCard()], usedCardIds: [] },
+		});
+		const result = executeMove(state, "move-1", "right");
+		expect(result.bodySlam).toBe(true);
+	});
+
+	it("敵にBODY_SLAM_DAMAGEダメージを与える", () => {
+		const enemies: Enemy[] = [
+			{
+				id: "enemy-1",
+				position: { x: 4, y: 3 },
+				hp: 3,
+				maxHp: 3,
+				type: "normal",
+			},
+		];
+		const state = createTestState({
+			enemies,
+			deck: { hand: [makeCard()], usedCardIds: [] },
+		});
+		const { state: result } = executeMove(state, "move-1", "right");
+		const enemy = result.enemies.find((e) => e.id === "enemy-1");
+		expect(enemy?.hp).toBe(3 - BODY_SLAM_DAMAGE);
+	});
+
+	it("プレイヤーにBODY_SLAM_RECOIL反動ダメージ", () => {
+		const enemies: Enemy[] = [
+			{
+				id: "enemy-1",
+				position: { x: 4, y: 3 },
+				hp: 3,
+				maxHp: 3,
+				type: "normal",
+			},
+		];
+		const state = createTestState({
+			enemies,
+			deck: { hand: [makeCard()], usedCardIds: [] },
+		});
+		const { state: result } = executeMove(state, "move-1", "right");
+		expect(result.player.hp).toBe(PLAYER_INITIAL_HP - BODY_SLAM_RECOIL);
+	});
+
+	it("プレイヤー位置は移動しない（敵撃破時も）", () => {
+		const enemies: Enemy[] = [
+			{
+				id: "enemy-1",
+				position: { x: 4, y: 3 },
+				hp: 1,
+				maxHp: 1,
+				type: "normal",
+			},
+		];
+		const state = createTestState({
+			enemies,
+			deck: { hand: [makeCard()], usedCardIds: [] },
+		});
+		const { state: result } = executeMove(state, "move-1", "right");
+		expect(result.player.position).toEqual({ x: 3, y: 3 });
+		// 敵は撃破されている
+		expect(result.enemies.find((e) => e.id === "enemy-1")).toBeUndefined();
+	});
+
+	it("カード使用済み", () => {
+		const enemies: Enemy[] = [
+			{
+				id: "enemy-1",
+				position: { x: 4, y: 3 },
+				hp: 3,
+				maxHp: 3,
+				type: "normal",
+			},
+		];
+		const state = createTestState({
+			enemies,
+			deck: { hand: [makeCard()], usedCardIds: [] },
+		});
+		const { state: result } = executeMove(state, "move-1", "right");
+		expect(result.deck.usedCardIds).toContain("move-1");
+	});
+
+	it("lastDirection: null（突撃コンボ不成立）", () => {
+		const enemies: Enemy[] = [
+			{
+				id: "enemy-1",
+				position: { x: 4, y: 3 },
+				hp: 3,
+				maxHp: 3,
+				type: "normal",
+			},
+		];
+		const state = createTestState({
+			enemies,
+			deck: { hand: [makeCard()], usedCardIds: [] },
+		});
+		const { state: result } = executeMove(state, "move-1", "right");
+		expect(result.comboHistory?.lastDirection).toBeNull();
+	});
+
+	it("盾持ち敵: floor(1/2)=0ダメージ、盾消費", () => {
+		const enemies: Enemy[] = [
+			{
+				id: "enemy-1",
+				position: { x: 4, y: 3 },
+				hp: 3,
+				maxHp: 3,
+				type: "shielded",
+				shieldActive: true,
+			},
+		];
+		const state = createTestState({
+			enemies,
+			deck: { hand: [makeCard()], usedCardIds: [] },
+		});
+		const { state: result } = executeMove(state, "move-1", "right");
+		const enemy = result.enemies.find((e) => e.id === "enemy-1");
+		// floor(1/2) = 0 ダメージなのでHP変化なし
+		expect(enemy?.hp).toBe(3);
+		// 盾は消費される
+		expect(enemy?.shieldActive).toBe(false);
+	});
+
+	it("自傷HP0でgameOver: true（相打ち）", () => {
+		const enemies: Enemy[] = [
+			{
+				id: "enemy-1",
+				position: { x: 4, y: 3 },
+				hp: 1,
+				maxHp: 1,
+				type: "normal",
+			},
+		];
+		const state = createTestState({
+			enemies,
+			player: {
+				position: { x: 3, y: 3 },
+				hp: BODY_SLAM_RECOIL,
+				maxHp: PLAYER_INITIAL_HP,
+			},
+			deck: { hand: [makeCard()], usedCardIds: [] },
+		});
+		const { gameOver, state: result } = executeMove(state, "move-1", "right");
+		expect(gameOver).toBe(true);
+		expect(result.screen).toBe("gameOver");
+	});
+
+	it("カードXP付与なし（攻撃カードIDを渡さない）", () => {
+		const enemies: Enemy[] = [
+			{
+				id: "enemy-1",
+				position: { x: 4, y: 3 },
+				hp: 1,
+				maxHp: 1,
+				type: "normal",
+			},
+		];
+		const card = makeCard();
+		const state = createTestState({
+			enemies,
+			deck: { hand: [card], usedCardIds: [] },
+		});
+		const { state: result } = executeMove(state, "move-1", "right");
+		// 移動カードにXPは付与されない
+		expect(result.deck.hand[0].exp).toBe(0);
+	});
+
+	it("壁への移動はbodySlam: false", () => {
+		const state = createTestState({
+			player: {
+				position: { x: 1, y: 1 },
+				hp: PLAYER_INITIAL_HP,
+				maxHp: PLAYER_INITIAL_HP,
+			},
+			deck: { hand: [makeCard()], usedCardIds: [] },
+		});
+		// (1,1)からupは(1,0)=壁なので通常の移動失敗
+		const result = executeMove(state, "move-1", "up");
+		expect(result.bodySlam).toBe(false);
 	});
 });

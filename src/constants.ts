@@ -25,6 +25,8 @@ export const JUMP_DISTANCE = 2;
 export const PLAYER_INITIAL_HP = 10;
 export const PLAYER_FIRE_DAMAGE = 1;
 export const PLAYER_THUNDER_DAMAGE = 3;
+export const BODY_SLAM_DAMAGE = 1;
+export const BODY_SLAM_RECOIL = 1;
 
 // 敵タイプ別パラメータ
 export const ENEMY_PARAMS = {
