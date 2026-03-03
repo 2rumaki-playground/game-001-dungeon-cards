@@ -108,7 +108,7 @@ function createTestResultData(overrides?: Partial<ResultData>): ResultData {
 					turn: 10,
 					detail: { cardType: "fire", newLevel: 3 },
 				},
-				text: "3F: ⚔攻撃がLv.3に成長",
+				text: "3F: 🔥ファイアボルトがLv.3に成長",
 				score: 55,
 			},
 			{
