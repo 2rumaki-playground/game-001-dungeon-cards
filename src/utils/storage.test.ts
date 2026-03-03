@@ -144,7 +144,7 @@ describe("storage", () => {
 			screen: "game",
 			deck: {
 				deckOrder: [{ id: "c1", type: "move" }],
-				drawPile: [{ id: "c2", type: "attack" }],
+				drawPile: [{ id: "c2", type: "fire" }],
 				hand: [{ id: "c3", type: "jump" }],
 				discardPile: [{ id: "c4", type: "wait" }],
 			},

@@ -4,10 +4,10 @@
  */
 
 import {
-	ATTACK_EXTENDED_RANGE,
+	FIRE_EXTENDED_RANGE,
 	JUMP_DISTANCE,
-	PLAYER_ATTACK_DAMAGE,
-	PLAYER_STRONG_ATTACK_DAMAGE,
+	PLAYER_FIRE_DAMAGE,
+	PLAYER_THUNDER_DAMAGE,
 } from "../constants";
 import type {
 	ComboType,
@@ -208,7 +208,6 @@ function getAttackDamageBonus(state: GameState, cardId: string): number {
  * コンボ種別に対応するログメッセージ
  */
 const COMBO_LOG_MESSAGE: Record<ComboType, string> = {
-	charge: "突撃コンボ発動！",
 	chain: "連撃コンボ発動！",
 	ambush: "奇襲コンボ発動！",
 	focus: "集中攻撃コンボ発動！",
@@ -242,7 +241,7 @@ function detectAndApplyCombo(
 	state: GameState,
 	direction: Direction,
 ): { state: GameState; combo: ComboType | null; comboBonus: number } {
-	const combo = detectCombo(state.comboHistory, "attack", direction);
+	const combo = detectCombo(state.comboHistory, "fire", direction);
 	if (!combo) {
 		return { state, combo: null, comboBonus: 0 };
 	}
@@ -253,7 +252,7 @@ function detectAndApplyCombo(
 }
 
 /**
- * 攻撃カード使用時のプレイヤー攻撃処理
+ * ファイアボルト使用時のプレイヤー攻撃処理
  *
  * 成功/失敗に関わらずカード使用を行う。
  * 成功時は敵にダメージを与え、HP0以下で敵を削除。
@@ -261,17 +260,17 @@ function detectAndApplyCombo(
  * Lv5: 射程延長（2マス先まで攻撃可能）+ 貫通
  * 戻り値の hit でヒット情報を返す。
  */
-export function executeAttack(
+export function executeFire(
 	state: GameState,
 	cardId: string,
 	direction: Direction,
 ): AttackResult {
-	recordCardUsage("attack");
+	recordCardUsage("fire");
 
 	const card = state.deck.hand.find((c) => c.id === cardId);
 	const levelBonus = getAttackDamageBonus(state, cardId);
 	const pierce = card ? hasPierceEffect(card) : false;
-	const range = card && hasRangeExtendEffect(card) ? ATTACK_EXTENDED_RANGE : 1;
+	const range = card && hasRangeExtendEffect(card) ? FIRE_EXTENDED_RANGE : 1;
 
 	// 1. カードを使用済みへ
 	let next = markCardAsPlayed(state, cardId);
@@ -288,28 +287,11 @@ export function executeAttack(
 	const target = findAttackTarget(next, direction, range);
 
 	if (!target) {
-		// 4. ミス時: 突撃コンボならひび割れ壁破壊を試みる
-		if (combo === "charge") {
-			const cracked = tryCrackedWallDestroy(next, direction);
-			if (cracked.destroyed) {
-				return {
-					state: updateComboHistory(cracked.state, {
-						lastCardType: "attack",
-						lastDirection: direction,
-					}),
-					hit: false,
-					overkill: 0,
-					defeated: false,
-					comboType: combo,
-					levelBonus,
-				};
-			}
-		}
 		next = addActionLog(next, "攻撃できなかった", "player");
 		next = addSpeechLog(next, "attack_miss");
 		return {
 			state: updateComboHistory(next, {
-				lastCardType: "attack",
+				lastCardType: "fire",
 				lastDirection: direction,
 			}),
 			hit: false,
@@ -320,8 +302,8 @@ export function executeAttack(
 		};
 	}
 
-	// 5. ダメージ適用
-	const totalDamage = PLAYER_ATTACK_DAMAGE + levelBonus + comboBonus;
+	// 4. ダメージ適用
+	const totalDamage = PLAYER_FIRE_DAMAGE + levelBonus + comboBonus;
 	const damageResult = applyDamageToEnemy(
 		next,
 		target.enemyId,
@@ -330,7 +312,7 @@ export function executeAttack(
 	);
 	next = damageResult.state;
 
-	// 6. 貫通（Lv3+撃破時）
+	// 5. 貫通（Lv3+撃破時）
 	if (pierce && damageResult.defeated && damageResult.overkill > 0) {
 		next = applyPierce(
 			next,
@@ -341,10 +323,10 @@ export function executeAttack(
 		);
 	}
 
-	// 7. comboHistory更新 + return
+	// 6. comboHistory更新 + return
 	return {
 		state: updateComboHistory(next, {
-			lastCardType: "attack",
+			lastCardType: "fire",
 			lastDirection: direction,
 		}),
 		hit: true,
@@ -357,27 +339,27 @@ export function executeAttack(
 }
 
 /**
- * 強攻撃カード使用時のプレイヤー攻撃処理
+ * サンダー使用時のプレイヤー攻撃処理
  *
  * 成功/失敗に関わらずカード使用を行う。
  * 成功時は敵に大ダメージを与え、HP0以下で敵を削除。
  * Lv3: ノックバック（生存した敵を攻撃方向に1マス吹き飛ばす）
  * Lv5: 衝撃波（正面+左右3マスにダメージ + ノックバック）
  * 戻り値の hit でヒット情報を返す。
- * strong_attackはコンボ対象外（トリガーにも判定対象にもならない）。
+ * thunderはコンボ対象外（トリガーにも判定対象にもならない）。
  */
-export function executeStrongAttack(
+export function executeThunder(
 	state: GameState,
 	cardId: string,
 	direction: Direction,
 ): AttackResult {
-	recordCardUsage("strong_attack");
+	recordCardUsage("thunder");
 
 	const card = state.deck.hand.find((c) => c.id === cardId);
 	const levelBonus = getAttackDamageBonus(state, cardId);
 	const shockwave = card ? hasShockwaveEffect(card) : false;
 	const knockback = card ? hasKnockbackEffect(card) : false;
-	const totalDamage = PLAYER_STRONG_ATTACK_DAMAGE + levelBonus;
+	const totalDamage = PLAYER_THUNDER_DAMAGE + levelBonus;
 
 	// Lv5衝撃波
 	if (shockwave) {
@@ -390,14 +372,14 @@ export function executeStrongAttack(
 			if (shockResult.crackedWallDestroyed) {
 				next = addActionLog(next, "ひび割れ壁を破壊した", "player");
 			} else {
-				next = addActionLog(next, "強攻撃できなかった", "player");
+				next = addActionLog(next, "サンダーが外れた", "player");
 				next = addSpeechLog(next, "attack_miss");
 			}
 		}
 
 		return {
 			state: updateComboHistory(next, {
-				lastCardType: "strong_attack",
+				lastCardType: "thunder",
 				lastDirection: direction,
 			}),
 			hit: shockResult.hit,
@@ -416,7 +398,7 @@ export function executeStrongAttack(
 	if (cracked.destroyed) {
 		return {
 			state: updateComboHistory(cracked.state, {
-				lastCardType: "strong_attack",
+				lastCardType: "thunder",
 				lastDirection: direction,
 			}),
 			hit: false,
@@ -429,11 +411,11 @@ export function executeStrongAttack(
 	// ターゲット探索
 	const target = findAttackTarget(next, direction, 1);
 	if (!target) {
-		next = addActionLog(next, "強攻撃できなかった", "player");
+		next = addActionLog(next, "サンダーが外れた", "player");
 		next = addSpeechLog(next, "attack_miss");
 		return {
 			state: updateComboHistory(next, {
-				lastCardType: "strong_attack",
+				lastCardType: "thunder",
 				lastDirection: direction,
 			}),
 			hit: false,
@@ -460,7 +442,7 @@ export function executeStrongAttack(
 	// comboHistory更新（コンボ対象外だが履歴には記録）
 	return {
 		state: updateComboHistory(next, {
-			lastCardType: "strong_attack",
+			lastCardType: "thunder",
 			lastDirection: direction,
 		}),
 		hit: true,

@@ -6,14 +6,14 @@
 import type { CardType } from "../types";
 import type { ParticleConfig, Vec2 } from "./particleLogic";
 
-/** 攻撃ヒット時に使用可能なカードタイプ */
-export type AttackCardType = Extract<CardType, "attack" | "strong_attack">;
+/** 魔法攻撃ヒット時に使用可能なカードタイプ */
+export type MagicCardType = Extract<CardType, "fire" | "thunder">;
 
 /**
- * 攻撃カード用パーティクル設定を生成
+ * ファイアボルト用パーティクル設定を生成
  * オレンジ系の火花エフェクト
  */
-export function createAttackParticleConfig(origin: Vec2): ParticleConfig {
+export function createFireParticleConfig(origin: Vec2): ParticleConfig {
 	return {
 		count: 12,
 		origin,
@@ -26,10 +26,10 @@ export function createAttackParticleConfig(origin: Vec2): ParticleConfig {
 }
 
 /**
- * 強攻撃カード用パーティクル設定を生成
+ * サンダー用パーティクル設定を生成
  * 赤系の衝撃波・爆発エフェクト
  */
-export function createStrongAttackParticleConfig(origin: Vec2): ParticleConfig {
+export function createThunderParticleConfig(origin: Vec2): ParticleConfig {
 	return {
 		count: 25,
 		origin,
@@ -131,22 +131,6 @@ export function createTrapDamageParticleConfig(origin: Vec2): ParticleConfig {
 }
 
 /**
- * 突撃コンボ用パーティクル設定を生成
- * 黄色系の放射エフェクト
- */
-export function createChargeComboParticleConfig(origin: Vec2): ParticleConfig {
-	return {
-		count: 15,
-		origin,
-		color: [0xffd700, 0xffaa00, 0xffee44],
-		speed: { min: 0.1, max: 0.25 },
-		life: { min: 250, max: 450 },
-		size: { min: 2, max: 5 },
-		pattern: { type: "radial" },
-	};
-}
-
-/**
  * 連撃コンボ用パーティクル設定を生成
  * シアン系の放射エフェクト
  */
@@ -165,19 +149,19 @@ export function createChainComboParticleConfig(origin: Vec2): ParticleConfig {
 /**
  * カードタイプからヒット時パーティクル設定を取得
  */
-export function getAttackParticleConfig(
-	cardType: AttackCardType,
+export function getMagicParticleConfig(
+	cardType: MagicCardType,
 	origin: Vec2,
 ): ParticleConfig {
 	switch (cardType) {
-		case "attack":
-			return createAttackParticleConfig(origin);
-		case "strong_attack":
-			return createStrongAttackParticleConfig(origin);
+		case "fire":
+			return createFireParticleConfig(origin);
+		case "thunder":
+			return createThunderParticleConfig(origin);
 		default: {
 			const _exhaustiveCheck: never = cardType;
 			throw new Error(
-				`未対応の AttackCardType が指定されました: ${_exhaustiveCheck}`,
+				`未対応の MagicCardType が指定されました: ${_exhaustiveCheck}`,
 			);
 		}
 	}

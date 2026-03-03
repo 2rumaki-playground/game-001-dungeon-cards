@@ -14,10 +14,10 @@ import {
 describe("debugStart", () => {
 	describe("createDebugDeckState", () => {
 		it("CardType別の枚数が正しい", () => {
-			const deck = createDebugDeckState({ attack: 5, move: 3, jump: 2 });
+			const deck = createDebugDeckState({ fire: 5, move: 3, jump: 2 });
 
 			const allCards = deck.hand;
-			expect(allCards.filter((c) => c.type === "attack")).toHaveLength(5);
+			expect(allCards.filter((c) => c.type === "fire")).toHaveLength(5);
 			expect(allCards.filter((c) => c.type === "move")).toHaveLength(3);
 			expect(allCards.filter((c) => c.type === "jump")).toHaveLength(2);
 			expect(allCards).toHaveLength(10);
@@ -30,7 +30,7 @@ describe("debugStart", () => {
 		});
 
 		it("usedCardIdsが空", () => {
-			const deck = createDebugDeckState({ attack: 3 });
+			const deck = createDebugDeckState({ fire: 3 });
 			expect(deck.usedCardIds).toHaveLength(0);
 		});
 
@@ -42,14 +42,14 @@ describe("debugStart", () => {
 
 		it("負の count を指定した場合はエラーになる", () => {
 			expect(() => {
-				createDebugDeckState({ attack: -1 } as unknown as DebugDeckComposition);
+				createDebugDeckState({ fire: -1 } as unknown as DebugDeckComposition);
 			}).toThrow();
 		});
 
 		it("小数の count を指定した場合はエラーになる", () => {
 			expect(() => {
 				createDebugDeckState({
-					attack: 1.5,
+					fire: 1.5,
 				} as unknown as DebugDeckComposition);
 			}).toThrow();
 		});
@@ -57,7 +57,7 @@ describe("debugStart", () => {
 		it("NaN の count を指定した場合はエラーになる", () => {
 			expect(() => {
 				createDebugDeckState({
-					attack: Number.NaN,
+					fire: Number.NaN,
 				} as unknown as DebugDeckComposition);
 			}).toThrow();
 		});
@@ -209,10 +209,10 @@ describe("debugStart", () => {
 		it("deckが反映される", () => {
 			const state = createTestState();
 			const result = startNewGameWithDebugParams(state, {
-				deck: { attack: 10 },
+				deck: { fire: 10 },
 			});
 
-			expect(result.deck.hand.every((c) => c.type === "attack")).toBe(true);
+			expect(result.deck.hand.every((c) => c.type === "fire")).toBe(true);
 			expect(result.deck.hand).toHaveLength(10);
 		});
 
@@ -255,7 +255,7 @@ describe("debugStart", () => {
 		it("全カードが手札に入る", () => {
 			const state = createTestState();
 			const result = startNewGameWithDebugParams(state, {
-				deck: { attack: 5 },
+				deck: { fire: 5 },
 			});
 
 			expect(result.deck.hand).toHaveLength(5);

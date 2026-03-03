@@ -28,13 +28,11 @@ describe("cardRowRenderer", () => {
 		});
 
 		it("カード名テキストが含まれる", () => {
-			const row = createCardListRow({ cardType: "attack" });
+			const row = createCardListRow({ cardType: "fire" });
 			const texts = row.children.filter((c) => c instanceof Text) as Text[];
-			const nameText = texts.find((t) =>
-				t.text.includes(CARD_TYPE_NAME.attack),
-			);
+			const nameText = texts.find((t) => t.text.includes(CARD_TYPE_NAME.fire));
 			expect(nameText).toBeDefined();
-			expect(nameText?.text).toContain(CARD_TYPE_SYMBOL.attack);
+			expect(nameText?.text).toContain(CARD_TYPE_SYMBOL.fire);
 		});
 
 		it("カード名のフォントサイズが15pxでbold", () => {

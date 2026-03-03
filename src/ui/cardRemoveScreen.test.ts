@@ -82,7 +82,7 @@ describe("CardRemoveScreen", () => {
 			},
 			{
 				id: "card-2",
-				type: "attack",
+				type: "fire",
 				level: 1,
 				exp: 0,
 				stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
@@ -162,7 +162,7 @@ describe("CardRemoveScreen", () => {
 				},
 				{
 					id: "c2",
-					type: "attack",
+					type: "fire",
 					level: 1,
 					exp: 0,
 					stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
@@ -183,7 +183,7 @@ describe("CardRemoveScreen", () => {
 				},
 				{
 					id: "c5",
-					type: "attack",
+					type: "fire",
 					level: 1,
 					exp: 0,
 					stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
@@ -432,7 +432,7 @@ describe("CardRemoveScreen", () => {
 			},
 			{
 				id: "rm-2",
-				type: "attack",
+				type: "fire",
 				level: 1,
 				exp: 0,
 				stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
@@ -574,7 +574,7 @@ describe("CardRemoveScreen", () => {
 				},
 				{
 					id: "c2",
-					type: "attack",
+					type: "fire",
 					level: 1,
 					exp: 0,
 					stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
@@ -618,7 +618,7 @@ describe("CardRemoveScreen", () => {
 				},
 				{
 					id: "c2",
-					type: "attack",
+					type: "fire",
 					level: 1,
 					exp: 0,
 					stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
@@ -660,7 +660,7 @@ describe("CardRemoveScreen", () => {
 				},
 				{
 					id: "c2",
-					type: "attack",
+					type: "fire",
 					level: 1,
 					exp: 0,
 					stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
@@ -699,7 +699,7 @@ describe("CardRemoveScreen", () => {
 				},
 				{
 					id: "c2",
-					type: "attack",
+					type: "fire",
 					level: 1,
 					exp: 0,
 					stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },

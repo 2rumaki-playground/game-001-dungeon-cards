@@ -9,11 +9,10 @@ import type { CardType, ComboHistory, ComboType, Direction } from "../types";
 /**
  * 直前の使用履歴と現在のカード情報からコンボ種別を判定する
  *
- * - 突撃（charge）: move → attack（同方向）
- * - 連撃（chain）: attack → attack
- * - 奇襲（ambush）: jump → attack（同方向）
- * - 集中攻撃（focus）: wait → attack
- * - 「攻撃」は attack のみ（strong_attack は含まない）
+ * - 連撃（chain）: fire → fire
+ * - 奇襲（ambush）: jump → fire（同方向）
+ * - 集中攻撃（focus）: wait → fire
+ * - 「攻撃」は fire のみ（thunder は含まない）
  */
 export function detectCombo(
 	history: ComboHistory | null,
@@ -24,26 +23,15 @@ export function detectCombo(
 		return null;
 	}
 
-	// 突撃: move → attack（同方向）
-	if (
-		history.lastCardType === "move" &&
-		currentCardType === "attack" &&
-		history.lastDirection !== null &&
-		currentDirection !== null &&
-		history.lastDirection === currentDirection
-	) {
-		return "charge";
-	}
-
-	// 連撃: attack → attack
-	if (history.lastCardType === "attack" && currentCardType === "attack") {
+	// 連撃: fire → fire
+	if (history.lastCardType === "fire" && currentCardType === "fire") {
 		return "chain";
 	}
 
-	// 奇襲: jump → attack（同方向）
+	// 奇襲: jump → fire（同方向）
 	if (
 		history.lastCardType === "jump" &&
-		currentCardType === "attack" &&
+		currentCardType === "fire" &&
 		history.lastDirection !== null &&
 		currentDirection !== null &&
 		history.lastDirection === currentDirection
@@ -51,8 +39,8 @@ export function detectCombo(
 		return "ambush";
 	}
 
-	// 集中攻撃: wait → attack
-	if (history.lastCardType === "wait" && currentCardType === "attack") {
+	// 集中攻撃: wait → fire
+	if (history.lastCardType === "wait" && currentCardType === "fire") {
 		return "focus";
 	}
 

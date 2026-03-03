@@ -9,13 +9,6 @@ import { tween } from "../utils/tween";
 import { animateComboPopup } from "./comboPopup";
 
 describe("animateComboPopup", () => {
-	it("突撃コンボのポップアップが正常に完了する", async () => {
-		const container = new Container();
-		await expect(
-			animateComboPopup(container, { x: 1, y: 1 }, "charge"),
-		).resolves.toBeUndefined();
-	});
-
 	it("連撃コンボのポップアップが正常に完了する", async () => {
 		const container = new Container();
 		await expect(
@@ -25,7 +18,7 @@ describe("animateComboPopup", () => {
 
 	it("アニメーション完了後にコンテナから子要素が除去される", async () => {
 		const container = new Container();
-		await animateComboPopup(container, { x: 0, y: 0 }, "charge");
+		await animateComboPopup(container, { x: 0, y: 0 }, "chain");
 		expect(container.children).toHaveLength(0);
 	});
 
@@ -35,7 +28,7 @@ describe("animateComboPopup", () => {
 
 		const container = new Container();
 		await expect(
-			animateComboPopup(container, { x: 0, y: 0 }, "charge"),
+			animateComboPopup(container, { x: 0, y: 0 }, "chain"),
 		).rejects.toThrow("tween error");
 
 		// finally節によりTextがコンテナから除去・破棄されていること

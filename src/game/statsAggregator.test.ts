@@ -9,7 +9,7 @@ function createDeathSession(overrides: Partial<PlaySession> = {}): PlaySession {
 		startedAt: 1000,
 		endedAt: 61000,
 		maxFloor: 5,
-		cardUsage: { move: 10, attack: 5, strong_attack: 2, jump: 1, wait: 3 },
+		cardUsage: { move: 10, fire: 5, thunder: 2, jump: 1, wait: 3 },
 		totalDamageDealt: 20,
 		totalDamageTaken: 10,
 		playerTurnCount: 15,
@@ -25,7 +25,7 @@ function createClearSession(overrides: Partial<PlaySession> = {}): PlaySession {
 		startedAt: 2000,
 		endedAt: 302000,
 		maxFloor: 20,
-		cardUsage: { move: 30, attack: 20, strong_attack: 8, jump: 5, wait: 10 },
+		cardUsage: { move: 30, fire: 20, thunder: 8, jump: 5, wait: 10 },
 		totalDamageDealt: 80,
 		totalDamageTaken: 15,
 		playerTurnCount: 50,
@@ -114,8 +114,8 @@ describe("aggregateStats", () => {
 			createDeathSession({
 				cardUsage: {
 					move: 10,
-					attack: 5,
-					strong_attack: 2,
+					fire: 5,
+					thunder: 2,
 					jump: 1,
 					wait: 3,
 				},
@@ -124,7 +124,7 @@ describe("aggregateStats", () => {
 
 		expect(stats.cardUsageRanking[0].cardType).toBe("move");
 		expect(stats.cardUsageRanking[0].count).toBe(10);
-		expect(stats.cardUsageRanking[1].cardType).toBe("attack");
+		expect(stats.cardUsageRanking[1].cardType).toBe("fire");
 		expect(stats.cardUsageRanking[1].count).toBe(5);
 		// 使用回数0のカードは含まれない（全てが0でない前提）
 		for (const entry of stats.cardUsageRanking) {
@@ -138,8 +138,8 @@ describe("aggregateStats", () => {
 				id: "s1",
 				cardUsage: {
 					move: 10,
-					attack: 5,
-					strong_attack: 0,
+					fire: 5,
+					thunder: 0,
 					jump: 0,
 					wait: 0,
 				},
@@ -148,8 +148,8 @@ describe("aggregateStats", () => {
 				id: "s2",
 				cardUsage: {
 					move: 5,
-					attack: 10,
-					strong_attack: 0,
+					fire: 10,
+					thunder: 0,
 					jump: 0,
 					wait: 0,
 				},
@@ -158,7 +158,7 @@ describe("aggregateStats", () => {
 
 		expect(stats.cardUsageRanking[0].cardType).toBe("move");
 		expect(stats.cardUsageRanking[0].count).toBe(15);
-		expect(stats.cardUsageRanking[1].cardType).toBe("attack");
+		expect(stats.cardUsageRanking[1].cardType).toBe("fire");
 		expect(stats.cardUsageRanking[1].count).toBe(15);
 	});
 

@@ -22,8 +22,8 @@ import { createInitialGameState } from "./state";
 /** デバッグデッキで使用可能なカードタイプ */
 const VALID_CARD_TYPES: CardType[] = [
 	"move",
-	"attack",
-	"strong_attack",
+	"fire",
+	"thunder",
 	"jump",
 	"wait",
 ];

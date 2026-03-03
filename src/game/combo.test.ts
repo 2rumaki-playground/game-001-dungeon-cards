@@ -5,15 +5,7 @@ import { detectCombo, getComboBonus } from "./combo";
 
 describe("detectCombo", () => {
 	it("ターン最初のカード（history=null）はコンボなし", () => {
-		expect(detectCombo(null, "attack", "up")).toBeNull();
-	});
-
-	it("move→attack 同方向で突撃コンボ", () => {
-		const history: ComboHistory = {
-			lastCardType: "move",
-			lastDirection: "up",
-		};
-		expect(detectCombo(history, "attack", "up")).toBe("charge");
+		expect(detectCombo(null, "fire", "up")).toBeNull();
 	});
 
 	it("move→attack 異方向はコンボなし", () => {
@@ -21,23 +13,23 @@ describe("detectCombo", () => {
 			lastCardType: "move",
 			lastDirection: "up",
 		};
-		expect(detectCombo(history, "attack", "right")).toBeNull();
+		expect(detectCombo(history, "fire", "right")).toBeNull();
 	});
 
 	it("attack→attack で連撃コンボ", () => {
 		const history: ComboHistory = {
-			lastCardType: "attack",
+			lastCardType: "fire",
 			lastDirection: "up",
 		};
-		expect(detectCombo(history, "attack", "down")).toBe("chain");
+		expect(detectCombo(history, "fire", "down")).toBe("chain");
 	});
 
 	it("attack→attack 同方向でも連撃コンボ", () => {
 		const history: ComboHistory = {
-			lastCardType: "attack",
+			lastCardType: "fire",
 			lastDirection: "left",
 		};
-		expect(detectCombo(history, "attack", "left")).toBe("chain");
+		expect(detectCombo(history, "fire", "left")).toBe("chain");
 	});
 
 	it("move→move はコンボなし", () => {
@@ -53,7 +45,7 @@ describe("detectCombo", () => {
 			lastCardType: "wait",
 			lastDirection: null,
 		};
-		expect(detectCombo(history, "attack", "up")).toBe("focus");
+		expect(detectCombo(history, "fire", "up")).toBe("focus");
 	});
 
 	it("wait→strong_attack はコンボなし", () => {
@@ -61,23 +53,23 @@ describe("detectCombo", () => {
 			lastCardType: "wait",
 			lastDirection: null,
 		};
-		expect(detectCombo(history, "strong_attack", "up")).toBeNull();
+		expect(detectCombo(history, "thunder", "up")).toBeNull();
 	});
 
 	it("strong_attack→attack はコンボなし（strong_attackはattackではない）", () => {
 		const history: ComboHistory = {
-			lastCardType: "strong_attack",
+			lastCardType: "thunder",
 			lastDirection: "up",
 		};
-		expect(detectCombo(history, "attack", "up")).toBeNull();
+		expect(detectCombo(history, "fire", "up")).toBeNull();
 	});
 
 	it("attack→strong_attack はコンボなし（strong_attackはattackではない）", () => {
 		const history: ComboHistory = {
-			lastCardType: "attack",
+			lastCardType: "fire",
 			lastDirection: "up",
 		};
-		expect(detectCombo(history, "strong_attack", "up")).toBeNull();
+		expect(detectCombo(history, "thunder", "up")).toBeNull();
 	});
 
 	it("move→strong_attack はコンボなし（突撃はattackのみ）", () => {
@@ -85,7 +77,7 @@ describe("detectCombo", () => {
 			lastCardType: "move",
 			lastDirection: "up",
 		};
-		expect(detectCombo(history, "strong_attack", "up")).toBeNull();
+		expect(detectCombo(history, "thunder", "up")).toBeNull();
 	});
 
 	it("jump→attack 同方向で奇襲コンボ", () => {
@@ -93,7 +85,7 @@ describe("detectCombo", () => {
 			lastCardType: "jump",
 			lastDirection: "up",
 		};
-		expect(detectCombo(history, "attack", "up")).toBe("ambush");
+		expect(detectCombo(history, "fire", "up")).toBe("ambush");
 	});
 
 	it("jump→attack 異方向はコンボなし", () => {
@@ -101,7 +93,7 @@ describe("detectCombo", () => {
 			lastCardType: "jump",
 			lastDirection: "up",
 		};
-		expect(detectCombo(history, "attack", "right")).toBeNull();
+		expect(detectCombo(history, "fire", "right")).toBeNull();
 	});
 
 	it("jump失敗→attack 同方向はコンボなし（lastDirection=null）", () => {
@@ -109,7 +101,7 @@ describe("detectCombo", () => {
 			lastCardType: "jump",
 			lastDirection: null,
 		};
-		expect(detectCombo(history, "attack", "up")).toBeNull();
+		expect(detectCombo(history, "fire", "up")).toBeNull();
 	});
 
 	it("move→wait はコンボなし", () => {
@@ -122,7 +114,7 @@ describe("detectCombo", () => {
 
 	it("attack→wait はコンボなし", () => {
 		const history: ComboHistory = {
-			lastCardType: "attack",
+			lastCardType: "fire",
 			lastDirection: "up",
 		};
 		expect(detectCombo(history, "wait", null)).toBeNull();
@@ -130,10 +122,6 @@ describe("detectCombo", () => {
 });
 
 describe("getComboBonus", () => {
-	it("突撃コンボのボーナスはCOMBO_BONUS.chargeと一致", () => {
-		expect(getComboBonus("charge")).toBe(COMBO_BONUS.charge);
-	});
-
 	it("連撃コンボのボーナスはCOMBO_BONUS.chainと一致", () => {
 		expect(getComboBonus("chain")).toBe(COMBO_BONUS.chain);
 	});

@@ -3,7 +3,7 @@
  * @see docs/spec/cards.md
  */
 
-import { ATTACK_EXTENDED_RANGE } from "../constants";
+import { FIRE_EXTENDED_RANGE } from "../constants";
 import type { Direction, GameMap, GameState, Position } from "../types";
 import { DIRECTION_DELTA } from "../types";
 import { applyDamageToEnemy } from "./combat";
@@ -52,7 +52,7 @@ export function findExtendedRangeTarget(
 	state: GameState,
 	direction: Direction,
 ): { enemyId: string; position: Position } | null {
-	return findAttackTarget(state, direction, ATTACK_EXTENDED_RANGE);
+	return findAttackTarget(state, direction, FIRE_EXTENDED_RANGE);
 }
 
 /**

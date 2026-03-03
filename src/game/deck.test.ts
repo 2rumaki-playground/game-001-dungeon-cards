@@ -27,10 +27,10 @@ describe("deck", () => {
 		it("移動カード2枚、攻撃カード1枚、待機カード1枚を含む", () => {
 			const deck = createInitialDeck();
 			const moveCards = deck.filter((c) => c.type === "move");
-			const attackCards = deck.filter((c) => c.type === "attack");
+			const fireCards = deck.filter((c) => c.type === "fire");
 			const waitCards = deck.filter((c) => c.type === "wait");
 			expect(moveCards).toHaveLength(INITIAL_DECK.moveCards);
-			expect(attackCards).toHaveLength(INITIAL_DECK.attackCards);
+			expect(fireCards).toHaveLength(INITIAL_DECK.fireCards);
 			expect(waitCards).toHaveLength(INITIAL_DECK.waitCards);
 		});
 
@@ -42,12 +42,7 @@ describe("deck", () => {
 
 		it("固定順で生成される（move, move, attack, wait）", () => {
 			const deck = createInitialDeck();
-			expect(deck.map((c) => c.type)).toEqual([
-				"move",
-				"move",
-				"attack",
-				"wait",
-			]);
+			expect(deck.map((c) => c.type)).toEqual(["move", "move", "fire", "wait"]);
 		});
 
 		it("各カードがlevel:1, exp:0で生成される", () => {
@@ -80,7 +75,7 @@ describe("deck", () => {
 					},
 					{
 						id: "card-2",
-						type: "attack",
+						type: "fire",
 						level: 1,
 						exp: 0,
 						stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
@@ -124,7 +119,7 @@ describe("deck", () => {
 					},
 					{
 						id: "card-2",
-						type: "attack",
+						type: "fire",
 						level: 1,
 						exp: 0,
 						stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
@@ -185,7 +180,7 @@ describe("deck", () => {
 					},
 					{
 						id: "card-2",
-						type: "attack",
+						type: "fire",
 						level: 1,
 						exp: 0,
 						stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
@@ -220,7 +215,7 @@ describe("deck", () => {
 					},
 					{
 						id: "card-2",
-						type: "attack",
+						type: "fire",
 						level: 1,
 						exp: 0,
 						stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
@@ -260,7 +255,7 @@ describe("deck", () => {
 					},
 					{
 						id: "card-2",
-						type: "attack",
+						type: "fire",
 						level: 1,
 						exp: 0,
 						stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
@@ -303,7 +298,7 @@ describe("deck", () => {
 					},
 					{
 						id: "card-2",
-						type: "attack",
+						type: "fire",
 						level: 1,
 						exp: 0,
 						stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
@@ -346,7 +341,7 @@ describe("deck", () => {
 					},
 					{
 						id: "card-2",
-						type: "attack",
+						type: "fire",
 						level: 1,
 						exp: 0,
 						stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
@@ -370,7 +365,7 @@ describe("deck", () => {
 					},
 					{
 						id: "card-2",
-						type: "attack",
+						type: "fire",
 						level: 1,
 						exp: 0,
 						stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
@@ -394,7 +389,7 @@ describe("deck", () => {
 					},
 					{
 						id: "card-2",
-						type: "attack",
+						type: "fire",
 						level: 1,
 						exp: 0,
 						stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },

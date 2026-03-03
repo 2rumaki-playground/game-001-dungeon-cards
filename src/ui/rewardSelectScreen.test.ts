@@ -56,7 +56,7 @@ describe("RewardSelectScreen", () => {
 	describe("render", () => {
 		it("選択肢分のカードと統一ボタンが描画される", () => {
 			const screen = new RewardSelectScreen();
-			screen.render(["move", "attack"], 600, 400);
+			screen.render(["move", "fire"], 600, 400);
 
 			// オーバーレイ + タイトル + カード2枚 + confirmButtonContainer + tooltipContainer = 6つ
 			const container = screen.getContainer();
@@ -142,7 +142,7 @@ describe("RewardSelectScreen", () => {
 
 		it("カード選択後に獲得ボタンが有効状態になる", () => {
 			const screen = new RewardSelectScreen();
-			screen.render(["move", "attack"], 600, 400);
+			screen.render(["move", "fire"], 600, 400);
 
 			const container = screen.getContainer();
 			const acquireBtn = findByLabel(container, "acquireBtn");
@@ -159,7 +159,7 @@ describe("RewardSelectScreen", () => {
 	describe("ハイライト", () => {
 		it("カードクリックでハイライトが付与される", () => {
 			const screen = new RewardSelectScreen();
-			screen.render(["move", "attack"], 600, 400);
+			screen.render(["move", "fire"], 600, 400);
 
 			const container = screen.getContainer();
 			const card0 = container.children[2] as Container;
@@ -172,7 +172,7 @@ describe("RewardSelectScreen", () => {
 
 		it("別カードクリックで前回ハイライトが解除される", () => {
 			const screen = new RewardSelectScreen();
-			screen.render(["move", "attack"], 600, 400);
+			screen.render(["move", "fire"], 600, 400);
 
 			const container = screen.getContainer();
 			const card0 = container.children[2] as Container;
@@ -279,7 +279,7 @@ describe("RewardSelectScreen", () => {
 
 		it("報酬カードのpointeroverでツールチップが表示される", () => {
 			const screen = new RewardSelectScreen();
-			screen.render(["move", "attack"], 600, 400);
+			screen.render(["move", "fire"], 600, 400);
 
 			const container = screen.getContainer();
 			// children[2]がカードコンテナ

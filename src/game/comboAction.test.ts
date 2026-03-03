@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { COMBO_BONUS, ENEMY_PARAMS, PLAYER_ATTACK_DAMAGE } from "../constants";
+import { COMBO_BONUS, ENEMY_PARAMS, PLAYER_FIRE_DAMAGE } from "../constants";
 import {
 	createTestEnemy,
 	createTestHand,
@@ -7,7 +7,7 @@ import {
 	resetTestEnemySeq,
 } from "../test-utils/createTestFixtures";
 import type { GameState } from "../types";
-import { executeAttack, executeJump, executeMove, executeWait } from "./action";
+import { executeFire, executeJump, executeMove, executeWait } from "./action";
 
 describe("コンボ発動（統合テスト）", () => {
 	let state: GameState;
@@ -19,54 +19,10 @@ describe("コンボ発動（統合テスト）", () => {
 		state = createTestState({
 			enemies: [enemy],
 			deck: {
-				hand: createTestHand(["move", "attack", "attack"]),
+				hand: createTestHand(["move", "fire", "fire"]),
 				usedCardIds: [],
 			},
 		});
-	});
-
-	it("移動成功→攻撃（同方向）で突撃コンボが発動しダメージが+1", () => {
-		// プレイヤー(3,3)、敵(3,1)=上方向2マス先に配置（1マス先は空き）
-		resetTestEnemySeq();
-		const enemy = createTestEnemy("normal", { x: 3, y: 1 });
-		const s = createTestState({
-			enemies: [enemy],
-			deck: {
-				hand: createTestHand(["move", "attack", "attack"]),
-				usedCardIds: [],
-			},
-		});
-
-		// 移動: 上方向 (3,3)→(3,2) 移動成功
-		const moveResult = executeMove(s, "test-card-0", "up");
-		const afterMove = moveResult.state;
-		expect(afterMove.player.position).toEqual({ x: 3, y: 2 });
-
-		// comboHistoryが方向付きで更新されている
-		expect(afterMove.comboHistory).toEqual({
-			lastCardType: "move",
-			lastDirection: "up",
-		});
-
-		// 攻撃: 上方向（同方向）→突撃コンボ
-		const attackResult = executeAttack(afterMove, "test-card-1", "up");
-		const afterAttack = attackResult.state;
-
-		expect(attackResult.hit).toBe(true);
-		expect(attackResult.comboType).toBe("charge");
-
-		// 敵のHP: 初期HP - (基本ダメージ + コンボボーナス)
-		const expectedDamage = PLAYER_ATTACK_DAMAGE + COMBO_BONUS.charge;
-		const remainingEnemy = afterAttack.enemies.find((e) => e.id === "enemy-1");
-		expect(remainingEnemy).toBeDefined();
-		if (!remainingEnemy) return;
-		expect(remainingEnemy.hp).toBe(ENEMY_PARAMS.normal.hp - expectedDamage);
-
-		// 行動ログにコンボ発動メッセージが含まれる
-		const comboLog = afterAttack.actionLog.find(
-			(log) => log.message === "突撃コンボ発動！",
-		);
-		expect(comboLog).toBeDefined();
 	});
 
 	it("移動失敗→攻撃（同方向）では突撃コンボが発動しない", () => {
@@ -82,7 +38,7 @@ describe("コンボ発動（統合テスト）", () => {
 		});
 
 		// 攻撃: 上方向→突撃コンボは発動しない
-		const attackResult = executeAttack(afterMove, "test-card-1", "up");
+		const attackResult = executeFire(afterMove, "test-card-1", "up");
 
 		expect(attackResult.hit).toBe(true);
 		expect(attackResult.comboType).toBeUndefined();
@@ -91,7 +47,7 @@ describe("コンボ発動（統合テスト）", () => {
 		const enemy = attackResult.state.enemies.find((e) => e.id === "enemy-1");
 		expect(enemy).toBeDefined();
 		if (!enemy) return;
-		expect(enemy.hp).toBe(ENEMY_PARAMS.normal.hp - PLAYER_ATTACK_DAMAGE);
+		expect(enemy.hp).toBe(ENEMY_PARAMS.normal.hp - PLAYER_FIRE_DAMAGE);
 
 		// コンボ発動ログがない
 		const comboLog = attackResult.state.actionLog.find(
@@ -108,7 +64,7 @@ describe("コンボ発動（統合テスト）", () => {
 		const s = createTestState({
 			enemies: [enemyRight],
 			deck: {
-				hand: createTestHand(["move", "attack", "attack"]),
+				hand: createTestHand(["move", "fire", "fire"]),
 				usedCardIds: [],
 			},
 		});
@@ -117,11 +73,7 @@ describe("コンボ発動（統合テスト）", () => {
 		const moveResult = executeMove(s, "test-card-0", "down");
 
 		// 攻撃: 右方向（異方向）→コンボ不発
-		const attackResult = executeAttack(
-			moveResult.state,
-			"test-card-1",
-			"right",
-		);
+		const attackResult = executeFire(moveResult.state, "test-card-1", "right");
 		expect(attackResult.hit).toBe(true);
 		expect(attackResult.comboType).toBeUndefined();
 
@@ -131,7 +83,7 @@ describe("コンボ発動（統合テスト）", () => {
 		);
 		expect(enemyAfter).toBeDefined();
 		if (!enemyAfter) return;
-		expect(enemyAfter.hp).toBe(ENEMY_PARAMS.normal.hp - PLAYER_ATTACK_DAMAGE);
+		expect(enemyAfter.hp).toBe(ENEMY_PARAMS.normal.hp - PLAYER_FIRE_DAMAGE);
 
 		// コンボ発動ログがない
 		const comboLog = attackResult.state.actionLog.find(
@@ -150,22 +102,22 @@ describe("コンボ発動（統合テスト）", () => {
 		const s = createTestState({
 			enemies: [enemy1, enemy2],
 			deck: {
-				hand: createTestHand(["attack", "attack", "attack"]),
+				hand: createTestHand(["fire", "fire", "fire"]),
 				usedCardIds: [],
 			},
 		});
 
 		// 1枚目: 上方向攻撃
-		const attack1 = executeAttack(s, "test-card-0", "up");
+		const attack1 = executeFire(s, "test-card-0", "up");
 		expect(attack1.hit).toBe(true);
 
 		// 2枚目: 右方向攻撃→連撃コンボ
-		const attack2 = executeAttack(attack1.state, "test-card-1", "right");
+		const attack2 = executeFire(attack1.state, "test-card-1", "right");
 		expect(attack2.hit).toBe(true);
 		expect(attack2.comboType).toBe("chain");
 
 		// enemy2のHP: 初期HP - (基本ダメージ + コンボボーナス)
-		const expectedDamage = PLAYER_ATTACK_DAMAGE + COMBO_BONUS.chain;
+		const expectedDamage = PLAYER_FIRE_DAMAGE + COMBO_BONUS.chain;
 		const enemy = attack2.state.enemies.find((e) => e.id === "enemy-2");
 		expect(enemy).toBeDefined();
 		if (!enemy) return;
@@ -182,7 +134,7 @@ describe("コンボ発動（統合テスト）", () => {
 		// comboHistory=null の状態で攻撃
 		expect(state.comboHistory).toBeNull();
 
-		const attackResult = executeAttack(state, "test-card-1", "up");
+		const attackResult = executeFire(state, "test-card-1", "up");
 		expect(attackResult.hit).toBe(true);
 		expect(attackResult.comboType).toBeUndefined();
 
@@ -190,7 +142,7 @@ describe("コンボ発動（統合テスト）", () => {
 		const enemy = attackResult.state.enemies.find((e) => e.id === "enemy-1");
 		expect(enemy).toBeDefined();
 		if (!enemy) return;
-		expect(enemy.hp).toBe(ENEMY_PARAMS.normal.hp - PLAYER_ATTACK_DAMAGE);
+		expect(enemy.hp).toBe(ENEMY_PARAMS.normal.hp - PLAYER_FIRE_DAMAGE);
 
 		// コンボログなし
 		const comboLog = attackResult.state.actionLog.find(
@@ -210,7 +162,7 @@ describe("コンボ発動（統合テスト）", () => {
 		const s = createTestState({
 			enemies: [enemy1, enemy2, enemy3],
 			deck: {
-				hand: createTestHand(["attack", "attack", "attack"]),
+				hand: createTestHand(["fire", "fire", "fire"]),
 				usedCardIds: [],
 			},
 			player: {
@@ -221,24 +173,24 @@ describe("コンボ発動（統合テスト）", () => {
 		});
 
 		// 1枚目: 上方向（コンボなし）
-		const attack1 = executeAttack(s, "test-card-0", "up");
+		const attack1 = executeFire(s, "test-card-0", "up");
 
 		// 2枚目: 右方向（連撃コンボ）
-		const attack2 = executeAttack(attack1.state, "test-card-1", "right");
+		const attack2 = executeFire(attack1.state, "test-card-1", "right");
 		const enemy2After = attack2.state.enemies.find((e) => e.id === "enemy-2");
 		expect(enemy2After).toBeDefined();
 		if (!enemy2After) return;
 		expect(enemy2After.hp).toBe(
-			ENEMY_PARAMS.normal.hp - (PLAYER_ATTACK_DAMAGE + COMBO_BONUS.chain),
+			ENEMY_PARAMS.normal.hp - (PLAYER_FIRE_DAMAGE + COMBO_BONUS.chain),
 		);
 
 		// 3枚目: 下方向（連撃コンボ）
-		const attack3 = executeAttack(attack2.state, "test-card-2", "down");
+		const attack3 = executeFire(attack2.state, "test-card-2", "down");
 		const enemy3After = attack3.state.enemies.find((e) => e.id === "enemy-3");
 		expect(enemy3After).toBeDefined();
 		if (!enemy3After) return;
 		expect(enemy3After.hp).toBe(
-			ENEMY_PARAMS.normal.hp - (PLAYER_ATTACK_DAMAGE + COMBO_BONUS.chain),
+			ENEMY_PARAMS.normal.hp - (PLAYER_FIRE_DAMAGE + COMBO_BONUS.chain),
 		);
 
 		// コンボログが2回出ている
@@ -255,13 +207,13 @@ describe("コンボ発動（統合テスト）", () => {
 			lastDirection: null,
 		});
 
-		const attackResult = executeAttack(waitState, "test-card-1", "up");
+		const attackResult = executeFire(waitState, "test-card-1", "up");
 
 		expect(attackResult.hit).toBe(true);
 		expect(attackResult.comboType).toBe("focus");
 
 		// 敵のHP: 初期HP - (基本ダメージ + コンボボーナス)
-		const expectedDamage = PLAYER_ATTACK_DAMAGE + COMBO_BONUS.focus;
+		const expectedDamage = PLAYER_FIRE_DAMAGE + COMBO_BONUS.focus;
 		const enemy = attackResult.state.enemies.find((e) => e.id === "enemy-1");
 		expect(enemy).toBeDefined();
 		if (!enemy) return;
@@ -282,7 +234,7 @@ describe("コンボ発動（統合テスト）", () => {
 		const s = createTestState({
 			enemies: [enemy],
 			deck: {
-				hand: createTestHand(["jump", "attack", "attack"]),
+				hand: createTestHand(["jump", "fire", "fire"]),
 				usedCardIds: [],
 			},
 			player: {
@@ -305,7 +257,7 @@ describe("コンボ発動（統合テスト）", () => {
 		});
 
 		// 攻撃: 上方向（同方向）→奇襲コンボ
-		const attackResult = executeAttack(afterJump, "test-card-1", "up");
+		const attackResult = executeFire(afterJump, "test-card-1", "up");
 
 		expect(attackResult.hit).toBe(true);
 		expect(attackResult.comboType).toBe("ambush");
@@ -328,7 +280,7 @@ describe("コンボ発動（統合テスト）", () => {
 		const s = createTestState({
 			enemies: [enemy],
 			deck: {
-				hand: createTestHand(["jump", "attack", "attack"]),
+				hand: createTestHand(["jump", "fire", "fire"]),
 				usedCardIds: [],
 			},
 			player: {
@@ -357,7 +309,7 @@ describe("コンボ発動（統合テスト）", () => {
 			enemies: [{ ...enemy, position: { x: 3, y: 3 } }],
 		};
 
-		const attackResult = executeAttack(afterJumpWithEnemy, "test-card-1", "up");
+		const attackResult = executeFire(afterJumpWithEnemy, "test-card-1", "up");
 		expect(attackResult.hit).toBe(true);
 		expect(attackResult.comboType).toBeUndefined();
 
@@ -375,7 +327,7 @@ describe("コンボ発動（統合テスト）", () => {
 		const s = createTestState({
 			enemies: [enemy],
 			deck: {
-				hand: createTestHand(["jump", "attack", "attack"]),
+				hand: createTestHand(["jump", "fire", "fire"]),
 				usedCardIds: [],
 			},
 			player: {
@@ -390,11 +342,7 @@ describe("コンボ発動（統合テスト）", () => {
 		expect(jumpResult.jumped).toBe(true);
 
 		// 攻撃: 右方向（異方向）→コンボ不発
-		const attackResult = executeAttack(
-			jumpResult.state,
-			"test-card-1",
-			"right",
-		);
+		const attackResult = executeFire(jumpResult.state, "test-card-1", "right");
 		expect(attackResult.hit).toBe(true);
 		expect(attackResult.comboType).toBeUndefined();
 	});

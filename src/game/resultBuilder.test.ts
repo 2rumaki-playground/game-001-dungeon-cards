@@ -12,7 +12,7 @@ import {
 function makeCard(overrides?: Partial<Card>): Card {
 	return {
 		id: "card-1",
-		type: "attack",
+		type: "fire",
 		level: 1,
 		exp: 0,
 		stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
@@ -36,9 +36,9 @@ describe("formatHighlight", () => {
 			type: "card_level_up",
 			floor: 5,
 			turn: 25,
-			detail: { cardType: "attack", newLevel: 3 },
+			detail: { cardType: "fire", newLevel: 3 },
 		};
-		expect(formatHighlight(event)).toBe("5F: ⚔攻撃がLv.3に成長");
+		expect(formatHighlight(event)).toBe("5F: 🔥ファイアボルトがLv.3に成長");
 	});
 
 	it("card_acquiredのテキスト生成", () => {
@@ -72,7 +72,7 @@ describe("extractHighlights", () => {
 			type: "card_acquired" as const,
 			floor: i + 1,
 			turn: i * 5,
-			detail: { cardType: "attack" },
+			detail: { cardType: "fire" },
 		}));
 		const result = extractHighlights(events);
 		expect(result.length).toBeLessThanOrEqual(RESULT_HIGHLIGHT_COUNT);
@@ -83,7 +83,7 @@ describe("extractHighlights", () => {
 			type: "card_acquired" as const,
 			floor: i + 1,
 			turn: i * 5,
-			detail: { cardType: "attack" },
+			detail: { cardType: "fire" },
 		}));
 		const result = extractHighlights(events);
 		const acquiredCount = result.filter(
@@ -98,7 +98,7 @@ describe("extractHighlights", () => {
 				type: "card_acquired",
 				floor: 1,
 				turn: 5,
-				detail: { cardType: "attack" },
+				detail: { cardType: "fire" },
 			},
 			{
 				type: "boss_defeated",
@@ -110,7 +110,7 @@ describe("extractHighlights", () => {
 				type: "card_level_up",
 				floor: 5,
 				turn: 25,
-				detail: { cardType: "attack", newLevel: 3 },
+				detail: { cardType: "fire", newLevel: 3 },
 			},
 		];
 		const result = extractHighlights(events);

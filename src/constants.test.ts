@@ -14,7 +14,7 @@ import {
 	JUMP_DISTANCE,
 	MAP_HEIGHT,
 	MAP_WIDTH,
-	PLAYER_STRONG_ATTACK_DAMAGE,
+	PLAYER_THUNDER_DAMAGE,
 	STAIRS_COUNT,
 	TOTAL_DECK_SIZE,
 } from "./constants";
@@ -27,7 +27,7 @@ describe("constants", () => {
 
 	it("初期デッキの内訳が正しい", () => {
 		expect(INITIAL_DECK.moveCards).toBe(2);
-		expect(INITIAL_DECK.attackCards).toBe(1);
+		expect(INITIAL_DECK.fireCards).toBe(1);
 		expect(INITIAL_DECK.waitCards).toBe(1);
 	});
 
@@ -36,7 +36,7 @@ describe("constants", () => {
 	});
 
 	it("強攻撃カードのダメージが3", () => {
-		expect(PLAYER_STRONG_ATTACK_DAMAGE).toBe(3);
+		expect(PLAYER_THUNDER_DAMAGE).toBe(3);
 	});
 
 	it("マップサイズが正しい", () => {

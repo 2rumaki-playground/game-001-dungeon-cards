@@ -77,7 +77,7 @@ function createTestResultData(overrides?: Partial<ResultData>): ResultData {
 		hand: [
 			{
 				id: "c1",
-				type: "attack",
+				type: "fire",
 				level: 2,
 				exp: 3,
 				stats: { useCount: 10, defeatCount: 3, maxSingleDamage: 5 },
@@ -85,7 +85,7 @@ function createTestResultData(overrides?: Partial<ResultData>): ResultData {
 		],
 		mvpCard: {
 			id: "c1",
-			type: "attack",
+			type: "fire",
 			level: 2,
 			exp: 3,
 			stats: { useCount: 10, defeatCount: 3, maxSingleDamage: 5 },
@@ -106,7 +106,7 @@ function createTestResultData(overrides?: Partial<ResultData>): ResultData {
 					type: "card_level_up",
 					floor: 3,
 					turn: 10,
-					detail: { cardType: "attack", newLevel: 3 },
+					detail: { cardType: "fire", newLevel: 3 },
 				},
 				text: "3F: ⚔攻撃がLv.3に成長",
 				score: 55,

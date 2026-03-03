@@ -4,8 +4,8 @@
 
 import {
 	LOG_AREA_GAP,
-	PLAYER_ATTACK_DAMAGE,
-	PLAYER_STRONG_ATTACK_DAMAGE,
+	PLAYER_FIRE_DAMAGE,
+	PLAYER_THUNDER_DAMAGE,
 	STATUS_BAR_HEIGHT,
 } from "../constants";
 import type { GameContext } from "../gameContext";
@@ -13,9 +13,9 @@ import type { Direction, GameState, Position } from "../types";
 import { DIRECTION_DELTA } from "../types";
 import { Easing, tweenValue } from "../utils/tween";
 import {
-	type AttackCardType,
 	createDefeatParticleConfig,
-	getAttackParticleConfig,
+	getMagicParticleConfig,
+	type MagicCardType,
 } from "./battleParticles";
 import { getViewportPixelSize, gridToParticlePosition } from "./coordinates";
 import { executeExchangeFlow } from "./exchangeFlow";
@@ -149,7 +149,7 @@ export async function updateStateWithAttackAnimation(
 	ctx: GameContext,
 	newState: GameState,
 	hitEnemyId: string,
-	cardType: AttackCardType = "attack",
+	cardType: MagicCardType = "fire",
 	options: { overkill?: number; comboBonus?: number; levelBonus?: number } = {},
 ): Promise<void> {
 	const { overkill = 0, comboBonus = 0, levelBonus = 0 } = options;
@@ -169,9 +169,7 @@ export async function updateStateWithAttackAnimation(
 
 		// ヒットエフェクト
 		const baseDamage =
-			cardType === "strong_attack"
-				? PLAYER_STRONG_ATTACK_DAMAGE
-				: PLAYER_ATTACK_DAMAGE;
+			cardType === "thunder" ? PLAYER_THUNDER_DAMAGE : PLAYER_FIRE_DAMAGE;
 		const damage = baseDamage + levelBonus + comboBonus;
 		const hitAnimations: Promise<void>[] = [
 			ctx.ui.mapRenderer.animateAttackHit(hitEnemyId, damage),
@@ -185,7 +183,7 @@ export async function updateStateWithAttackAnimation(
 				ctx.ui.particleSystem.getContainer(),
 			);
 			hitAnimations.push(
-				ctx.ui.particleSystem.emit(getAttackParticleConfig(cardType, center)),
+				ctx.ui.particleSystem.emit(getMagicParticleConfig(cardType, center)),
 			);
 		}
 

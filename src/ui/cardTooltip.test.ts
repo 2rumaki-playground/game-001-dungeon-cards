@@ -1,6 +1,6 @@
 import type { Container, Text } from "pixi.js";
 import { describe, expect, it } from "vitest";
-import { CARD_MAX_LEVEL, PLAYER_ATTACK_DAMAGE } from "../constants";
+import { CARD_MAX_LEVEL, PLAYER_FIRE_DAMAGE } from "../constants";
 import type { Card } from "../types";
 import {
 	CARD_DESCRIPTION,
@@ -44,16 +44,16 @@ describe("createCardTooltip", () => {
 	});
 
 	it("CARD_DESCRIPTIONが含まれる", () => {
-		const result = createCardTooltip("attack");
+		const result = createCardTooltip("fire");
 		const texts = getAllTextsRecursive(result.container);
-		const hasDesc = texts.some((t) => t.text.includes(CARD_DESCRIPTION.attack));
+		const hasDesc = texts.some((t) => t.text.includes(CARD_DESCRIPTION.fire));
 		expect(hasDesc).toBe(true);
 	});
 
 	it("Lv.2の攻撃カードではボーナス込みダメージが表示される", () => {
 		const card: Card = {
 			id: "card-1",
-			type: "attack",
+			type: "fire",
 			level: 2,
 			exp: 2,
 			stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
@@ -61,7 +61,7 @@ describe("createCardTooltip", () => {
 		const result = createCardTooltip(card);
 		const texts = getAllTextsRecursive(result.container);
 		const hasBonus = texts.some((t) =>
-			t.text.includes(`${PLAYER_ATTACK_DAMAGE + 1}ダメージ(+1)`),
+			t.text.includes(`${PLAYER_FIRE_DAMAGE + 1}ダメージ(+1)`),
 		);
 		expect(hasBonus).toBe(true);
 	});
@@ -69,7 +69,7 @@ describe("createCardTooltip", () => {
 	it("Lv.2の攻撃カードではレベル表示が含まれる", () => {
 		const card: Card = {
 			id: "card-1",
-			type: "attack",
+			type: "fire",
 			level: 2,
 			exp: 2,
 			stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
@@ -83,7 +83,7 @@ describe("createCardTooltip", () => {
 	it("最大レベルのカードでは(MAX)ラベルが表示される", () => {
 		const card: Card = {
 			id: "card-1",
-			type: "attack",
+			type: "fire",
 			level: CARD_MAX_LEVEL,
 			exp: 0,
 			stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
@@ -113,7 +113,7 @@ describe("createCardTooltip", () => {
 	it("useCount=0の場合、統計セクションが表示されない", () => {
 		const card: Card = {
 			id: "card-1",
-			type: "attack",
+			type: "fire",
 			level: 1,
 			exp: 0,
 			stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
@@ -127,7 +127,7 @@ describe("createCardTooltip", () => {
 	it("attack系カードでは撃破数・最大ダメージが表示される", () => {
 		const card: Card = {
 			id: "card-1",
-			type: "attack",
+			type: "fire",
 			level: 1,
 			exp: 0,
 			stats: { useCount: 3, defeatCount: 2, maxSingleDamage: 7 },
@@ -159,7 +159,7 @@ describe("createCardTooltip", () => {
 	it("card.levelが範囲外でも正規化されたレベルが表示される", () => {
 		const card: Card = {
 			id: "card-1",
-			type: "attack",
+			type: "fire",
 			level: CARD_MAX_LEVEL + 1,
 			exp: 99,
 			stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },

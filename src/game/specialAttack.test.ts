@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { PLAYER_STRONG_ATTACK_DAMAGE } from "../constants";
+import { PLAYER_THUNDER_DAMAGE } from "../constants";
 import {
 	createTestEnemy,
 	createTestState,
 } from "../test-utils/createTestFixtures";
 import type { Card } from "../types";
-import { executeAttack, executeStrongAttack } from "./action";
+import { executeFire, executeThunder } from "./action";
 import {
 	applyKnockback,
 	applyPierce,
@@ -18,7 +18,7 @@ import {
 function makeCard(overrides?: Partial<Card>): Card {
 	return {
 		id: "card-1",
-		type: "attack",
+		type: "fire",
 		level: 1,
 		exp: 0,
 		stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
@@ -158,12 +158,12 @@ describe("Lv3攻撃カード: 貫通", () => {
 		const state = createTestState({
 			enemies: [enemy1, enemy2],
 			deck: {
-				hand: [makeCard({ id: "atk-1", type: "attack", level: 3, exp: 4 })],
+				hand: [makeCard({ id: "atk-1", type: "fire", level: 3, exp: 4 })],
 				usedCardIds: [],
 			},
 		});
 
-		const { state: result, hit } = executeAttack(state, "atk-1", "right");
+		const { state: result, hit } = executeFire(state, "atk-1", "right");
 		expect(hit).toBe(true);
 
 		// enemy1が撃破され（Lv3: dmg=1+1=2, hp1なのでoverkill=1）
@@ -179,12 +179,12 @@ describe("Lv3攻撃カード: 貫通", () => {
 		const state = createTestState({
 			enemies: [enemy1, enemy2],
 			deck: {
-				hand: [makeCard({ id: "atk-1", type: "attack", level: 3, exp: 4 })],
+				hand: [makeCard({ id: "atk-1", type: "fire", level: 3, exp: 4 })],
 				usedCardIds: [],
 			},
 		});
 
-		const { state: result } = executeAttack(state, "atk-1", "right");
+		const { state: result } = executeFire(state, "atk-1", "right");
 		// enemy1生存→overkill=0→貫通なし
 		expect(result.enemies).toHaveLength(2);
 		expect(result.enemies[1].hp).toBe(3); // enemy2はノーダメージ
@@ -196,12 +196,12 @@ describe("Lv3攻撃カード: 貫通", () => {
 		const state = createTestState({
 			enemies: [enemy1, enemy2],
 			deck: {
-				hand: [makeCard({ id: "atk-1", type: "attack", level: 2, exp: 2 })],
+				hand: [makeCard({ id: "atk-1", type: "fire", level: 2, exp: 2 })],
 				usedCardIds: [],
 			},
 		});
 
-		const { state: result } = executeAttack(state, "atk-1", "right");
+		const { state: result } = executeFire(state, "atk-1", "right");
 		// Lv2: dmg=1+1=2, hp=1, overkill=1 だが貫通なし
 		expect(result.enemies).toHaveLength(1);
 		expect(result.enemies[0].hp).toBe(3); // enemy2ノーダメージ
@@ -214,12 +214,12 @@ describe("Lv5攻撃カード: 射程延長 + 貫通", () => {
 		const state = createTestState({
 			enemies: [enemy],
 			deck: {
-				hand: [makeCard({ id: "atk-1", type: "attack", level: 5, exp: 16 })],
+				hand: [makeCard({ id: "atk-1", type: "fire", level: 5, exp: 16 })],
 				usedCardIds: [],
 			},
 		});
 
-		const { state: result, hit } = executeAttack(state, "atk-1", "right");
+		const { state: result, hit } = executeFire(state, "atk-1", "right");
 		expect(hit).toBe(true);
 		// Lv5: dmg=1+3=4
 		expect(result.enemies[0].hp).toBe(5 - 4);
@@ -231,12 +231,12 @@ describe("Lv5攻撃カード: 射程延長 + 貫通", () => {
 		const state = createTestState({
 			enemies: [enemy1, enemy2],
 			deck: {
-				hand: [makeCard({ id: "atk-1", type: "attack", level: 5, exp: 16 })],
+				hand: [makeCard({ id: "atk-1", type: "fire", level: 5, exp: 16 })],
 				usedCardIds: [],
 			},
 		});
 
-		const { state: result, hit } = executeAttack(state, "atk-1", "right");
+		const { state: result, hit } = executeFire(state, "atk-1", "right");
 		expect(hit).toBe(true);
 		expect(result.enemies.find((e) => e.id === enemy1.id)?.hp).toBe(5 - 4);
 		expect(result.enemies.find((e) => e.id === enemy2.id)?.hp).toBe(5);
@@ -248,7 +248,7 @@ describe("Lv5攻撃カード: 射程延長 + 貫通", () => {
 		const state = createTestState({
 			enemies: [enemy1],
 			deck: {
-				hand: [makeCard({ id: "atk-1", type: "attack", level: 5, exp: 16 })],
+				hand: [makeCard({ id: "atk-1", type: "fire", level: 5, exp: 16 })],
 				usedCardIds: [],
 			},
 		});
@@ -257,7 +257,7 @@ describe("Lv5攻撃カード: 射程延長 + 貫通", () => {
 			state: result,
 			hit,
 			overkill,
-		} = executeAttack(state, "atk-1", "right");
+		} = executeFire(state, "atk-1", "right");
 		expect(hit).toBe(true);
 		expect(overkill).toBe(4 - 1); // dmg=4, hp=1
 		expect(result.enemies).toHaveLength(0);
@@ -267,37 +267,14 @@ describe("Lv5攻撃カード: 射程延長 + 貫通", () => {
 		const state = createTestState({
 			enemies: [],
 			deck: {
-				hand: [makeCard({ id: "atk-1", type: "attack", level: 5, exp: 16 })],
+				hand: [makeCard({ id: "atk-1", type: "fire", level: 5, exp: 16 })],
 				usedCardIds: [],
 			},
 		});
 
-		const { state: result, hit } = executeAttack(state, "atk-1", "right");
+		const { state: result, hit } = executeFire(state, "atk-1", "right");
 		expect(hit).toBe(false);
 		expect(result.speechLog?.eventType).toBe("attack_miss");
-	});
-
-	it("突撃コンボで正面のcracked_wallを破壊しミスログが出ない", () => {
-		const state = createTestState({
-			enemies: [],
-			deck: {
-				hand: [makeCard({ id: "atk-1", type: "attack", level: 5, exp: 16 })],
-				usedCardIds: [],
-			},
-			comboHistory: { lastCardType: "move", lastDirection: "right" },
-		});
-		state.map[3][4] = { type: "cracked_wall" };
-
-		const {
-			state: result,
-			hit,
-			comboType,
-		} = executeAttack(state, "atk-1", "right");
-		expect(hit).toBe(false);
-		expect(comboType).toBe("charge");
-		expect(result.map[3][4].type).toBe("floor");
-		// ミスログ/SEが出ないことを確認
-		expect(result.speechLog?.eventType).not.toBe("attack_miss");
 	});
 
 	it("壁越しの敵は攻撃できない", () => {
@@ -306,12 +283,12 @@ describe("Lv5攻撃カード: 射程延長 + 貫通", () => {
 		const state = createTestState({
 			enemies: [],
 			deck: {
-				hand: [makeCard({ id: "atk-1", type: "attack", level: 5, exp: 16 })],
+				hand: [makeCard({ id: "atk-1", type: "fire", level: 5, exp: 16 })],
 				usedCardIds: [],
 			},
 		});
 
-		const { hit } = executeAttack(state, "atk-1", "right");
+		const { hit } = executeFire(state, "atk-1", "right");
 		expect(hit).toBe(false);
 	});
 });
@@ -503,7 +480,7 @@ describe("Lv3強攻撃カード: ノックバック", () => {
 				hand: [
 					makeCard({
 						id: "strong-1",
-						type: "strong_attack",
+						type: "thunder",
 						level: 3,
 						exp: 4,
 					}),
@@ -512,15 +489,11 @@ describe("Lv3強攻撃カード: ノックバック", () => {
 			},
 		});
 
-		const { state: result, hit } = executeStrongAttack(
-			state,
-			"strong-1",
-			"right",
-		);
+		const { state: result, hit } = executeThunder(state, "strong-1", "right");
 		expect(hit).toBe(true);
 		const moved = result.enemies.find((e) => e.id === enemy.id);
 		// Lv3: dmg=3+1=4, 生存(hp=6), ノックバックで(5,3)へ
-		expect(moved?.hp).toBe(10 - (PLAYER_STRONG_ATTACK_DAMAGE + 1));
+		expect(moved?.hp).toBe(10 - (PLAYER_THUNDER_DAMAGE + 1));
 		expect(moved?.position).toEqual({ x: 5, y: 3 });
 	});
 
@@ -532,7 +505,7 @@ describe("Lv3強攻撃カード: ノックバック", () => {
 				hand: [
 					makeCard({
 						id: "strong-1",
-						type: "strong_attack",
+						type: "thunder",
 						level: 3,
 						exp: 4,
 					}),
@@ -541,11 +514,7 @@ describe("Lv3強攻撃カード: ノックバック", () => {
 			},
 		});
 
-		const { state: result, hit } = executeStrongAttack(
-			state,
-			"strong-1",
-			"right",
-		);
+		const { state: result, hit } = executeThunder(state, "strong-1", "right");
 		expect(hit).toBe(true);
 		expect(result.enemies).toHaveLength(0);
 	});
@@ -560,7 +529,7 @@ describe("Lv3強攻撃カード: ノックバック", () => {
 				hand: [
 					makeCard({
 						id: "strong-1",
-						type: "strong_attack",
+						type: "thunder",
 						level: 3,
 						exp: 4,
 					}),
@@ -569,11 +538,7 @@ describe("Lv3強攻撃カード: ノックバック", () => {
 			},
 		});
 
-		const { state: result, hit } = executeStrongAttack(
-			state,
-			"strong-1",
-			"right",
-		);
+		const { state: result, hit } = executeThunder(state, "strong-1", "right");
 		expect(hit).toBe(true);
 		const notMoved = result.enemies.find((e) => e.id === enemy.id);
 		expect(notMoved?.position).toEqual({ x: 5, y: 3 });
@@ -587,7 +552,7 @@ describe("Lv3強攻撃カード: ノックバック", () => {
 				hand: [
 					makeCard({
 						id: "strong-1",
-						type: "strong_attack",
+						type: "thunder",
 						level: 2,
 						exp: 2,
 					}),
@@ -596,11 +561,7 @@ describe("Lv3強攻撃カード: ノックバック", () => {
 			},
 		});
 
-		const { state: result, hit } = executeStrongAttack(
-			state,
-			"strong-1",
-			"right",
-		);
+		const { state: result, hit } = executeThunder(state, "strong-1", "right");
 		expect(hit).toBe(true);
 		const notMoved = result.enemies.find((e) => e.id === enemy.id);
 		expect(notMoved?.position).toEqual({ x: 4, y: 3 });
@@ -617,7 +578,7 @@ describe("Lv5強攻撃カード: 衝撃波", () => {
 				hand: [
 					makeCard({
 						id: "strong-1",
-						type: "strong_attack",
+						type: "thunder",
 						level: 5,
 						exp: 16,
 					}),
@@ -626,11 +587,7 @@ describe("Lv5強攻撃カード: 衝撃波", () => {
 			},
 		});
 
-		const { state: result, hit } = executeStrongAttack(
-			state,
-			"strong-1",
-			"right",
-		);
+		const { state: result, hit } = executeThunder(state, "strong-1", "right");
 		expect(hit).toBe(true);
 		// Lv5: dmg=3+3=6
 		const front = result.enemies.find((e) => e.id === enemyFront.id);
@@ -647,7 +604,7 @@ describe("Lv5強攻撃カード: 衝撃波", () => {
 				hand: [
 					makeCard({
 						id: "strong-1",
-						type: "strong_attack",
+						type: "thunder",
 						level: 5,
 						exp: 16,
 					}),
@@ -656,11 +613,7 @@ describe("Lv5強攻撃カード: 衝撃波", () => {
 			},
 		});
 
-		const { state: result, hit } = executeStrongAttack(
-			state,
-			"strong-1",
-			"right",
-		);
+		const { state: result, hit } = executeThunder(state, "strong-1", "right");
 		expect(hit).toBe(false);
 		expect(result.speechLog?.eventType).toBe("attack_miss");
 	});
@@ -673,7 +626,7 @@ describe("Lv5強攻撃カード: 衝撃波", () => {
 				hand: [
 					makeCard({
 						id: "strong-1",
-						type: "strong_attack",
+						type: "thunder",
 						level: 5,
 						exp: 16,
 					}),
@@ -682,11 +635,7 @@ describe("Lv5強攻撃カード: 衝撃波", () => {
 			},
 		});
 
-		const { state: result, hit } = executeStrongAttack(
-			state,
-			"strong-1",
-			"right",
-		);
+		const { state: result, hit } = executeThunder(state, "strong-1", "right");
 		expect(hit).toBe(true);
 		const moved = result.enemies.find((e) => e.id === enemy.id);
 		expect(moved?.hp).toBe(15 - 6);
@@ -701,7 +650,7 @@ describe("Lv5強攻撃カード: 衝撃波", () => {
 				hand: [
 					makeCard({
 						id: "strong-1",
-						type: "strong_attack",
+						type: "thunder",
 						level: 5,
 						exp: 16,
 					}),
@@ -710,7 +659,7 @@ describe("Lv5強攻撃カード: 衝撃波", () => {
 			},
 		});
 
-		const { state: result } = executeStrongAttack(state, "strong-1", "right");
+		const { state: result } = executeThunder(state, "strong-1", "right");
 		expect(result.deck.usedCardIds).toContain("strong-1");
 	});
 });

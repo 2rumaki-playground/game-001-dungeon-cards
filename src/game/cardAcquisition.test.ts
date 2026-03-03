@@ -79,11 +79,11 @@ describe("checkCardDrop", () => {
 	it("ドロップ確率テーブルのカードタイプが正しい", () => {
 		expect(CARD_DROP_TABLE.normal.cardType).toBe("move");
 		expect(CARD_DROP_TABLE.ranged.cardType).toBe("move");
-		expect(CARD_DROP_TABLE.heavy.cardType).toBe("strong_attack");
+		expect(CARD_DROP_TABLE.heavy.cardType).toBe("thunder");
 		expect(CARD_DROP_TABLE.scout.cardType).toBe("jump");
 		expect(CARD_DROP_TABLE.summoner.cardType).toBe("wait");
-		expect(CARD_DROP_TABLE.shielded.cardType).toBe("attack");
-		expect(CARD_DROP_TABLE.miniboss.cardType).toBe("attack");
+		expect(CARD_DROP_TABLE.shielded.cardType).toBe("fire");
+		expect(CARD_DROP_TABLE.miniboss.cardType).toBe("fire");
 		expect(CARD_DROP_TABLE.boss.cardType).toBe("wait");
 	});
 
@@ -128,7 +128,7 @@ describe("checkCardDrop", () => {
 			const rng = new RNG(seed);
 			const result = checkCardDrop(rng, "miniboss");
 			if (result !== null) {
-				expect(result.acquiredCardType).toBe("attack");
+				expect(result.acquiredCardType).toBe("fire");
 				expect(result.defeatedEnemyType).toBe("miniboss");
 				return;
 			}
@@ -164,14 +164,14 @@ describe("exchangeCardInDeck", () => {
 			},
 			{
 				id: "test-card-4",
-				type: "attack",
+				type: "fire",
 				level: 1,
 				exp: 0,
 				stats: createInitialCardStats(),
 			},
 			{
 				id: "test-card-5",
-				type: "attack",
+				type: "fire",
 				level: 1,
 				exp: 0,
 				stats: createInitialCardStats(),
@@ -195,9 +195,9 @@ describe("exchangeCardInDeck", () => {
 			},
 		});
 
-		const result = exchangeCardInDeck(state, "test-card-1", "strong_attack");
+		const result = exchangeCardInDeck(state, "test-card-1", "thunder");
 		expect(result.deck.hand.some((c) => c.id === "test-card-1")).toBe(false);
-		expect(result.deck.hand.some((c) => c.type === "strong_attack")).toBe(true);
+		expect(result.deck.hand.some((c) => c.type === "thunder")).toBe(true);
 	});
 
 	it("handの同位置に新カードを挿入", () => {
@@ -223,7 +223,7 @@ describe("exchangeCardInDeck", () => {
 			},
 		});
 
-		const result = exchangeCardInDeck(state, "test-card-2", "strong_attack");
+		const result = exchangeCardInDeck(state, "test-card-2", "thunder");
 		expect(result.deck.hand.length).toBe(cards.length);
 	});
 
@@ -236,7 +236,7 @@ describe("exchangeCardInDeck", () => {
 			},
 		});
 
-		const result = exchangeCardInDeck(state, "test-card-2", "strong_attack");
+		const result = exchangeCardInDeck(state, "test-card-2", "thunder");
 		expect(result.deck.usedCardIds).not.toContain("test-card-2");
 		expect(result.deck.usedCardIds).toContain("test-card-4");
 	});
@@ -251,7 +251,7 @@ describe("exchangeCardInDeck", () => {
 		});
 
 		expect(() =>
-			exchangeCardInDeck(state, "nonexistent-id", "strong_attack"),
+			exchangeCardInDeck(state, "nonexistent-id", "thunder"),
 		).toThrow('removeCardId "nonexistent-id" not found in hand');
 	});
 });

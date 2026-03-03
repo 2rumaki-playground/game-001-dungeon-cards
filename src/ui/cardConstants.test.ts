@@ -1,8 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-	PLAYER_ATTACK_DAMAGE,
-	PLAYER_STRONG_ATTACK_DAMAGE,
-} from "../constants";
+import { PLAYER_FIRE_DAMAGE, PLAYER_THUNDER_DAMAGE } from "../constants";
 import type { Card, CardType } from "../types";
 import {
 	CARD_COLOR_COMBO_BORDER,
@@ -17,13 +14,7 @@ import {
 	getCardDescription,
 } from "./cardConstants";
 
-const ALL_CARD_TYPES: CardType[] = [
-	"move",
-	"attack",
-	"strong_attack",
-	"jump",
-	"wait",
-];
+const ALL_CARD_TYPES: CardType[] = ["move", "fire", "thunder", "jump", "wait"];
 
 describe("cardConstants", () => {
 	describe("CARD_COLORS", () => {
@@ -104,7 +95,7 @@ describe("cardConstants", () => {
 		function makeCard(overrides?: Partial<Card>): Card {
 			return {
 				id: "card-1",
-				type: "attack",
+				type: "fire",
 				level: 1,
 				exp: 0,
 				stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
@@ -119,26 +110,24 @@ describe("cardConstants", () => {
 		});
 
 		it("Lv.1の攻撃カードではボーナス表示なし", () => {
-			const desc = getCardDescription(makeCard({ type: "attack", level: 1 }));
-			expect(desc).toContain(`${PLAYER_ATTACK_DAMAGE}ダメージ`);
+			const desc = getCardDescription(makeCard({ type: "fire", level: 1 }));
+			expect(desc).toContain(`${PLAYER_FIRE_DAMAGE}ダメージ`);
 			expect(desc).not.toContain("(+");
 		});
 
 		it("Lv.2の攻撃カードでは+1ボーナスが表示される", () => {
-			const desc = getCardDescription(makeCard({ type: "attack", level: 2 }));
-			expect(desc).toContain(`${PLAYER_ATTACK_DAMAGE + 1}ダメージ(+1)`);
+			const desc = getCardDescription(makeCard({ type: "fire", level: 2 }));
+			expect(desc).toContain(`${PLAYER_FIRE_DAMAGE + 1}ダメージ(+1)`);
 		});
 
 		it("Lv.5の攻撃カードでは+3ボーナスが表示される", () => {
-			const desc = getCardDescription(makeCard({ type: "attack", level: 5 }));
-			expect(desc).toContain(`${PLAYER_ATTACK_DAMAGE + 3}ダメージ(+3)`);
+			const desc = getCardDescription(makeCard({ type: "fire", level: 5 }));
+			expect(desc).toContain(`${PLAYER_FIRE_DAMAGE + 3}ダメージ(+3)`);
 		});
 
 		it("Lv.2の強攻撃カードでは+1ボーナスが表示される", () => {
-			const desc = getCardDescription(
-				makeCard({ type: "strong_attack", level: 2 }),
-			);
-			expect(desc).toContain(`${PLAYER_STRONG_ATTACK_DAMAGE + 1}ダメージ(+1)`);
+			const desc = getCardDescription(makeCard({ type: "thunder", level: 2 }));
+			expect(desc).toContain(`${PLAYER_THUNDER_DAMAGE + 1}ダメージ(+1)`);
 		});
 
 		it("移動カードはレベルに関係なく固定テキスト", () => {
@@ -147,43 +136,37 @@ describe("cardConstants", () => {
 		});
 
 		it("Lv.3の攻撃カードでは貫通の説明が表示される", () => {
-			const desc = getCardDescription(makeCard({ type: "attack", level: 3 }));
+			const desc = getCardDescription(makeCard({ type: "fire", level: 3 }));
 			expect(desc).toContain("貫通");
 			expect(desc).toContain("隣接1マス先");
 		});
 
 		it("Lv.5の攻撃カードでは射程延長+貫通の説明が表示される", () => {
-			const desc = getCardDescription(makeCard({ type: "attack", level: 5 }));
+			const desc = getCardDescription(makeCard({ type: "fire", level: 5 }));
 			expect(desc).toContain("2マス先まで");
 			expect(desc).toContain("貫通");
 		});
 
 		it("Lv.3の強攻撃カードではノックバックの説明が表示される", () => {
-			const desc = getCardDescription(
-				makeCard({ type: "strong_attack", level: 3 }),
-			);
+			const desc = getCardDescription(makeCard({ type: "thunder", level: 3 }));
 			expect(desc).toContain("ノックバック");
 			expect(desc).toContain("隣接1マス先");
 		});
 
 		it("Lv.5の強攻撃カードでは衝撃波の説明が表示される", () => {
-			const desc = getCardDescription(
-				makeCard({ type: "strong_attack", level: 5 }),
-			);
+			const desc = getCardDescription(makeCard({ type: "thunder", level: 5 }));
 			expect(desc).toContain("正面+左右3マス");
 			expect(desc).toContain("ノックバック");
 		});
 
 		it("Lv.1-2の攻撃カードでは特殊効果の説明がない", () => {
-			const desc = getCardDescription(makeCard({ type: "attack", level: 2 }));
+			const desc = getCardDescription(makeCard({ type: "fire", level: 2 }));
 			expect(desc).not.toContain("貫通");
 			expect(desc).not.toContain("ノックバック");
 		});
 
 		it("Lv.1-2の強攻撃カードでは特殊効果の説明がない", () => {
-			const desc = getCardDescription(
-				makeCard({ type: "strong_attack", level: 2 }),
-			);
+			const desc = getCardDescription(makeCard({ type: "thunder", level: 2 }));
 			expect(desc).not.toContain("ノックバック");
 			expect(desc).not.toContain("衝撃波");
 		});

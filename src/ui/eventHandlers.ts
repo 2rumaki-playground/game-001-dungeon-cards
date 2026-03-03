@@ -5,10 +5,10 @@
 import { JUMP_DISTANCE } from "../constants";
 import {
 	endPlayerTurn,
-	executeAttack,
+	executeFire,
 	executeJump,
 	executeMove,
-	executeStrongAttack,
+	executeThunder,
 	executeWait,
 	returnToTitle,
 	startNewGame,
@@ -43,7 +43,6 @@ import {
 import { deleteSaveData, hasSaveData, loadGame } from "../utils/storage";
 import {
 	createChainComboParticleConfig,
-	createChargeComboParticleConfig,
 	createHealParticleConfig,
 	createJumpParticleConfig,
 	createTrapDamageParticleConfig,
@@ -209,19 +208,16 @@ function emitComboEffects(
 		mapContainer,
 		ctx.ui.particleSystem.getContainer(),
 	);
-	const particleConfig =
-		comboType === "charge"
-			? createChargeComboParticleConfig(particleOrigin)
-			: createChainComboParticleConfig(particleOrigin);
+	const particleConfig = createChainComboParticleConfig(particleOrigin);
 	const particlePromise = ctx.ui.particleSystem.emit(particleConfig);
 
 	return Promise.all([popupPromise, particlePromise]).then(() => {});
 }
 
 /**
- * 攻撃カードの実行と対応するアニメーション
+ * ファイアボルトの実行と対応するアニメーション
  */
-async function handleAttackCardExecution(
+async function handleFireCardExecution(
 	ctx: GameContext,
 	cardId: string,
 	direction: Direction,
@@ -233,7 +229,7 @@ async function handleAttackCardExecution(
 		overkill,
 		comboType,
 		levelBonus,
-	} = executeAttack(ctx.state, cardId, direction);
+	} = executeFire(ctx.state, cardId, direction);
 	ctx.ui.directionSelector.hide();
 	ctx.pendingCard = null;
 
@@ -244,7 +240,7 @@ async function handleAttackCardExecution(
 
 	if (hit && enemyId) {
 		const comboBonus = comboType ? getComboBonus(comboType) : 0;
-		await updateStateWithAttackAnimation(ctx, next, enemyId, "attack", {
+		await updateStateWithAttackAnimation(ctx, next, enemyId, "fire", {
 			overkill,
 			comboBonus,
 			levelBonus,
@@ -258,9 +254,9 @@ async function handleAttackCardExecution(
 }
 
 /**
- * 強攻撃カードの実行と対応するアニメーション
+ * サンダーの実行と対応するアニメーション
  */
-async function handleStrongAttackCardExecution(
+async function handleThunderCardExecution(
 	ctx: GameContext,
 	cardId: string,
 	direction: Direction,
@@ -271,11 +267,11 @@ async function handleStrongAttackCardExecution(
 		enemyId,
 		overkill,
 		levelBonus,
-	} = executeStrongAttack(ctx.state, cardId, direction);
+	} = executeThunder(ctx.state, cardId, direction);
 	ctx.ui.directionSelector.hide();
 	ctx.pendingCard = null;
 	if (hit && enemyId) {
-		await updateStateWithAttackAnimation(ctx, next, enemyId, "strong_attack", {
+		await updateStateWithAttackAnimation(ctx, next, enemyId, "thunder", {
 			overkill,
 			levelBonus,
 		});
@@ -371,10 +367,10 @@ async function executeCard(
 		try {
 			if (card.type === "move") {
 				await handleMoveCardExecution(ctx, card.id, direction);
-			} else if (card.type === "attack") {
-				await handleAttackCardExecution(ctx, card.id, direction);
-			} else if (card.type === "strong_attack") {
-				await handleStrongAttackCardExecution(ctx, card.id, direction);
+			} else if (card.type === "fire") {
+				await handleFireCardExecution(ctx, card.id, direction);
+			} else if (card.type === "thunder") {
+				await handleThunderCardExecution(ctx, card.id, direction);
 			} else if (card.type === "jump") {
 				await handleJumpCardExecution(ctx, card.id, direction);
 			}

@@ -5,25 +5,24 @@
 import { describe, expect, it } from "vitest";
 import {
 	calculateDefeatEffectScale,
-	createAttackParticleConfig,
 	createChainComboParticleConfig,
-	createChargeComboParticleConfig,
 	createDefeatParticleConfig,
+	createFireParticleConfig,
 	createHealParticleConfig,
 	createJumpParticleConfig,
-	createStrongAttackParticleConfig,
+	createThunderParticleConfig,
 	createTrapDamageParticleConfig,
-	getAttackParticleConfig,
+	getMagicParticleConfig,
 } from "./battleParticles";
 
-describe("createAttackParticleConfig", () => {
+describe("createFireParticleConfig", () => {
 	it("originが設定される", () => {
-		const config = createAttackParticleConfig({ x: 100, y: 200 });
+		const config = createFireParticleConfig({ x: 100, y: 200 });
 		expect(config.origin).toEqual({ x: 100, y: 200 });
 	});
 
 	it("オレンジ系の色が使用される", () => {
-		const config = createAttackParticleConfig({ x: 0, y: 0 });
+		const config = createFireParticleConfig({ x: 0, y: 0 });
 		const colors = Array.isArray(config.color) ? config.color : [config.color];
 		for (const c of colors) {
 			// オレンジ系: 赤成分が高い
@@ -33,25 +32,25 @@ describe("createAttackParticleConfig", () => {
 	});
 
 	it("radialパターンが使用される", () => {
-		const config = createAttackParticleConfig({ x: 0, y: 0 });
+		const config = createFireParticleConfig({ x: 0, y: 0 });
 		expect(config.pattern.type).toBe("radial");
 	});
 
 	it("パーティクル数が適度（10〜30個）", () => {
-		const config = createAttackParticleConfig({ x: 0, y: 0 });
+		const config = createFireParticleConfig({ x: 0, y: 0 });
 		expect(config.count).toBeGreaterThanOrEqual(10);
 		expect(config.count).toBeLessThanOrEqual(30);
 	});
 });
 
-describe("createStrongAttackParticleConfig", () => {
+describe("createThunderParticleConfig", () => {
 	it("originが設定される", () => {
-		const config = createStrongAttackParticleConfig({ x: 150, y: 250 });
+		const config = createThunderParticleConfig({ x: 150, y: 250 });
 		expect(config.origin).toEqual({ x: 150, y: 250 });
 	});
 
 	it("赤系の色が使用される", () => {
-		const config = createStrongAttackParticleConfig({ x: 0, y: 0 });
+		const config = createThunderParticleConfig({ x: 0, y: 0 });
 		const colors = Array.isArray(config.color) ? config.color : [config.color];
 		for (const c of colors) {
 			const r = (c >> 16) & 0xff;
@@ -60,14 +59,14 @@ describe("createStrongAttackParticleConfig", () => {
 	});
 
 	it("attackよりパーティクル数が多い", () => {
-		const attackConfig = createAttackParticleConfig({ x: 0, y: 0 });
-		const strongConfig = createStrongAttackParticleConfig({ x: 0, y: 0 });
+		const attackConfig = createFireParticleConfig({ x: 0, y: 0 });
+		const strongConfig = createThunderParticleConfig({ x: 0, y: 0 });
 		expect(strongConfig.count).toBeGreaterThan(attackConfig.count);
 	});
 
 	it("attackよりサイズが大きい", () => {
-		const attackConfig = createAttackParticleConfig({ x: 0, y: 0 });
-		const strongConfig = createStrongAttackParticleConfig({ x: 0, y: 0 });
+		const attackConfig = createFireParticleConfig({ x: 0, y: 0 });
+		const strongConfig = createThunderParticleConfig({ x: 0, y: 0 });
 		expect(strongConfig.size.max).toBeGreaterThan(attackConfig.size.max);
 	});
 });
@@ -224,28 +223,6 @@ describe("createTrapDamageParticleConfig", () => {
 	});
 });
 
-describe("createChargeComboParticleConfig", () => {
-	it("originが設定される", () => {
-		const config = createChargeComboParticleConfig({ x: 100, y: 200 });
-		expect(config.origin).toEqual({ x: 100, y: 200 });
-	});
-
-	it("黄色系の色が使用される", () => {
-		const config = createChargeComboParticleConfig({ x: 0, y: 0 });
-		const colors = Array.isArray(config.color) ? config.color : [config.color];
-		for (const c of colors) {
-			// 黄色系: 赤成分が高い
-			const r = (c >> 16) & 0xff;
-			expect(r).toBeGreaterThan(0x80);
-		}
-	});
-
-	it("radialパターンが使用される", () => {
-		const config = createChargeComboParticleConfig({ x: 0, y: 0 });
-		expect(config.pattern.type).toBe("radial");
-	});
-});
-
 describe("createChainComboParticleConfig", () => {
 	it("originが設定される", () => {
 		const config = createChainComboParticleConfig({ x: 150, y: 250 });
@@ -268,16 +245,16 @@ describe("createChainComboParticleConfig", () => {
 	});
 });
 
-describe("getAttackParticleConfig", () => {
+describe("getMagicParticleConfig", () => {
 	it("attackタイプでattack用設定を返す", () => {
-		const config = getAttackParticleConfig("attack", { x: 0, y: 0 });
-		const attackConfig = createAttackParticleConfig({ x: 0, y: 0 });
+		const config = getMagicParticleConfig("fire", { x: 0, y: 0 });
+		const attackConfig = createFireParticleConfig({ x: 0, y: 0 });
 		expect(config.count).toBe(attackConfig.count);
 	});
 
 	it("strong_attackタイプでstrong_attack用設定を返す", () => {
-		const config = getAttackParticleConfig("strong_attack", { x: 0, y: 0 });
-		const strongConfig = createStrongAttackParticleConfig({ x: 0, y: 0 });
+		const config = getMagicParticleConfig("thunder", { x: 0, y: 0 });
+		const strongConfig = createThunderParticleConfig({ x: 0, y: 0 });
 		expect(config.count).toBe(strongConfig.count);
 	});
 });

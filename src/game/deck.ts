@@ -79,7 +79,7 @@ function createCards(type: CardType, count: number): Card[] {
 export function createInitialDeck(): Card[] {
 	return [
 		...createCards("move", INITIAL_DECK.moveCards),
-		...createCards("attack", INITIAL_DECK.attackCards),
+		...createCards("fire", INITIAL_DECK.fireCards),
 		...createCards("wait", INITIAL_DECK.waitCards),
 	];
 }

@@ -19,9 +19,9 @@ describe("gridCardView", () => {
 		});
 
 		it("シンボルテキストが含まれる", () => {
-			const view = createGridCardView("attack");
+			const view = createGridCardView("fire");
 			const texts = view.children.filter((c) => c instanceof Text) as Text[];
-			const symbol = texts.find((t) => t.text === CARD_TYPE_SYMBOL.attack);
+			const symbol = texts.find((t) => t.text === CARD_TYPE_SYMBOL.fire);
 			expect(symbol).toBeDefined();
 		});
 
@@ -34,13 +34,7 @@ describe("gridCardView", () => {
 		});
 
 		it("各カードタイプで正しいシンボル・名前が使用される", () => {
-			const types: CardType[] = [
-				"move",
-				"attack",
-				"strong_attack",
-				"jump",
-				"wait",
-			];
+			const types: CardType[] = ["move", "fire", "thunder", "jump", "wait"];
 			for (const cardType of types) {
 				const view = createGridCardView(cardType);
 				const texts = view.children.filter((c) => c instanceof Text) as Text[];
@@ -54,11 +48,11 @@ describe("gridCardView", () => {
 		});
 
 		it("各カードタイプで正しい背景色が使用される", () => {
-			const view = createGridCardView("attack");
+			const view = createGridCardView("fire");
 			const bg = view.children[0] as Graphics;
 			expect(bg).toBeInstanceOf(Graphics);
 			// Graphicsが生成されていることを確認（色の内部状態は直接検証困難）
-			expect(CARD_COLORS.attack).toBeDefined();
+			expect(CARD_COLORS.fire).toBeDefined();
 		});
 
 		it("シンボルのX位置がカード幅の中央", () => {
@@ -69,7 +63,7 @@ describe("gridCardView", () => {
 		});
 
 		it("子要素が3つ（背景、シンボル、名前）", () => {
-			const view = createGridCardView("attack");
+			const view = createGridCardView("fire");
 			expect(view.children.length).toBe(3);
 		});
 

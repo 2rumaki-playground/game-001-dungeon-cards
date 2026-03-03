@@ -4,7 +4,7 @@ import {
 	CLOSE_CALL_HP_RATIO,
 	ENEMY_ATTACK_DAMAGE,
 	ENEMY_HP,
-	PLAYER_ATTACK_DAMAGE,
+	PLAYER_FIRE_DAMAGE,
 	PLAYER_INITIAL_HP,
 } from "../constants";
 import {
@@ -43,15 +43,15 @@ describe("applyDamageToEnemy", () => {
 	it("敵のHPからダメージ量を減算する", () => {
 		const enemy = createTestEnemy();
 		const state = createTestState({ enemies: [enemy] });
-		const result = applyDamageToEnemy(state, enemy.id, PLAYER_ATTACK_DAMAGE);
+		const result = applyDamageToEnemy(state, enemy.id, PLAYER_FIRE_DAMAGE);
 
-		expect(result.state.enemies[0].hp).toBe(ENEMY_HP - PLAYER_ATTACK_DAMAGE);
+		expect(result.state.enemies[0].hp).toBe(ENEMY_HP - PLAYER_FIRE_DAMAGE);
 	});
 
 	it("HP0以下の敵をマップから除去する", () => {
 		const enemy = createTestEnemy("normal", { x: 4, y: 3 }, { hp: 1 });
 		const state = createTestState({ enemies: [enemy] });
-		const result = applyDamageToEnemy(state, enemy.id, PLAYER_ATTACK_DAMAGE);
+		const result = applyDamageToEnemy(state, enemy.id, PLAYER_FIRE_DAMAGE);
 
 		expect(result.state.enemies).toHaveLength(0);
 	});
@@ -59,7 +59,7 @@ describe("applyDamageToEnemy", () => {
 	it("敵撃破時に行動ログを記録する", () => {
 		const enemy = createTestEnemy("normal", { x: 4, y: 3 }, { hp: 1 });
 		const state = createTestState({ enemies: [enemy] });
-		const result = applyDamageToEnemy(state, enemy.id, PLAYER_ATTACK_DAMAGE);
+		const result = applyDamageToEnemy(state, enemy.id, PLAYER_FIRE_DAMAGE);
 
 		expect(result.state.actionLog.length).toBeGreaterThan(0);
 		expect(result.state.actionLog[0].message).toBe("敵を倒した");
@@ -68,7 +68,7 @@ describe("applyDamageToEnemy", () => {
 	it("ダメージ時に行動ログを記録する", () => {
 		const enemy = createTestEnemy();
 		const state = createTestState({ enemies: [enemy] });
-		const result = applyDamageToEnemy(state, enemy.id, PLAYER_ATTACK_DAMAGE);
+		const result = applyDamageToEnemy(state, enemy.id, PLAYER_FIRE_DAMAGE);
 
 		expect(result.state.actionLog.length).toBeGreaterThan(0);
 		expect(result.state.actionLog[0].message).toBe("敵にダメージを与えた");
@@ -78,7 +78,7 @@ describe("applyDamageToEnemy", () => {
 		const enemy1 = createTestEnemy("normal", { x: 4, y: 3 });
 		const enemy2 = createTestEnemy("normal", { x: 2, y: 3 });
 		const state = createTestState({ enemies: [enemy1, enemy2] });
-		const result = applyDamageToEnemy(state, enemy1.id, PLAYER_ATTACK_DAMAGE);
+		const result = applyDamageToEnemy(state, enemy1.id, PLAYER_FIRE_DAMAGE);
 
 		const resultEnemy2 = result.state.enemies.find((e) => e.id === enemy2.id);
 		expect(resultEnemy2).toBeDefined();
@@ -87,11 +87,7 @@ describe("applyDamageToEnemy", () => {
 
 	it("存在しない敵IDを指定した場合、状態が変更されない", () => {
 		const state = createTestState();
-		const result = applyDamageToEnemy(
-			state,
-			"nonexistent",
-			PLAYER_ATTACK_DAMAGE,
-		);
+		const result = applyDamageToEnemy(state, "nonexistent", PLAYER_FIRE_DAMAGE);
 
 		expect(result.state).toBe(state);
 		expect(result.state.actionLog).toHaveLength(0);
@@ -104,7 +100,7 @@ describe("applyDamageToEnemy", () => {
 		const state = createTestState({ enemies: [enemy] });
 		const originalHp = state.enemies[0].hp;
 
-		applyDamageToEnemy(state, enemy.id, PLAYER_ATTACK_DAMAGE);
+		applyDamageToEnemy(state, enemy.id, PLAYER_FIRE_DAMAGE);
 
 		expect(state.enemies[0].hp).toBe(originalHp);
 	});
@@ -114,7 +110,7 @@ describe("applyDamageToEnemy", () => {
 		const state = createTestState({ enemies: [enemy] });
 		expect(state.defeatedEnemyCount).toBe(0);
 
-		const result = applyDamageToEnemy(state, enemy.id, PLAYER_ATTACK_DAMAGE);
+		const result = applyDamageToEnemy(state, enemy.id, PLAYER_FIRE_DAMAGE);
 		expect(result.state.defeatedEnemyCount).toBe(1);
 	});
 
@@ -128,7 +124,7 @@ describe("applyDamageToEnemy", () => {
 	][])("%sでボス撃破時のisCleared", (_, floor, expected) => {
 		const enemy = createTestEnemy("boss", { x: 4, y: 3 }, { hp: 1 });
 		const state = createTestState({ enemies: [enemy], floor });
-		const result = applyDamageToEnemy(state, enemy.id, PLAYER_ATTACK_DAMAGE);
+		const result = applyDamageToEnemy(state, enemy.id, PLAYER_FIRE_DAMAGE);
 
 		expect(result.state.isCleared).toBe(expected);
 	});
@@ -136,7 +132,7 @@ describe("applyDamageToEnemy", () => {
 	it("敵撃破時にremnantsに撃破座標が記録される", () => {
 		const enemy = createTestEnemy("normal", { x: 4, y: 3 }, { hp: 1 });
 		const state = createTestState({ enemies: [enemy] });
-		const result = applyDamageToEnemy(state, enemy.id, PLAYER_ATTACK_DAMAGE);
+		const result = applyDamageToEnemy(state, enemy.id, PLAYER_FIRE_DAMAGE);
 
 		expect(result.state.remnants["4,3"]).toBe(1);
 	});
@@ -153,8 +149,8 @@ describe("applyDamageToEnemy", () => {
 			{ id: "e2", hp: 1 },
 		);
 		const state = createTestState({ enemies: [enemy1, enemy2] });
-		let result = applyDamageToEnemy(state, enemy1.id, PLAYER_ATTACK_DAMAGE);
-		result = applyDamageToEnemy(result.state, enemy2.id, PLAYER_ATTACK_DAMAGE);
+		let result = applyDamageToEnemy(state, enemy1.id, PLAYER_FIRE_DAMAGE);
+		result = applyDamageToEnemy(result.state, enemy2.id, PLAYER_FIRE_DAMAGE);
 
 		expect(result.state.remnants["4,3"]).toBe(2);
 	});
@@ -162,7 +158,7 @@ describe("applyDamageToEnemy", () => {
 	it("ダメージのみ（非撃破）ではremnantsが変わらない", () => {
 		const enemy = createTestEnemy();
 		const state = createTestState({ enemies: [enemy] });
-		const result = applyDamageToEnemy(state, enemy.id, PLAYER_ATTACK_DAMAGE);
+		const result = applyDamageToEnemy(state, enemy.id, PLAYER_FIRE_DAMAGE);
 
 		expect(result.state.remnants).toEqual({});
 	});
@@ -170,7 +166,7 @@ describe("applyDamageToEnemy", () => {
 	it("ダメージのみ（非撃破）ではdefeatedEnemyCountが変わらない", () => {
 		const enemy = createTestEnemy();
 		const state = createTestState({ enemies: [enemy] });
-		const result = applyDamageToEnemy(state, enemy.id, PLAYER_ATTACK_DAMAGE);
+		const result = applyDamageToEnemy(state, enemy.id, PLAYER_FIRE_DAMAGE);
 
 		expect(result.state.defeatedEnemyCount).toBe(0);
 	});
@@ -314,7 +310,7 @@ describe("applyDamageToEnemy - カードドロップ", () => {
 	it("敵撃破時に撃破カウンターが更新される", () => {
 		const enemy = createTestEnemy("normal", { x: 4, y: 3 }, { hp: 1 });
 		const state = createTestState({ enemies: [enemy] });
-		const result = applyDamageToEnemy(state, enemy.id, PLAYER_ATTACK_DAMAGE);
+		const result = applyDamageToEnemy(state, enemy.id, PLAYER_FIRE_DAMAGE);
 
 		expect(result.state.acquisitionCounters.defeatCounts.normal).toBe(1);
 	});
@@ -323,7 +319,7 @@ describe("applyDamageToEnemy - カードドロップ", () => {
 		const enemy = createTestEnemy("boss", { x: 4, y: 3 }, { hp: 1 });
 		// boss(100%)は必ずドロップ
 		const state = createTestState({ enemies: [enemy] });
-		const result = applyDamageToEnemy(state, enemy.id, PLAYER_ATTACK_DAMAGE);
+		const result = applyDamageToEnemy(state, enemy.id, PLAYER_FIRE_DAMAGE);
 
 		expect(result.state.cardExchangeQueue).toHaveLength(1);
 		expect(result.state.cardExchangeQueue[0].acquiredCardType).toBe("wait");
@@ -347,7 +343,7 @@ describe("applyDamageToEnemy - カードドロップ", () => {
 				enemies: [enemy],
 				rng: new RNG(seed),
 			});
-			const result = applyDamageToEnemy(state, enemy.id, PLAYER_ATTACK_DAMAGE);
+			const result = applyDamageToEnemy(state, enemy.id, PLAYER_FIRE_DAMAGE);
 			if (result.state.cardExchangeQueue.length > 0) {
 				withDrop++;
 			} else {
@@ -364,7 +360,7 @@ describe("applyDamageToEnemy - XP付与", () => {
 	it("敵撃破時にattackCardIdを渡すとカードのXPが増加する", () => {
 		const card = {
 			id: "atk-1",
-			type: "attack" as const,
+			type: "fire" as const,
 			level: 1,
 			exp: 0,
 			stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
@@ -377,7 +373,7 @@ describe("applyDamageToEnemy - XP付与", () => {
 		const result = applyDamageToEnemy(
 			state,
 			enemy.id,
-			PLAYER_ATTACK_DAMAGE,
+			PLAYER_FIRE_DAMAGE,
 			"atk-1",
 		);
 
@@ -387,7 +383,7 @@ describe("applyDamageToEnemy - XP付与", () => {
 	it("敵撃破時にattackCardId未指定だとXP変化なし", () => {
 		const card = {
 			id: "atk-1",
-			type: "attack" as const,
+			type: "fire" as const,
 			level: 1,
 			exp: 0,
 			stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
@@ -397,7 +393,7 @@ describe("applyDamageToEnemy - XP付与", () => {
 			enemies: [enemy],
 			deck: { hand: [card], usedCardIds: [] },
 		});
-		const result = applyDamageToEnemy(state, enemy.id, PLAYER_ATTACK_DAMAGE);
+		const result = applyDamageToEnemy(state, enemy.id, PLAYER_FIRE_DAMAGE);
 
 		expect(result.state.deck.hand[0].exp).toBe(0);
 	});
@@ -405,7 +401,7 @@ describe("applyDamageToEnemy - XP付与", () => {
 	it("非撃破時にはXPが付与されない", () => {
 		const card = {
 			id: "atk-1",
-			type: "attack" as const,
+			type: "fire" as const,
 			level: 1,
 			exp: 0,
 			stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
@@ -418,7 +414,7 @@ describe("applyDamageToEnemy - XP付与", () => {
 		const result = applyDamageToEnemy(
 			state,
 			enemy.id,
-			PLAYER_ATTACK_DAMAGE,
+			PLAYER_FIRE_DAMAGE,
 			"atk-1",
 		);
 
@@ -428,7 +424,7 @@ describe("applyDamageToEnemy - XP付与", () => {
 	it("レベルアップ時にログが記録される", () => {
 		const card = {
 			id: "atk-1",
-			type: "attack" as const,
+			type: "fire" as const,
 			level: 1,
 			exp: 1,
 			stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
@@ -441,7 +437,7 @@ describe("applyDamageToEnemy - XP付与", () => {
 		const result = applyDamageToEnemy(
 			state,
 			enemy.id,
-			PLAYER_ATTACK_DAMAGE,
+			PLAYER_FIRE_DAMAGE,
 			"atk-1",
 		);
 
@@ -456,7 +452,7 @@ describe("applyDamageToEnemy - カード統計", () => {
 	it("撃破時にdefeatCountが増加する", () => {
 		const card = {
 			id: "atk-1",
-			type: "attack" as const,
+			type: "fire" as const,
 			level: 1,
 			exp: 0,
 			stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
@@ -469,7 +465,7 @@ describe("applyDamageToEnemy - カード統計", () => {
 		const result = applyDamageToEnemy(
 			state,
 			enemy.id,
-			PLAYER_ATTACK_DAMAGE,
+			PLAYER_FIRE_DAMAGE,
 			"atk-1",
 		);
 
@@ -479,7 +475,7 @@ describe("applyDamageToEnemy - カード統計", () => {
 	it("非撃破時にdefeatCountは変わらない", () => {
 		const card = {
 			id: "atk-1",
-			type: "attack" as const,
+			type: "fire" as const,
 			level: 1,
 			exp: 0,
 			stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
@@ -492,7 +488,7 @@ describe("applyDamageToEnemy - カード統計", () => {
 		const result = applyDamageToEnemy(
 			state,
 			enemy.id,
-			PLAYER_ATTACK_DAMAGE,
+			PLAYER_FIRE_DAMAGE,
 			"atk-1",
 		);
 
@@ -502,7 +498,7 @@ describe("applyDamageToEnemy - カード統計", () => {
 	it("maxSingleDamageが実効ダメージで更新される", () => {
 		const card = {
 			id: "atk-1",
-			type: "attack" as const,
+			type: "fire" as const,
 			level: 1,
 			exp: 0,
 			stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
@@ -515,19 +511,19 @@ describe("applyDamageToEnemy - カード統計", () => {
 		const result = applyDamageToEnemy(
 			state,
 			enemy.id,
-			PLAYER_ATTACK_DAMAGE,
+			PLAYER_FIRE_DAMAGE,
 			"atk-1",
 		);
 
 		expect(result.state.deck.hand[0].stats.maxSingleDamage).toBe(
-			PLAYER_ATTACK_DAMAGE,
+			PLAYER_FIRE_DAMAGE,
 		);
 	});
 
 	it("overkill時はmin(effectiveDamage, enemy.hp)でクランプされる", () => {
 		const card = {
 			id: "atk-1",
-			type: "attack" as const,
+			type: "fire" as const,
 			level: 1,
 			exp: 0,
 			stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
@@ -545,7 +541,7 @@ describe("applyDamageToEnemy - カード統計", () => {
 	it("盾持ち敵へのダメージは半減後の実効値で記録される", () => {
 		const card = {
 			id: "atk-1",
-			type: "attack" as const,
+			type: "fire" as const,
 			level: 1,
 			exp: 0,
 			stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
@@ -564,7 +560,7 @@ describe("applyDamageToEnemy - カード統計", () => {
 	it("既存値より小さいダメージではmaxSingleDamageは更新されない", () => {
 		const card = {
 			id: "atk-1",
-			type: "attack" as const,
+			type: "fire" as const,
 			level: 1,
 			exp: 0,
 			stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 5 },
@@ -587,7 +583,7 @@ describe("applyDamageToEnemy - イベントログ", () => {
 	it("ボス撃破時にboss_defeatedイベントが記録される", () => {
 		const enemy = createTestEnemy("boss", { x: 4, y: 3 }, { hp: 1 });
 		const state = createTestState({ enemies: [enemy], floor: 10 });
-		const result = applyDamageToEnemy(state, enemy.id, PLAYER_ATTACK_DAMAGE);
+		const result = applyDamageToEnemy(state, enemy.id, PLAYER_FIRE_DAMAGE);
 
 		const bossEvents = result.state.eventLog.filter(
 			(e) => e.type === "boss_defeated",
@@ -599,7 +595,7 @@ describe("applyDamageToEnemy - イベントログ", () => {
 	it("ミニボス撃破時にminiboss_defeatedイベントが記録される", () => {
 		const enemy = createTestEnemy("miniboss", { x: 4, y: 3 }, { hp: 1 });
 		const state = createTestState({ enemies: [enemy], floor: 5 });
-		const result = applyDamageToEnemy(state, enemy.id, PLAYER_ATTACK_DAMAGE);
+		const result = applyDamageToEnemy(state, enemy.id, PLAYER_FIRE_DAMAGE);
 
 		const events = result.state.eventLog.filter(
 			(e) => e.type === "miniboss_defeated",
@@ -618,7 +614,7 @@ describe("applyDamageToEnemy - イベントログ", () => {
 				maxHp: PLAYER_INITIAL_HP,
 			},
 		});
-		const result = applyDamageToEnemy(state, enemy.id, PLAYER_ATTACK_DAMAGE);
+		const result = applyDamageToEnemy(state, enemy.id, PLAYER_FIRE_DAMAGE);
 
 		const events = result.state.eventLog.filter(
 			(e) => e.type === "close_call_defeat",
@@ -629,7 +625,7 @@ describe("applyDamageToEnemy - イベントログ", () => {
 	it("通常敵撃破でHP十分ならイベントログは空", () => {
 		const enemy = createTestEnemy("normal", { x: 4, y: 3 }, { hp: 1 });
 		const state = createTestState({ enemies: [enemy] });
-		const result = applyDamageToEnemy(state, enemy.id, PLAYER_ATTACK_DAMAGE);
+		const result = applyDamageToEnemy(state, enemy.id, PLAYER_FIRE_DAMAGE);
 
 		expect(result.state.eventLog).toHaveLength(0);
 	});

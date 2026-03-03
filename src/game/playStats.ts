@@ -41,7 +41,7 @@ export function startSession(initialFloor = INITIAL_FLOOR): void {
 		id: generateId(),
 		startedAt: Date.now(),
 		maxFloor: initialFloor,
-		cardUsage: { move: 0, attack: 0, strong_attack: 0, jump: 0, wait: 0 },
+		cardUsage: { move: 0, fire: 0, thunder: 0, jump: 0, wait: 0 },
 		totalDamageDealt: 0,
 		totalDamageTaken: 0,
 		playerTurnCount: 0,
