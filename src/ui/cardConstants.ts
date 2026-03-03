@@ -16,6 +16,11 @@ import {
 	hasShockwaveEffect,
 } from "../game/cardLevel";
 import type { Card, CardType } from "../types";
+import {
+	UI_COLOR_COMBO_PREVIEW,
+	UI_COLOR_GOLD,
+	UI_COLORS_DISABLED,
+} from "./uiColors";
 
 /** カード背景色 */
 export const CARD_COLORS: Record<CardType, { bg: number; border: number }> = {
@@ -25,6 +30,18 @@ export const CARD_COLORS: Record<CardType, { bg: number; border: number }> = {
 	jump: { bg: 0x2a6a3a, border: 0x4aaa5a },
 	wait: { bg: 0x4a4a4a, border: 0x6a6a6a },
 };
+
+/** カード無効状態の色 */
+export const CARD_COLOR_DISABLED = UI_COLORS_DISABLED;
+
+/** カード選択時の枠線色 */
+export const CARD_COLOR_SELECTED_BORDER = UI_COLOR_GOLD;
+
+/** カードホバー時の枠線色 */
+export const CARD_COLOR_HOVERED_BORDER = 0x88ccff;
+
+/** コンボ予告の枠線色 */
+export const CARD_COLOR_COMBO_BORDER = UI_COLOR_COMBO_PREVIEW;
 
 /** カードXPゲージ明色（レベル進捗表示用） */
 export const CARD_BRIGHT_COLORS: Record<CardType, number> = {

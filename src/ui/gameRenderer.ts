@@ -202,8 +202,8 @@ function renderExchangeScreen(ctx: GameContext): void {
 	ctx.ui.turnEndButton.hide();
 	ctx.ui.nextFloorButton.hide();
 	ctx.ui.handRenderer.clear();
-	// 報酬画面をオーバーレイ
-	ctx.ui.rewardScreen.show();
+	// カード除去/交換画面をオーバーレイ
+	ctx.ui.cardRemoveScreen.show();
 }
 
 /**
@@ -215,9 +215,10 @@ export function render(
 	skipPlayer = false,
 	skipEnemies = false,
 ): void {
-	ctx.ui.rewardScreen.hide();
+	ctx.ui.cardRemoveScreen.hide();
 	ctx.ui.resultScreen.hide();
 	ctx.ui.statsScreen.hide();
+	ctx.ui.rewardSelectScreen.hide();
 	switch (ctx.state.screen) {
 		case "title":
 			renderTitleScreen(ctx);
