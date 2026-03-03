@@ -5,6 +5,10 @@ import {
 } from "../constants";
 import type { Card, CardType } from "../types";
 import {
+	CARD_COLOR_COMBO_BORDER,
+	CARD_COLOR_DISABLED,
+	CARD_COLOR_HOVERED_BORDER,
+	CARD_COLOR_SELECTED_BORDER,
 	CARD_COLORS,
 	CARD_DESCRIPTION,
 	CARD_GLOW_COLORS,
@@ -29,6 +33,25 @@ describe("cardConstants", () => {
 				expect(typeof CARD_COLORS[type].bg).toBe("number");
 				expect(typeof CARD_COLORS[type].border).toBe("number");
 			}
+		});
+	});
+
+	describe("カードUI状態色", () => {
+		it("CARD_COLOR_DISABLEDがbg・borderを持つ", () => {
+			expect(typeof CARD_COLOR_DISABLED.bg).toBe("number");
+			expect(typeof CARD_COLOR_DISABLED.border).toBe("number");
+		});
+
+		it("CARD_COLOR_SELECTED_BORDERがnumber型", () => {
+			expect(typeof CARD_COLOR_SELECTED_BORDER).toBe("number");
+		});
+
+		it("CARD_COLOR_HOVERED_BORDERがnumber型", () => {
+			expect(typeof CARD_COLOR_HOVERED_BORDER).toBe("number");
+		});
+
+		it("CARD_COLOR_COMBO_BORDERがnumber型", () => {
+			expect(typeof CARD_COLOR_COMBO_BORDER).toBe("number");
 		});
 	});
 

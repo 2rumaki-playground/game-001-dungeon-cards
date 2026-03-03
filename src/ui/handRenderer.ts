@@ -14,8 +14,12 @@ import type {
 } from "../types";
 import { Easing, tween } from "../utils/tween";
 import {
-	CARD_COLORS as BASE_CARD_COLORS,
 	CARD_BRIGHT_COLORS,
+	CARD_COLOR_COMBO_BORDER,
+	CARD_COLOR_DISABLED,
+	CARD_COLOR_HOVERED_BORDER,
+	CARD_COLOR_SELECTED_BORDER,
+	CARD_COLORS,
 	CARD_GLOW_COLORS,
 	CARD_TYPE_NAME,
 	CARD_TYPE_SYMBOL,
@@ -27,11 +31,6 @@ import {
 } from "./cardTooltip";
 import { drawEdgeLine, drawRoundedRect } from "./graphicsHelpers";
 import type { ParticleSystem } from "./particleSystem";
-import {
-	UI_COLOR_COMBO_PREVIEW,
-	UI_COLOR_GOLD,
-	UI_COLORS_DISABLED,
-} from "./uiColors";
 
 /** カード描画定数 */
 export const CARD_WIDTH = 90;
@@ -112,15 +111,6 @@ export function getDirectionFromClickPosition(
 	// 上下（傾きが対角線より急）
 	return relY > 0 ? "down" : "up";
 }
-
-/** handRenderer固有のカード色拡張 */
-const CARD_COLORS = {
-	...BASE_CARD_COLORS,
-	disabled: UI_COLORS_DISABLED,
-	selectedBorder: UI_COLOR_GOLD,
-	hoveredBorder: 0x88ccff,
-	comboBorder: UI_COLOR_COMBO_PREVIEW,
-} as const;
 
 /** コンボ予告枠線の幅（px） */
 const COMBO_BORDER_WIDTH = 3;
@@ -378,13 +368,13 @@ export class HandRenderer {
 
 		// 背景
 		const bg = new Graphics();
-		const colors = enabled ? CARD_COLORS[card.type] : CARD_COLORS.disabled;
+		const colors = enabled ? CARD_COLORS[card.type] : CARD_COLOR_DISABLED;
 		const queued = queueIndex !== undefined;
 		const borderColor =
 			selected || queued
-				? CARD_COLORS.selectedBorder
+				? CARD_COLOR_SELECTED_BORDER
 				: hovered
-					? CARD_COLORS.hoveredBorder
+					? CARD_COLOR_HOVERED_BORDER
 					: colors.border;
 		const borderWidth = selected || queued ? 3 : 2;
 
@@ -425,7 +415,7 @@ export class HandRenderer {
 						CARD_HEIGHT,
 						CARD_RADIUS,
 						{ color: 0x000000, alpha: 0 },
-						{ color: CARD_COLORS.comboBorder, width: COMBO_BORDER_WIDTH },
+						{ color: CARD_COLOR_COMBO_BORDER, width: COMBO_BORDER_WIDTH },
 					);
 				} else if (
 					(comboPreview.type === "charge" || comboPreview.type === "ambush") &&
@@ -437,7 +427,7 @@ export class HandRenderer {
 						CARD_HEIGHT,
 						CARD_RADIUS,
 						comboPreview.direction,
-						{ color: CARD_COLORS.comboBorder, width: COMBO_BORDER_WIDTH },
+						{ color: CARD_COLOR_COMBO_BORDER, width: COMBO_BORDER_WIDTH },
 					);
 				}
 				cardContainer.addChild(comboBorderGraphics);
@@ -488,7 +478,7 @@ export class HandRenderer {
 		if (queued) {
 			const badge = new Graphics();
 			badge.circle(0, 0, QUEUE_BADGE_SIZE / 2);
-			badge.fill(CARD_COLORS.selectedBorder);
+			badge.fill(CARD_COLOR_SELECTED_BORDER);
 			badge.x = CARD_WIDTH - 6;
 			badge.y = -4;
 			cardContainer.addChild(badge);
