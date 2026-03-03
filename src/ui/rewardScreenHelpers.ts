@@ -1,5 +1,5 @@
 /**
- * 報酬画面・カード除去画面の共通定数とヘルパー関数
+ * 報酬画面で使用する共通定数とヘルパー関数
  */
 
 import { Container, Graphics, Text } from "pixi.js";
