@@ -8,7 +8,7 @@ describe("detectCombo", () => {
 		expect(detectCombo(null, "fire", "up")).toBeNull();
 	});
 
-	it("move→attack 異方向はコンボなし", () => {
+	it("move→fire 異方向はコンボなし", () => {
 		const history: ComboHistory = {
 			lastCardType: "move",
 			lastDirection: "up",
@@ -16,7 +16,7 @@ describe("detectCombo", () => {
 		expect(detectCombo(history, "fire", "right")).toBeNull();
 	});
 
-	it("attack→attack で連撃コンボ", () => {
+	it("fire→fire で連撃コンボ", () => {
 		const history: ComboHistory = {
 			lastCardType: "fire",
 			lastDirection: "up",
@@ -24,7 +24,7 @@ describe("detectCombo", () => {
 		expect(detectCombo(history, "fire", "down")).toBe("chain");
 	});
 
-	it("attack→attack 同方向でも連撃コンボ", () => {
+	it("fire→fire 同方向でも連撃コンボ", () => {
 		const history: ComboHistory = {
 			lastCardType: "fire",
 			lastDirection: "left",
@@ -40,7 +40,7 @@ describe("detectCombo", () => {
 		expect(detectCombo(history, "move", "up")).toBeNull();
 	});
 
-	it("wait→attack で集中攻撃コンボ", () => {
+	it("wait→fire で集中攻撃コンボ", () => {
 		const history: ComboHistory = {
 			lastCardType: "wait",
 			lastDirection: null,
@@ -48,7 +48,7 @@ describe("detectCombo", () => {
 		expect(detectCombo(history, "fire", "up")).toBe("focus");
 	});
 
-	it("wait→strong_attack はコンボなし", () => {
+	it("wait→thunder はコンボなし", () => {
 		const history: ComboHistory = {
 			lastCardType: "wait",
 			lastDirection: null,
@@ -56,7 +56,7 @@ describe("detectCombo", () => {
 		expect(detectCombo(history, "thunder", "up")).toBeNull();
 	});
 
-	it("strong_attack→attack はコンボなし（strong_attackはattackではない）", () => {
+	it("thunder→fire はコンボなし（thunderはfireではない）", () => {
 		const history: ComboHistory = {
 			lastCardType: "thunder",
 			lastDirection: "up",
@@ -64,7 +64,7 @@ describe("detectCombo", () => {
 		expect(detectCombo(history, "fire", "up")).toBeNull();
 	});
 
-	it("attack→strong_attack はコンボなし（strong_attackはattackではない）", () => {
+	it("fire→thunder はコンボなし（thunderはfireではない）", () => {
 		const history: ComboHistory = {
 			lastCardType: "fire",
 			lastDirection: "up",
@@ -72,7 +72,7 @@ describe("detectCombo", () => {
 		expect(detectCombo(history, "thunder", "up")).toBeNull();
 	});
 
-	it("move→strong_attack はコンボなし（突撃はattackのみ）", () => {
+	it("move→thunder はコンボなし（突撃はfireのみ）", () => {
 		const history: ComboHistory = {
 			lastCardType: "move",
 			lastDirection: "up",
@@ -80,7 +80,7 @@ describe("detectCombo", () => {
 		expect(detectCombo(history, "thunder", "up")).toBeNull();
 	});
 
-	it("jump→attack 同方向で奇襲コンボ", () => {
+	it("jump→fire 同方向で奇襲コンボ", () => {
 		const history: ComboHistory = {
 			lastCardType: "jump",
 			lastDirection: "up",
@@ -88,7 +88,7 @@ describe("detectCombo", () => {
 		expect(detectCombo(history, "fire", "up")).toBe("ambush");
 	});
 
-	it("jump→attack 異方向はコンボなし", () => {
+	it("jump→fire 異方向はコンボなし", () => {
 		const history: ComboHistory = {
 			lastCardType: "jump",
 			lastDirection: "up",
@@ -96,7 +96,7 @@ describe("detectCombo", () => {
 		expect(detectCombo(history, "fire", "right")).toBeNull();
 	});
 
-	it("jump失敗→attack 同方向はコンボなし（lastDirection=null）", () => {
+	it("jump失敗→fire 同方向はコンボなし（lastDirection=null）", () => {
 		const history: ComboHistory = {
 			lastCardType: "jump",
 			lastDirection: null,
@@ -112,7 +112,7 @@ describe("detectCombo", () => {
 		expect(detectCombo(history, "wait", null)).toBeNull();
 	});
 
-	it("attack→wait はコンボなし", () => {
+	it("fire→wait はコンボなし", () => {
 		const history: ComboHistory = {
 			lastCardType: "fire",
 			lastDirection: "up",
