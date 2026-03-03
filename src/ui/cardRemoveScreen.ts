@@ -37,6 +37,9 @@ const REMOVE_FADE_DURATION = 400;
 const REMOVE_PARTICLE_COLORS = [0xff4444, 0xff6644, 0xcc2222];
 const REMOVE_PARTICLE_COUNT = 15;
 
+/** カード除去アニメーション：縮小スケール */
+const REMOVE_SHRINK_SCALE = 0.8;
+
 /** グリッドレイアウト定数 */
 const GRID_COLUMNS = 4;
 
@@ -322,7 +325,7 @@ export class CardRemoveScreen {
 
 		await tween(
 			itemContainer,
-			{ alpha: 0, scaleX: 0.8, scaleY: 0.8 },
+			{ alpha: 0, scaleX: REMOVE_SHRINK_SCALE, scaleY: REMOVE_SHRINK_SCALE },
 			{ duration: REMOVE_FADE_DURATION, easing: Easing.easeInOut },
 		);
 	}
