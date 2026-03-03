@@ -35,7 +35,7 @@ describe("constants", () => {
 		expect(JUMP_DISTANCE).toBe(2);
 	});
 
-	it("強攻撃カードのダメージが3", () => {
+	it("サンダーのダメージが3", () => {
 		expect(PLAYER_THUNDER_DAMAGE).toBe(3);
 	});
 
