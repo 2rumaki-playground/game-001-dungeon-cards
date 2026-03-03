@@ -1,20 +1,20 @@
 import { describe, expect, it } from "vitest";
 import {
 	ENEMY_HP,
-	PLAYER_ATTACK_DAMAGE,
+	PLAYER_FIRE_DAMAGE,
 	PLAYER_INITIAL_HP,
-	PLAYER_STRONG_ATTACK_DAMAGE,
+	PLAYER_THUNDER_DAMAGE,
 } from "../constants";
 import { createTestState } from "../test-utils/createTestFixtures";
 import type { Direction, Enemy } from "../types";
 import {
-	executeAttack,
-	executeStrongAttack,
+	executeFire,
+	executeThunder,
 	executeWait,
 	markCardAsPlayed,
 } from "./action";
 
-describe("executeAttack", () => {
+describe("executeFire", () => {
 	it("攻撃成功: 敵HPが減少・カード使用済み記録・行動ログ", () => {
 		const enemies: Enemy[] = [
 			{
@@ -31,7 +31,7 @@ describe("executeAttack", () => {
 				hand: [
 					{
 						id: "attack-1",
-						type: "attack",
+						type: "fire",
 						level: 1,
 						exp: 0,
 						stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
@@ -40,13 +40,13 @@ describe("executeAttack", () => {
 				usedCardIds: [],
 			},
 		});
-		const { state: result, hit } = executeAttack(state, "attack-1", "right");
+		const { state: result, hit } = executeFire(state, "attack-1", "right");
 
 		// 攻撃ヒット
 		expect(hit).toBe(true);
 		// 敵HPが減少
 		expect(result.enemies).toHaveLength(1);
-		expect(result.enemies[0].hp).toBe(ENEMY_HP - PLAYER_ATTACK_DAMAGE);
+		expect(result.enemies[0].hp).toBe(ENEMY_HP - PLAYER_FIRE_DAMAGE);
 		// カードが使用済みに記録
 		expect(result.deck.hand).toHaveLength(1);
 		expect(result.deck.usedCardIds).toHaveLength(1);
@@ -72,7 +72,7 @@ describe("executeAttack", () => {
 				hand: [
 					{
 						id: "attack-1",
-						type: "attack",
+						type: "fire",
 						level: 1,
 						exp: 0,
 						stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
@@ -81,7 +81,7 @@ describe("executeAttack", () => {
 				usedCardIds: [],
 			},
 		});
-		const { state: result, hit } = executeAttack(state, "attack-1", "right");
+		const { state: result, hit } = executeFire(state, "attack-1", "right");
 
 		// 攻撃ヒット
 		expect(hit).toBe(true);
@@ -115,7 +115,7 @@ describe("executeAttack", () => {
 				hand: [
 					{
 						id: "attack-1",
-						type: "attack",
+						type: "fire",
 						level: 1,
 						exp: 0,
 						stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
@@ -124,12 +124,12 @@ describe("executeAttack", () => {
 				usedCardIds: [],
 			},
 		});
-		const { state: result, hit } = executeAttack(state, "attack-1", direction);
+		const { state: result, hit } = executeFire(state, "attack-1", direction);
 
 		expect(hit).toBe(false);
 		expect(result.deck.hand).toHaveLength(1);
 		expect(result.deck.usedCardIds).toHaveLength(1);
-		expect(result.actionLog[0].message).toBe("攻撃できなかった");
+		expect(result.actionLog[0].message).toBe("ファイアボルトが外れた");
 	});
 
 	it("元のGameStateが変更されない（イミュータブル）", () => {
@@ -148,7 +148,7 @@ describe("executeAttack", () => {
 				hand: [
 					{
 						id: "attack-1",
-						type: "attack",
+						type: "fire",
 						level: 1,
 						exp: 0,
 						stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
@@ -159,7 +159,7 @@ describe("executeAttack", () => {
 		});
 		const originalEnemyHp = state.enemies[0].hp;
 
-		executeAttack(state, "attack-1", "right");
+		executeFire(state, "attack-1", "right");
 
 		expect(state.enemies[0].hp).toBe(originalEnemyHp);
 		expect(state.deck.hand).toHaveLength(1);
@@ -181,7 +181,7 @@ describe("executeAttack", () => {
 				hand: [
 					{
 						id: "attack-1",
-						type: "attack",
+						type: "fire",
 						level: 2,
 						exp: 2,
 						stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
@@ -190,11 +190,11 @@ describe("executeAttack", () => {
 				usedCardIds: [],
 			},
 		});
-		const { state: result, hit } = executeAttack(state, "attack-1", "right");
+		const { state: result, hit } = executeFire(state, "attack-1", "right");
 
 		expect(hit).toBe(true);
-		// ENEMY_HP(3) - (PLAYER_ATTACK_DAMAGE(1) + bonus(1)) = 1
-		expect(result.enemies[0].hp).toBe(ENEMY_HP - PLAYER_ATTACK_DAMAGE - 1);
+		// ENEMY_HP(3) - (PLAYER_FIRE_DAMAGE(1) + bonus(1)) = 1
+		expect(result.enemies[0].hp).toBe(ENEMY_HP - PLAYER_FIRE_DAMAGE - 1);
 	});
 });
 
@@ -248,7 +248,7 @@ describe("executeWait", () => {
 	});
 });
 
-describe("executeStrongAttack", () => {
+describe("executeThunder", () => {
 	it("攻撃成功: 敵HP3が0になり倒される・カード使用済み記録", () => {
 		const enemies: Enemy[] = [
 			{
@@ -265,7 +265,7 @@ describe("executeStrongAttack", () => {
 				hand: [
 					{
 						id: "strong-1",
-						type: "strong_attack",
+						type: "thunder",
 						level: 1,
 						exp: 0,
 						stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
@@ -274,14 +274,10 @@ describe("executeStrongAttack", () => {
 				usedCardIds: [],
 			},
 		});
-		const { state: result, hit } = executeStrongAttack(
-			state,
-			"strong-1",
-			"right",
-		);
+		const { state: result, hit } = executeThunder(state, "strong-1", "right");
 
 		expect(hit).toBe(true);
-		// ENEMY_HP(3) - PLAYER_STRONG_ATTACK_DAMAGE(3) = 0 → 敵は倒される
+		// ENEMY_HP(3) - PLAYER_THUNDER_DAMAGE(3) = 0 → 敵は倒される
 		expect(result.enemies).toHaveLength(0);
 		expect(result.deck.hand).toHaveLength(1);
 		expect(result.deck.usedCardIds).toHaveLength(1);
@@ -305,7 +301,7 @@ describe("executeStrongAttack", () => {
 				hand: [
 					{
 						id: "strong-1",
-						type: "strong_attack",
+						type: "thunder",
 						level: 1,
 						exp: 0,
 						stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
@@ -314,15 +310,11 @@ describe("executeStrongAttack", () => {
 				usedCardIds: [],
 			},
 		});
-		const { state: result, hit } = executeStrongAttack(
-			state,
-			"strong-1",
-			"right",
-		);
+		const { state: result, hit } = executeThunder(state, "strong-1", "right");
 
 		expect(hit).toBe(true);
 		expect(result.enemies).toHaveLength(1);
-		expect(result.enemies[0].hp).toBe(5 - PLAYER_STRONG_ATTACK_DAMAGE);
+		expect(result.enemies[0].hp).toBe(5 - PLAYER_THUNDER_DAMAGE);
 	});
 
 	it.each([
@@ -348,7 +340,7 @@ describe("executeStrongAttack", () => {
 				hand: [
 					{
 						id: "strong-1",
-						type: "strong_attack",
+						type: "thunder",
 						level: 1,
 						exp: 0,
 						stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
@@ -357,16 +349,12 @@ describe("executeStrongAttack", () => {
 				usedCardIds: [],
 			},
 		});
-		const { state: result, hit } = executeStrongAttack(
-			state,
-			"strong-1",
-			direction,
-		);
+		const { state: result, hit } = executeThunder(state, "strong-1", direction);
 
 		expect(hit).toBe(false);
 		expect(result.deck.hand).toHaveLength(1);
 		expect(result.deck.usedCardIds).toHaveLength(1);
-		expect(result.actionLog[0].message).toBe("強攻撃できなかった");
+		expect(result.actionLog[0].message).toBe("サンダーが外れた");
 	});
 
 	it("Lv3強攻撃カードでダメージボーナス+1が適用される", () => {
@@ -385,7 +373,7 @@ describe("executeStrongAttack", () => {
 				hand: [
 					{
 						id: "strong-1",
-						type: "strong_attack",
+						type: "thunder",
 						level: 3,
 						exp: 4,
 						stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
@@ -394,15 +382,11 @@ describe("executeStrongAttack", () => {
 				usedCardIds: [],
 			},
 		});
-		const { state: result, hit } = executeStrongAttack(
-			state,
-			"strong-1",
-			"right",
-		);
+		const { state: result, hit } = executeThunder(state, "strong-1", "right");
 
 		expect(hit).toBe(true);
-		// 5 - (PLAYER_STRONG_ATTACK_DAMAGE(3) + bonus(1)) = 1
-		expect(result.enemies[0].hp).toBe(5 - PLAYER_STRONG_ATTACK_DAMAGE - 1);
+		// 5 - (PLAYER_THUNDER_DAMAGE(3) + bonus(1)) = 1
+		expect(result.enemies[0].hp).toBe(5 - PLAYER_THUNDER_DAMAGE - 1);
 	});
 
 	it("元のGameStateが変更されない（イミュータブル）", () => {
@@ -421,7 +405,7 @@ describe("executeStrongAttack", () => {
 				hand: [
 					{
 						id: "strong-1",
-						type: "strong_attack",
+						type: "thunder",
 						level: 1,
 						exp: 0,
 						stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
@@ -432,7 +416,7 @@ describe("executeStrongAttack", () => {
 		});
 		const originalEnemyHp = state.enemies[0].hp;
 
-		executeStrongAttack(state, "strong-1", "right");
+		executeThunder(state, "strong-1", "right");
 
 		expect(state.enemies[0].hp).toBe(originalEnemyHp);
 		expect(state.deck.hand).toHaveLength(1);

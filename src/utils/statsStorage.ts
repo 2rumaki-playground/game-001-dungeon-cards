@@ -12,8 +12,8 @@ const VALID_ENEMY_TYPES = Object.keys(ENEMY_PARAMS) as EnemyType[];
 
 const REQUIRED_CARD_TYPES: CardType[] = [
 	"move",
-	"attack",
-	"strong_attack",
+	"fire",
+	"thunder",
 	"jump",
 	"wait",
 ];

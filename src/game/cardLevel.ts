@@ -109,41 +109,36 @@ export function isMaxLevel(card: Card): boolean {
 }
 
 /**
- * 攻撃カードが貫通効果を持つか判定
+ * ファイアボルトが貫通効果を持つか判定
  */
 export function hasPierceEffect(card: Card): boolean {
-	return (
-		card.type === "attack" && normalizeCardLevel(card) >= CARD_LEVEL_PIERCE
-	);
+	return card.type === "fire" && normalizeCardLevel(card) >= CARD_LEVEL_PIERCE;
 }
 
 /**
- * 攻撃カードが射程延長効果を持つか判定
+ * ファイアボルトが射程延長効果を持つか判定
  */
 export function hasRangeExtendEffect(card: Card): boolean {
 	return (
-		card.type === "attack" &&
-		normalizeCardLevel(card) >= CARD_LEVEL_RANGE_EXTEND
+		card.type === "fire" && normalizeCardLevel(card) >= CARD_LEVEL_RANGE_EXTEND
 	);
 }
 
 /**
- * 強攻撃カードがノックバック効果を持つか判定
+ * サンダーがノックバック効果を持つか判定
  */
 export function hasKnockbackEffect(card: Card): boolean {
 	return (
-		card.type === "strong_attack" &&
-		normalizeCardLevel(card) >= CARD_LEVEL_KNOCKBACK
+		card.type === "thunder" && normalizeCardLevel(card) >= CARD_LEVEL_KNOCKBACK
 	);
 }
 
 /**
- * 強攻撃カードが衝撃波効果を持つか判定
+ * サンダーが衝撃波効果を持つか判定
  */
 export function hasShockwaveEffect(card: Card): boolean {
 	return (
-		card.type === "strong_attack" &&
-		normalizeCardLevel(card) >= CARD_LEVEL_SHOCKWAVE
+		card.type === "thunder" && normalizeCardLevel(card) >= CARD_LEVEL_SHOCKWAVE
 	);
 }
 

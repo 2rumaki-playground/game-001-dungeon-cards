@@ -11,20 +11,20 @@ export const HAND_LIMIT = 4;
 // 手札構成
 export const INITIAL_DECK = {
 	moveCards: 2,
-	attackCards: 1,
+	fireCards: 1,
 	waitCards: 1,
 } as const;
 
 export const TOTAL_DECK_SIZE =
-	INITIAL_DECK.moveCards + INITIAL_DECK.attackCards + INITIAL_DECK.waitCards;
+	INITIAL_DECK.moveCards + INITIAL_DECK.fireCards + INITIAL_DECK.waitCards;
 
 // ジャンプ
 export const JUMP_DISTANCE = 2;
 
 // 戦闘
 export const PLAYER_INITIAL_HP = 10;
-export const PLAYER_ATTACK_DAMAGE = 1;
-export const PLAYER_STRONG_ATTACK_DAMAGE = 3;
+export const PLAYER_FIRE_DAMAGE = 1;
+export const PLAYER_THUNDER_DAMAGE = 3;
 export const BODY_SLAM_DAMAGE = 1;
 export const BODY_SLAM_RECOIL = 1;
 
@@ -61,16 +61,16 @@ export const ENEMY_TYPE_LABEL: Record<EnemyType, string> = {
 // カード種別表示名
 export const CARD_TYPE_SYMBOL: Record<CardType, string> = {
 	move: "👟",
-	attack: "⚔",
-	strong_attack: "🔥",
+	fire: "🔥",
+	thunder: "⚡",
 	jump: "🦘",
 	wait: "⏳",
 };
 
 export const CARD_TYPE_NAME: Record<CardType, string> = {
 	move: "移動",
-	attack: "攻撃",
-	strong_attack: "強攻撃",
+	fire: "ファイアボルト",
+	thunder: "サンダー",
 	jump: "ジャンプ",
 	wait: "待機",
 };
@@ -319,11 +319,11 @@ export const DECK_MIN_SIZE = 4;
 export const CARD_DROP_TABLE: Record<EnemyType, CardDropConfig> = {
 	normal: { cardType: "move", dropRate: 0.25 },
 	ranged: { cardType: "move", dropRate: 0.25 },
-	heavy: { cardType: "strong_attack", dropRate: 0.35 },
+	heavy: { cardType: "thunder", dropRate: 0.35 },
 	scout: { cardType: "jump", dropRate: 0.35 },
 	summoner: { cardType: "wait", dropRate: 0.35 },
-	shielded: { cardType: "attack", dropRate: 0.35 },
-	miniboss: { cardType: "attack", dropRate: 0.75 },
+	shielded: { cardType: "fire", dropRate: 0.35 },
+	miniboss: { cardType: "fire", dropRate: 0.75 },
 	boss: { cardType: "wait", dropRate: 1.0 },
 };
 
@@ -345,20 +345,19 @@ export const CARD_XP_TABLE = [0, 2, 6, 14, 30] as const;
 export const CARD_LEVEL_DAMAGE_BONUS = [0, 1, 1, 2, 3] as const;
 
 // 特殊効果の解放レベル
-/** 攻撃カード: 貫通効果の解放レベル */
+/** ファイアボルト: 貫通効果の解放レベル */
 export const CARD_LEVEL_PIERCE = 3;
-/** 攻撃カード: 射程延長の解放レベル */
+/** ファイアボルト: 射程延長の解放レベル */
 export const CARD_LEVEL_RANGE_EXTEND = 5;
-/** 攻撃カード: 射程延長時の攻撃射程 */
-export const ATTACK_EXTENDED_RANGE = 2;
-/** 強攻撃カード: ノックバック効果の解放レベル */
+/** ファイアボルト: 射程延長時の攻撃射程 */
+export const FIRE_EXTENDED_RANGE = 2;
+/** サンダー: ノックバック効果の解放レベル */
 export const CARD_LEVEL_KNOCKBACK = 3;
-/** 強攻撃カード: 衝撃波効果の解放レベル */
+/** サンダー: 衝撃波効果の解放レベル */
 export const CARD_LEVEL_SHOCKWAVE = 5;
 
 // コンボボーナス
 export const COMBO_BONUS = {
-	charge: 1,
 	chain: 1,
 	ambush: 2,
 	focus: 1,

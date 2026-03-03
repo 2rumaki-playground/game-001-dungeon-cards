@@ -24,7 +24,7 @@ import { resetSession, startSession } from "./playStats";
 function makeCard(overrides?: Partial<Card>): Card {
 	return {
 		id: "card-1",
-		type: "attack",
+		type: "fire",
 		level: 1,
 		exp: 0,
 		stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
@@ -277,16 +277,16 @@ describe("getLevelDamageBonus", () => {
 });
 
 describe("hasPierceEffect", () => {
-	it.each([1, 2])("攻撃カードLv.%i ではfalse", (level) => {
-		expect(hasPierceEffect(makeCard({ type: "attack", level }))).toBe(false);
+	it.each([1, 2])("ファイアボルトLv.%i ではfalse", (level) => {
+		expect(hasPierceEffect(makeCard({ type: "fire", level }))).toBe(false);
 	});
 
-	it.each([3, 4, 5])("攻撃カードLv.%i ではtrue", (level) => {
-		expect(hasPierceEffect(makeCard({ type: "attack", level }))).toBe(true);
+	it.each([3, 4, 5])("ファイアボルトLv.%i ではtrue", (level) => {
+		expect(hasPierceEffect(makeCard({ type: "fire", level }))).toBe(true);
 	});
 
-	it("攻撃カード以外ではレベルに関係なくfalse", () => {
-		expect(hasPierceEffect(makeCard({ type: "strong_attack", level: 5 }))).toBe(
+	it("ファイアボルト以外ではレベルに関係なくfalse", () => {
+		expect(hasPierceEffect(makeCard({ type: "thunder", level: 5 }))).toBe(
 			false,
 		);
 		expect(hasPierceEffect(makeCard({ type: "move", level: 5 }))).toBe(false);
@@ -294,60 +294,56 @@ describe("hasPierceEffect", () => {
 });
 
 describe("hasRangeExtendEffect", () => {
-	it.each([1, 2, 3, 4])("攻撃カードLv.%i ではfalse", (level) => {
-		expect(hasRangeExtendEffect(makeCard({ type: "attack", level }))).toBe(
-			false,
-		);
+	it.each([1, 2, 3, 4])("ファイアボルトLv.%i ではfalse", (level) => {
+		expect(hasRangeExtendEffect(makeCard({ type: "fire", level }))).toBe(false);
 	});
 
-	it("攻撃カードLv.5ではtrue", () => {
-		expect(hasRangeExtendEffect(makeCard({ type: "attack", level: 5 }))).toBe(
+	it("ファイアボルトLv.5ではtrue", () => {
+		expect(hasRangeExtendEffect(makeCard({ type: "fire", level: 5 }))).toBe(
 			true,
 		);
 	});
 
-	it("攻撃カード以外ではレベルに関係なくfalse", () => {
-		expect(
-			hasRangeExtendEffect(makeCard({ type: "strong_attack", level: 5 })),
-		).toBe(false);
+	it("ファイアボルト以外ではレベルに関係なくfalse", () => {
+		expect(hasRangeExtendEffect(makeCard({ type: "thunder", level: 5 }))).toBe(
+			false,
+		);
 	});
 });
 
 describe("hasKnockbackEffect", () => {
-	it.each([1, 2])("強攻撃カードLv.%i ではfalse", (level) => {
-		expect(hasKnockbackEffect(makeCard({ type: "strong_attack", level }))).toBe(
+	it.each([1, 2])("サンダーLv.%i ではfalse", (level) => {
+		expect(hasKnockbackEffect(makeCard({ type: "thunder", level }))).toBe(
 			false,
 		);
 	});
 
-	it.each([3, 4, 5])("強攻撃カードLv.%i ではtrue", (level) => {
-		expect(hasKnockbackEffect(makeCard({ type: "strong_attack", level }))).toBe(
-			true,
-		);
+	it.each([3, 4, 5])("サンダーLv.%i ではtrue", (level) => {
+		expect(hasKnockbackEffect(makeCard({ type: "thunder", level }))).toBe(true);
 	});
 
-	it("強攻撃カード以外ではレベルに関係なくfalse", () => {
-		expect(hasKnockbackEffect(makeCard({ type: "attack", level: 5 }))).toBe(
+	it("サンダー以外ではレベルに関係なくfalse", () => {
+		expect(hasKnockbackEffect(makeCard({ type: "fire", level: 5 }))).toBe(
 			false,
 		);
 	});
 });
 
 describe("hasShockwaveEffect", () => {
-	it.each([1, 2, 3, 4])("強攻撃カードLv.%i ではfalse", (level) => {
-		expect(hasShockwaveEffect(makeCard({ type: "strong_attack", level }))).toBe(
+	it.each([1, 2, 3, 4])("サンダーLv.%i ではfalse", (level) => {
+		expect(hasShockwaveEffect(makeCard({ type: "thunder", level }))).toBe(
 			false,
 		);
 	});
 
-	it("強攻撃カードLv.5ではtrue", () => {
-		expect(
-			hasShockwaveEffect(makeCard({ type: "strong_attack", level: 5 })),
-		).toBe(true);
+	it("サンダーLv.5ではtrue", () => {
+		expect(hasShockwaveEffect(makeCard({ type: "thunder", level: 5 }))).toBe(
+			true,
+		);
 	});
 
-	it("強攻撃カード以外ではレベルに関係なくfalse", () => {
-		expect(hasShockwaveEffect(makeCard({ type: "attack", level: 5 }))).toBe(
+	it("サンダー以外ではレベルに関係なくfalse", () => {
+		expect(hasShockwaveEffect(makeCard({ type: "fire", level: 5 }))).toBe(
 			false,
 		);
 	});
@@ -355,7 +351,7 @@ describe("hasShockwaveEffect", () => {
 
 describe("awardExpToCard", () => {
 	it("手札内のカードにXPが付与される", () => {
-		const card = makeCard({ id: "atk-1", type: "attack" });
+		const card = makeCard({ id: "atk-1", type: "fire" });
 		const state = createTestState({
 			deck: { hand: [card], usedCardIds: [] },
 		});
@@ -370,7 +366,7 @@ describe("awardExpToCard", () => {
 	});
 
 	it("レベルアップ時にログが記録される", () => {
-		const card = makeCard({ id: "atk-1", type: "attack", exp: 1, level: 1 });
+		const card = makeCard({ id: "atk-1", type: "fire", exp: 1, level: 1 });
 		const state = createTestState({
 			deck: { hand: [card], usedCardIds: [] },
 		});
@@ -384,7 +380,7 @@ describe("awardExpToCard", () => {
 		const xpForThreshold = CARD_XP_TABLE[EVENT_LEVEL_UP_THRESHOLD - 1];
 		const card = makeCard({
 			id: "atk-1",
-			type: "attack",
+			type: "fire",
 			exp: xpForThreshold - 1,
 			level: EVENT_LEVEL_UP_THRESHOLD - 1,
 		});
@@ -402,7 +398,7 @@ describe("awardExpToCard", () => {
 
 	it(`Lv.${EVENT_LEVEL_UP_THRESHOLD}未満のレベルアップではeventLogに記録されない`, () => {
 		startSession();
-		const card = makeCard({ id: "atk-1", type: "attack", exp: 1, level: 1 });
+		const card = makeCard({ id: "atk-1", type: "fire", exp: 1, level: 1 });
 		const state = createTestState({
 			deck: { hand: [card], usedCardIds: [] },
 		});

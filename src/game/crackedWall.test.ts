@@ -12,10 +12,10 @@ import {
 } from "../test-utils/createTestFixtures";
 import type { Enemy, GameState } from "../types";
 import {
-	executeAttack,
+	executeFire,
 	executeJump,
 	executeMove,
-	executeStrongAttack,
+	executeThunder,
 } from "./action";
 import { canEnemyMoveTo, hasLineOfSight } from "./enemyAi";
 import { bfsFirstStep } from "./pathfinding";
@@ -53,7 +53,7 @@ describe("ひび割れ壁: 通常攻撃", () => {
 		const state = withCrackedWall(
 			createTestState({
 				deck: {
-					hand: createTestHand(["attack"]),
+					hand: createTestHand(["fire"]),
 					usedCardIds: [],
 				},
 			}),
@@ -61,7 +61,7 @@ describe("ひび割れ壁: 通常攻撃", () => {
 			3,
 		);
 
-		const result = executeAttack(state, "test-card-0", "right");
+		const result = executeFire(state, "test-card-0", "right");
 		expect(result.hit).toBe(false);
 		// cracked_wallは残っている
 		expect(result.state.map[3][4].type).toBe("cracked_wall");
@@ -73,7 +73,7 @@ describe("ひび割れ壁: 強攻撃", () => {
 		const state = withCrackedWall(
 			createTestState({
 				deck: {
-					hand: createTestHand(["strong_attack"]),
+					hand: createTestHand(["thunder"]),
 					usedCardIds: [],
 				},
 			}),
@@ -81,7 +81,7 @@ describe("ひび割れ壁: 強攻撃", () => {
 			3,
 		);
 
-		const result = executeStrongAttack(state, "test-card-0", "right");
+		const result = executeThunder(state, "test-card-0", "right");
 		expect(result.hit).toBe(false);
 		// cracked_wallが床に変化
 		expect(result.state.map[3][4].type).toBe("floor");
@@ -96,60 +96,12 @@ describe("ひび割れ壁: 強攻撃", () => {
 	});
 });
 
-describe("ひび割れ壁: 突撃コンボ", () => {
-	it("move→attack同方向でcracked_wallを破壊", () => {
-		// プレイヤー(3,3), cracked_wall at (5,3)
-		// 1. move right → (4,3)
-		// 2. attack right → cracked_wall at (5,3) を破壊
+describe("ひび割れ壁: ファイアボルト", () => {
+	it("ファイアボルト単体ではcracked_wallを破壊しない", () => {
 		const state = withCrackedWall(
 			createTestState({
 				deck: {
-					hand: [
-						{
-							id: "move-1",
-							type: "move",
-							level: 1,
-							exp: 0,
-							stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
-						},
-						{
-							id: "attack-1",
-							type: "attack",
-							level: 1,
-							exp: 0,
-							stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
-						},
-					],
-					usedCardIds: [],
-				},
-			}),
-			5,
-			3,
-		);
-
-		// Step 1: 移動
-		const moveResult = executeMove(state, "move-1", "right");
-		expect(moveResult.state.player.position).toEqual({ x: 4, y: 3 });
-
-		// Step 2: 攻撃（突撃コンボ成立）
-		const attackResult = executeAttack(moveResult.state, "attack-1", "right");
-		expect(attackResult.hit).toBe(false);
-		expect(attackResult.comboType).toBe("charge");
-		// cracked_wallが床に変化
-		expect(attackResult.state.map[3][5].type).toBe("floor");
-		// ログに破壊メッセージ
-		expect(
-			attackResult.state.actionLog.some(
-				(log) => log.message === "ひび割れ壁を破壊した",
-			),
-		).toBe(true);
-	});
-
-	it("通常攻撃単体ではcracked_wallを破壊しない（突撃コンボ非成立）", () => {
-		const state = withCrackedWall(
-			createTestState({
-				deck: {
-					hand: createTestHand(["attack"]),
+					hand: createTestHand(["fire"]),
 					usedCardIds: [],
 				},
 			}),
@@ -157,7 +109,7 @@ describe("ひび割れ壁: 突撃コンボ", () => {
 			3,
 		);
 
-		const result = executeAttack(state, "test-card-0", "right");
+		const result = executeFire(state, "test-card-0", "right");
 		expect(result.hit).toBe(false);
 		// cracked_wallは残っている
 		expect(result.state.map[3][4].type).toBe("cracked_wall");
@@ -274,7 +226,7 @@ describe("ひび割れ壁: 破壊後", () => {
 					hand: [
 						{
 							id: "sa-1",
-							type: "strong_attack",
+							type: "thunder",
 							level: 1,
 							exp: 0,
 							stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
@@ -295,7 +247,7 @@ describe("ひび割れ壁: 破壊後", () => {
 		);
 
 		// 強攻撃で破壊
-		const attackResult = executeStrongAttack(state, "sa-1", "right");
+		const attackResult = executeThunder(state, "sa-1", "right");
 		expect(attackResult.state.map[3][4].type).toBe("floor");
 
 		// 破壊後に移動可能

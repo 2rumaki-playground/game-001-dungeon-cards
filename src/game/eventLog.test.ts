@@ -34,7 +34,7 @@ describe("addRunEvent", () => {
 			type: "card_level_up",
 			floor: 3,
 			turn: 15,
-			detail: { cardType: "attack", newLevel: 3 },
+			detail: { cardType: "fire", newLevel: 3 },
 		};
 		const state = createTestState({ eventLog: [existing] });
 		const newEvent: RunEvent = {

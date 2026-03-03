@@ -6,7 +6,7 @@
 /**
  * カード種別
  */
-export type CardType = "move" | "attack" | "strong_attack" | "jump" | "wait";
+export type CardType = "move" | "fire" | "thunder" | "jump" | "wait";
 
 /**
  * カード統計情報

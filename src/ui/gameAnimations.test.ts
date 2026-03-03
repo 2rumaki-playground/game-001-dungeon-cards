@@ -3,10 +3,7 @@
  */
 
 import { describe, expect, it, vi } from "vitest";
-import {
-	PLAYER_ATTACK_DAMAGE,
-	PLAYER_STRONG_ATTACK_DAMAGE,
-} from "../constants";
+import { PLAYER_FIRE_DAMAGE, PLAYER_THUNDER_DAMAGE } from "../constants";
 
 // gameRenderer モック（applyState, renderを無効化）
 vi.mock("./gameRenderer", () => ({
@@ -27,7 +24,7 @@ vi.mock("./coordinates", () => ({
 
 // battleParticles モック
 vi.mock("./battleParticles", () => ({
-	getAttackParticleConfig: vi.fn(() => ({})),
+	getMagicParticleConfig: vi.fn(() => ({})),
 	createDefeatParticleConfig: vi.fn(() => ({})),
 }));
 
@@ -89,11 +86,11 @@ describe("updateStateWithAttackAnimation ダメージポップアップ", () => 
 			enemies: [{ id: enemyId, position: { x: 1, y: 0 }, hp: 2 }],
 		} as unknown as GameState;
 
-		await updateStateWithAttackAnimation(ctx, newState, enemyId, "attack");
+		await updateStateWithAttackAnimation(ctx, newState, enemyId, "fire");
 
 		expect(animateAttackHitSpy).toHaveBeenCalledWith(
 			enemyId,
-			PLAYER_ATTACK_DAMAGE,
+			PLAYER_FIRE_DAMAGE,
 		);
 	});
 
@@ -107,13 +104,13 @@ describe("updateStateWithAttackAnimation ダメージポップアップ", () => 
 			enemies: [{ id: enemyId, position: { x: 1, y: 0 }, hp: 1 }],
 		} as unknown as GameState;
 
-		await updateStateWithAttackAnimation(ctx, newState, enemyId, "attack", {
+		await updateStateWithAttackAnimation(ctx, newState, enemyId, "fire", {
 			comboBonus,
 		});
 
 		expect(animateAttackHitSpy).toHaveBeenCalledWith(
 			enemyId,
-			PLAYER_ATTACK_DAMAGE + comboBonus,
+			PLAYER_FIRE_DAMAGE + comboBonus,
 		);
 	});
 
@@ -126,16 +123,11 @@ describe("updateStateWithAttackAnimation ダメージポップアップ", () => 
 			enemies: [{ id: enemyId, position: { x: 1, y: 0 }, hp: 1 }],
 		} as unknown as GameState;
 
-		await updateStateWithAttackAnimation(
-			ctx,
-			newState,
-			enemyId,
-			"strong_attack",
-		);
+		await updateStateWithAttackAnimation(ctx, newState, enemyId, "thunder");
 
 		expect(animateAttackHitSpy).toHaveBeenCalledWith(
 			enemyId,
-			PLAYER_STRONG_ATTACK_DAMAGE,
+			PLAYER_THUNDER_DAMAGE,
 		);
 	});
 
@@ -149,13 +141,13 @@ describe("updateStateWithAttackAnimation ダメージポップアップ", () => 
 			enemies: [{ id: enemyId, position: { x: 1, y: 0 }, hp: 1 }],
 		} as unknown as GameState;
 
-		await updateStateWithAttackAnimation(ctx, newState, enemyId, "attack", {
+		await updateStateWithAttackAnimation(ctx, newState, enemyId, "fire", {
 			levelBonus,
 		});
 
 		expect(animateAttackHitSpy).toHaveBeenCalledWith(
 			enemyId,
-			PLAYER_ATTACK_DAMAGE + levelBonus,
+			PLAYER_FIRE_DAMAGE + levelBonus,
 		);
 	});
 
@@ -169,17 +161,13 @@ describe("updateStateWithAttackAnimation ダメージポップアップ", () => 
 			enemies: [{ id: enemyId, position: { x: 1, y: 0 }, hp: 1 }],
 		} as unknown as GameState;
 
-		await updateStateWithAttackAnimation(
-			ctx,
-			newState,
-			enemyId,
-			"strong_attack",
-			{ levelBonus },
-		);
+		await updateStateWithAttackAnimation(ctx, newState, enemyId, "thunder", {
+			levelBonus,
+		});
 
 		expect(animateAttackHitSpy).toHaveBeenCalledWith(
 			enemyId,
-			PLAYER_STRONG_ATTACK_DAMAGE + levelBonus,
+			PLAYER_THUNDER_DAMAGE + levelBonus,
 		);
 	});
 
@@ -194,14 +182,14 @@ describe("updateStateWithAttackAnimation ダメージポップアップ", () => 
 			enemies: [{ id: enemyId, position: { x: 1, y: 0 }, hp: 1 }],
 		} as unknown as GameState;
 
-		await updateStateWithAttackAnimation(ctx, newState, enemyId, "attack", {
+		await updateStateWithAttackAnimation(ctx, newState, enemyId, "fire", {
 			comboBonus,
 			levelBonus,
 		});
 
 		expect(animateAttackHitSpy).toHaveBeenCalledWith(
 			enemyId,
-			PLAYER_ATTACK_DAMAGE + comboBonus + levelBonus,
+			PLAYER_FIRE_DAMAGE + comboBonus + levelBonus,
 		);
 	});
 });

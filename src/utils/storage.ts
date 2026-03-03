@@ -252,10 +252,10 @@ const VALID_RUN_EVENT_TYPES: ReadonlySet<RunEventType> = new Set([
 	"card_acquired",
 ]);
 
-const VALID_CARD_TYPES = new Set([
+const VALID_CARD_TYPES: ReadonlySet<CardType> = new Set([
 	"move",
-	"attack",
-	"strong_attack",
+	"fire",
+	"thunder",
 	"jump",
 	"wait",
 ]);
@@ -323,7 +323,7 @@ function sanitizeEventLog(raw: unknown): RunEvent[] {
 				];
 			case "card_level_up":
 				if (
-					!VALID_CARD_TYPES.has(d.cardType as string) ||
+					!VALID_CARD_TYPES.has(d.cardType as CardType) ||
 					typeof d.newLevel !== "number" ||
 					!Number.isFinite(d.newLevel) ||
 					d.newLevel < 1
@@ -341,7 +341,7 @@ function sanitizeEventLog(raw: unknown): RunEvent[] {
 					},
 				];
 			case "card_acquired":
-				if (!VALID_CARD_TYPES.has(d.cardType as string)) return [];
+				if (!VALID_CARD_TYPES.has(d.cardType as CardType)) return [];
 				return [
 					{
 						type,

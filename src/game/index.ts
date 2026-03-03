@@ -1,8 +1,8 @@
 export {
-	executeAttack,
+	executeFire,
 	executeJump,
 	executeMove,
-	executeStrongAttack,
+	executeThunder,
 	executeWait,
 } from "./action";
 export { getTotalDeckSize } from "./deck";

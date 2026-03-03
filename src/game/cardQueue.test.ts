@@ -57,7 +57,7 @@ describe("cardQueue", () => {
 			};
 			const card2: Card = {
 				id: "c2",
-				type: "attack",
+				type: "fire",
 				level: 1,
 				exp: 0,
 				stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
@@ -114,7 +114,7 @@ describe("cardQueue", () => {
 				{
 					card: {
 						id: "c2",
-						type: "attack",
+						type: "fire",
 						level: 1,
 						exp: 0,
 						stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },

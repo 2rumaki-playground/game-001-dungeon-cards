@@ -38,8 +38,8 @@ describe("playStats", () => {
 			const session = getCurrentSession();
 			expect(session?.cardUsage).toEqual({
 				move: 0,
-				attack: 0,
-				strong_attack: 0,
+				fire: 0,
+				thunder: 0,
 				jump: 0,
 				wait: 0,
 			});
@@ -51,10 +51,10 @@ describe("playStats", () => {
 			startSession();
 			recordCardUsage("move");
 			recordCardUsage("move");
-			recordCardUsage("attack");
+			recordCardUsage("fire");
 			const session = getCurrentSession();
 			expect(session?.cardUsage.move).toBe(2);
-			expect(session?.cardUsage.attack).toBe(1);
+			expect(session?.cardUsage.fire).toBe(1);
 		});
 
 		it("セッション未開始時はnoopになる", () => {
@@ -123,7 +123,7 @@ describe("playStats", () => {
 	describe("endSession", () => {
 		it("セッションを終了しPlaySessionを返す", () => {
 			startSession();
-			recordCardUsage("attack");
+			recordCardUsage("fire");
 			recordDamageDealt(5);
 			recordTurnEnd();
 			const result = endSession("death", "enemy_attack");
@@ -131,7 +131,7 @@ describe("playStats", () => {
 			expect(result?.result).toBe("death");
 			expect(result?.deathCause).toBe("enemy_attack");
 			expect(result?.endedAt).toBeGreaterThan(0);
-			expect(result?.cardUsage.attack).toBe(1);
+			expect(result?.cardUsage.fire).toBe(1);
 			expect(result?.totalDamageDealt).toBe(5);
 			expect(result?.playerTurnCount).toBe(1);
 		});

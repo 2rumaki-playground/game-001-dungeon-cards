@@ -427,7 +427,7 @@ export class HandRenderer {
 						{ color: CARD_COLOR_COMBO_BORDER, width: COMBO_BORDER_WIDTH },
 					);
 				} else if (
-					(comboPreview.type === "charge" || comboPreview.type === "ambush") &&
+					comboPreview.type === "ambush" &&
 					comboPreview.direction !== undefined
 				) {
 					drawEdgeLine(
@@ -475,8 +475,8 @@ export class HandRenderer {
 		// 方向カードには方向ヒントを表示
 		if (
 			card.type === "move" ||
-			card.type === "attack" ||
-			card.type === "strong_attack" ||
+			card.type === "fire" ||
+			card.type === "thunder" ||
 			card.type === "jump"
 		) {
 			const arrowColor = enabled ? 0x888888 : 0x444444;
@@ -739,8 +739,8 @@ export class HandRenderer {
 		let direction: Direction | undefined;
 		if (
 			card.type === "move" ||
-			card.type === "attack" ||
-			card.type === "strong_attack" ||
+			card.type === "fire" ||
+			card.type === "thunder" ||
 			card.type === "jump"
 		) {
 			const cardContainer = this.cardsContainer.children[
@@ -915,16 +915,12 @@ export class HandRenderer {
 		direction?: Direction;
 	} | null {
 		if (this.currentComboHistory === null) return null;
-		if (cardType !== "attack") return null;
+		if (cardType !== "fire") return null;
 
 		const { lastCardType, lastDirection } = this.currentComboHistory;
 
-		if (lastCardType === "attack") {
+		if (lastCardType === "fire") {
 			return { type: "chain" };
-		}
-
-		if (lastCardType === "move" && lastDirection !== null) {
-			return { type: "charge", direction: lastDirection };
 		}
 
 		if (lastCardType === "jump" && lastDirection !== null) {

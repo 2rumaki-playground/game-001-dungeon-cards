@@ -130,7 +130,7 @@ describe("createTestEnemy", () => {
 
 describe("createTestHand", () => {
 	it("CardType配列から手札を生成する", () => {
-		const hand = createTestHand(["move", "attack", "jump"]);
+		const hand = createTestHand(["move", "fire", "jump"]);
 		expect(hand).toHaveLength(3);
 		expect(hand[0]).toEqual({
 			id: "test-card-0",
@@ -141,7 +141,7 @@ describe("createTestHand", () => {
 		});
 		expect(hand[1]).toEqual({
 			id: "test-card-1",
-			type: "attack",
+			type: "fire",
 			level: 1,
 			exp: 0,
 			stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
