@@ -71,10 +71,11 @@
 - Lv3の貫通効果も保持される（射程 `FIRE_EXTENDED_RANGE` でヒットした敵を撃破時、さらに奥の敵にoverkill伝播）
 
 ### データ表現
-- 実装上、ファイアボルトは単一のカードID（例：`card_fire`）を持つ
-- デッキ内では同じカードIDが複数枚存在する（枚数は [constants.md](./constants.md) を参照）
+- ファイアボルトのカード種別（CardType）は `"fire"` である
+- 各カードインスタンスはユニークなID（例：`card-1`, `card-2`）を持ち、種別（type）で区別される
+- デッキ内では同じ種別のカードが複数枚存在する（枚数は [constants.md](./constants.md) を参照）
 - カード使用時、UIで4方向から1つを選択するインターフェースを提供する
-- テストでは `{cardId: "card_fire", direction: "down"}` のような形式で表現可能
+- テストでは `{cardId: "card-1", direction: "down"}` のような形式で表現可能
 
 ---
 
@@ -121,10 +122,11 @@
 - Lv3のノックバック効果も保持される
 
 ### データ表現
-- 実装上、サンダーは単一のカードID（例：`card_thunder`）を持つ
-- デッキ内では同じカードIDが複数枚存在する（枚数は [constants.md](./constants.md) を参照）
+- サンダーのカード種別（CardType）は `"thunder"` である
+- 各カードインスタンスはユニークなID（例：`card-1`, `card-2`）を持ち、種別（type）で区別される
+- デッキ内では同じ種別のカードが複数枚存在する（枚数は [constants.md](./constants.md) を参照）
 - カード使用時、UIで4方向から1つを選択するインターフェースを提供する
-- テストでは `{cardId: "card_thunder", direction: "up"}` のような形式で表現可能
+- テストでは `{cardId: "card-1", direction: "up"}` のような形式で表現可能
 
 ---
 
