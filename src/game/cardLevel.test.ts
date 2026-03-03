@@ -277,15 +277,15 @@ describe("getLevelDamageBonus", () => {
 });
 
 describe("hasPierceEffect", () => {
-	it.each([1, 2])("攻撃カードLv.%i ではfalse", (level) => {
+	it.each([1, 2])("ファイアボルトLv.%i ではfalse", (level) => {
 		expect(hasPierceEffect(makeCard({ type: "fire", level }))).toBe(false);
 	});
 
-	it.each([3, 4, 5])("攻撃カードLv.%i ではtrue", (level) => {
+	it.each([3, 4, 5])("ファイアボルトLv.%i ではtrue", (level) => {
 		expect(hasPierceEffect(makeCard({ type: "fire", level }))).toBe(true);
 	});
 
-	it("攻撃カード以外ではレベルに関係なくfalse", () => {
+	it("ファイアボルト以外ではレベルに関係なくfalse", () => {
 		expect(hasPierceEffect(makeCard({ type: "thunder", level: 5 }))).toBe(
 			false,
 		);
@@ -294,17 +294,17 @@ describe("hasPierceEffect", () => {
 });
 
 describe("hasRangeExtendEffect", () => {
-	it.each([1, 2, 3, 4])("攻撃カードLv.%i ではfalse", (level) => {
+	it.each([1, 2, 3, 4])("ファイアボルトLv.%i ではfalse", (level) => {
 		expect(hasRangeExtendEffect(makeCard({ type: "fire", level }))).toBe(false);
 	});
 
-	it("攻撃カードLv.5ではtrue", () => {
+	it("ファイアボルトLv.5ではtrue", () => {
 		expect(hasRangeExtendEffect(makeCard({ type: "fire", level: 5 }))).toBe(
 			true,
 		);
 	});
 
-	it("攻撃カード以外ではレベルに関係なくfalse", () => {
+	it("ファイアボルト以外ではレベルに関係なくfalse", () => {
 		expect(hasRangeExtendEffect(makeCard({ type: "thunder", level: 5 }))).toBe(
 			false,
 		);
