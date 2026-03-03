@@ -8,7 +8,7 @@ import type { Direction, GameMap, GameState, Position } from "../types";
 import { DIRECTION_DELTA } from "../types";
 import { applyDamageToEnemy } from "./combat";
 import { findEnemyAt, hasEnemyAt } from "./enemyUtils";
-import { isInBounds } from "./map";
+import { isInBounds, isWallTile } from "./map";
 import { addActionLog, setTile, updateEnemy } from "./state";
 
 /**
@@ -32,10 +32,7 @@ export function findAttackTarget(
 			return null;
 		}
 
-		if (
-			state.map[ny][nx].type === "wall" ||
-			state.map[ny][nx].type === "cracked_wall"
-		) {
+		if (isWallTile(state.map[ny][nx])) {
 			return null;
 		}
 
@@ -76,10 +73,7 @@ export function applyPierce(
 	let cy = fromPosition.y + delta.y;
 
 	while (isInBounds(state.map, cx, cy)) {
-		if (
-			state.map[cy][cx].type === "wall" ||
-			state.map[cy][cx].type === "cracked_wall"
-		) {
+		if (isWallTile(state.map[cy][cx])) {
 			break;
 		}
 
@@ -135,8 +129,7 @@ function canKnockbackTo(
 	y: number,
 ): boolean {
 	if (!isInBounds(map, x, y)) return false;
-	if (map[y][x].type === "wall" || map[y][x].type === "cracked_wall")
-		return false;
+	if (isWallTile(map[y][x])) return false;
 	if (state.player.position.x === x && state.player.position.y === y)
 		return false;
 	if (hasEnemyAt(state.enemies, x, y)) return false;
@@ -243,11 +236,7 @@ export function executeShockwave(
 
 	for (const pos of targets) {
 		if (!isInBounds(next.map, pos.x, pos.y)) continue;
-		if (
-			next.map[pos.y][pos.x].type === "wall" ||
-			next.map[pos.y][pos.x].type === "cracked_wall"
-		)
-			continue;
+		if (isWallTile(next.map[pos.y][pos.x])) continue;
 
 		const enemy = findEnemyAt(next.enemies, pos.x, pos.y);
 		if (!enemy) continue;

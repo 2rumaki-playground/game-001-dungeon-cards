@@ -16,7 +16,7 @@ import { checkEnrage, tryBossSkill, tryMinibossSkill } from "./bossSkill";
 import { applyEnemyDamageToPlayer, checkGameOver, isDefeated } from "./combat";
 import { DIRECTION_LABEL } from "./enemyAiAnalysis";
 import { hasEnemyAt } from "./enemyUtils";
-import { isInBounds } from "./map";
+import { isInBounds, isWallTile } from "./map";
 import { bfsFirstStep } from "./pathfinding";
 import { isAdjacent, manhattanDistance } from "./positionUtils";
 import { findRoomAt, isInRoom } from "./roomUtils";
@@ -43,11 +43,7 @@ export function canEnemyMoveTo(
 	}
 
 	const tile = state.map[ny][nx];
-	if (
-		tile.type === "wall" ||
-		tile.type === "cracked_wall" ||
-		tile.type === "stairs"
-	) {
+	if (isWallTile(tile) || tile.type === "stairs") {
 		return false;
 	}
 
@@ -169,8 +165,7 @@ export function hasLineOfSight(
 		const minY = Math.min(from.y, to.y);
 		const maxY = Math.max(from.y, to.y);
 		for (let y = minY + 1; y < maxY; y++) {
-			const t = state.map[y][from.x].type;
-			if (t === "wall" || t === "cracked_wall") {
+			if (isWallTile(state.map[y][from.x])) {
 				return false;
 			}
 		}
@@ -180,8 +175,7 @@ export function hasLineOfSight(
 		const minX = Math.min(from.x, to.x);
 		const maxX = Math.max(from.x, to.x);
 		for (let x = minX + 1; x < maxX; x++) {
-			const t = state.map[from.y][x].type;
-			if (t === "wall" || t === "cracked_wall") {
+			if (isWallTile(state.map[from.y][x])) {
 				return false;
 			}
 		}
