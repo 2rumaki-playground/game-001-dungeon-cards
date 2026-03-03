@@ -58,13 +58,13 @@ describe("createThunderParticleConfig", () => {
 		}
 	});
 
-	it("attackよりパーティクル数が多い", () => {
+	it("ファイアボルトよりパーティクル数が多い", () => {
 		const attackConfig = createFireParticleConfig({ x: 0, y: 0 });
 		const strongConfig = createThunderParticleConfig({ x: 0, y: 0 });
 		expect(strongConfig.count).toBeGreaterThan(attackConfig.count);
 	});
 
-	it("attackよりサイズが大きい", () => {
+	it("ファイアボルトよりサイズが大きい", () => {
 		const attackConfig = createFireParticleConfig({ x: 0, y: 0 });
 		const strongConfig = createThunderParticleConfig({ x: 0, y: 0 });
 		expect(strongConfig.size.max).toBeGreaterThan(attackConfig.size.max);
