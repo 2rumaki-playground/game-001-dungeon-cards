@@ -13,12 +13,6 @@ import {
 	TOOLTIP_WIDTH,
 } from "./cardTooltip";
 import {
-	createOverlay,
-	drawRoundedRect,
-	makeInteractive,
-} from "./graphicsHelpers";
-import type { ParticleSystem } from "./particleSystem";
-import {
 	BUTTON_HEIGHT,
 	BUTTON_RADIUS,
 	BUTTON_WIDTH,
@@ -30,9 +24,16 @@ import {
 	REWARD_CARD_RADIUS,
 	REWARD_CARD_WIDTH,
 	unhighlightCard,
-} from "./rewardScreenHelpers";
+} from "./deckbuildingScreenHelpers";
+import {
+	createOverlay,
+	drawRoundedRect,
+	makeInteractive,
+} from "./graphicsHelpers";
+import type { ParticleSystem } from "./particleSystem";
 import {
 	UI_COLOR_GOLD,
+	UI_COLORS_BUTTON_CONFIRM,
 	UI_COLORS_BUTTON_SECONDARY,
 	UI_COLORS_DISABLED,
 } from "./uiColors";
@@ -322,9 +323,9 @@ export class RewardSelectScreen {
 				BUTTON_WIDTH,
 				BUTTON_HEIGHT,
 				BUTTON_RADIUS,
-				0x2a7a2a,
+				UI_COLORS_BUTTON_CONFIRM.bg,
 				{
-					color: 0x4aaa4a,
+					color: UI_COLORS_BUTTON_CONFIRM.border,
 					width: 1,
 				},
 			);
