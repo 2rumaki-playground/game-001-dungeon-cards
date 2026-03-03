@@ -54,7 +54,8 @@ export type SpeechEventType =
 	| "floor_reached"
 	| "jump_success"
 	| "card_acquired"
-	| "card_skipped";
+	| "card_skipped"
+	| "body_slam";
 
 /**
  * 発話ログエントリ

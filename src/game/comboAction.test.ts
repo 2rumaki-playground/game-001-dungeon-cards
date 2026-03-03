@@ -1,5 +1,10 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { COMBO_BONUS, ENEMY_PARAMS, PLAYER_ATTACK_DAMAGE } from "../constants";
+import {
+	BODY_SLAM_DAMAGE,
+	COMBO_BONUS,
+	ENEMY_PARAMS,
+	PLAYER_ATTACK_DAMAGE,
+} from "../constants";
 import {
 	createTestEnemy,
 	createTestHand,
@@ -87,11 +92,13 @@ describe("コンボ発動（統合テスト）", () => {
 		expect(attackResult.hit).toBe(true);
 		expect(attackResult.comboType).toBeUndefined();
 
-		// 敵のHP: 初期HP - 基本ダメージのみ（コンボなし）
+		// 敵のHP: 初期HP - 体当たりダメージ - 基本ダメージのみ（コンボなし）
 		const enemy = attackResult.state.enemies.find((e) => e.id === "enemy-1");
 		expect(enemy).toBeDefined();
 		if (!enemy) return;
-		expect(enemy.hp).toBe(ENEMY_PARAMS.normal.hp - PLAYER_ATTACK_DAMAGE);
+		expect(enemy.hp).toBe(
+			ENEMY_PARAMS.normal.hp - BODY_SLAM_DAMAGE - PLAYER_ATTACK_DAMAGE,
+		);
 
 		// コンボ発動ログがない
 		const comboLog = attackResult.state.actionLog.find(

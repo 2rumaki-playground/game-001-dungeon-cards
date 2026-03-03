@@ -148,6 +148,7 @@ async function handleMoveCardExecution(
 		reachedStairs,
 		tileEffect,
 		gameOver,
+		bodySlam,
 	} = executeMove(ctx.state, cardId, direction, {
 		applyTileEffectFn: applyTileEffectWithDebug,
 	});
@@ -178,6 +179,24 @@ async function handleMoveCardExecution(
 			shouldContinueQueue(ctx, false, true);
 			ctx.resultData = buildResultData(next, "death");
 			const session = endSession("death", "trap");
+			if (session) savePlaySession(session);
+			deleteSaveData();
+			await ctx.ui.screenTransition.fadeTransition(() => {
+				updateState(ctx, next);
+			});
+		}
+	} else if (bodySlam) {
+		await updateStateWithBumpAnimation(ctx, next, direction);
+		await ctx.ui.statusBar.animateHpChange(
+			prevHp,
+			next.player.hp,
+			next.player.maxHp,
+			(ratio) => ctx.ui.mapRenderer.updatePlayerHpGauge(ratio),
+		);
+		if (gameOver) {
+			shouldContinueQueue(ctx, false, true);
+			ctx.resultData = buildResultData(next, "death");
+			const session = endSession("death", "body_slam");
 			if (session) savePlaySession(session);
 			deleteSaveData();
 			await ctx.ui.screenTransition.fadeTransition(() => {
