@@ -52,6 +52,7 @@ import { setupCameraControls } from "./cameraControls";
 import { animateComboPopup } from "./comboPopup";
 import { gridToParticlePosition } from "./coordinates";
 import { detectEnemyMoves } from "./enemyMoveDetector";
+import { executeExchangeFlow } from "./exchangeFlow";
 import {
 	executeNextFloorTransition,
 	updateStateWithStairsAnimation,
@@ -202,6 +203,14 @@ async function handleMoveCardExecution(
 			await ctx.ui.screenTransition.fadeTransition(() => {
 				updateState(ctx, next);
 			});
+		} else {
+			// カードドロップがある場合、交換UIを順次表示
+			let currentState = next;
+			while (currentState.cardExchangeQueue.length > 0) {
+				currentState = await executeExchangeFlow(ctx, currentState);
+				applyState(ctx, currentState);
+				render(ctx);
+			}
 		}
 	} else {
 		await updateStateWithBumpAnimation(ctx, next, direction);
