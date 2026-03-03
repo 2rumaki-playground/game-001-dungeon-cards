@@ -246,15 +246,15 @@ describe("createChainComboParticleConfig", () => {
 });
 
 describe("getMagicParticleConfig", () => {
-	it("attackタイプでattack用設定を返す", () => {
+	it("fireタイプでfire用設定を返す", () => {
 		const config = getMagicParticleConfig("fire", { x: 0, y: 0 });
-		const attackConfig = createFireParticleConfig({ x: 0, y: 0 });
-		expect(config.count).toBe(attackConfig.count);
+		const fireConfig = createFireParticleConfig({ x: 0, y: 0 });
+		expect(config.count).toBe(fireConfig.count);
 	});
 
-	it("strong_attackタイプでstrong_attack用設定を返す", () => {
+	it("thunderタイプでthunder用設定を返す", () => {
 		const config = getMagicParticleConfig("thunder", { x: 0, y: 0 });
-		const strongConfig = createThunderParticleConfig({ x: 0, y: 0 });
-		expect(config.count).toBe(strongConfig.count);
+		const thunderConfig = createThunderParticleConfig({ x: 0, y: 0 });
+		expect(config.count).toBe(thunderConfig.count);
 	});
 });
