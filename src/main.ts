@@ -23,6 +23,7 @@ import {
 	ParticleSystem,
 	ResultScreen,
 	ReturnToPlayerButton,
+	RewardSelectScreen,
 	ScreenTransition,
 	StatsScreen,
 	StatusBar,
@@ -143,6 +144,10 @@ async function initializeUIComponents(
 		STATUS_BAR_HEIGHT + viewportSize.height + HAND_AREA_TOP_PADDING;
 	app.stage.addChild(directionContainer);
 
+	const rewardSelectScreen = new RewardSelectScreen();
+	rewardSelectScreen.setParticleSystem(particleSystem);
+	app.stage.addChild(rewardSelectScreen.getContainer());
+
 	const cardRemoveScreen = new CardRemoveScreen();
 	cardRemoveScreen.setParticleSystem(particleSystem);
 	app.stage.addChild(cardRemoveScreen.getContainer());
@@ -215,6 +220,7 @@ async function initializeUIComponents(
 		characterCardRenderer,
 		turnBanner,
 		cardRemoveScreen,
+		rewardSelectScreen,
 		screenTransition,
 		floorBanner,
 		particleSystem,

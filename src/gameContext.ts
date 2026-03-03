@@ -18,6 +18,7 @@ import type {
 	ParticleSystem,
 	ResultScreen,
 	ReturnToPlayerButton,
+	RewardSelectScreen,
 	ScreenTransition,
 	StatsScreen,
 	StatusBar,
@@ -43,6 +44,7 @@ export interface UIComponents {
 	characterCardRenderer: CharacterCardRenderer;
 	turnBanner: TurnBanner;
 	cardRemoveScreen: CardRemoveScreen;
+	rewardSelectScreen: RewardSelectScreen;
 	screenTransition: ScreenTransition;
 	floorBanner: FloorBanner;
 	particleSystem: ParticleSystem;
