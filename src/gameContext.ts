@@ -8,6 +8,7 @@ import type { Card, GameState, ResultData } from "./types";
 import type {
 	ActionLogRenderer,
 	CameraDragController,
+	CardRemoveScreen,
 	CharacterCardRenderer,
 	DirectionSelector,
 	FloorBanner,
@@ -17,7 +18,6 @@ import type {
 	ParticleSystem,
 	ResultScreen,
 	ReturnToPlayerButton,
-	RewardScreen,
 	ScreenTransition,
 	StatsScreen,
 	StatusBar,
@@ -42,7 +42,7 @@ export interface UIComponents {
 	actionLogRenderer: ActionLogRenderer;
 	characterCardRenderer: CharacterCardRenderer;
 	turnBanner: TurnBanner;
-	rewardScreen: RewardScreen;
+	cardRemoveScreen: CardRemoveScreen;
 	screenTransition: ScreenTransition;
 	floorBanner: FloorBanner;
 	particleSystem: ParticleSystem;

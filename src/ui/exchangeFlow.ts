@@ -97,7 +97,7 @@ function showExchangeSelection(
 		applyState(ctx, exchangeState);
 		render(ctx);
 
-		ctx.ui.rewardScreen.renderRemoveSelection(
+		ctx.ui.cardRemoveScreen.renderRemoveSelection(
 			allCards,
 			screenWidth,
 			screenHeight,
@@ -106,23 +106,23 @@ function showExchangeSelection(
 			gameArea?.height,
 			acquiredCardType,
 		);
-		ctx.ui.rewardScreen.show();
+		ctx.ui.cardRemoveScreen.show();
 
 		let settled = false;
 		const cleanup = () => {
-			ctx.ui.rewardScreen.setOnRemoveCard(() => {});
-			ctx.ui.rewardScreen.setOnSkip(() => {});
-			ctx.ui.rewardScreen.hide();
+			ctx.ui.cardRemoveScreen.setOnRemoveCard(() => {});
+			ctx.ui.cardRemoveScreen.setOnSkip(() => {});
+			ctx.ui.cardRemoveScreen.hide();
 		};
 
-		ctx.ui.rewardScreen.setOnRemoveCard((cardId) => {
+		ctx.ui.cardRemoveScreen.setOnRemoveCard((cardId) => {
 			if (settled) return;
 			settled = true;
 			resolve(cardId);
 			cleanup();
 		});
 
-		ctx.ui.rewardScreen.setOnSkip(() => {
+		ctx.ui.cardRemoveScreen.setOnSkip(() => {
 			if (settled) return;
 			settled = true;
 			resolve(null);

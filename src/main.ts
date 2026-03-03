@@ -12,6 +12,7 @@ import type { GameState } from "./types";
 import {
 	ActionLogRenderer,
 	CameraDragController,
+	CardRemoveScreen,
 	CharacterCardRenderer,
 	DirectionSelector,
 	FloorBanner,
@@ -22,7 +23,6 @@ import {
 	ParticleSystem,
 	ResultScreen,
 	ReturnToPlayerButton,
-	RewardScreen,
 	ScreenTransition,
 	StatsScreen,
 	StatusBar,
@@ -143,15 +143,15 @@ async function initializeUIComponents(
 		STATUS_BAR_HEIGHT + viewportSize.height + HAND_AREA_TOP_PADDING;
 	app.stage.addChild(directionContainer);
 
-	const rewardScreen = new RewardScreen();
-	rewardScreen.setParticleSystem(particleSystem);
-	app.stage.addChild(rewardScreen.getContainer());
+	const cardRemoveScreen = new CardRemoveScreen();
+	cardRemoveScreen.setParticleSystem(particleSystem);
+	app.stage.addChild(cardRemoveScreen.getContainer());
 
 	// 統計画面（オーバーレイ）
 	const statsScreen = new StatsScreen();
 	app.stage.addChild(statsScreen.getContainer());
 
-	// ターンバナー（directionSelector・rewardScreen等の上に描画）
+	// ターンバナー（directionSelector・cardRemoveScreen等の上に描画）
 	app.stage.addChild(turnBanner.getContainer());
 
 	const totalWidth =
@@ -183,10 +183,10 @@ async function initializeUIComponents(
 			nextFloorContainer.x - BUTTON_GAP - debugCardRenderer.getTotalWidth() / 2;
 		debugCardContainer.y =
 			totalHeight - debugCardRenderer.getTotalHeight() - BUTTON_BOTTOM_MARGIN;
-		const rewardScreenIndex = app.stage.getChildIndex(
-			rewardScreen.getContainer(),
+		const cardRemoveScreenIndex = app.stage.getChildIndex(
+			cardRemoveScreen.getContainer(),
 		);
-		app.stage.addChildAt(debugCardContainer, rewardScreenIndex);
+		app.stage.addChildAt(debugCardContainer, cardRemoveScreenIndex);
 
 		debugCheatPanel = new DebugCheatPanel();
 		const cheatPanelContainer = debugCheatPanel.getContainer();
@@ -214,7 +214,7 @@ async function initializeUIComponents(
 		actionLogRenderer,
 		characterCardRenderer,
 		turnBanner,
-		rewardScreen,
+		cardRemoveScreen,
 		screenTransition,
 		floorBanner,
 		particleSystem,

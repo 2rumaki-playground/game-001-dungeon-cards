@@ -3,9 +3,9 @@ import { describe, expect, it, vi } from "vitest";
 import { createTweenMock, mockEasing } from "../test-utils/mockTween";
 import type { Card } from "../types";
 import { CARD_DESCRIPTION, CARD_TYPE_NAME } from "./cardConstants";
+import { CardRemoveScreen } from "./cardRemoveScreen";
 import { CARD_GAP, CARD_HEIGHT, CARD_WIDTH } from "./handRenderer";
 import type { ParticleSystem } from "./particleSystem";
-import { RewardScreen } from "./rewardScreen";
 
 vi.mock("../utils/tween", () => ({
 	Easing: mockEasing,
@@ -43,185 +43,31 @@ function findTextByContent(parent: Container, content: string): Text | null {
 	return null;
 }
 
-describe("RewardScreen", () => {
+describe("CardRemoveScreen", () => {
 	describe("コンストラクタ", () => {
 		it("コンテナを作成する", () => {
-			const screen = new RewardScreen();
+			const screen = new CardRemoveScreen();
 			expect(screen.getContainer()).toBeDefined();
 		});
 
 		it("初期状態では非表示", () => {
-			const screen = new RewardScreen();
+			const screen = new CardRemoveScreen();
 			expect(screen.getContainer().visible).toBe(false);
 		});
 	});
 
 	describe("show/hide", () => {
 		it("showでコンテナが表示される", () => {
-			const screen = new RewardScreen();
+			const screen = new CardRemoveScreen();
 			screen.show();
 			expect(screen.getContainer().visible).toBe(true);
 		});
 
 		it("hideでコンテナが非表示になる", () => {
-			const screen = new RewardScreen();
+			const screen = new CardRemoveScreen();
 			screen.show();
 			screen.hide();
 			expect(screen.getContainer().visible).toBe(false);
-		});
-	});
-
-	describe("render", () => {
-		it("選択肢分のカードと統一ボタンが描画される", () => {
-			const screen = new RewardScreen();
-			screen.render(["move", "attack"], 600, 400);
-
-			// オーバーレイ + タイトル + カード2枚 + confirmButtonContainer + tooltipContainer = 6つ
-			const container = screen.getContainer();
-			expect(container.children.length).toBe(6);
-		});
-
-		it("gameAreaWidth指定時にタイトルとカードがゲームエリア中央に配置される", () => {
-			const screen = new RewardScreen();
-			// screenWidth=800, screenHeight=600だが、ゲームエリアは400x600
-			screen.render(["move"], 800, 600, 400, 600);
-
-			const container = screen.getContainer();
-			// children[1]がタイトル
-			const title = container.children[1] as import("pixi.js").Text;
-			// タイトルのX座標がゲームエリア幅(400)の中央付近であること
-			expect(title.x).toBe(200);
-
-			// children[2]がカードコンテナ
-			const card = container.children[2] as Container;
-			// カード幅120なので、(400 - 120) / 2 = 140
-			expect(card.x).toBe(140);
-		});
-
-		it("gameAreaWidth未指定時にscreenWidth基準で配置される", () => {
-			const screen = new RewardScreen();
-			screen.render(["move"], 600, 400);
-
-			const container = screen.getContainer();
-			const title = container.children[1] as import("pixi.js").Text;
-			// タイトルのX座標がscreenWidth(600)の中央
-			expect(title.x).toBe(300);
-		});
-
-		it("gameAreaHeight変更時にタイトルとカードのY座標が垂直中央配置される", () => {
-			const screen1 = new RewardScreen();
-			screen1.render(["move"], 800, 600, 400, 600);
-			const container1 = screen1.getContainer();
-			const title1 = container1.children[1] as import("pixi.js").Text;
-			const card1 = container1.children[2] as Container;
-
-			const screen2 = new RewardScreen();
-			screen2.render(["move"], 800, 600, 400, 400);
-			const container2 = screen2.getContainer();
-			const title2 = container2.children[1] as import("pixi.js").Text;
-			const card2 = container2.children[2] as Container;
-
-			// gameAreaHeightの差(200)の半分(100)だけY座標がシフト
-			expect(title1.y - title2.y).toBe(100);
-			expect(card1.y - card2.y).toBe(100);
-		});
-	});
-
-	describe("setOnCardSelect", () => {
-		it("カード選択→獲得ボタンクリックでコールバックが呼ばれる", () => {
-			const screen = new RewardScreen();
-			const callback = vi.fn();
-			screen.setOnCardSelect(callback);
-			screen.render(["move"], 600, 400);
-
-			const container = screen.getContainer();
-			// children[2]がカードコンテナ（クリック可能）
-			const cardContainer = container.children[2];
-			cardContainer.emit("pointerdown", { button: 0 } as FederatedPointerEvent);
-
-			// 獲得ボタンを探す
-			const acquireBtn = findByLabel(container, "acquireBtn");
-			expect(acquireBtn).toBeDefined();
-			expect(acquireBtn?.eventMode).toBe("static");
-			acquireBtn?.emit("pointerdown", { button: 0 } as FederatedPointerEvent);
-
-			expect(callback).toHaveBeenCalledWith(0);
-		});
-
-		it("未選択時に獲得ボタンが無効状態", () => {
-			const screen = new RewardScreen();
-			screen.render(["move"], 600, 400);
-
-			const container = screen.getContainer();
-			const acquireBtn = findByLabel(container, "acquireBtn");
-			expect(acquireBtn).toBeDefined();
-			expect(acquireBtn?.eventMode).toBe("none");
-		});
-
-		it("カード選択後に獲得ボタンが有効状態になる", () => {
-			const screen = new RewardScreen();
-			screen.render(["move", "attack"], 600, 400);
-
-			const container = screen.getContainer();
-			const acquireBtn = findByLabel(container, "acquireBtn");
-			expect(acquireBtn?.eventMode).toBe("none");
-
-			// カードをクリック
-			container.children[2].emit("pointerdown", {
-				button: 0,
-			} as FederatedPointerEvent);
-			expect(acquireBtn?.eventMode).toBe("static");
-		});
-	});
-
-	describe("ハイライト", () => {
-		it("カードクリックでハイライトが付与される", () => {
-			const screen = new RewardScreen();
-			screen.render(["move", "attack"], 600, 400);
-
-			const container = screen.getContainer();
-			const card0 = container.children[2] as Container;
-
-			card0.emit("pointerdown", { button: 0 } as FederatedPointerEvent);
-
-			const highlight = card0.children.find((c) => c.label === "highlight");
-			expect(highlight).toBeDefined();
-		});
-
-		it("別カードクリックで前回ハイライトが解除される", () => {
-			const screen = new RewardScreen();
-			screen.render(["move", "attack"], 600, 400);
-
-			const container = screen.getContainer();
-			const card0 = container.children[2] as Container;
-			const card1 = container.children[3] as Container;
-
-			// 1枚目を選択
-			card0.emit("pointerdown", { button: 0 } as FederatedPointerEvent);
-			expect(card0.children.find((c) => c.label === "highlight")).toBeDefined();
-
-			// 2枚目を選択
-			card1.emit("pointerdown", { button: 0 } as FederatedPointerEvent);
-			expect(
-				card0.children.find((c) => c.label === "highlight"),
-			).toBeUndefined();
-			expect(card1.children.find((c) => c.label === "highlight")).toBeDefined();
-		});
-	});
-
-	describe("setOnSkip", () => {
-		it("スキップボタンクリックでコールバックが呼ばれる", () => {
-			const screen = new RewardScreen();
-			const callback = vi.fn();
-			screen.setOnSkip(callback);
-			screen.render(["move"], 600, 400);
-
-			const container = screen.getContainer();
-			const skipBtn = findByLabel(container, "skipBtn");
-			expect(skipBtn).toBeDefined();
-			skipBtn?.emit("pointerdown", { button: 0 } as FederatedPointerEvent);
-
-			expect(callback).toHaveBeenCalled();
 		});
 	});
 
@@ -251,7 +97,7 @@ describe("RewardScreen", () => {
 		];
 
 		it("gameAreaWidth指定時にタイトルがゲームエリア中央に配置される", () => {
-			const screen = new RewardScreen();
+			const screen = new CardRemoveScreen();
 			// screenWidth=800だが、ゲームエリアは400
 			screen.renderRemoveSelection(testCards, 800, 600, undefined, 400, 600);
 
@@ -262,7 +108,7 @@ describe("RewardScreen", () => {
 		});
 
 		it("gameAreaWidth未指定時にscreenWidth基準で配置される", () => {
-			const screen = new RewardScreen();
+			const screen = new CardRemoveScreen();
 			screen.renderRemoveSelection(testCards, 600, 400);
 
 			const container = screen.getContainer();
@@ -272,12 +118,12 @@ describe("RewardScreen", () => {
 		});
 
 		it("gameAreaHeight変更時にタイトルのY座標が垂直中央配置される", () => {
-			const screen1 = new RewardScreen();
+			const screen1 = new CardRemoveScreen();
 			screen1.renderRemoveSelection(testCards, 800, 600, undefined, 400, 600);
 			const container1 = screen1.getContainer();
 			const title1 = container1.children[1] as import("pixi.js").Text;
 
-			const screen2 = new RewardScreen();
+			const screen2 = new CardRemoveScreen();
 			screen2.renderRemoveSelection(testCards, 800, 600, undefined, 400, 400);
 			const container2 = screen2.getContainer();
 			const title2 = container2.children[1] as import("pixi.js").Text;
@@ -287,7 +133,7 @@ describe("RewardScreen", () => {
 		});
 
 		it("カスタムタイトルを渡した場合にそのテキストが描画される", () => {
-			const screen = new RewardScreen();
+			const screen = new CardRemoveScreen();
 			screen.renderRemoveSelection(testCards, 600, 400, "カード除去イベント");
 
 			const container = screen.getContainer();
@@ -297,7 +143,7 @@ describe("RewardScreen", () => {
 		});
 
 		it("除去選択画面が描画される", () => {
-			const screen = new RewardScreen();
+			const screen = new CardRemoveScreen();
 			screen.renderRemoveSelection(testCards, 600, 400);
 
 			const container = screen.getContainer();
@@ -350,7 +196,7 @@ describe("RewardScreen", () => {
 					stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
 				},
 			];
-			const screen = new RewardScreen();
+			const screen = new CardRemoveScreen();
 			screen.renderRemoveSelection(sixCards, 600, 800);
 
 			const container = screen.getContainer();
@@ -379,7 +225,7 @@ describe("RewardScreen", () => {
 		});
 
 		it("acquiredCardType指定時に獲得候補カードが表示される", () => {
-			const screen = new RewardScreen();
+			const screen = new CardRemoveScreen();
 			screen.renderRemoveSelection(
 				testCards,
 				600,
@@ -397,7 +243,7 @@ describe("RewardScreen", () => {
 		});
 
 		it("acquiredCardType指定かつタイトルに案内文を含まない場合、サブタイトルが表示される", () => {
-			const screen = new RewardScreen();
+			const screen = new CardRemoveScreen();
 			screen.renderRemoveSelection(
 				testCards,
 				600,
@@ -414,7 +260,7 @@ describe("RewardScreen", () => {
 		});
 
 		it("acquiredCardType指定かつタイトルに案内文を含む場合、サブタイトルが表示されない", () => {
-			const screen = new RewardScreen();
+			const screen = new CardRemoveScreen();
 			screen.renderRemoveSelection(
 				testCards,
 				600,
@@ -427,7 +273,6 @@ describe("RewardScreen", () => {
 
 			const container = screen.getContainer();
 			// タイトル自体が「交換するカードを選択」なので、サブタイトルは非表示
-			// タイトルのText要素は存在するが、サブタイトルとしての2つ目は存在しない
 			const allTexts: Text[] = [];
 			function collectTexts(node: Container) {
 				for (const child of node.children) {
@@ -448,7 +293,7 @@ describe("RewardScreen", () => {
 		});
 
 		it("acquiredCardType未指定時に獲得候補カードが表示されない", () => {
-			const screen = new RewardScreen();
+			const screen = new CardRemoveScreen();
 			screen.renderRemoveSelection(testCards, 600, 400);
 
 			const container = screen.getContainer();
@@ -457,7 +302,7 @@ describe("RewardScreen", () => {
 		});
 
 		it("カード選択→交換ボタンクリックでコールバックが呼ばれる", async () => {
-			const screen = new RewardScreen();
+			const screen = new CardRemoveScreen();
 			const callback = vi.fn();
 			screen.setOnRemoveCard(callback);
 			screen.renderRemoveSelection(testCards, 600, 400);
@@ -484,7 +329,7 @@ describe("RewardScreen", () => {
 		});
 
 		it("未選択時に交換ボタンが無効状態", () => {
-			const screen = new RewardScreen();
+			const screen = new CardRemoveScreen();
 			screen.renderRemoveSelection(testCards, 600, 400);
 
 			const container = screen.getContainer();
@@ -494,7 +339,7 @@ describe("RewardScreen", () => {
 		});
 
 		it("カード選択後に交換ボタンが有効状態になる", () => {
-			const screen = new RewardScreen();
+			const screen = new CardRemoveScreen();
 			screen.renderRemoveSelection(testCards, 600, 400);
 
 			const container = screen.getContainer();
@@ -513,7 +358,7 @@ describe("RewardScreen", () => {
 		});
 
 		it("カードクリックでハイライトが付与される", () => {
-			const screen = new RewardScreen();
+			const screen = new CardRemoveScreen();
 			screen.renderRemoveSelection(testCards, 600, 400);
 
 			const container = screen.getContainer();
@@ -529,7 +374,7 @@ describe("RewardScreen", () => {
 		});
 
 		it("別カードクリックで前回ハイライトが解除される", () => {
-			const screen = new RewardScreen();
+			const screen = new CardRemoveScreen();
 			screen.renderRemoveSelection(testCards, 600, 400);
 
 			const container = screen.getContainer();
@@ -551,7 +396,7 @@ describe("RewardScreen", () => {
 		});
 
 		it("スキップボタンクリックでコールバックが呼ばれる", () => {
-			const screen = new RewardScreen();
+			const screen = new CardRemoveScreen();
 			const callback = vi.fn();
 			screen.setOnSkip(callback);
 			screen.renderRemoveSelection(testCards, 600, 400);
@@ -567,7 +412,7 @@ describe("RewardScreen", () => {
 
 	describe("setParticleSystem", () => {
 		it("パーティクルシステムを設定できる", () => {
-			const screen = new RewardScreen();
+			const screen = new CardRemoveScreen();
 			const mockParticle = {
 				emit: vi.fn().mockResolvedValue(undefined),
 			} as unknown as ParticleSystem;
@@ -609,7 +454,7 @@ describe("RewardScreen", () => {
 		}
 
 		it("交換ボタンクリックでemitが呼ばれonRemoveCardが発火する", async () => {
-			const screen = new RewardScreen();
+			const screen = new CardRemoveScreen();
 			const { particle, mockEmit } = createMockParticle();
 			screen.setParticleSystem(particle);
 
@@ -639,7 +484,7 @@ describe("RewardScreen", () => {
 		});
 
 		it("除去アニメーション中はconfirmButtonContainerが無効化される", () => {
-			const screen = new RewardScreen();
+			const screen = new CardRemoveScreen();
 			const { particle } = createMockParticle();
 			screen.setParticleSystem(particle);
 
@@ -671,7 +516,7 @@ describe("RewardScreen", () => {
 		});
 
 		it("交換ボタンクリック後にグリッドコンテナが無効化される", () => {
-			const screen = new RewardScreen();
+			const screen = new CardRemoveScreen();
 			const { particle } = createMockParticle();
 			screen.setParticleSystem(particle);
 
@@ -697,42 +542,6 @@ describe("RewardScreen", () => {
 		});
 	});
 
-	describe("animateCardAcquire", () => {
-		it("存在しないインデックスでもエラーにならない", async () => {
-			const screen = new RewardScreen();
-			// renderなしで呼んでもエラーにならない
-			await expect(
-				screen.animateCardAcquire(999, "move"),
-			).resolves.toBeUndefined();
-		});
-
-		it("render後にemitがカード種別に応じた引数で呼ばれる", async () => {
-			const screen = new RewardScreen();
-			const mockEmit = vi.fn().mockResolvedValue(undefined);
-			const mockGetContainer = vi.fn().mockReturnValue({
-				toLocal: (pos: { x: number; y: number }) => pos,
-			});
-			const mockParticle = {
-				emit: mockEmit,
-				getContainer: mockGetContainer,
-			} as unknown as ParticleSystem;
-			screen.setParticleSystem(mockParticle);
-			screen.render(["move"], 600, 400);
-
-			await screen.animateCardAcquire(0, "move");
-			expect(mockEmit).toHaveBeenCalledTimes(1);
-			expect(mockEmit).toHaveBeenCalledWith(
-				expect.objectContaining({
-					count: 20,
-					color: [0x44ccff, 0x2288cc],
-					speed: { min: 0.02, max: 0.08 },
-					life: { min: 300, max: 500 },
-					size: { min: 1, max: 3 },
-				}),
-			);
-		});
-	});
-
 	describe("ツールチップ", () => {
 		function getAllTextsRecursive(container: Container): Text[] {
 			const texts: Text[] = [];
@@ -750,42 +559,9 @@ describe("RewardScreen", () => {
 			return texts;
 		}
 
-		function findTooltipContainer(screen: RewardScreen): Container | null {
+		function findTooltipContainer(screen: CardRemoveScreen): Container | null {
 			return findByLabel(screen.getContainer(), "tooltip");
 		}
-
-		it("報酬カードのpointeroverでツールチップが表示される", () => {
-			const screen = new RewardScreen();
-			screen.render(["move", "attack"], 600, 400);
-
-			const container = screen.getContainer();
-			// children[2]がカードコンテナ
-			const card = container.children[2] as Container;
-			card.emit("pointerover", {} as FederatedPointerEvent);
-
-			const tooltipContainer = findTooltipContainer(screen);
-			expect(tooltipContainer).toBeDefined();
-			expect(tooltipContainer?.children.length).toBeGreaterThan(0);
-
-			const texts = getAllTextsRecursive(tooltipContainer as Container);
-			const hasName = texts.some((t) => t.text.includes(CARD_TYPE_NAME.move));
-			expect(hasName).toBe(true);
-		});
-
-		it("報酬カードのpointeroutでツールチップが消える", () => {
-			const screen = new RewardScreen();
-			screen.render(["move"], 600, 400);
-
-			const container = screen.getContainer();
-			const card = container.children[2] as Container;
-			card.emit("pointerover", {} as FederatedPointerEvent);
-
-			const tooltipContainer = findTooltipContainer(screen);
-			expect(tooltipContainer?.children.length).toBeGreaterThan(0);
-
-			card.emit("pointerout", {} as FederatedPointerEvent);
-			expect(tooltipContainer?.children.length).toBe(0);
-		});
 
 		it("交換グリッドカードのpointeroverでツールチップが表示される", () => {
 			const testCards: Card[] = [
@@ -811,7 +587,7 @@ describe("RewardScreen", () => {
 					stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
 				},
 			];
-			const screen = new RewardScreen();
+			const screen = new CardRemoveScreen();
 			screen.renderRemoveSelection(testCards, 600, 800);
 
 			const container = screen.getContainer();
@@ -848,7 +624,7 @@ describe("RewardScreen", () => {
 					stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
 				},
 			];
-			const screen = new RewardScreen();
+			const screen = new CardRemoveScreen();
 			screen.renderRemoveSelection(
 				testCards,
 				600,
@@ -890,7 +666,7 @@ describe("RewardScreen", () => {
 					stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
 				},
 			];
-			const screen = new RewardScreen();
+			const screen = new CardRemoveScreen();
 			screen.renderRemoveSelection(
 				testCards,
 				600,
@@ -929,7 +705,7 @@ describe("RewardScreen", () => {
 					stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
 				},
 			];
-			const screen = new RewardScreen();
+			const screen = new CardRemoveScreen();
 			screen.renderRemoveSelection(testCards, 600, 800);
 
 			const container = screen.getContainer();
