@@ -129,7 +129,7 @@ describe("executeFire", () => {
 		expect(hit).toBe(false);
 		expect(result.deck.hand).toHaveLength(1);
 		expect(result.deck.usedCardIds).toHaveLength(1);
-		expect(result.actionLog[0].message).toBe("攻撃できなかった");
+		expect(result.actionLog[0].message).toBe("ファイアボルトが外れた");
 	});
 
 	it("元のGameStateが変更されない（イミュータブル）", () => {

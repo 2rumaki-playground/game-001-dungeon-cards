@@ -287,7 +287,7 @@ export function executeFire(
 	const target = findAttackTarget(next, direction, range);
 
 	if (!target) {
-		next = addActionLog(next, "攻撃できなかった", "player");
+		next = addActionLog(next, "ファイアボルトが外れた", "player");
 		next = addSpeechLog(next, "attack_miss");
 		return {
 			state: updateComboHistory(next, {
