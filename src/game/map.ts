@@ -36,6 +36,13 @@ export function isInBounds(map: GameMap, x: number, y: number): boolean {
 	return y >= 0 && y < map.length && x >= 0 && x < (map[y]?.length ?? 0);
 }
 
+/**
+ * タイルが壁（wall / cracked_wall）かを判定
+ */
+export function isWallTile(tile: Tile): boolean {
+	return tile.type === "wall" || tile.type === "cracked_wall";
+}
+
 export type MapPlacement = {
 	map: GameMap;
 	rooms: Room[];

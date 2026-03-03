@@ -4,6 +4,7 @@
  */
 
 import type { GameMap, Position, Room } from "../types";
+import { isWallTile } from "./map";
 import { positionToKey } from "./positionUtils";
 import { findRoomAt } from "./roomUtils";
 
@@ -57,11 +58,7 @@ function getConnectedCorridorTiles(
 		if (seen.has(key)) continue;
 		seen.add(key);
 
-		if (
-			map[current.y][current.x].type === "wall" ||
-			map[current.y][current.x].type === "cracked_wall"
-		)
-			continue;
+		if (isWallTile(map[current.y][current.x])) continue;
 
 		if (findRoomAt(current, rooms)) continue;
 
@@ -87,7 +84,7 @@ function getCorridorEntrances(room: Room, map: GameMap): Position[] {
 	const mapWidth = map[0]?.length ?? 0;
 
 	const isPassable = (t: GameMap[number][number]["type"]) =>
-		t !== "wall" && t !== "cracked_wall";
+		!isWallTile({ type: t });
 
 	// 上辺の外側1マス
 	const topY = room.y - 1;

@@ -28,7 +28,7 @@ import { applyDamageToEnemy } from "./combat";
 import { detectCombo, getComboBonus } from "./combo";
 import { markCardUsed } from "./deck";
 import { revealAtPosition } from "./fogOfWar";
-import { isInBounds } from "./map";
+import { isInBounds, isWallTile } from "./map";
 import { recordCardUsage } from "./playStats";
 import {
 	applyKnockback,
@@ -74,10 +74,7 @@ function canMove(state: GameState, direction: Direction): boolean {
 	}
 
 	// 壁タイル・ひび割れ壁タイル
-	if (
-		state.map[ny][nx].type === "wall" ||
-		state.map[ny][nx].type === "cracked_wall"
-	) {
+	if (isWallTile(state.map[ny][nx])) {
 		return false;
 	}
 
@@ -204,10 +201,7 @@ function canAttack(
 	}
 
 	// 壁タイル・ひび割れ壁タイル
-	if (
-		state.map[ny][nx].type === "wall" ||
-		state.map[ny][nx].type === "cracked_wall"
-	) {
+	if (isWallTile(state.map[ny][nx])) {
 		return { hit: false };
 	}
 
@@ -656,10 +650,7 @@ export function executeJump(
 	}
 
 	// 着地先が壁・ひび割れ壁
-	if (
-		next.map[landY][landX].type === "wall" ||
-		next.map[landY][landX].type === "cracked_wall"
-	) {
+	if (isWallTile(next.map[landY][landX])) {
 		next = updateComboHistory(next, {
 			lastCardType: "jump",
 			lastDirection: null,

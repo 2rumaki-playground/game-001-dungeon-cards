@@ -15,6 +15,7 @@ import {
 	generateBSPMapPlacement,
 	generateMapPlacement,
 	isInBounds,
+	isWallTile,
 } from "./map";
 import { findRoomAt } from "./roomUtils";
 
@@ -46,6 +47,30 @@ describe("isInBounds", () => {
 	it("空マップはfalseを返す", () => {
 		const emptyMap: ReturnType<typeof createFixedLayoutMap> = [];
 		expect(isInBounds(emptyMap, 0, 0)).toBe(false);
+	});
+});
+
+describe("isWallTile", () => {
+	it("wallタイルはtrueを返す", () => {
+		expect(isWallTile({ type: "wall" })).toBe(true);
+	});
+
+	it("cracked_wallタイルはtrueを返す", () => {
+		expect(isWallTile({ type: "cracked_wall" })).toBe(true);
+	});
+
+	it("floorタイルはfalseを返す", () => {
+		expect(isWallTile({ type: "floor" })).toBe(false);
+	});
+
+	it("stairsタイルはfalseを返す", () => {
+		expect(isWallTile({ type: "stairs" })).toBe(false);
+	});
+
+	it("特殊タイルはfalseを返す", () => {
+		expect(isWallTile({ type: "trap" })).toBe(false);
+		expect(isWallTile({ type: "treasure" })).toBe(false);
+		expect(isWallTile({ type: "rest_area" })).toBe(false);
 	});
 });
 

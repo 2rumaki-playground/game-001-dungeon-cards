@@ -5,7 +5,7 @@
 
 import type { Direction, GameMap, Position } from "../types";
 import { DIRECTION_DELTA } from "../types";
-import { isInBounds } from "./map";
+import { isInBounds, isWallTile } from "./map";
 import { positionToKey } from "./positionUtils";
 
 /** 優先順序: 上→下→左→右 */
@@ -28,8 +28,7 @@ export function bfsFirstStep(
 
 	// 目的地がwall/cracked_wall（通行不可タイル）の場合は到達不可
 	const destTile = map[to.y]?.[to.x];
-	if (!destTile || destTile.type === "wall" || destTile.type === "cracked_wall")
-		return null;
+	if (!destTile || isWallTile(destTile)) return null;
 
 	const visited = new Set<string>();
 	visited.add(positionToKey(from));
@@ -46,12 +45,7 @@ export function bfsFirstStep(
 		if (nx === to.x && ny === to.y) return dir;
 
 		const tile = map[ny][nx];
-		if (
-			tile.type === "wall" ||
-			tile.type === "cracked_wall" ||
-			tile.type === "stairs"
-		)
-			continue;
+		if (isWallTile(tile) || tile.type === "stairs") continue;
 
 		const key = positionToKey({ x: nx, y: ny });
 		if (visited.has(key)) continue;
@@ -74,12 +68,7 @@ export function bfsFirstStep(
 			if (nx === to.x && ny === to.y) return firstStep;
 
 			const tile = map[ny][nx];
-			if (
-				tile.type === "wall" ||
-				tile.type === "cracked_wall" ||
-				tile.type === "stairs"
-			)
-				continue;
+			if (isWallTile(tile) || tile.type === "stairs") continue;
 
 			const key = positionToKey({ x: nx, y: ny });
 			if (visited.has(key)) continue;
