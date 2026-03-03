@@ -27,6 +27,7 @@ import { incrementUseCount } from "./cardStats";
 import { applyDamageToEnemy } from "./combat";
 import { detectCombo, getComboBonus } from "./combo";
 import { markCardUsed } from "./deck";
+import { findEnemyAt, hasEnemyAt } from "./enemyUtils";
 import { revealAtPosition } from "./fogOfWar";
 import { isInBounds } from "./map";
 import { recordCardUsage } from "./playStats";
@@ -82,7 +83,7 @@ function canMove(state: GameState, direction: Direction): boolean {
 	}
 
 	// 敵がいるマス
-	if (state.enemies.some((e) => e.position.x === nx && e.position.y === ny)) {
+	if (hasEnemyAt(state.enemies, nx, ny)) {
 		return false;
 	}
 
@@ -212,9 +213,7 @@ function canAttack(
 	}
 
 	// 敵が存在するか
-	const enemy = state.enemies.find(
-		(e) => e.position.x === nx && e.position.y === ny,
-	);
+	const enemy = findEnemyAt(state.enemies, nx, ny);
 	if (!enemy) {
 		return { hit: false };
 	}
@@ -674,9 +673,7 @@ export function executeJump(
 	}
 
 	// 着地先に敵がいる
-	if (
-		next.enemies.some((e) => e.position.x === landX && e.position.y === landY)
-	) {
+	if (hasEnemyAt(next.enemies, landX, landY)) {
 		next = updateComboHistory(next, {
 			lastCardType: "jump",
 			lastDirection: null,

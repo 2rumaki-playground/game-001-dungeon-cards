@@ -6,6 +6,7 @@
 import type { GameState, Position } from "../types";
 import { applyDamageToEnemy } from "./combat";
 import { applyTileEffectWithDebug } from "./debugMiddleware";
+import { hasEnemyAt } from "./enemyUtils";
 import { isInBounds } from "./map";
 import { addActionLog, updatePlayer } from "./state";
 
@@ -48,9 +49,7 @@ export function executeDebugTeleport(
 		return { state, reachedStairs: false, gameOver: false };
 	}
 
-	const hasEnemy = state.enemies.some(
-		(e) => e.position.x === targetPos.x && e.position.y === targetPos.y,
-	);
+	const hasEnemy = hasEnemyAt(state.enemies, targetPos.x, targetPos.y);
 	if (hasEnemy) {
 		return { state, reachedStairs: false, gameOver: false };
 	}
