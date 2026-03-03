@@ -1,6 +1,6 @@
 /**
  * カード表示用の共通定数
- * 複数のUIコンポーネント（handRenderer, rewardScreen, deckViewer）で共有される
+ * 複数のUIコンポーネントで共有されるカード表示の定数・ヘルパー
  */
 
 import {
