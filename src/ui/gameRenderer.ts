@@ -202,7 +202,7 @@ function renderExchangeScreen(ctx: GameContext): void {
 	ctx.ui.turnEndButton.hide();
 	ctx.ui.nextFloorButton.hide();
 	ctx.ui.handRenderer.clear();
-	// 報酬画面をオーバーレイ
+	// カード除去/交換画面をオーバーレイ
 	ctx.ui.cardRemoveScreen.show();
 }
 
