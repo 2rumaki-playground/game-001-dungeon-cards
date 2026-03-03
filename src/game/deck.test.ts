@@ -24,7 +24,7 @@ describe("deck", () => {
 			expect(deck).toHaveLength(TOTAL_DECK_SIZE);
 		});
 
-		it("移動カード2枚、攻撃カード1枚、待機カード1枚を含む", () => {
+		it("移動カード2枚、ファイアボルト1枚、待機カード1枚を含む", () => {
 			const deck = createInitialDeck();
 			const moveCards = deck.filter((c) => c.type === "move");
 			const fireCards = deck.filter((c) => c.type === "fire");
@@ -40,7 +40,7 @@ describe("deck", () => {
 			expect(new Set(ids).size).toBe(ids.length);
 		});
 
-		it("固定順で生成される（move, move, attack, wait）", () => {
+		it("固定順で生成される（move, move, fire, wait）", () => {
 			const deck = createInitialDeck();
 			expect(deck.map((c) => c.type)).toEqual(["move", "move", "fire", "wait"]);
 		});
