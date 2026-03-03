@@ -72,8 +72,17 @@ const CONSUME_FLY_DURATION = 200;
 /** 消費アニメーション：飛行先Y座標（相対） */
 const CONSUME_FLY_TARGET_Y = -70;
 
+/** 消費アニメーション：縮小後スケール */
+const CONSUME_SHRINK_SCALE = 0.3;
+
 /** 消費アニメーション：パーティクル数 */
 const CONSUME_PARTICLE_COUNT = 12;
+
+/** 配りアニメーション：初期スケール */
+const DEAL_INITIAL_SCALE = 0.5;
+
+/** ドラッグ中カードの不透明度 */
+const DRAG_OPACITY = 0.8;
 
 /**
  * カード内のクリック位置から方向を判定
@@ -324,7 +333,7 @@ export class HandRenderer {
 				cardContainer.x = DECK_OFFSET_X;
 				cardContainer.y = DECK_OFFSET_Y;
 				cardContainer.alpha = 0;
-				cardContainer.scale.set(0.5);
+				cardContainer.scale.set(DEAL_INITIAL_SCALE);
 
 				// 各カードに少しずつディレイを入れて順番に配る
 				const delay = animationIndex * DEAL_ANIMATION_DELAY;
@@ -578,7 +587,12 @@ export class HandRenderer {
 			const flyTargetY = container.y + CONSUME_FLY_TARGET_Y;
 			await tween(
 				container,
-				{ y: flyTargetY, scaleX: 0.3, scaleY: 0.3, alpha: 0 },
+				{
+					y: flyTargetY,
+					scaleX: CONSUME_SHRINK_SCALE,
+					scaleY: CONSUME_SHRINK_SCALE,
+					alpha: 0,
+				},
 				{ duration: CONSUME_FLY_DURATION, easing: Easing.easeOut },
 			);
 			// フェーズ2: パーティクル放出（fire-and-forget）
@@ -804,7 +818,7 @@ export class HandRenderer {
 				child.x = this.dragCurrentX - containerGlobalPos.x - CARD_WIDTH / 2;
 				child.y = -DRAG_LIFT;
 				child.zIndex = 1;
-				child.alpha = 0.8;
+				child.alpha = DRAG_OPACITY;
 			} else {
 				// 他のカード: 挿入位置に応じてスライド
 				const actualIndex = this.getActualIndex(child);
