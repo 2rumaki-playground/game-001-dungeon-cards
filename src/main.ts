@@ -23,6 +23,7 @@ import {
 	ParticleSystem,
 	ResultScreen,
 	ReturnToPlayerButton,
+	RewardSelectScreen,
 	ScreenTransition,
 	StatsScreen,
 	StatusBar,
@@ -143,6 +144,10 @@ async function initializeUIComponents(
 		STATUS_BAR_HEIGHT + viewportSize.height + HAND_AREA_TOP_PADDING;
 	app.stage.addChild(directionContainer);
 
+	const rewardSelectScreen = new RewardSelectScreen();
+	rewardSelectScreen.setParticleSystem(particleSystem);
+	app.stage.addChild(rewardSelectScreen.getContainer());
+
 	const cardRemoveScreen = new CardRemoveScreen();
 	cardRemoveScreen.setParticleSystem(particleSystem);
 	app.stage.addChild(cardRemoveScreen.getContainer());
@@ -186,7 +191,15 @@ async function initializeUIComponents(
 		const cardRemoveScreenIndex = app.stage.getChildIndex(
 			cardRemoveScreen.getContainer(),
 		);
-		app.stage.addChildAt(debugCardContainer, cardRemoveScreenIndex);
+		let insertIndex = cardRemoveScreenIndex;
+		const rewardSelectContainer = rewardSelectScreen.getContainer();
+		if (app.stage.children.includes(rewardSelectContainer)) {
+			const rewardSelectScreenIndex = app.stage.getChildIndex(
+				rewardSelectContainer,
+			);
+			insertIndex = Math.min(insertIndex, rewardSelectScreenIndex);
+		}
+		app.stage.addChildAt(debugCardContainer, insertIndex);
 
 		debugCheatPanel = new DebugCheatPanel();
 		const cheatPanelContainer = debugCheatPanel.getContainer();
@@ -215,6 +228,7 @@ async function initializeUIComponents(
 		characterCardRenderer,
 		turnBanner,
 		cardRemoveScreen,
+		rewardSelectScreen,
 		screenTransition,
 		floorBanner,
 		particleSystem,

@@ -270,7 +270,12 @@ export class RewardSelectScreen {
 		});
 
 		cardContainer.on("pointerover", () => {
-			this.showTooltip(cardType, x, y, REWARD_CARD_WIDTH);
+			this.showTooltip(
+				cardType,
+				cardContainer.x - cardContainer.pivot.x,
+				cardContainer.y - cardContainer.pivot.y,
+				REWARD_CARD_WIDTH,
+			);
 		});
 		cardContainer.on("pointerout", () => {
 			this.hideTooltip();
