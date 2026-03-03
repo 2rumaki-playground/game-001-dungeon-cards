@@ -4,6 +4,7 @@
  */
 
 import {
+	ATTACK_EXTENDED_RANGE,
 	JUMP_DISTANCE,
 	PLAYER_ATTACK_DAMAGE,
 	PLAYER_STRONG_ATTACK_DAMAGE,
@@ -27,7 +28,7 @@ import { incrementUseCount } from "./cardStats";
 import { applyDamageToEnemy } from "./combat";
 import { detectCombo, getComboBonus } from "./combo";
 import { markCardUsed } from "./deck";
-import { findEnemyAt, hasEnemyAt } from "./enemyUtils";
+import { hasEnemyAt } from "./enemyUtils";
 import { revealAtPosition } from "./fogOfWar";
 import { isInBounds, isWallTile } from "./map";
 import { recordCardUsage } from "./playStats";
@@ -35,7 +36,7 @@ import {
 	applyKnockback,
 	applyPierce,
 	executeShockwave,
-	findExtendedRangeTarget,
+	findAttackTarget,
 } from "./specialAttack";
 import { addSpeechLog } from "./speech";
 import {
@@ -180,41 +181,6 @@ export function executeMove(
 	};
 }
 
-/**
- * 攻撃成立を判定
- *
- * 成立条件:
- * - 指定方向1マス先がマップ内
- * - 指定方向1マス先が壁タイルではない
- * - 指定方向1マス先に敵が存在する
- */
-function canAttack(
-	state: GameState,
-	direction: Direction,
-): { hit: false } | { hit: true; enemyId: string } {
-	const delta = DIRECTION_DELTA[direction];
-	const nx = state.player.position.x + delta.x;
-	const ny = state.player.position.y + delta.y;
-
-	// マップ範囲外
-	if (!isInBounds(state.map, nx, ny)) {
-		return { hit: false };
-	}
-
-	// 壁タイル・ひび割れ壁タイル
-	if (isWallTile(state.map[ny][nx])) {
-		return { hit: false };
-	}
-
-	// 敵が存在するか
-	const enemy = findEnemyAt(state.enemies, nx, ny);
-	if (!enemy) {
-		return { hit: false };
-	}
-
-	return { hit: true, enemyId: enemy.id };
-}
-
 /** 攻撃実行結果 */
 export type AttackResult = {
 	state: GameState;
@@ -229,67 +195,6 @@ export type AttackResult = {
 	/** カードレベルによるダメージボーナス */
 	levelBonus: number;
 };
-
-/**
- * 攻撃処理の共通実装
- *
- * 成功/失敗に関わらずカード使用を行う。
- * 成功時は敵にダメージ、HP0以下で敵を削除。
- * コンボ判定は呼び出し元（executeAttack等）で行い、comboBonus引数で渡す。
- */
-function executeAttackBase(
-	state: GameState,
-	cardId: string,
-	direction: Direction,
-	baseDamage: number,
-	missLog: string,
-	comboBonus: number,
-	comboLog: string | null,
-): AttackResult {
-	// カードレベルによるダメージボーナスはこの関数内で一元的に算出する
-	const levelBonus = getAttackDamageBonus(state, cardId);
-
-	// カードを使用済みへ
-	let next = markCardAsPlayed(state, cardId);
-
-	// コンボ発動ログ
-	if (comboLog) {
-		next = addActionLog(next, comboLog, "system");
-		next = addSpeechLog(next, "combo_activated");
-	}
-
-	// 攻撃判定（カード使用後の状態で判定）
-	const result = canAttack(next, direction);
-	if (!result.hit) {
-		next = addActionLog(next, missLog, "player");
-		next = addSpeechLog(next, "attack_miss");
-		return {
-			state: next,
-			hit: false,
-			overkill: 0,
-			defeated: false,
-			levelBonus,
-		};
-	}
-
-	// 敵にダメージ（HP0以下で自動除去）
-	const totalDamage = baseDamage + levelBonus + comboBonus;
-	const damageResult = applyDamageToEnemy(
-		next,
-		result.enemyId,
-		totalDamage,
-		cardId,
-	);
-
-	return {
-		state: damageResult.state,
-		hit: true,
-		enemyId: result.enemyId,
-		overkill: damageResult.overkill,
-		defeated: damageResult.defeated,
-		levelBonus,
-	};
-}
 
 /**
  * 手札からカードのレベルボーナスを算出する共通ヘルパー
@@ -310,6 +215,44 @@ const COMBO_LOG_MESSAGE: Record<ComboType, string> = {
 };
 
 /**
+ * 方向1マス先のひび割れ壁を破壊する共通処理
+ */
+function tryCrackedWallDestroy(
+	state: GameState,
+	direction: Direction,
+): { state: GameState; destroyed: boolean } {
+	const delta = DIRECTION_DELTA[direction];
+	const wx = state.player.position.x + delta.x;
+	const wy = state.player.position.y + delta.y;
+	if (
+		isInBounds(state.map, wx, wy) &&
+		state.map[wy][wx].type === "cracked_wall"
+	) {
+		let next = setTile(state, wx, wy, { type: "floor" });
+		next = addActionLog(next, "ひび割れ壁を破壊した", "player");
+		return { state: next, destroyed: true };
+	}
+	return { state, destroyed: false };
+}
+
+/**
+ * コンボ判定 + ボーナス算出 + ログ出力を一括化
+ */
+function detectAndApplyCombo(
+	state: GameState,
+	direction: Direction,
+): { state: GameState; combo: ComboType | null; comboBonus: number } {
+	const combo = detectCombo(state.comboHistory, "attack", direction);
+	if (!combo) {
+		return { state, combo: null, comboBonus: 0 };
+	}
+	const comboBonus = getComboBonus(combo);
+	let next = addActionLog(state, COMBO_LOG_MESSAGE[combo], "system");
+	next = addSpeechLog(next, "combo_activated");
+	return { state: next, combo, comboBonus };
+}
+
+/**
  * 攻撃カード使用時のプレイヤー攻撃処理
  *
  * 成功/失敗に関わらずカード使用を行う。
@@ -328,157 +271,88 @@ export function executeAttack(
 	const card = state.deck.hand.find((c) => c.id === cardId);
 	const levelBonus = getAttackDamageBonus(state, cardId);
 	const pierce = card ? hasPierceEffect(card) : false;
-	const rangeExtend = card ? hasRangeExtendEffect(card) : false;
+	const range = card && hasRangeExtendEffect(card) ? ATTACK_EXTENDED_RANGE : 1;
 
-	// コンボ判定（comboHistory更新前に判定）
-	const combo = detectCombo(state.comboHistory, "attack", direction);
-	const comboBonus = combo ? getComboBonus(combo) : 0;
-	const comboLog = combo ? COMBO_LOG_MESSAGE[combo] : null;
+	// 1. カードを使用済みへ
+	let next = markCardAsPlayed(state, cardId);
 
-	// Lv5射程延長: findExtendedRangeTargetで2マス先まで探索
-	if (rangeExtend) {
-		let next = markCardAsPlayed(state, cardId);
+	// 2. コンボ判定 + ログ
+	const {
+		state: comboState,
+		combo,
+		comboBonus,
+	} = detectAndApplyCombo(next, direction);
+	next = comboState;
 
-		if (comboLog) {
-			next = addActionLog(next, comboLog, "system");
-			next = addSpeechLog(next, "combo_activated");
-		}
+	// 3. ターゲット探索
+	const target = findAttackTarget(next, direction, range);
 
-		const target = findExtendedRangeTarget(next, direction);
-		if (!target) {
-			// 突撃コンボ: 方向1マス先のひび割れ壁を破壊
-			let crackedWallDestroyed = false;
-			if (combo === "charge") {
-				const delta = DIRECTION_DELTA[direction];
-				const wx = state.player.position.x + delta.x;
-				const wy = state.player.position.y + delta.y;
-				if (
-					isInBounds(next.map, wx, wy) &&
-					next.map[wy][wx].type === "cracked_wall"
-				) {
-					next = setTile(next, wx, wy, { type: "floor" });
-					next = addActionLog(next, "ひび割れ壁を破壊した", "player");
-					crackedWallDestroyed = true;
-				}
+	if (!target) {
+		// 4. ミス時: 突撃コンボならひび割れ壁破壊を試みる
+		if (combo === "charge") {
+			const cracked = tryCrackedWallDestroy(next, direction);
+			if (cracked.destroyed) {
+				return {
+					state: updateComboHistory(cracked.state, {
+						lastCardType: "attack",
+						lastDirection: direction,
+					}),
+					hit: false,
+					overkill: 0,
+					defeated: false,
+					comboType: combo,
+					levelBonus,
+				};
 			}
-			if (!crackedWallDestroyed) {
-				next = addActionLog(next, "攻撃できなかった", "player");
-				next = addSpeechLog(next, "attack_miss");
-			}
-			return {
-				state: updateComboHistory(next, {
-					lastCardType: "attack",
-					lastDirection: direction,
-				}),
-				hit: false,
-				overkill: 0,
-				defeated: false,
-				comboType: combo ?? undefined,
-				levelBonus,
-			};
 		}
-
-		const totalDamage = PLAYER_ATTACK_DAMAGE + levelBonus + comboBonus;
-		const damageResult = applyDamageToEnemy(
-			next,
-			target.enemyId,
-			totalDamage,
-			cardId,
-		);
-		next = damageResult.state;
-
-		// 貫通（Lv5はLv3効果も保持）
-		if (damageResult.defeated && damageResult.overkill > 0) {
-			next = applyPierce(
-				next,
-				direction,
-				damageResult.overkill,
-				target.position,
-				cardId,
-			);
-		}
-
+		next = addActionLog(next, "攻撃できなかった", "player");
+		next = addSpeechLog(next, "attack_miss");
 		return {
 			state: updateComboHistory(next, {
 				lastCardType: "attack",
 				lastDirection: direction,
 			}),
-			hit: true,
-			enemyId: target.enemyId,
-			overkill: damageResult.overkill,
-			defeated: damageResult.defeated,
+			hit: false,
+			overkill: 0,
+			defeated: false,
 			comboType: combo ?? undefined,
 			levelBonus,
 		};
 	}
 
-	// 突撃コンボ: 方向1マス先がひび割れ壁なら破壊（ミスログ/SEを出さない）
-	if (combo === "charge") {
-		const delta = DIRECTION_DELTA[direction];
-		const wx = state.player.position.x + delta.x;
-		const wy = state.player.position.y + delta.y;
-		if (
-			isInBounds(state.map, wx, wy) &&
-			state.map[wy][wx].type === "cracked_wall"
-		) {
-			let next = markCardAsPlayed(state, cardId);
-			if (comboLog) {
-				next = addActionLog(next, comboLog, "system");
-				next = addSpeechLog(next, "combo_activated");
-			}
-			next = setTile(next, wx, wy, { type: "floor" });
-			next = addActionLog(next, "ひび割れ壁を破壊した", "player");
-			return {
-				state: updateComboHistory(next, {
-					lastCardType: "attack",
-					lastDirection: direction,
-				}),
-				hit: false,
-				overkill: 0,
-				defeated: false,
-				comboType: combo,
-				levelBonus,
-			};
-		}
-	}
-
-	// 通常攻撃（Lv1-4）
-	const result = executeAttackBase(
-		state,
+	// 5. ダメージ適用
+	const totalDamage = PLAYER_ATTACK_DAMAGE + levelBonus + comboBonus;
+	const damageResult = applyDamageToEnemy(
+		next,
+		target.enemyId,
+		totalDamage,
 		cardId,
-		direction,
-		PLAYER_ATTACK_DAMAGE,
-		"攻撃できなかった",
-		comboBonus,
-		comboLog,
 	);
+	next = damageResult.state;
 
-	let nextState = result.state;
-
-	// Lv3貫通: 撃破時に余剰ダメージを奥の敵に伝播
-	if (pierce && result.hit && result.overkill > 0) {
-		const delta = DIRECTION_DELTA[direction];
-		const hitPos = {
-			x: state.player.position.x + delta.x,
-			y: state.player.position.y + delta.y,
-		};
-		nextState = applyPierce(
-			nextState,
+	// 6. 貫通（Lv3+撃破時）
+	if (pierce && damageResult.defeated && damageResult.overkill > 0) {
+		next = applyPierce(
+			next,
 			direction,
-			result.overkill,
-			hitPos,
+			damageResult.overkill,
+			target.position,
 			cardId,
 		);
 	}
 
-	// comboHistory更新
+	// 7. comboHistory更新 + return
 	return {
-		...result,
-		comboType: combo ?? undefined,
-		state: updateComboHistory(nextState, {
+		state: updateComboHistory(next, {
 			lastCardType: "attack",
 			lastDirection: direction,
 		}),
+		hit: true,
+		enemyId: target.enemyId,
+		overkill: damageResult.overkill,
+		defeated: damageResult.defeated,
+		comboType: combo ?? undefined,
+		levelBonus,
 	};
 }
 
@@ -534,56 +408,66 @@ export function executeStrongAttack(
 		};
 	}
 
-	// ひび割れ壁破壊: 方向1マス先がcracked_wallなら破壊（ミスログ/SEを出さない）
-	{
-		const delta = DIRECTION_DELTA[direction];
-		const wx = state.player.position.x + delta.x;
-		const wy = state.player.position.y + delta.y;
-		if (
-			isInBounds(state.map, wx, wy) &&
-			state.map[wy][wx].type === "cracked_wall"
-		) {
-			let next = markCardAsPlayed(state, cardId);
-			next = setTile(next, wx, wy, { type: "floor" });
-			next = addActionLog(next, "ひび割れ壁を破壊した", "player");
-			return {
-				state: updateComboHistory(next, {
-					lastCardType: "strong_attack",
-					lastDirection: direction,
-				}),
-				hit: false,
-				overkill: 0,
-				defeated: false,
-				levelBonus,
-			};
-		}
+	// カードを使用済みへ
+	let next = markCardAsPlayed(state, cardId);
+
+	// ひび割れ壁破壊
+	const cracked = tryCrackedWallDestroy(next, direction);
+	if (cracked.destroyed) {
+		return {
+			state: updateComboHistory(cracked.state, {
+				lastCardType: "strong_attack",
+				lastDirection: direction,
+			}),
+			hit: false,
+			overkill: 0,
+			defeated: false,
+			levelBonus,
+		};
 	}
 
-	// 通常強攻撃（Lv1-4）
-	const result = executeAttackBase(
-		state,
-		cardId,
-		direction,
-		PLAYER_STRONG_ATTACK_DAMAGE,
-		"強攻撃できなかった",
-		0,
-		null,
-	);
+	// ターゲット探索
+	const target = findAttackTarget(next, direction, 1);
+	if (!target) {
+		next = addActionLog(next, "強攻撃できなかった", "player");
+		next = addSpeechLog(next, "attack_miss");
+		return {
+			state: updateComboHistory(next, {
+				lastCardType: "strong_attack",
+				lastDirection: direction,
+			}),
+			hit: false,
+			overkill: 0,
+			defeated: false,
+			levelBonus,
+		};
+	}
 
-	let nextState = result.state;
+	// ダメージ適用
+	const damageResult = applyDamageToEnemy(
+		next,
+		target.enemyId,
+		totalDamage,
+		cardId,
+	);
+	next = damageResult.state;
 
 	// Lv3ノックバック: ヒットして敵が生存していれば吹き飛ばす
-	if (knockback && result.hit && result.enemyId && !result.defeated) {
-		nextState = applyKnockback(nextState, result.enemyId, direction);
+	if (knockback && !damageResult.defeated) {
+		next = applyKnockback(next, target.enemyId, direction);
 	}
 
 	// comboHistory更新（コンボ対象外だが履歴には記録）
 	return {
-		...result,
-		state: updateComboHistory(nextState, {
+		state: updateComboHistory(next, {
 			lastCardType: "strong_attack",
 			lastDirection: direction,
 		}),
+		hit: true,
+		enemyId: target.enemyId,
+		overkill: damageResult.overkill,
+		defeated: damageResult.defeated,
+		levelBonus,
 	};
 }
 
