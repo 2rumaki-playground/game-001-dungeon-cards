@@ -21,6 +21,7 @@ import { UI_COLOR_GOLD, UI_COLORS_BUTTON_SECONDARY } from "./uiColors";
 const DEATH_CAUSE_LABEL: Record<DeathCause, string> = {
 	enemy_attack: "敵の攻撃",
 	trap: "トラップ",
+	body_slam: "体当たり",
 	unknown: "不明",
 };
 

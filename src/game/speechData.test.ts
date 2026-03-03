@@ -22,6 +22,7 @@ const eventTypes: SpeechEventType[] = [
 	"jump_success",
 	"card_acquired",
 	"card_skipped",
+	"body_slam",
 ];
 
 describe("SPEECH_VARIANTS", () => {
