@@ -190,28 +190,31 @@ async function handleMoveCardExecution(
 		if (gameOver) {
 			// gameOver時もバンプ/HP演出中はゲーム画面を維持（暗転後に切り替え）
 			shouldContinueQueue(ctx, false, true);
+			// カードキュー由来の入力も含めて、ゲームオーバー演出が完了するまで抑止する
 			ctx.isAnimating = true;
-			ctx.ui.cameraDragController.reset(false);
-			applyState(ctx, next);
-			renderGameScreen(ctx, false, true);
+			ctx.isCardActionAnimating = true;
 			try {
+				ctx.ui.cameraDragController.reset(false);
+				applyState(ctx, next);
+				renderGameScreen(ctx, false, true);
 				await ctx.ui.mapRenderer.animatePlayerBump(direction);
+				await ctx.ui.statusBar.animateHpChange(
+					prevHp,
+					next.player.hp,
+					next.player.maxHp,
+					(ratio) => ctx.ui.mapRenderer.updatePlayerHpGauge(ratio),
+				);
+				ctx.resultData = buildResultData(next, "death");
+				const session = endSession("death", "body_slam");
+				if (session) savePlaySession(session);
+				deleteSaveData();
+				await ctx.ui.screenTransition.fadeTransition(() => {
+					updateState(ctx, next);
+				});
 			} finally {
 				ctx.isAnimating = false;
+				ctx.isCardActionAnimating = false;
 			}
-			await ctx.ui.statusBar.animateHpChange(
-				prevHp,
-				next.player.hp,
-				next.player.maxHp,
-				(ratio) => ctx.ui.mapRenderer.updatePlayerHpGauge(ratio),
-			);
-			ctx.resultData = buildResultData(next, "death");
-			const session = endSession("death", "body_slam");
-			if (session) savePlaySession(session);
-			deleteSaveData();
-			await ctx.ui.screenTransition.fadeTransition(() => {
-				updateState(ctx, next);
-			});
 		} else {
 			await updateStateWithBumpAnimation(ctx, next, direction);
 			await ctx.ui.statusBar.animateHpChange(
