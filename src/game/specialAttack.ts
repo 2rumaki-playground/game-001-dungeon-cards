@@ -7,6 +7,7 @@ import { ATTACK_EXTENDED_RANGE } from "../constants";
 import type { Direction, GameMap, GameState, Position } from "../types";
 import { DIRECTION_DELTA } from "../types";
 import { applyDamageToEnemy } from "./combat";
+import { findEnemyAt, hasEnemyAt } from "./enemyUtils";
 import { isInBounds, isWallTile } from "./map";
 import { addActionLog, setTile, updateEnemy } from "./state";
 
@@ -35,9 +36,7 @@ export function findAttackTarget(
 			return null;
 		}
 
-		const enemy = state.enemies.find(
-			(e) => e.position.x === nx && e.position.y === ny,
-		);
+		const enemy = findEnemyAt(state.enemies, nx, ny);
 		if (enemy) {
 			return { enemyId: enemy.id, position: { x: nx, y: ny } };
 		}
@@ -78,9 +77,7 @@ export function applyPierce(
 			break;
 		}
 
-		const enemy = state.enemies.find(
-			(e) => e.position.x === cx && e.position.y === cy,
-		);
+		const enemy = findEnemyAt(state.enemies, cx, cy);
 		if (enemy) {
 			const next = addActionLog(state, "貫通！", "system");
 			const result = applyDamageToEnemy(next, enemy.id, overkill, attackCardId);
@@ -135,8 +132,7 @@ function canKnockbackTo(
 	if (isWallTile(map[y][x])) return false;
 	if (state.player.position.x === x && state.player.position.y === y)
 		return false;
-	if (state.enemies.some((e) => e.position.x === x && e.position.y === y))
-		return false;
+	if (hasEnemyAt(state.enemies, x, y)) return false;
 	return true;
 }
 
@@ -219,9 +215,7 @@ export function executeShockwave(
 			crackedWallDestroyed: true,
 		};
 	}
-	const frontEnemy = state.enemies.find(
-		(e) => e.position.x === frontPos.x && e.position.y === frontPos.y,
-	);
+	const frontEnemy = findEnemyAt(state.enemies, frontPos.x, frontPos.y);
 	if (!frontEnemy) {
 		return {
 			state,
@@ -244,9 +238,7 @@ export function executeShockwave(
 		if (!isInBounds(next.map, pos.x, pos.y)) continue;
 		if (isWallTile(next.map[pos.y][pos.x])) continue;
 
-		const enemy = next.enemies.find(
-			(e) => e.position.x === pos.x && e.position.y === pos.y,
-		);
+		const enemy = findEnemyAt(next.enemies, pos.x, pos.y);
 		if (!enemy) continue;
 
 		const result = applyDamageToEnemy(next, enemy.id, damage, attackCardId);

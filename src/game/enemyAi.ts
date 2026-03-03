@@ -15,6 +15,7 @@ import { DIRECTION_DELTA } from "../types";
 import { checkEnrage, tryBossSkill, tryMinibossSkill } from "./bossSkill";
 import { applyEnemyDamageToPlayer, checkGameOver, isDefeated } from "./combat";
 import { DIRECTION_LABEL } from "./enemyAiAnalysis";
+import { hasEnemyAt } from "./enemyUtils";
 import { isInBounds, isWallTile } from "./map";
 import { bfsFirstStep } from "./pathfinding";
 import { isAdjacent, manhattanDistance } from "./positionUtils";
@@ -50,11 +51,7 @@ export function canEnemyMoveTo(
 		return false;
 	}
 
-	if (
-		state.enemies.some(
-			(e) => e.id !== enemy.id && e.position.x === nx && e.position.y === ny,
-		)
-	) {
+	if (hasEnemyAt(state.enemies, nx, ny, enemy.id)) {
 		return false;
 	}
 
