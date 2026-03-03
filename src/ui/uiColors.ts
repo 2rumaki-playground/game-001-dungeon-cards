@@ -23,6 +23,12 @@ export const UI_COLORS_BUTTON_PRIMARY = {
 	border: 0x4a8cca,
 } as const;
 
+/** 確認ボタンの色（獲得・決定等のポジティブ操作用） */
+export const UI_COLORS_BUTTON_CONFIRM = {
+	bg: 0x2a7a2a,
+	border: 0x4aaa4a,
+} as const;
+
 /** セカンダリボタンの色（スキップ・閉じる等） */
 export const UI_COLORS_BUTTON_SECONDARY = {
 	bg: 0x555555,
