@@ -50,7 +50,7 @@ describe("createCardTooltip", () => {
 		expect(hasDesc).toBe(true);
 	});
 
-	it("Lv.2の攻撃カードではボーナス込みダメージが表示される", () => {
+	it("Lv.2のファイアボルトではボーナス込みダメージが表示される", () => {
 		const card: Card = {
 			id: "card-1",
 			type: "fire",
@@ -66,7 +66,7 @@ describe("createCardTooltip", () => {
 		expect(hasBonus).toBe(true);
 	});
 
-	it("Lv.2の攻撃カードではレベル表示が含まれる", () => {
+	it("Lv.2のファイアボルトではレベル表示が含まれる", () => {
 		const card: Card = {
 			id: "card-1",
 			type: "fire",
