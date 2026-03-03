@@ -187,15 +187,24 @@ async function handleMoveCardExecution(
 			});
 		}
 	} else if (bodySlam) {
-		await updateStateWithBumpAnimation(ctx, next, direction);
-		await ctx.ui.statusBar.animateHpChange(
-			prevHp,
-			next.player.hp,
-			next.player.maxHp,
-			(ratio) => ctx.ui.mapRenderer.updatePlayerHpGauge(ratio),
-		);
 		if (gameOver) {
+			// gameOver時もバンプ/HP演出中はゲーム画面を維持（暗転後に切り替え）
 			shouldContinueQueue(ctx, false, true);
+			ctx.isAnimating = true;
+			ctx.ui.cameraDragController.reset(false);
+			applyState(ctx, next);
+			renderGameScreen(ctx, false, true);
+			try {
+				await ctx.ui.mapRenderer.animatePlayerBump(direction);
+			} finally {
+				ctx.isAnimating = false;
+			}
+			await ctx.ui.statusBar.animateHpChange(
+				prevHp,
+				next.player.hp,
+				next.player.maxHp,
+				(ratio) => ctx.ui.mapRenderer.updatePlayerHpGauge(ratio),
+			);
 			ctx.resultData = buildResultData(next, "death");
 			const session = endSession("death", "body_slam");
 			if (session) savePlaySession(session);
@@ -204,6 +213,13 @@ async function handleMoveCardExecution(
 				updateState(ctx, next);
 			});
 		} else {
+			await updateStateWithBumpAnimation(ctx, next, direction);
+			await ctx.ui.statusBar.animateHpChange(
+				prevHp,
+				next.player.hp,
+				next.player.maxHp,
+				(ratio) => ctx.ui.mapRenderer.updatePlayerHpGauge(ratio),
+			);
 			// カードドロップがある場合、交換UIを順次表示
 			let currentState = next;
 			while (currentState.cardExchangeQueue.length > 0) {
