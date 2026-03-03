@@ -191,7 +191,15 @@ async function initializeUIComponents(
 		const cardRemoveScreenIndex = app.stage.getChildIndex(
 			cardRemoveScreen.getContainer(),
 		);
-		app.stage.addChildAt(debugCardContainer, cardRemoveScreenIndex);
+		let insertIndex = cardRemoveScreenIndex;
+		const rewardSelectContainer = rewardSelectScreen.getContainer();
+		if (app.stage.children.includes(rewardSelectContainer)) {
+			const rewardSelectScreenIndex = app.stage.getChildIndex(
+				rewardSelectContainer,
+			);
+			insertIndex = Math.min(insertIndex, rewardSelectScreenIndex);
+		}
+		app.stage.addChildAt(debugCardContainer, insertIndex);
 
 		debugCheatPanel = new DebugCheatPanel();
 		const cheatPanelContainer = debugCheatPanel.getContainer();
