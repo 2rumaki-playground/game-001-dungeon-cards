@@ -216,19 +216,35 @@ async function handleMoveCardExecution(
 				ctx.isCardActionAnimating = false;
 			}
 		} else {
-			await updateStateWithBumpAnimation(ctx, next, direction);
-			await ctx.ui.statusBar.animateHpChange(
-				prevHp,
-				next.player.hp,
-				next.player.maxHp,
-				(ratio) => ctx.ui.mapRenderer.updatePlayerHpGauge(ratio),
-			);
-			// カードドロップがある場合、交換UIを順次表示
-			let currentState = next;
-			while (currentState.cardExchangeQueue.length > 0) {
-				currentState = await executeExchangeFlow(ctx, currentState);
-				applyState(ctx, currentState);
-				render(ctx);
+			// gameOverでないBodySlamでも、バンプ＋HP演出＋交換UI完了まで
+			// isAnimating / isCardActionAnimating による入力ガードを維持する
+			const prevIsAnimating = ctx.isAnimating;
+			const prevIsCardActionAnimating = ctx.isCardActionAnimating;
+			// BodySlam解決中のカード起因の操作を抑止
+			ctx.isCardActionAnimating = true;
+			try {
+				await updateStateWithBumpAnimation(ctx, next, direction);
+
+				// bumpアニメーション完了後〜HP変化・交換UI完了までは
+				// isAnimating を true にして演出と状態更新の競合を防ぐ
+				ctx.isAnimating = true;
+
+				await ctx.ui.statusBar.animateHpChange(
+					prevHp,
+					next.player.hp,
+					next.player.maxHp,
+					(ratio) => ctx.ui.mapRenderer.updatePlayerHpGauge(ratio),
+				);
+				// カードドロップがある場合、交換UIを順次表示
+				let currentState = next;
+				while (currentState.cardExchangeQueue.length > 0) {
+					currentState = await executeExchangeFlow(ctx, currentState);
+					applyState(ctx, currentState);
+					render(ctx);
+				}
+			} finally {
+				ctx.isAnimating = prevIsAnimating;
+				ctx.isCardActionAnimating = prevIsCardActionAnimating;
 			}
 		}
 	} else {
