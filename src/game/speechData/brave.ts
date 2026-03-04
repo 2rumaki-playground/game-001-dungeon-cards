@@ -137,7 +137,7 @@ export const speechVariants: Record<SpeechEventType, readonly string[]> = {
 		"剣で斬れる罠ならいいのに",
 		"二度目はないぞ！",
 	],
-	treasure_found: [
+	chest_opened: [
 		"お、宝箱だ！",
 		"ありがたい",
 		"回復できた",
@@ -266,7 +266,7 @@ export const rareSpeechVariants: Partial<
 	damage_taken: ["痛い…誰か助けて…"],
 	game_over: ["怖かった…ずっと怖かったんだ"],
 	combo_activated: ["手が震えてるけど…いける！"],
-	treasure_found: ["ほっとした…本当に"],
+	chest_opened: ["ほっとした…本当に"],
 	trap_triggered: ["もう帰りたい…"],
 	floor_reached: ["この先…大丈夫かな"],
 	card_acquired: ["どれがいいのか…正直わからない"],

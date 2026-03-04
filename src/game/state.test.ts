@@ -430,7 +430,7 @@ describe("state", () => {
 
 		it("他の座標のタイルは変更されない", () => {
 			const state = createTestState();
-			const result = setTile(state, 3, 3, { type: "treasure" });
+			const result = setTile(state, 3, 3, { type: "chest_common" });
 			expect(result.map[2][3].type).toBe("floor");
 			expect(result.map[3][2].type).toBe("floor");
 		});

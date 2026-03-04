@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { TRAP_DAMAGE, TREASURE_HEAL } from "../constants";
+import { TRAP_DAMAGE } from "../constants";
 import { TileTooltip } from "./tileTooltip";
 
 describe("TileTooltip", () => {
@@ -51,14 +51,14 @@ describe("TileTooltip", () => {
 			expect(effectText.text).toBe(`${TRAP_DAMAGE}ダメージを受ける`);
 		});
 
-		it("treasure のテキストが正しい", () => {
+		it("chest_common のテキストが正しい", () => {
 			const tooltip = new TileTooltip();
-			tooltip.show("treasure", 100, 100);
+			tooltip.show("chest_common", 100, 100);
 			const container = tooltip.getContainer();
 			const nameText = container.children[1] as import("pixi.js").Text;
 			const effectText = container.children[2] as import("pixi.js").Text;
-			expect(nameText.text).toBe("宝箱タイル");
-			expect(effectText.text).toBe(`HPを${TREASURE_HEAL}回復`);
+			expect(nameText.text).toBe("宝箱（普通）");
+			expect(effectText.text).toBe("回復またはスクロール");
 		});
 
 		it("rest_area のテキストが正しい", () => {

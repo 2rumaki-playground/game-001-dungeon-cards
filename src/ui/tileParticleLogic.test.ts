@@ -23,8 +23,8 @@ describe("getTileParticleEmitterConfig", () => {
 		expect(config.colors).toHaveLength(4);
 	});
 
-	it("treasureの設定を返す", () => {
-		const config = getTileParticleEmitterConfig("treasure");
+	it("chest_commonの設定を返す", () => {
+		const config = getTileParticleEmitterConfig("chest_common");
 		expect(config.movement).toBe("orbit");
 		expect(config.shape).toBe("diamond");
 		expect(config.maxParticles).toBe(6);
@@ -55,7 +55,7 @@ describe("spawnTileParticle", () => {
 	});
 
 	it("設定のsize範囲内のsizeを持つ", () => {
-		const config = getTileParticleEmitterConfig("treasure");
+		const config = getTileParticleEmitterConfig("chest_common");
 		const p = spawnTileParticle(config, CELL_SIZE, createFixedRandom(0.5));
 		expect(p.size).toBeGreaterThanOrEqual(config.size.min);
 		expect(p.size).toBeLessThanOrEqual(config.size.max);
@@ -75,7 +75,7 @@ describe("spawnTileParticle", () => {
 	});
 
 	it("orbit movementでは初期座標が0", () => {
-		const config = getTileParticleEmitterConfig("treasure");
+		const config = getTileParticleEmitterConfig("chest_common");
 		const p = spawnTileParticle(config, CELL_SIZE, createFixedRandom(0.5));
 		expect(p.movement).toBe("orbit");
 		expect(p.initialX).toBe(0);

@@ -23,7 +23,7 @@ describe("MapRenderer タイルスプライト描画", () => {
 		const renderer = new MapRenderer();
 		const map = [
 			[{ type: "floor" as const }, { type: "trap" as const }],
-			[{ type: "treasure" as const }, { type: "rest_area" as const }],
+			[{ type: "chest_common" as const }, { type: "rest_area" as const }],
 		];
 		renderer.renderMap(map);
 

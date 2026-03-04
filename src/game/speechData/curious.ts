@@ -137,7 +137,7 @@ export const speechVariants: Record<SpeechEventType, readonly string[]> = {
 		"ローブの裾が引っかかったみたい",
 		"これは新しい発見だ…痛いけど",
 	],
-	treasure_found: [
+	chest_opened: [
 		"おっ、何が入ってるかな",
 		"これは珍しい！",
 		"どこから来た宝なんだろう",
@@ -266,7 +266,7 @@ export const rareSpeechVariants: Partial<
 	damage_taken: ["想定内だ、問題ない"],
 	game_over: ["全ては分かっていたのに…"],
 	combo_activated: ["読み通り、完璧な連携だ"],
-	treasure_found: ["ここにあると思っていた"],
+	chest_opened: ["ここにあると思っていた"],
 	trap_triggered: ["知っていた…けど避けられなかった"],
 	floor_reached: ["この階層の構造は把握済みだ"],
 	card_acquired: ["このカードが手に入ると確信していた"],

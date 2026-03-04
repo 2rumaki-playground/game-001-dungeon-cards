@@ -28,7 +28,13 @@ type TileEffect = {
 	timeSinceLastSpawn?: number;
 };
 
-const SPECIAL_TILE_TYPES = new Set<string>(["trap", "treasure", "rest_area"]);
+const SPECIAL_TILE_TYPES = new Set<string>([
+	"trap",
+	"chest_common",
+	"chest_rare",
+	"chest_epic",
+	"rest_area",
+]);
 
 /** 階段タイルの矢印サイズ（セルサイズに対する比率） */
 const ARROW_SIZE_RATIO = 0.3;

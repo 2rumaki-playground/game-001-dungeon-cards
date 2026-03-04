@@ -5,13 +5,10 @@
 
 import { CLOSE_CALL_HP_RATIO, ENEMY_TYPE_LABEL } from "../constants";
 import type { EnemyType, GameState } from "../types";
-import {
-	checkCardDrop,
-	updateDefeatCounter,
-	updateHitCounter,
-} from "./cardAcquisition";
+import { updateDefeatCounter, updateHitCounter } from "./cardAcquisition";
 import { awardExpToCard } from "./cardLevel";
 import { recordDefeat, updateMaxDamage } from "./cardStats";
+import { checkChestDrop, placeChestTile } from "./chestDrop";
 import { addRunEvent } from "./eventLog";
 import {
 	getCurrentSession,
@@ -114,19 +111,22 @@ export function applyDamageToEnemy(
 			next = recordDefeat(next, attackCardId);
 		}
 
-		// カードドロップ判定（確率制）
-		const dropResult = checkCardDrop(next.rng, target.type);
-		if (dropResult) {
-			next = {
-				...next,
-				cardExchangeQueue: [...next.cardExchangeQueue, dropResult],
-			};
-			const label = ENEMY_TYPE_LABEL[target.type];
-			next = addActionLog(
+		// 宝箱ドロップ判定
+		const chestRarity = checkChestDrop(next.rng, target.type);
+		if (chestRarity) {
+			const placed = placeChestTile(
 				next,
-				`${label}を倒してカード交換が可能になった`,
-				"system",
+				target.position,
+				chestRarity,
+				target.type,
 			);
+			if (placed) {
+				next = placed;
+				const label = ENEMY_TYPE_LABEL[target.type];
+				next = addActionLog(next, `${label}を倒して宝箱が出現した`, "system");
+			} else {
+				next = addActionLog(next, "敵を倒した", "system");
+			}
 		} else {
 			next = addActionLog(next, "敵を倒した", "system");
 		}

@@ -49,6 +49,7 @@ export function createTestState(overrides?: Partial<GameState>): GameState {
 		defeatedEnemyCount: 0,
 		isCleared: false,
 		remnants: {},
+		chestMeta: {},
 		visitedTiles: new Set<string>(),
 		lastAttackerEnemyType: null,
 		acquisitionCounters: createInitialCounters(),

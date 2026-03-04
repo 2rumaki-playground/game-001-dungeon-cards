@@ -82,7 +82,7 @@ export const contextualVariants: Partial<
 			variants: ["…罠か", "注意が足りない", "…余計な消耗"],
 		},
 	],
-	treasure_found: [
+	chest_opened: [
 		{
 			context: "hp_critical",
 			variants: ["…助かる", "これで…まだ戦える", "…命拾いした"],

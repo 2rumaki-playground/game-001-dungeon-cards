@@ -137,7 +137,7 @@ export const speechVariants: Record<SpeechEventType, readonly string[]> = {
 		"予想外の罠の設置位置だ",
 		"探知方法を改善しなければ",
 	],
-	treasure_found: [
+	chest_opened: [
 		"回復アイテムか、助かる",
 		"今の状態なら使い時だ",
 		"貴重な回復の機会だ",
@@ -266,7 +266,7 @@ export const rareSpeechVariants: Partial<
 	damage_taken: ["考えてる場合じゃない、走れ！"],
 	game_over: ["計算なんて…無意味だったか"],
 	combo_activated: ["理屈抜きで気持ちいい！"],
-	treasure_found: ["深く考えず、素直に喜ぼう"],
+	chest_opened: ["深く考えず、素直に喜ぼう"],
 	trap_triggered: ["えいっ！…って踏んじゃった"],
 	floor_reached: ["今日は勘で進んでみよう"],
 	card_acquired: ["直感で選んじゃおう！"],

@@ -69,7 +69,7 @@ describe("isWallTile", () => {
 
 	it("特殊タイルはfalseを返す", () => {
 		expect(isWallTile({ type: "trap" })).toBe(false);
-		expect(isWallTile({ type: "treasure" })).toBe(false);
+		expect(isWallTile({ type: "chest_common" })).toBe(false);
 		expect(isWallTile({ type: "rest_area" })).toBe(false);
 	});
 });

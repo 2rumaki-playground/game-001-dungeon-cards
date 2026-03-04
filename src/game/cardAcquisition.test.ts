@@ -1,10 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { CARD_DROP_TABLE } from "../constants";
 import { createTestState } from "../test-utils/createTestFixtures";
 import type { Card } from "../types";
-import { RNG } from "../utils/rng";
 import {
-	checkCardDrop,
 	createInitialCounters,
 	exchangeCardInDeck,
 	updateDefeatCounter,
@@ -64,77 +61,6 @@ describe("updateHitCounter", () => {
 		const updated = updateHitCounter(counters, "scout");
 		expect(counters.hitCounts.scout).toBe(0);
 		expect(updated).not.toBe(counters);
-	});
-});
-
-describe("checkCardDrop", () => {
-	it("boss(100%)は必ずドロップする", () => {
-		const rng = new RNG(12345);
-		const result = checkCardDrop(rng, "boss");
-		expect(result).not.toBeNull();
-		expect(result?.acquiredCardType).toBe("wait");
-		expect(result?.defeatedEnemyType).toBe("boss");
-	});
-
-	it("ドロップ確率テーブルのカードタイプが正しい", () => {
-		expect(CARD_DROP_TABLE.normal.cardType).toBe("move");
-		expect(CARD_DROP_TABLE.ranged.cardType).toBe("move");
-		expect(CARD_DROP_TABLE.heavy.cardType).toBe("thunder");
-		expect(CARD_DROP_TABLE.scout.cardType).toBe("jump");
-		expect(CARD_DROP_TABLE.summoner.cardType).toBe("wait");
-		expect(CARD_DROP_TABLE.shielded.cardType).toBe("fire");
-		expect(CARD_DROP_TABLE.miniboss.cardType).toBe("fire");
-		expect(CARD_DROP_TABLE.boss.cardType).toBe("wait");
-	});
-
-	it("RNGシード制御で当選を検証できる", () => {
-		// boss(dropRate=1.0)は常に当選
-		let dropCount = 0;
-		for (let seed = 0; seed < 100; seed++) {
-			const rng = new RNG(seed);
-			if (checkCardDrop(rng, "boss") !== null) dropCount++;
-		}
-		expect(dropCount).toBe(100);
-	});
-
-	it("RNGシード制御で当選と落選が両方発生する", () => {
-		// normal(dropRate=0.25)は一部当選・一部落選
-		let dropCount = 0;
-		for (let seed = 0; seed < 100; seed++) {
-			const rng = new RNG(seed);
-			if (checkCardDrop(rng, "normal") !== null) dropCount++;
-		}
-		// 25%なので0%や100%にはならない
-		expect(dropCount).toBeGreaterThan(0);
-		expect(dropCount).toBeLessThan(100);
-	});
-
-	it("落選時にnullを返す", () => {
-		// normal(dropRate=0.25)の落選ケースを検証: seedを多数試し、normalで落選するものを見つける
-		let foundNull = false;
-		for (let seed = 0; seed < 100; seed++) {
-			const rng = new RNG(seed);
-			if (checkCardDrop(rng, "normal") === null) {
-				foundNull = true;
-				break;
-			}
-		}
-		expect(foundNull).toBe(true);
-	});
-
-	it("当選時に正しいCardExchangeEntryを返す", () => {
-		// miniboss(75%)で当選するseedを探す
-		for (let seed = 0; seed < 100; seed++) {
-			const rng = new RNG(seed);
-			const result = checkCardDrop(rng, "miniboss");
-			if (result !== null) {
-				expect(result.acquiredCardType).toBe("fire");
-				expect(result.defeatedEnemyType).toBe("miniboss");
-				return;
-			}
-		}
-		// 75%で100回試せば必ず当選するはず
-		expect.unreachable("miniboss should have dropped at least once");
 	});
 });
 

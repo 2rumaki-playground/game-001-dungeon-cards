@@ -48,15 +48,37 @@ const TRAP_CONFIG: TileParticleEmitterConfig = {
 	maxAlpha: 0.7,
 };
 
-const TREASURE_CONFIG: TileParticleEmitterConfig = {
+const CHEST_COMMON_CONFIG: TileParticleEmitterConfig = {
 	movement: "orbit",
 	shape: "diamond",
-	colors: [COLORS.treasure, 0xf1c40f, 0xe6b800, 0xf5d442],
+	colors: [COLORS.chestCommon, 0xf1c40f, 0xe6b800, 0xf5d442],
 	maxParticles: 6,
 	spawnInterval: 350,
 	lifetime: { min: 2000, max: 3000 },
 	size: { min: 2, max: 3.5 },
 	maxAlpha: 0.8,
+};
+
+const CHEST_RARE_CONFIG: TileParticleEmitterConfig = {
+	movement: "orbit",
+	shape: "diamond",
+	colors: [COLORS.chestRare, 0x5599ee, 0x3377cc, 0x66aaff],
+	maxParticles: 7,
+	spawnInterval: 300,
+	lifetime: { min: 2000, max: 3000 },
+	size: { min: 2, max: 3.5 },
+	maxAlpha: 0.85,
+};
+
+const CHEST_EPIC_CONFIG: TileParticleEmitterConfig = {
+	movement: "orbit",
+	shape: "diamond",
+	colors: [COLORS.chestEpic, 0xdd66ee, 0xaa33cc, 0xff88ff],
+	maxParticles: 8,
+	spawnInterval: 250,
+	lifetime: { min: 2000, max: 3000 },
+	size: { min: 2, max: 4 },
+	maxAlpha: 0.9,
 };
 
 const REST_AREA_CONFIG: TileParticleEmitterConfig = {
@@ -72,7 +94,9 @@ const REST_AREA_CONFIG: TileParticleEmitterConfig = {
 
 const CONFIGS: Record<SpecialTileType, TileParticleEmitterConfig> = {
 	trap: TRAP_CONFIG,
-	treasure: TREASURE_CONFIG,
+	chest_common: CHEST_COMMON_CONFIG,
+	chest_rare: CHEST_RARE_CONFIG,
+	chest_epic: CHEST_EPIC_CONFIG,
 	rest_area: REST_AREA_CONFIG,
 };
 

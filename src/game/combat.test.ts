@@ -306,7 +306,7 @@ describe("checkGameOver", () => {
 	});
 });
 
-describe("applyDamageToEnemy - カードドロップ", () => {
+describe("applyDamageToEnemy - 宝箱ドロップ", () => {
 	it("敵撃破時に撃破カウンターが更新される", () => {
 		const enemy = createTestEnemy("normal", { x: 4, y: 3 }, { hp: 1 });
 		const state = createTestState({ enemies: [enemy] });
@@ -315,18 +315,25 @@ describe("applyDamageToEnemy - カードドロップ", () => {
 		expect(result.state.acquisitionCounters.defeatCounts.normal).toBe(1);
 	});
 
-	it("boss撃破時にcardExchangeQueueにエントリが追加される", () => {
+	it("boss撃破時に宝箱タイルが配置される", () => {
 		const enemy = createTestEnemy("boss", { x: 4, y: 3 }, { hp: 1 });
 		// boss(100%)は必ずドロップ
 		const state = createTestState({ enemies: [enemy] });
 		const result = applyDamageToEnemy(state, enemy.id, PLAYER_FIRE_DAMAGE);
 
-		expect(result.state.cardExchangeQueue).toHaveLength(1);
-		expect(result.state.cardExchangeQueue[0].acquiredCardType).toBe("wait");
-		expect(result.state.cardExchangeQueue[0].defeatedEnemyType).toBe("boss");
+		// 撃破位置(4,3)またはその近傍に宝箱タイルが配置される
+		const chestTiles = result.state.map
+			.flat()
+			.filter(
+				(t) =>
+					t.type === "chest_common" ||
+					t.type === "chest_rare" ||
+					t.type === "chest_epic",
+			);
+		expect(chestTiles.length).toBeGreaterThanOrEqual(1);
 	});
 
-	it("ドロップ確率に応じてcardExchangeQueueが変化する", () => {
+	it("ドロップ確率に応じて宝箱タイルの配置有無が変化する", () => {
 		// normal(25%)を多数のseedで試す
 		let withDrop = 0;
 		let withoutDrop = 0;
@@ -344,7 +351,15 @@ describe("applyDamageToEnemy - カードドロップ", () => {
 				rng: new RNG(seed),
 			});
 			const result = applyDamageToEnemy(state, enemy.id, PLAYER_FIRE_DAMAGE);
-			if (result.state.cardExchangeQueue.length > 0) {
+			const chestTiles = result.state.map
+				.flat()
+				.filter(
+					(t) =>
+						t.type === "chest_common" ||
+						t.type === "chest_rare" ||
+						t.type === "chest_epic",
+				);
+			if (chestTiles.length > 0) {
 				withDrop++;
 			} else {
 				withoutDrop++;

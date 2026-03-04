@@ -53,6 +53,7 @@ function createTestState(overrides?: Partial<GameState>): GameState {
 		defeatedEnemyCount: 0,
 		isCleared: false,
 		remnants: {},
+		chestMeta: {},
 		rooms: [],
 		visitedTiles: new Set<string>(),
 		lastAttackerEnemyType: null,

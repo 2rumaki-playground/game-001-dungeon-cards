@@ -15,7 +15,9 @@ export const TILE_ASSET_PATHS: Record<TileType, string> = {
 	cracked_wall: "assets/tiles/wall.png",
 	stairs: "assets/tiles/stairs.png",
 	trap: "assets/tiles/trap.png",
-	treasure: "assets/tiles/treasure.png",
+	chest_common: "assets/tiles/treasure.png",
+	chest_rare: "assets/tiles/treasure.png",
+	chest_epic: "assets/tiles/treasure.png",
 	rest_area: "assets/tiles/rest_area.png",
 };
 

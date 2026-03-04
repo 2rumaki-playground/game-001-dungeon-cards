@@ -137,7 +137,7 @@ export const speechVariants: Record<SpeechEventType, readonly string[]> = {
 		"えーん、罠にやられた〜",
 		"ドッキリかと思った〜！",
 	],
-	treasure_found: [
+	chest_opened: [
 		"わーい、宝箱だ！",
 		"ラッキー！",
 		"やった〜、うれしい！",
@@ -266,7 +266,7 @@ export const rareSpeechVariants: Partial<
 	damage_taken: ["…笑えない、かも"],
 	game_over: ["みんなを守れなかった…ごめん"],
 	combo_activated: ["集中…今は絶対に外せない"],
-	treasure_found: ["これで…もう少し頑張れる"],
+	chest_opened: ["これで…もう少し頑張れる"],
 	trap_triggered: ["痛い…けど、泣かないよ"],
 	floor_reached: ["ここからは気を引き締めないと"],
 	card_acquired: ["…このカード、大事にしなきゃ"],

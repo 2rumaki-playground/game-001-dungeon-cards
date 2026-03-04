@@ -16,9 +16,9 @@ describe("getSpecialTileEffectConfig", () => {
 		expect(config.pulseAlphaMax).toBe(0.4);
 	});
 
-	it("treasureの設定が正しい色と周期を持つ", () => {
-		const config = getSpecialTileEffectConfig("treasure");
-		expect(config.glowColor).toBe(COLORS.treasure);
+	it("chest_commonの設定が正しい色と周期を持つ", () => {
+		const config = getSpecialTileEffectConfig("chest_common");
+		expect(config.glowColor).toBe(COLORS.chestCommon);
 		expect(config.pulsePeriod).toBe(2500);
 		expect(config.pulseAlphaMin).toBe(0.1);
 		expect(config.pulseAlphaMax).toBe(0.35);
@@ -33,7 +33,13 @@ describe("getSpecialTileEffectConfig", () => {
 	});
 
 	it("全タイルタイプで有効なグロー半径を持つ", () => {
-		const types: SpecialTileType[] = ["trap", "treasure", "rest_area"];
+		const types: SpecialTileType[] = [
+			"trap",
+			"chest_common",
+			"chest_rare",
+			"chest_epic",
+			"rest_area",
+		];
 		for (const type of types) {
 			const config = getSpecialTileEffectConfig(type);
 			expect(config.glowRadius).toBeGreaterThan(0);

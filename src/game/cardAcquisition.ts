@@ -3,16 +3,13 @@
  * @see docs/spec/deckbuilding.md
  */
 
-import { CARD_DROP_TABLE } from "../constants";
 import type {
 	AcquisitionCounters,
-	CardExchangeEntry,
 	CardType,
 	DeckState,
 	EnemyType,
 	GameState,
 } from "../types";
-import type { RNG } from "../utils/rng";
 import { createCard } from "./deck";
 
 /**
@@ -73,25 +70,6 @@ export function updateHitCounter(
 			[enemyType]: counters.hitCounts[enemyType] + 1,
 		},
 	};
-}
-
-/**
- * ドロップ判定（確率制）
- * 当選時はCardExchangeEntryを返し、落選時はnullを返す
- */
-export function checkCardDrop(
-	rng: RNG,
-	enemyType: EnemyType,
-): CardExchangeEntry | null {
-	const config = CARD_DROP_TABLE[enemyType];
-	const roll = rng.random();
-	if (roll < config.dropRate) {
-		return {
-			acquiredCardType: config.cardType,
-			defeatedEnemyType: enemyType,
-		};
-	}
-	return null;
 }
 
 /**

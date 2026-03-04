@@ -12,8 +12,27 @@ export type TileType =
 	| "cracked_wall"
 	| "stairs"
 	| "trap"
-	| "treasure"
+	| "chest_common"
+	| "chest_rare"
+	| "chest_epic"
 	| "rest_area";
+
+/**
+ * 宝箱タイル種別
+ */
+export type ChestTileType = Extract<
+	TileType,
+	"chest_common" | "chest_rare" | "chest_epic"
+>;
+
+/**
+ * 宝箱タイルかどうかを判定
+ */
+export function isChestTileType(type: TileType): type is ChestTileType {
+	return (
+		type === "chest_common" || type === "chest_rare" || type === "chest_epic"
+	);
+}
 
 /**
  * タイル
@@ -33,7 +52,7 @@ export type GameMap = Tile[][];
  */
 export type SpecialTileType = Extract<
 	TileType,
-	"trap" | "treasure" | "rest_area"
+	"trap" | "chest_common" | "chest_rare" | "chest_epic" | "rest_area"
 >;
 
 /**

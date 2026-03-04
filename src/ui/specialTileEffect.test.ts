@@ -42,7 +42,7 @@ describe("SpecialTileEffectManager", () => {
 		const manager = new SpecialTileEffectManager();
 		const map = createSimpleMap([
 			["floor", "trap"],
-			["treasure", "rest_area"],
+			["chest_common", "rest_area"],
 		]);
 		manager.update(map);
 		expect(tickerMock.callbacks).toHaveLength(1);
@@ -76,7 +76,7 @@ describe("SpecialTileEffectManager", () => {
 	it("update()でvisitedTilesが指定された場合、未訪問の特殊タイルはスキップ", () => {
 		const manager = new SpecialTileEffectManager();
 		const map = createSimpleMap([
-			["trap", "treasure"],
+			["trap", "chest_common"],
 			["floor", "rest_area"],
 		]);
 		const visited = new Set(["0,0"]); // trapのみ訪問済み
@@ -95,18 +95,18 @@ describe("SpecialTileEffectManager", () => {
 	it("update()で全タイルが訪問済みの場合、全特殊タイルにエフェクトが作成される", () => {
 		const manager = new SpecialTileEffectManager();
 		const map = createSimpleMap([
-			["trap", "treasure"],
+			["trap", "chest_common"],
 			["floor", "rest_area"],
 		]);
 		const visited = new Set(["0,0", "1,0", "0,1", "1,1"]);
 		manager.update(map, visited);
-		expect(manager.getEffectCount()).toBe(3); // trap, treasure, rest_area
+		expect(manager.getEffectCount()).toBe(3); // trap, chest_common, rest_area
 	});
 
 	it("visitedTilesが未指定の場合、全特殊タイルにエフェクトが作成される", () => {
 		const manager = new SpecialTileEffectManager();
 		const map = createSimpleMap([
-			["trap", "treasure"],
+			["trap", "chest_common"],
 			["floor", "rest_area"],
 		]);
 		manager.update(map);
@@ -125,7 +125,7 @@ describe("SpecialTileEffectManager", () => {
 
 	it("clear()後にgetEffectCount()が0を返す", () => {
 		const manager = new SpecialTileEffectManager();
-		const map = createSimpleMap([["trap", "treasure"]]);
+		const map = createSimpleMap([["trap", "chest_common"]]);
 		manager.update(map);
 		expect(manager.getEffectCount()).toBe(2);
 
@@ -204,11 +204,11 @@ describe("SpecialTileEffectManager", () => {
 
 	it("update()でタイルが消えた場合エフェクトが減る", () => {
 		const manager = new SpecialTileEffectManager();
-		const map1 = createSimpleMap([["trap", "treasure"]]);
+		const map1 = createSimpleMap([["trap", "chest_common"]]);
 		manager.update(map1);
 		expect(manager.getEffectCount()).toBe(2);
 
-		const map2 = createSimpleMap([["floor", "treasure"]]);
+		const map2 = createSimpleMap([["floor", "chest_common"]]);
 		manager.update(map2);
 		expect(manager.getEffectCount()).toBe(1);
 	});

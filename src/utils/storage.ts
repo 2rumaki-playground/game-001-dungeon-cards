@@ -124,6 +124,36 @@ function sanitizeAcquisitionCounters(raw: unknown): AcquisitionCounters {
 	};
 }
 
+/**
+ * chestMeta をバリデーションし、不正なエントリを除外
+ */
+function sanitizeChestMeta(
+	raw: unknown,
+): Record<string, import("../types").ChestMeta> {
+	const result: Record<string, import("../types").ChestMeta> =
+		Object.create(null);
+	if (raw == null || typeof raw !== "object") return result;
+	const validRarities = new Set(["common", "rare", "epic"]);
+	const validEnemyTypes: ReadonlySet<string> = new Set(ENEMY_TYPES);
+	for (const [key, value] of Object.entries(raw as Record<string, unknown>)) {
+		if (!COORDINATE_KEY_PATTERN.test(key)) continue;
+		if (value == null || typeof value !== "object") continue;
+		const v = value as Record<string, unknown>;
+		if (
+			typeof v.rarity === "string" &&
+			validRarities.has(v.rarity) &&
+			typeof v.defeatedEnemyType === "string" &&
+			validEnemyTypes.has(v.defeatedEnemyType)
+		) {
+			result[key] = {
+				rarity: v.rarity as import("../types").ChestRarity,
+				defeatedEnemyType: v.defeatedEnemyType as (typeof ENEMY_TYPES)[number],
+			};
+		}
+	}
+	return result;
+}
+
 function sanitizeRemnants(raw: unknown): Record<string, number> {
 	const result: Record<string, number> = Object.create(null);
 	if (raw == null || typeof raw !== "object") return result;
@@ -179,7 +209,7 @@ const VALID_SPEECH_EVENT_TYPES: ReadonlySet<SpeechEventType> = new Set([
 	"damage_taken",
 	"game_over",
 	"trap_triggered",
-	"treasure_found",
+	"chest_opened",
 	"rest_area_used",
 	"floor_reached",
 	"jump_success",
@@ -463,6 +493,18 @@ export function loadGame(): GameState | null {
 			? sanitizeVisitedTiles(data.visitedTiles)
 			: createFullyVisitedTiles(data.map);
 
+		// 旧セーブデータ互換: "treasure" タイルを "floor" にフォールバック
+		if (Array.isArray(data.map)) {
+			for (const row of data.map) {
+				if (!Array.isArray(row)) continue;
+				for (let i = 0; i < row.length; i++) {
+					if (row[i]?.type === "treasure") {
+						row[i] = { type: "floor" };
+					}
+				}
+			}
+		}
+
 		const state: GameState = {
 			...data,
 			enemies,
@@ -470,6 +512,7 @@ export function loadGame(): GameState | null {
 			rooms: sanitizeRooms(data.rooms),
 			rng: RNG.deserialize(data.rng),
 			visitedTiles,
+			chestMeta: sanitizeChestMeta(data.chestMeta),
 			isCleared: data.isCleared === true,
 			defeatedEnemyCount:
 				typeof data.defeatedEnemyCount === "number" &&
