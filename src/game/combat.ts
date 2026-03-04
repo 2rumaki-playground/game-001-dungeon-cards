@@ -29,8 +29,6 @@ import { checkVictory } from "./victory";
 /** 敵ダメージ適用の結果 */
 export type DamageResult = {
 	state: GameState;
-	/** 超過ダメージ量（Math.max(0, damage - enemy.hp)、非撃破時は自然に0となる） */
-	overkill: number;
 	/** 敵が撃破されたか */
 	defeated: boolean;
 };
@@ -58,7 +56,7 @@ export function applyDamageToEnemy(
 	// 対象の敵が存在しない場合は何もしない
 	const enemy = state.enemies.find((e) => e.id === enemyId);
 	if (!enemy) {
-		return { state, overkill: 0, defeated: false };
+		return { state, defeated: false };
 	}
 
 	// 盾持ち敵: 盾が有効なら初撃ダメージ半減（端数切り捨て）
@@ -68,8 +66,6 @@ export function applyDamageToEnemy(
 		effectiveDamage = Math.floor(damage / 2);
 		shieldConsumed = true;
 	}
-
-	const overkill = Math.max(0, effectiveDamage - enemy.hp);
 
 	recordDamageDealt(Math.min(effectiveDamage, enemy.hp));
 
@@ -165,12 +161,11 @@ export function applyDamageToEnemy(
 
 		next = addSpeechLog(next, "enemy_defeated");
 		next = checkVictory(next, target.type);
-		return { state: next, overkill, defeated: true };
+		return { state: next, defeated: true };
 	}
 
 	return {
 		state: addActionLog(next, "敵にダメージを与えた", "system"),
-		overkill: 0,
 		defeated: false,
 	};
 }

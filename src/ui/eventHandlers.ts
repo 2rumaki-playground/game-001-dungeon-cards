@@ -293,7 +293,6 @@ async function handleFireCardExecution(
 		state: next,
 		hit,
 		enemyId,
-		overkill,
 		comboType,
 		levelBonus,
 	} = executeFire(ctx.state, cardId, direction);
@@ -308,7 +307,6 @@ async function handleFireCardExecution(
 	if (hit && enemyId) {
 		const comboBonus = comboType ? getComboBonus(comboType) : 0;
 		await updateStateWithAttackAnimation(ctx, next, enemyId, "fire", {
-			overkill,
 			comboBonus,
 			levelBonus,
 		});
@@ -332,14 +330,12 @@ async function handleThunderCardExecution(
 		state: next,
 		hit,
 		enemyId,
-		overkill,
 		levelBonus,
 	} = executeThunder(ctx.state, cardId, direction);
 	ctx.ui.directionSelector.hide();
 	ctx.pendingCard = null;
 	if (hit && enemyId) {
 		await updateStateWithAttackAnimation(ctx, next, enemyId, "thunder", {
-			overkill,
 			levelBonus,
 		});
 	} else {

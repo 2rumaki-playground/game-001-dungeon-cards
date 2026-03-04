@@ -4,7 +4,6 @@
 
 import { describe, expect, it } from "vitest";
 import {
-	calculateDefeatEffectScale,
 	createChainComboParticleConfig,
 	createDefeatParticleConfig,
 	createFireParticleConfig,
@@ -102,28 +101,6 @@ describe("createJumpParticleConfig", () => {
 	});
 });
 
-describe("calculateDefeatEffectScale", () => {
-	it("overkill=0でscale=1.0", () => {
-		expect(calculateDefeatEffectScale(0)).toBe(1.0);
-	});
-
-	it("overkill=1でscale=1.3", () => {
-		expect(calculateDefeatEffectScale(1)).toBeCloseTo(1.3);
-	});
-
-	it("overkill=3でscale=1.9", () => {
-		expect(calculateDefeatEffectScale(3)).toBeCloseTo(1.9);
-	});
-
-	it("overkill=4でscale=2.0（上限到達）", () => {
-		expect(calculateDefeatEffectScale(4)).toBe(2.0);
-	});
-
-	it("overkill=10でscale=2.0（上限キャップ）", () => {
-		expect(calculateDefeatEffectScale(10)).toBe(2.0);
-	});
-});
-
 describe("createDefeatParticleConfig", () => {
 	it("originが設定される", () => {
 		const config = createDefeatParticleConfig({ x: 300, y: 400 });
@@ -140,8 +117,8 @@ describe("createDefeatParticleConfig", () => {
 		expect(config.count).toBeGreaterThanOrEqual(15);
 	});
 
-	it("overkill=0で従来と同一パラメータ（count=20）", () => {
-		const config = createDefeatParticleConfig({ x: 0, y: 0 }, 0);
+	it("固定パラメータ（count=20）", () => {
+		const config = createDefeatParticleConfig({ x: 0, y: 0 });
 		expect(config.count).toBe(20);
 		expect(config.speed.min).toBeCloseTo(0.1);
 		expect(config.speed.max).toBeCloseTo(0.25);
@@ -149,23 +126,6 @@ describe("createDefeatParticleConfig", () => {
 		expect(config.life.max).toBe(600);
 		expect(config.size.min).toBe(2);
 		expect(config.size.max).toBe(6);
-	});
-
-	it("overkill=2でスケール済みパラメータ", () => {
-		const config = createDefeatParticleConfig({ x: 0, y: 0 }, 2);
-		// scale = 1.0 + 2 * 0.3 = 1.6
-		expect(config.count).toBe(Math.round(20 * 1.6));
-		expect(config.size.min).toBeCloseTo(2 * 1.6);
-		expect(config.size.max).toBeCloseTo(6 * 1.6);
-	});
-
-	it("overkill引数省略時はoverkill=0と同一", () => {
-		const withoutArg = createDefeatParticleConfig({ x: 0, y: 0 });
-		const withZero = createDefeatParticleConfig({ x: 0, y: 0 }, 0);
-		expect(withoutArg.count).toBe(withZero.count);
-		expect(withoutArg.speed).toEqual(withZero.speed);
-		expect(withoutArg.life).toEqual(withZero.life);
-		expect(withoutArg.size).toEqual(withZero.size);
 	});
 });
 
