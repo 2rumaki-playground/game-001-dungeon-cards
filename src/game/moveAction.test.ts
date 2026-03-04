@@ -310,6 +310,9 @@ describe("executeMove", () => {
 		expect(tileEffect).toBe("chest_common");
 		expect(bodySlam).toBe(false);
 		expect(result.cardExchangeQueue).toHaveLength(1);
+		const entry = result.cardExchangeQueue[0];
+		expect(entry.defeatedEnemyType).toBe("normal");
+		expect(entry.acquiredCardType).toBe("move");
 	});
 
 	it("罠タイルでHP0: gameOverがtrue", () => {
