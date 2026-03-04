@@ -56,7 +56,7 @@ function tileTypeToChestRarity(
  *
  * - 床/壁/階段 → 効果なし
  * - 罠 → ダメージ + タイルをfloorに
- * - 宝箱 → HP回復（maxHp上限） + タイルをfloorに
+ * - 宝箱 → HP回復またはスクロール（カード交換） + タイルをfloorに
  * - 休憩所 → HP全回復 + タイルをfloorに
  *
  * @param options.applyDamage ダメージ適用関数（DI用、デフォルトは applyDamageToPlayer）
