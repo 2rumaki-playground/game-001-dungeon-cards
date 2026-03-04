@@ -286,7 +286,7 @@ describe("executeMove", () => {
 				maxHp: PLAYER_INITIAL_HP,
 			},
 			chestMeta: {
-				"3,4": { rarity: "common", defeatedEnemyType: "normal" },
+				"4,3": { rarity: "common", defeatedEnemyType: "normal" },
 			},
 			deck: {
 				hand: [
