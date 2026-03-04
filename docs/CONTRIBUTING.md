@@ -115,8 +115,7 @@ public/assets/
 │   ├── wall.png
 │   ├── stairs.png
 │   ├── trap.png
-│   ├── treasure.png
-│   └── rest_area.png
+│   └── treasure.png
 ├── enemies/
 │   ├── normal.png
 │   ├── heavy.png
