@@ -19,7 +19,9 @@ export type TileHoverCallbacks = {
 const HOVERABLE_TILE_TYPES: ReadonlySet<TileType> = new Set([
 	"stairs",
 	"trap",
-	"treasure",
+	"chest_common",
+	"chest_rare",
+	"chest_epic",
 	"rest_area",
 ]);
 

@@ -152,7 +152,7 @@ describe("executeEnemyTurn - 敵タイプ別行動", () => {
 
 	it.each([
 		"trap",
-		"treasure",
+		"chest_common",
 		"rest_area",
 	] as const)("敵が%sタイル上に移動できる", (tileType) => {
 		const map = createTestMap();

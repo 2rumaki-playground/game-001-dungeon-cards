@@ -10,7 +10,7 @@ function mapFromStrings(rows: string[]): GameMap {
 		S: { type: "stairs" },
 		T: { type: "trap" },
 		R: { type: "rest_area" },
-		X: { type: "treasure" },
+		X: { type: "chest_common" },
 	};
 	return rows.map((row) =>
 		row.split("").map((ch) => {
@@ -54,9 +54,9 @@ describe("bfsFirstStep", () => {
 		expect(bfsFirstStep(map, { x: 2, y: 2 }, { x: 2, y: 1 })).toBe("up");
 	});
 
-	it("trap/treasure/rest_areaタイルを通過可能として扱う", () => {
+	it("trap/chest_common/rest_areaタイルを通過可能として扱う", () => {
 		const map = mapFromStrings(["WWWWW", "WFFFW", "WTXRW", "WFFFW", "WWWWW"]);
-		// 敵(2,3)→プレイヤー(2,1)、(2,2)はtreasure → 通過可能
+		// 敵(2,3)→プレイヤー(2,1)、(2,2)はchest_common → 通過可能
 		expect(bfsFirstStep(map, { x: 2, y: 3 }, { x: 2, y: 1 })).toBe("up");
 	});
 

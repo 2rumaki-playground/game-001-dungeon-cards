@@ -4,7 +4,6 @@ import {
 	BODY_SLAM_RECOIL,
 	PLAYER_INITIAL_HP,
 	TRAP_DAMAGE,
-	TREASURE_HEAL,
 } from "../constants";
 import {
 	createTestMap,
@@ -245,9 +244,9 @@ describe("executeMove", () => {
 		expect(result.map[3][4].type).toBe("floor");
 	});
 
-	it("宝箱タイルへの移動: HP回復してtileEffectがtreasure", () => {
+	it("宝箱タイルへの移動: tileEffectがchest_common", () => {
 		const map = createTestMap();
-		map[3][4] = { type: "treasure" };
+		map[3][4] = { type: "chest_common" };
 		const state = createTestState({
 			map,
 			player: {
@@ -268,10 +267,9 @@ describe("executeMove", () => {
 				usedCardIds: [],
 			},
 		});
-		const { state: result, tileEffect } = executeMove(state, "move-1", "right");
+		const { tileEffect } = executeMove(state, "move-1", "right");
 
-		expect(tileEffect).toBe("treasure");
-		expect(result.player.hp).toBe(5 + TREASURE_HEAL);
+		expect(tileEffect).toBe("chest_common");
 	});
 
 	it("罠タイルでHP0: gameOverがtrue", () => {

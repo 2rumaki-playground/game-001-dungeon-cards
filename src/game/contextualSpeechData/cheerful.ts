@@ -146,7 +146,7 @@ export const contextualVariants: Partial<
 			],
 		},
 	],
-	treasure_found: [
+	chest_opened: [
 		{
 			context: "hp_critical",
 			variants: [

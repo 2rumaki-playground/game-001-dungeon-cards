@@ -22,12 +22,26 @@ const CONFIGS: Record<SpecialTileType, SpecialTileEffectConfig> = {
 		glowColor: COLORS.trap,
 		glowRadius: 0.35,
 	},
-	treasure: {
+	chest_common: {
 		pulsePeriod: 2500,
 		pulseAlphaMin: 0.1,
 		pulseAlphaMax: 0.35,
-		glowColor: COLORS.treasure,
+		glowColor: COLORS.chestCommon,
 		glowRadius: 0.4,
+	},
+	chest_rare: {
+		pulsePeriod: 2200,
+		pulseAlphaMin: 0.12,
+		pulseAlphaMax: 0.4,
+		glowColor: COLORS.chestRare,
+		glowRadius: 0.42,
+	},
+	chest_epic: {
+		pulsePeriod: 1800,
+		pulseAlphaMin: 0.15,
+		pulseAlphaMax: 0.45,
+		glowColor: COLORS.chestEpic,
+		glowRadius: 0.45,
 	},
 	rest_area: {
 		pulsePeriod: 3000,

@@ -4,7 +4,7 @@
  */
 
 import { Container, Graphics, Text } from "pixi.js";
-import { CELL_SIZE, TRAP_DAMAGE, TREASURE_HEAL } from "../constants";
+import { CELL_SIZE, TRAP_DAMAGE } from "../constants";
 import type { TileType } from "../types";
 import type { ContainerTransform } from "./containerTransform";
 import { drawRoundedRect } from "./graphicsHelpers";
@@ -45,7 +45,9 @@ const TILE_TOOLTIP_CONTENT: Partial<
 > = {
 	stairs: { name: "階段", effect: "次の階層へ進む" },
 	trap: { name: "罠タイル", effect: `${TRAP_DAMAGE}ダメージを受ける` },
-	treasure: { name: "宝箱タイル", effect: `HPを${TREASURE_HEAL}回復` },
+	chest_common: { name: "宝箱（普通）", effect: "回復またはスクロール" },
+	chest_rare: { name: "宝箱（レア）", effect: "回復またはスクロール" },
+	chest_epic: { name: "宝箱（エピック）", effect: "回復またはスクロール" },
 	rest_area: { name: "休憩所タイル", effect: "HPを全回復" },
 };
 

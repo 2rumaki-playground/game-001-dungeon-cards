@@ -9,6 +9,12 @@ export type {
 	CardExchangeEntry,
 } from "./cardAcquisition";
 export type { Enemy, EnemyType, Player } from "./character";
+export type {
+	ChestContent,
+	ChestContentType,
+	ChestMeta,
+	ChestRarity,
+} from "./chest";
 export type { ComboHistory, ComboType } from "./combo";
 export { DIRECTION_DELTA, type Direction, type Position } from "./direction";
 export {
@@ -23,7 +29,15 @@ export {
 	type SpeechLogEntry,
 	type Turn,
 } from "./game";
-export type { GameMap, Room, SpecialTileType, Tile, TileType } from "./map";
+export {
+	type ChestTileType,
+	type GameMap,
+	isChestTileType,
+	type Room,
+	type SpecialTileType,
+	type Tile,
+	type TileType,
+} from "./map";
 export type {
 	BossDefeatedRunEvent,
 	CardAcquiredRunEvent,

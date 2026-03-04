@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ENEMY_HP, PLAYER_INITIAL_HP, TREASURE_HEAL } from "../constants";
+import { ENEMY_HP, PLAYER_INITIAL_HP } from "../constants";
 import {
 	createTestMap,
 	createTestState,
@@ -275,7 +275,7 @@ describe("executeJump", () => {
 
 	it("着地先の宝箱: 着地先の効果のみ発動", () => {
 		const map = createTestMap();
-		map[3][5] = { type: "treasure" };
+		map[3][5] = { type: "chest_common" };
 		const state = createTestState({
 			map,
 			player: {
@@ -299,21 +299,16 @@ describe("executeJump", () => {
 		const result = executeJump(state, "jump-1", "right");
 
 		expect(result.jumped).toBe(true);
-		expect(result.tileEffects).toEqual([
-			{
-				tile: "treasure",
-				position: { x: 5, y: 3 },
-				hpBefore: PLAYER_INITIAL_HP - 5,
-				hpAfter: PLAYER_INITIAL_HP - 5 + TREASURE_HEAL,
-			},
-		]);
-		expect(result.state.player.hp).toBe(PLAYER_INITIAL_HP - 5 + TREASURE_HEAL);
+		expect(result.tileEffects).toHaveLength(1);
+		expect(result.tileEffects[0].tile).toBe("chest_common");
+		expect(result.tileEffects[0].position).toEqual({ x: 5, y: 3 });
+		expect(result.tileEffects[0].hpBefore).toBe(PLAYER_INITIAL_HP - 5);
 	});
 
 	it("1マス先に罠、着地先に宝箱: 罠は無視、宝箱のみ発動", () => {
 		const map = createTestMap();
 		map[3][4] = { type: "trap" };
-		map[3][5] = { type: "treasure" };
+		map[3][5] = { type: "chest_common" };
 		const state = createTestState({
 			map,
 			player: {
@@ -336,16 +331,11 @@ describe("executeJump", () => {
 		});
 		const result = executeJump(state, "jump-1", "right");
 
-		expect(result.tileEffects).toEqual([
-			{
-				tile: "treasure",
-				position: { x: 5, y: 3 },
-				hpBefore: PLAYER_INITIAL_HP - 5,
-				hpAfter: PLAYER_INITIAL_HP - 5 + TREASURE_HEAL,
-			},
-		]);
-		// HP: 5 + 3(treasure) = 8（罠ダメージなし）
-		expect(result.state.player.hp).toBe(PLAYER_INITIAL_HP - 5 + TREASURE_HEAL);
+		expect(result.tileEffects).toHaveLength(1);
+		expect(result.tileEffects[0].tile).toBe("chest_common");
+		expect(result.tileEffects[0].position).toEqual({ x: 5, y: 3 });
+		// 罠ダメージなし
+		expect(result.tileEffects[0].hpBefore).toBe(PLAYER_INITIAL_HP - 5);
 	});
 
 	it("ジャンプで特殊タイルなし: tileEffectsが空", () => {

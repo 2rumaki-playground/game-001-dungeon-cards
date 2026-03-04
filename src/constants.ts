@@ -3,7 +3,7 @@
  * @see docs/spec/constants.md
  */
 
-import type { CardDropConfig, CardType, EnemyType, Personality } from "./types";
+import type { CardType, ChestRarity, EnemyType, Personality } from "./types";
 
 // 手札関連
 export const HAND_LIMIT = 4;
@@ -315,16 +315,49 @@ export function getBossType(floor: number): "miniboss" | "boss" | null {
 // カード交換
 export const DECK_MAX_SIZE = 4;
 export const DECK_MIN_SIZE = 4;
-// 敵撃破時カードドロップ確率テーブル（正典: docs/spec/constants.md）
-export const CARD_DROP_TABLE: Record<EnemyType, CardDropConfig> = {
-	normal: { cardType: "move", dropRate: 0.25 },
-	ranged: { cardType: "move", dropRate: 0.25 },
-	heavy: { cardType: "thunder", dropRate: 0.35 },
-	scout: { cardType: "jump", dropRate: 0.35 },
-	summoner: { cardType: "wait", dropRate: 0.35 },
-	shielded: { cardType: "fire", dropRate: 0.35 },
-	miniboss: { cardType: "fire", dropRate: 0.75 },
-	boss: { cardType: "wait", dropRate: 1.0 },
+// 敵撃破時宝箱ドロップ確率テーブル（正典: docs/spec/constants.md）
+export const CHEST_DROP_TABLE: Record<EnemyType, { dropRate: number }> = {
+	normal: { dropRate: 0.25 },
+	ranged: { dropRate: 0.25 },
+	heavy: { dropRate: 0.35 },
+	scout: { dropRate: 0.35 },
+	summoner: { dropRate: 0.35 },
+	shielded: { dropRate: 0.35 },
+	miniboss: { dropRate: 0.75 },
+	boss: { dropRate: 1.0 },
+};
+
+// 敵タイプ→カード種別対応テーブル
+export const ENEMY_CARD_TYPE_TABLE: Record<EnemyType, CardType> = {
+	normal: "move",
+	ranged: "move",
+	heavy: "thunder",
+	scout: "jump",
+	summoner: "wait",
+	shielded: "fire",
+	miniboss: "fire",
+	boss: "wait",
+};
+
+// 宝箱レアリティ重み
+export const CHEST_RARITY_WEIGHTS: Record<ChestRarity, number> = {
+	common: 0.7,
+	rare: 0.25,
+	epic: 0.05,
+};
+
+// 宝箱の中身：回復の光の出現率（レアリティ別）
+export const CHEST_CONTENT_HEAL_RATE: Record<ChestRarity, number> = {
+	common: 0.7,
+	rare: 0.5,
+	epic: 0.3,
+};
+
+// 宝箱の中身：回復量（レアリティ別、null = 全回復）
+export const CHEST_HEAL_AMOUNT: Record<ChestRarity, number | null> = {
+	common: 3,
+	rare: 5,
+	epic: null,
 };
 
 // 行動ログ
@@ -365,12 +398,10 @@ export const COMBO_BONUS = {
 
 // 特殊タイル効果
 export const TRAP_DAMAGE = 1;
-export const TREASURE_HEAL = 3;
 
 // 階層別特殊タイル配置テーブル
 export type SpecialTileComposition = {
 	trap: number;
-	treasure: number;
 	rest_area: number;
 };
 
@@ -378,12 +409,12 @@ export const SPECIAL_TILE_TABLE: {
 	maxFloor: number;
 	composition: SpecialTileComposition;
 }[] = [
-	{ maxFloor: 2, composition: { trap: 1, treasure: 1, rest_area: 0 } },
-	{ maxFloor: 4, composition: { trap: 2, treasure: 1, rest_area: 1 } },
-	{ maxFloor: 6, composition: { trap: 2, treasure: 1, rest_area: 1 } },
-	{ maxFloor: 9, composition: { trap: 3, treasure: 1, rest_area: 1 } },
-	{ maxFloor: 14, composition: { trap: 3, treasure: 2, rest_area: 1 } },
-	{ maxFloor: Infinity, composition: { trap: 4, treasure: 2, rest_area: 1 } },
+	{ maxFloor: 2, composition: { trap: 1, rest_area: 0 } },
+	{ maxFloor: 4, composition: { trap: 2, rest_area: 1 } },
+	{ maxFloor: 6, composition: { trap: 2, rest_area: 1 } },
+	{ maxFloor: 9, composition: { trap: 3, rest_area: 1 } },
+	{ maxFloor: 14, composition: { trap: 3, rest_area: 1 } },
+	{ maxFloor: Infinity, composition: { trap: 4, rest_area: 1 } },
 ];
 
 export function getSpecialTileComposition(
@@ -395,7 +426,7 @@ export function getSpecialTileComposition(
 
 export function getSpecialTileCount(floor: number): number {
 	const comp = getSpecialTileComposition(floor);
-	return comp.trap + comp.treasure + comp.rest_area;
+	return comp.trap + comp.rest_area;
 }
 
 // ビューポート（表示領域）
@@ -616,7 +647,9 @@ export const COLORS = {
 	wall: 0x1a1a1a,
 	stairs: 0x4a6a4a,
 	trap: 0x9b59b6,
-	treasure: 0xccaa44,
+	chestCommon: 0xccaa44,
+	chestRare: 0x4488dd,
+	chestEpic: 0xcc44dd,
 	restArea: 0x44aa88,
 	crackedWall: 0x6a5a3a,
 	// キャラクター

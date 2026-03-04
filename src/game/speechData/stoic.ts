@@ -137,7 +137,7 @@ export const speechVariants: Record<SpeechEventType, readonly string[]> = {
 		"…戦場の罠はもっと巧妙だった",
 		"罠を踏むとは",
 	],
-	treasure_found: [
+	chest_opened: [
 		"…助かる",
 		"回復する",
 		"ありがたい",
@@ -266,7 +266,7 @@ export const rareSpeechVariants: Partial<
 	damage_taken: ["…正直、きつい"],
 	game_over: ["…もう少し、生きたかった"],
 	combo_activated: ["…悪くない、この感覚"],
-	treasure_found: ["…ありがたいな、本当に"],
+	chest_opened: ["…ありがたいな、本当に"],
 	trap_triggered: ["…くそっ"],
 	floor_reached: ["…少しだけ、わくわくする"],
 	card_acquired: ["…少し、嬉しいかもしれない"],

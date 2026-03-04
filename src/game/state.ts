@@ -171,6 +171,7 @@ export function createTitleScreenState(seed?: number): GameState {
 		defeatedEnemyCount: 0,
 		isCleared: false,
 		remnants: {},
+		chestMeta: {},
 		visitedTiles: createEmptyVisitedTiles(),
 		lastAttackerEnemyType: null,
 		acquisitionCounters: createInitialCounters(),
@@ -216,6 +217,7 @@ export function createInitialGameState(
 		defeatedEnemyCount: 0,
 		isCleared: false,
 		remnants: {},
+		chestMeta: {},
 		visitedTiles: revealAtPosition(
 			createEmptyVisitedTiles(),
 			player,

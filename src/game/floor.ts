@@ -69,6 +69,7 @@ export function transitionFloor(state: GameState): GameState {
 		defeatedEnemyCount: 0,
 		cardExchangeQueue: [],
 		remnants: {},
+		chestMeta: {},
 		visitedTiles: revealAtPosition(
 			createEmptyVisitedTiles(),
 			player,

@@ -92,7 +92,7 @@ describe("MapRenderer ダメージ/タイル効果ポップアップ", () => {
 		renderer.render(map, player, []);
 
 		await expect(
-			renderer.animateTileEffectPopup("treasure", 3),
+			renderer.animateTileEffectPopup("chest_common", 3),
 		).resolves.toBeUndefined();
 	});
 
