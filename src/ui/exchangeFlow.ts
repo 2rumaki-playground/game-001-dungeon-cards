@@ -75,6 +75,22 @@ export async function executeExchangeFlow(
 }
 
 /**
+ * cardExchangeQueueが空になるまで交換UIを順次表示する
+ */
+export async function drainCardExchangeQueue(
+	ctx: GameContext,
+	state: GameState,
+): Promise<GameState> {
+	let currentState = state;
+	while (currentState.cardExchangeQueue.length > 0) {
+		currentState = await executeExchangeFlow(ctx, currentState);
+		applyState(ctx, currentState);
+		render(ctx);
+	}
+	return currentState;
+}
+
+/**
  * カード交換選択画面をPromiseで待機する
  */
 function showExchangeSelection(
