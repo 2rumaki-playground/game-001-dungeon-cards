@@ -170,11 +170,15 @@ function findPlacementPosition(
 
 /**
  * 指定位置に宝箱を配置できるか判定
+ * 床タイルおよび通行可能な特殊タイル（罠・休憩所）に配置可能。
+ * 既に宝箱が配置されている場合は不可。
  */
 function canPlaceChest(state: GameState, pos: Position): boolean {
 	if (!isInBounds(state.map, pos.x, pos.y)) return false;
 	const tile = state.map[pos.y][pos.x];
-	return tile.type === "floor";
+	return (
+		tile.type === "floor" || tile.type === "trap" || tile.type === "rest_area"
+	);
 }
 
 /**
