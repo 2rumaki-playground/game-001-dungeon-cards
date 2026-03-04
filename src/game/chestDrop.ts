@@ -102,7 +102,7 @@ export function chestRarityToTileType(rarity: ChestRarity): TileType {
 
 /**
  * 宝箱タイルを配置
- * 指定位置が既にチェストの場合は4近傍の床タイルを探索
+ * 指定位置が既にチェストの場合は4近傍の床/罠/休憩所タイルを探索
  * 配置成功時はstateを返し、配置不可時はnullを返す
  */
 export function placeChestTile(
@@ -145,7 +145,7 @@ export function placeChestTile(
 
 /**
  * 配置可能な位置を探索
- * 指定位置が床なら直接返す。それ以外なら4近傍の床タイルから探す。
+ * 指定位置が配置可能（床/罠/休憩所）なら直接返す。それ以外なら4近傍の配置可能タイルから探す。
  */
 function findPlacementPosition(
 	state: GameState,
