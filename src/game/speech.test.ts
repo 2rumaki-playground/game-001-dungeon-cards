@@ -667,4 +667,22 @@ describe("レアセリフ判定", () => {
 		const defaultVariants = SPEECH_VARIANTS[DEFAULT_PERSONALITY].enemy_defeated;
 		expect(defaultVariants).toContain(next.speechLog?.message);
 	});
+
+	it("レアバリエーション未定義イベントではレア判定でも通常セリフにフォールバックする", () => {
+		// Math.random を固定: 1回目=0.05(レア判定), 2回目=0(バリエーション選択)
+		randomSpy = vi
+			.spyOn(Math, "random")
+			.mockReturnValueOnce(0.05)
+			.mockReturnValueOnce(0);
+		const state = createTestState({
+			player: {
+				position: { x: 3, y: 3 },
+				hp: PLAYER_INITIAL_HP,
+				maxHp: PLAYER_INITIAL_HP,
+			},
+		});
+		const next = addSpeechLog(state, "move_fail");
+		const defaultVariants = SPEECH_VARIANTS[DEFAULT_PERSONALITY].move_fail;
+		expect(defaultVariants).toContain(next.speechLog?.message);
+	});
 });
