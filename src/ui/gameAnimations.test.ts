@@ -13,7 +13,7 @@ vi.mock("./gameRenderer", () => ({
 
 // exchangeFlow モック
 vi.mock("./exchangeFlow", () => ({
-	executeExchangeFlow: vi.fn(),
+	drainCardExchangeQueue: vi.fn((_ctx, state) => Promise.resolve(state)),
 }));
 
 // coordinates モック

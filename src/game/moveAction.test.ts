@@ -10,6 +10,7 @@ import {
 	createTestState,
 } from "../test-utils/createTestFixtures";
 import type { Enemy } from "../types";
+import { RNG } from "../utils/rng";
 import { executeMove, markCardAsPlayed } from "./action";
 
 describe("markCardAsPlayed", () => {
@@ -270,6 +271,48 @@ describe("executeMove", () => {
 		const { tileEffect } = executeMove(state, "move-1", "right");
 
 		expect(tileEffect).toBe("chest_common");
+	});
+
+	it("宝箱スクロール移動: cardExchangeQueueが設定される", () => {
+		// seed=12345 → スクロール確定
+		const map = createTestMap();
+		map[3][4] = { type: "chest_common" };
+		const state = createTestState({
+			map,
+			rng: new RNG(12345),
+			player: {
+				position: { x: 3, y: 3 },
+				hp: 5,
+				maxHp: PLAYER_INITIAL_HP,
+			},
+			chestMeta: {
+				"4,3": { rarity: "common", defeatedEnemyType: "normal" },
+			},
+			deck: {
+				hand: [
+					{
+						id: "move-1",
+						type: "move",
+						level: 1,
+						exp: 0,
+						stats: { useCount: 0, defeatCount: 0, maxSingleDamage: 0 },
+					},
+				],
+				usedCardIds: [],
+			},
+		});
+		const {
+			state: result,
+			tileEffect,
+			bodySlam,
+		} = executeMove(state, "move-1", "right");
+
+		expect(tileEffect).toBe("chest_common");
+		expect(bodySlam).toBe(false);
+		expect(result.cardExchangeQueue).toHaveLength(1);
+		const entry = result.cardExchangeQueue[0];
+		expect(entry.defeatedEnemyType).toBe("normal");
+		expect(entry.acquiredCardType).toBe("move");
 	});
 
 	it("罠タイルでHP0: gameOverがtrue", () => {

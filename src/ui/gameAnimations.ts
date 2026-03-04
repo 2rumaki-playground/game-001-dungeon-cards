@@ -18,7 +18,7 @@ import {
 	type MagicCardType,
 } from "./battleParticles";
 import { getViewportPixelSize, gridToParticlePosition } from "./coordinates";
-import { executeExchangeFlow } from "./exchangeFlow";
+import { drainCardExchangeQueue } from "./exchangeFlow";
 import { applyState, render } from "./gameRenderer";
 import { HAND_AREA_HEIGHT } from "./layout";
 
@@ -211,12 +211,7 @@ export async function updateStateWithAttackAnimation(
 			render(ctx);
 
 			// カードドロップがある場合、キューが空になるまで交換UIを順次表示
-			let currentState = newState;
-			while (currentState.cardExchangeQueue.length > 0) {
-				currentState = await executeExchangeFlow(ctx, currentState);
-				applyState(ctx, currentState);
-				render(ctx);
-			}
+			await drainCardExchangeQueue(ctx, newState);
 		}
 	} finally {
 		ctx.isAnimating = false;

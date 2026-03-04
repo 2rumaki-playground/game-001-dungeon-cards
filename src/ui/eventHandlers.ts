@@ -51,7 +51,7 @@ import { setupCameraControls } from "./cameraControls";
 import { animateComboPopup } from "./comboPopup";
 import { gridToParticlePosition } from "./coordinates";
 import { detectEnemyMoves } from "./enemyMoveDetector";
-import { executeExchangeFlow } from "./exchangeFlow";
+import { drainCardExchangeQueue } from "./exchangeFlow";
 import {
 	executeNextFloorTransition,
 	updateStateWithStairsAnimation,
@@ -184,6 +184,15 @@ async function handleMoveCardExecution(
 			await ctx.ui.screenTransition.fadeTransition(() => {
 				updateState(ctx, next);
 			});
+		} else if (next.cardExchangeQueue.length > 0) {
+			// カードドロップがある場合、交換UIを順次表示
+			const prevIsAnimating = ctx.isAnimating;
+			ctx.isAnimating = true;
+			try {
+				await drainCardExchangeQueue(ctx, next);
+			} finally {
+				ctx.isAnimating = prevIsAnimating;
+			}
 		}
 	} else if (bodySlam) {
 		if (gameOver) {
@@ -235,12 +244,7 @@ async function handleMoveCardExecution(
 					(ratio) => ctx.ui.mapRenderer.updatePlayerHpGauge(ratio),
 				);
 				// カードドロップがある場合、交換UIを順次表示
-				let currentState = next;
-				while (currentState.cardExchangeQueue.length > 0) {
-					currentState = await executeExchangeFlow(ctx, currentState);
-					applyState(ctx, currentState);
-					render(ctx);
-				}
+				await drainCardExchangeQueue(ctx, next);
 			} finally {
 				ctx.isAnimating = prevIsAnimating;
 				ctx.isCardActionAnimating = prevIsCardActionAnimating;
