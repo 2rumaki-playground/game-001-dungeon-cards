@@ -61,6 +61,26 @@ describe("TileTooltip", () => {
 			expect(effectText.text).toBe("回復またはスクロール");
 		});
 
+		it("chest_rare のテキストが正しい", () => {
+			const tooltip = new TileTooltip();
+			tooltip.show("chest_rare", 100, 100);
+			const container = tooltip.getContainer();
+			const nameText = container.children[1] as import("pixi.js").Text;
+			const effectText = container.children[2] as import("pixi.js").Text;
+			expect(nameText.text).toBe("宝箱（レア）");
+			expect(effectText.text).toBe("回復またはスクロール");
+		});
+
+		it("chest_epic のテキストが正しい", () => {
+			const tooltip = new TileTooltip();
+			tooltip.show("chest_epic", 100, 100);
+			const container = tooltip.getContainer();
+			const nameText = container.children[1] as import("pixi.js").Text;
+			const effectText = container.children[2] as import("pixi.js").Text;
+			expect(nameText.text).toBe("宝箱（エピック）");
+			expect(effectText.text).toBe("回復またはスクロール");
+		});
+
 		it("rest_area のテキストが正しい", () => {
 			const tooltip = new TileTooltip();
 			tooltip.show("rest_area", 100, 100);
