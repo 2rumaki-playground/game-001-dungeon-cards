@@ -223,8 +223,6 @@ export type AttackResult = {
 	state: GameState;
 	hit: boolean;
 	enemyId?: string;
-	/** 超過ダメージ量（ミス時は0） */
-	overkill: number;
 	/** 敵が撃破されたか（ミス・攻撃判定なし時はfalse） */
 	defeated: boolean;
 	/** 発動したコンボ種別（未発動時はundefined） */
@@ -332,7 +330,6 @@ export function executeFire(
 				lastDirection: direction,
 			}),
 			hit: false,
-			overkill: 0,
 			defeated: false,
 			comboType: combo ?? undefined,
 			levelBonus,
@@ -349,15 +346,9 @@ export function executeFire(
 	);
 	next = damageResult.state;
 
-	// 5. 貫通（Lv3+撃破時）
-	if (pierce && damageResult.defeated && damageResult.overkill > 0) {
-		next = applyPierce(
-			next,
-			direction,
-			damageResult.overkill,
-			target.position,
-			cardId,
-		);
+	// 5. 貫通（Lv3+撃破時: 元の攻撃ダメージ全量を固定値として適用）
+	if (pierce && damageResult.defeated) {
+		next = applyPierce(next, direction, totalDamage, target.position, cardId);
 	}
 
 	// 6. comboHistory更新 + return
@@ -368,7 +359,6 @@ export function executeFire(
 		}),
 		hit: true,
 		enemyId: target.enemyId,
-		overkill: damageResult.overkill,
 		defeated: damageResult.defeated,
 		comboType: combo ?? undefined,
 		levelBonus,
@@ -420,7 +410,6 @@ export function executeThunder(
 				lastDirection: direction,
 			}),
 			hit: shockResult.hit,
-			overkill: shockResult.overkill,
 			defeated: shockResult.defeated,
 			enemyId: shockResult.enemyId ?? undefined,
 			levelBonus,
@@ -439,7 +428,6 @@ export function executeThunder(
 				lastDirection: direction,
 			}),
 			hit: false,
-			overkill: 0,
 			defeated: false,
 			levelBonus,
 		};
@@ -456,7 +444,6 @@ export function executeThunder(
 				lastDirection: direction,
 			}),
 			hit: false,
-			overkill: 0,
 			defeated: false,
 			levelBonus,
 		};
@@ -484,7 +471,6 @@ export function executeThunder(
 		}),
 		hit: true,
 		enemyId: target.enemyId,
-		overkill: damageResult.overkill,
 		defeated: damageResult.defeated,
 		levelBonus,
 	};

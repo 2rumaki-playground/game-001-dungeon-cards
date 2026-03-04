@@ -56,17 +56,17 @@ export function findExtendedRangeTarget(
 }
 
 /**
- * 貫通: 撃破した敵の先にいる次の敵にoverkillダメージを適用する。
+ * 貫通: 撃破した敵の先にいる次の敵に固定ダメージを適用する。
  * 伝播は1回のみ。
  */
 export function applyPierce(
 	state: GameState,
 	direction: Direction,
-	overkill: number,
+	damage: number,
 	fromPosition: Position,
 	attackCardId: string,
 ): GameState {
-	if (overkill <= 0) return state;
+	if (damage <= 0) return state;
 
 	const delta = DIRECTION_DELTA[direction];
 	let cx = fromPosition.x + delta.x;
@@ -80,7 +80,7 @@ export function applyPierce(
 		const enemy = findEnemyAt(state.enemies, cx, cy);
 		if (enemy) {
 			const next = addActionLog(state, "貫通！", "system");
-			const result = applyDamageToEnemy(next, enemy.id, overkill, attackCardId);
+			const result = applyDamageToEnemy(next, enemy.id, damage, attackCardId);
 			return result.state;
 		}
 
@@ -175,7 +175,6 @@ export function executeShockwave(
 	state: GameState;
 	hit: boolean;
 	enemyId: string | null;
-	overkill: number;
 	defeated: boolean;
 	crackedWallDestroyed: boolean;
 } {
@@ -188,7 +187,6 @@ export function executeShockwave(
 			state,
 			hit: false,
 			enemyId: null,
-			overkill: 0,
 			defeated: false,
 			crackedWallDestroyed: false,
 		};
@@ -198,7 +196,6 @@ export function executeShockwave(
 			state,
 			hit: false,
 			enemyId: null,
-			overkill: 0,
 			defeated: false,
 			crackedWallDestroyed: false,
 		};
@@ -210,7 +207,6 @@ export function executeShockwave(
 			state: s,
 			hit: false,
 			enemyId: null,
-			overkill: 0,
 			defeated: false,
 			crackedWallDestroyed: true,
 		};
@@ -221,7 +217,6 @@ export function executeShockwave(
 			state,
 			hit: false,
 			enemyId: null,
-			overkill: 0,
 			defeated: false,
 			crackedWallDestroyed: false,
 		};
@@ -231,7 +226,6 @@ export function executeShockwave(
 
 	// 各ターゲットにダメージを適用し、生存した敵のIDを記録
 	const survivingEnemies: string[] = [];
-	let frontOverkill = 0;
 	let frontDefeated = false;
 
 	for (const pos of targets) {
@@ -244,9 +238,8 @@ export function executeShockwave(
 		const result = applyDamageToEnemy(next, enemy.id, damage, attackCardId);
 		next = result.state;
 
-		// 正面敵のoverkill・撃破状態を記録
+		// 正面敵の撃破状態を記録
 		if (enemy.id === frontEnemy.id) {
-			frontOverkill = result.overkill;
 			frontDefeated = result.defeated;
 		}
 
@@ -264,7 +257,6 @@ export function executeShockwave(
 		state: next,
 		hit: true,
 		enemyId: frontEnemy.id,
-		overkill: frontOverkill,
 		defeated: frontDefeated,
 		crackedWallDestroyed: false,
 	};

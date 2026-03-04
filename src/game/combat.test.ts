@@ -91,7 +91,6 @@ describe("applyDamageToEnemy", () => {
 
 		expect(result.state).toBe(state);
 		expect(result.state.actionLog).toHaveLength(0);
-		expect(result.overkill).toBe(0);
 		expect(result.defeated).toBe(false);
 	});
 
@@ -172,39 +171,35 @@ describe("applyDamageToEnemy", () => {
 	});
 });
 
-describe("applyDamageToEnemy - オーバーキル", () => {
-	it("ちょうど撃破時はoverkill=0, defeated=true", () => {
+describe("applyDamageToEnemy - defeated判定", () => {
+	it("ちょうど撃破時はdefeated=true", () => {
 		const enemy = createTestEnemy("normal", { x: 4, y: 3 }, { hp: 1 });
 		const state = createTestState({ enemies: [enemy] });
 		const result = applyDamageToEnemy(state, enemy.id, 1);
 
-		expect(result.overkill).toBe(0);
 		expect(result.defeated).toBe(true);
 	});
 
-	it("オーバーキル時はoverkill=超過分, defeated=true", () => {
+	it("超過ダメージでもdefeated=true", () => {
 		const enemy = createTestEnemy("normal", { x: 4, y: 3 }, { hp: 1 });
 		const state = createTestState({ enemies: [enemy] });
 		const result = applyDamageToEnemy(state, enemy.id, 3);
 
-		expect(result.overkill).toBe(2);
 		expect(result.defeated).toBe(true);
 	});
 
-	it("非撃破時はoverkill=0, defeated=false", () => {
+	it("非撃破時はdefeated=false", () => {
 		const enemy = createTestEnemy("normal", { x: 4, y: 3 }, { hp: 3 });
 		const state = createTestState({ enemies: [enemy] });
 		const result = applyDamageToEnemy(state, enemy.id, 1);
 
-		expect(result.overkill).toBe(0);
 		expect(result.defeated).toBe(false);
 	});
 
-	it("敵不在時はoverkill=0, defeated=false", () => {
+	it("敵不在時はdefeated=false", () => {
 		const state = createTestState();
 		const result = applyDamageToEnemy(state, "nonexistent", 1);
 
-		expect(result.overkill).toBe(0);
 		expect(result.defeated).toBe(false);
 	});
 });
@@ -535,7 +530,7 @@ describe("applyDamageToEnemy - カード統計", () => {
 		);
 	});
 
-	it("overkill時はmin(effectiveDamage, enemy.hp)でクランプされる", () => {
+	it("超過ダメージ時はmin(effectiveDamage, enemy.hp)でクランプされる", () => {
 		const card = {
 			id: "atk-1",
 			type: "fire" as const,

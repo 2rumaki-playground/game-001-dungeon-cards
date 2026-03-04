@@ -110,17 +110,17 @@ describe("findExtendedRangeTarget", () => {
 });
 
 describe("applyPierce", () => {
-	it("撃破位置の先にいる敵にoverkillダメージを適用する", () => {
-		const enemy = createTestEnemy("normal", { x: 5, y: 3 }, { hp: 3 });
+	it("撃破位置の先にいる敵に固定ダメージを適用する", () => {
+		const enemy = createTestEnemy("normal", { x: 5, y: 3 }, { hp: 5 });
 		const state = createTestState({ enemies: [enemy] });
 
-		const result = applyPierce(state, "right", 2, { x: 4, y: 3 }, "card-1");
+		const result = applyPierce(state, "right", 3, { x: 4, y: 3 }, "card-1");
 		const target = result.enemies.find((e) => e.id === enemy.id);
 		expect(target).toBeDefined();
-		expect(target?.hp).toBe(3 - 2);
+		expect(target?.hp).toBe(5 - 3);
 	});
 
-	it("overkillが0の場合は何もしない", () => {
+	it("damageが0の場合は何もしない", () => {
 		const enemy = createTestEnemy("normal", { x: 5, y: 3 });
 		const state = createTestState({ enemies: [enemy] });
 
@@ -152,9 +152,9 @@ describe("applyPierce", () => {
 });
 
 describe("Lv3攻撃カード: 貫通", () => {
-	it("撃破時に余剰ダメージが奥の敵に伝播する", () => {
+	it("撃破時に元の攻撃ダメージ全量が奥の敵に伝播する", () => {
 		const enemy1 = createTestEnemy("normal", { x: 4, y: 3 }, { hp: 1 });
-		const enemy2 = createTestEnemy("normal", { x: 5, y: 3 }, { hp: 3 });
+		const enemy2 = createTestEnemy("normal", { x: 5, y: 3 }, { hp: 5 });
 		const state = createTestState({
 			enemies: [enemy1, enemy2],
 			deck: {
@@ -166,11 +166,11 @@ describe("Lv3攻撃カード: 貫通", () => {
 		const { state: result, hit } = executeFire(state, "atk-1", "right");
 		expect(hit).toBe(true);
 
-		// enemy1が撃破され（Lv3: dmg=1+1=2, hp1なのでoverkill=1）
-		// enemy2にoverkill=1が伝播
+		// enemy1が撃破され（Lv3: dmg=1+1=2）
+		// enemy2に元の攻撃ダメージ全量(2)が固定値として伝播
 		expect(result.enemies).toHaveLength(1);
 		expect(result.enemies[0].id).toBe(enemy2.id);
-		expect(result.enemies[0].hp).toBe(3 - 1);
+		expect(result.enemies[0].hp).toBe(5 - 2);
 	});
 
 	it("撃破しなければ貫通しない", () => {
@@ -185,7 +185,7 @@ describe("Lv3攻撃カード: 貫通", () => {
 		});
 
 		const { state: result } = executeFire(state, "atk-1", "right");
-		// enemy1生存→overkill=0→貫通なし
+		// enemy1生存→貫通なし
 		expect(result.enemies).toHaveLength(2);
 		expect(result.enemies[1].hp).toBe(3); // enemy2はノーダメージ
 	});
@@ -202,7 +202,7 @@ describe("Lv3攻撃カード: 貫通", () => {
 		});
 
 		const { state: result } = executeFire(state, "atk-1", "right");
-		// Lv2: dmg=1+1=2, hp=1, overkill=1 だが貫通なし
+		// Lv2: dmg=1+1=2, hp=1 だが貫通なし（レベル不足）
 		expect(result.enemies).toHaveLength(1);
 		expect(result.enemies[0].hp).toBe(3); // enemy2ノーダメージ
 	});
@@ -253,13 +253,8 @@ describe("Lv5攻撃カード: 射程延長 + 貫通", () => {
 			},
 		});
 
-		const {
-			state: result,
-			hit,
-			overkill,
-		} = executeFire(state, "atk-1", "right");
+		const { state: result, hit } = executeFire(state, "atk-1", "right");
 		expect(hit).toBe(true);
-		expect(overkill).toBe(4 - 1); // dmg=4, hp=1
 		expect(result.enemies).toHaveLength(0);
 	});
 

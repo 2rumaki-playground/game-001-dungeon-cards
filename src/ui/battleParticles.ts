@@ -67,31 +67,17 @@ export function createJumpParticleConfig(
 }
 
 /**
- * オーバーキル量からエフェクトスケール倍率を計算
- * overkill=0 → 1.0、overkill=1 → 1.3、上限2.0
- */
-export function calculateDefeatEffectScale(overkill: number): number {
-	return Math.min(2.0, 1.0 + overkill * 0.3);
-}
-
-/**
  * 敵撃破時のパーティクル設定を生成
  * 白〜黄色系の散乱エフェクト
- * @param origin パーティクル発生位置
- * @param overkill 超過ダメージ量（0でスケール1.0、従来と同一）
  */
-export function createDefeatParticleConfig(
-	origin: Vec2,
-	overkill = 0,
-): ParticleConfig {
-	const scale = calculateDefeatEffectScale(overkill);
+export function createDefeatParticleConfig(origin: Vec2): ParticleConfig {
 	return {
-		count: Math.round(20 * scale),
+		count: 20,
 		origin,
 		color: [0xffffff, 0xffdd44, 0xffaa22],
-		speed: { min: 0.1 * scale, max: 0.25 * scale },
-		life: { min: 300, max: 600 * scale },
-		size: { min: 2 * scale, max: 6 * scale },
+		speed: { min: 0.1, max: 0.25 },
+		life: { min: 300, max: 600 },
+		size: { min: 2, max: 6 },
 		pattern: { type: "radial" },
 		gravity: 0.0003,
 	};
