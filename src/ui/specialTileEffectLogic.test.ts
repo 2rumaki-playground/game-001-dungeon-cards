@@ -24,6 +24,22 @@ describe("getSpecialTileEffectConfig", () => {
 		expect(config.pulseAlphaMax).toBe(0.35);
 	});
 
+	it("chest_rareの設定が正しい色と周期を持つ", () => {
+		const config = getSpecialTileEffectConfig("chest_rare");
+		expect(config.glowColor).toBe(COLORS.chestRare);
+		expect(config.pulsePeriod).toBe(2200);
+		expect(config.pulseAlphaMin).toBe(0.12);
+		expect(config.pulseAlphaMax).toBe(0.4);
+	});
+
+	it("chest_epicの設定が正しい色と周期を持つ", () => {
+		const config = getSpecialTileEffectConfig("chest_epic");
+		expect(config.glowColor).toBe(COLORS.chestEpic);
+		expect(config.pulsePeriod).toBe(1800);
+		expect(config.pulseAlphaMin).toBe(0.15);
+		expect(config.pulseAlphaMax).toBe(0.45);
+	});
+
 	it("rest_areaの設定が正しい色と周期を持つ", () => {
 		const config = getSpecialTileEffectConfig("rest_area");
 		expect(config.glowColor).toBe(COLORS.restArea);
