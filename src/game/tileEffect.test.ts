@@ -141,28 +141,6 @@ describe("applyTileEffect", () => {
 		expect(result.hpAfter).toBe(PLAYER_INITIAL_HP);
 	});
 
-	it("休憩所タイル: HP全回復してタイルがfloorに変化", () => {
-		const map = createTestMap();
-		map[3][3] = { type: "rest_area" };
-		const state = createTestState({
-			map,
-			player: {
-				position: { x: 3, y: 3 },
-				hp: 1,
-				maxHp: PLAYER_INITIAL_HP,
-			},
-		});
-		const result = applyTileEffect(state);
-
-		expect(result.triggeredTile).toBe("rest_area");
-		expect(result.gameOver).toBe(false);
-		expect(result.state.player.hp).toBe(PLAYER_INITIAL_HP);
-		expect(result.state.map[3][3].type).toBe("floor");
-		expect(result.state.actionLog[0].message).toContain("休憩所");
-		expect(result.hpBefore).toBe(1);
-		expect(result.hpAfter).toBe(PLAYER_INITIAL_HP);
-	});
-
 	it("元のGameStateが変更されない（イミュータブル）", () => {
 		const map = createTestMap();
 		map[3][3] = { type: "trap" };

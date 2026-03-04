@@ -17,7 +17,6 @@ const eventTypes: SpeechEventType[] = [
 	"game_over",
 	"trap_triggered",
 	"chest_opened",
-	"rest_area_used",
 	"floor_reached",
 	"jump_success",
 	"card_acquired",

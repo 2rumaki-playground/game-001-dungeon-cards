@@ -112,7 +112,6 @@ const assets = [
 	{ path: "tiles/stairs.png", color: 0x4a6a4a },      // COLORS.stairs
 	{ path: "tiles/trap.png", color: 0x9b59b6 },        // COLORS.trap
 	{ path: "tiles/treasure.png", color: 0xccaa44 },    // COLORS.chestCommon（3種チェスト共用）
-	{ path: "tiles/rest_area.png", color: 0x44aa88 },   // COLORS.restArea
 	{ path: "player.png", color: 0x4a8cca },            // COLORS.player
 	{ path: "enemies/normal.png", color: 0xca4a4a },    // COLORS.enemyNormal
 	{ path: "enemies/heavy.png", color: 0x8855aa },     // COLORS.enemyHeavy

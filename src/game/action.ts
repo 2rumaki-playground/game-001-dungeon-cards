@@ -245,7 +245,6 @@ function getAttackDamageBonus(state: GameState, cardId: string): number {
 const COMBO_LOG_MESSAGE: Record<ComboType, string> = {
 	chain: "連撃コンボ発動！",
 	ambush: "奇襲コンボ発動！",
-	focus: "集中攻撃コンボ発動！",
 };
 
 /**

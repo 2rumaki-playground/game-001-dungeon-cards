@@ -2,14 +2,13 @@ import { describe, expect, it } from "vitest";
 import type { GameMap, Tile } from "../types";
 import { bfsFirstStep } from "./pathfinding";
 
-/** ヘルパー: 文字列配列からマップを生成（W=壁, F=床, S=階段, T=罠, R=休憩, X=宝箱） */
+/** ヘルパー: 文字列配列からマップを生成（W=壁, F=床, S=階段, T=罠, X=宝箱） */
 function mapFromStrings(rows: string[]): GameMap {
 	const tileMap: Record<string, Tile> = {
 		W: { type: "wall" },
 		F: { type: "floor" },
 		S: { type: "stairs" },
 		T: { type: "trap" },
-		R: { type: "rest_area" },
 		X: { type: "chest_common" },
 	};
 	return rows.map((row) =>
@@ -54,8 +53,8 @@ describe("bfsFirstStep", () => {
 		expect(bfsFirstStep(map, { x: 2, y: 2 }, { x: 2, y: 1 })).toBe("up");
 	});
 
-	it("trap/chest_common/rest_areaタイルを通過可能として扱う", () => {
-		const map = mapFromStrings(["WWWWW", "WFFFW", "WTXRW", "WFFFW", "WWWWW"]);
+	it("trap/chest_commonタイルを通過可能として扱う", () => {
+		const map = mapFromStrings(["WWWWW", "WFFFW", "WTXFW", "WFFFW", "WWWWW"]);
 		// 敵(2,3)→プレイヤー(2,1)、(2,2)はchest_common → 通過可能
 		expect(bfsFirstStep(map, { x: 2, y: 3 }, { x: 2, y: 1 })).toBe("up");
 	});

@@ -164,24 +164,6 @@ export const contextualVariants: Partial<
 			],
 		},
 	],
-	rest_area_used: [
-		{
-			context: "hp_critical",
-			variants: [
-				"全回復…これで建て直せる",
-				"ここで回復できなければ詰んでいた",
-				"態勢を完全に立て直す",
-			],
-		},
-		{
-			context: "hp_tension",
-			variants: [
-				"回復と同時に次の計画を練る",
-				"ここで万全の状態に戻す",
-				"休息を最大限活用する",
-			],
-		},
-	],
 	floor_reached: [
 		{
 			context: "hp_critical",

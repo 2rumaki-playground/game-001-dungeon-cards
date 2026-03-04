@@ -32,7 +32,7 @@ export type TileEffectResult = {
  * 指定タイル種別が特殊タイルかどうかを判定
  */
 function isSpecialTile(type: TileType): type is SpecialTileType {
-	return type === "trap" || isChestTileType(type) || type === "rest_area";
+	return type === "trap" || isChestTileType(type);
 }
 
 /**
@@ -57,7 +57,6 @@ function tileTypeToChestRarity(
  * - 床/壁/階段 → 効果なし
  * - 罠 → ダメージ + タイルをfloorに
  * - 宝箱 → HP回復またはスクロール（カード交換） + タイルをfloorに
- * - 休憩所 → HP全回復 + タイルをfloorに
  *
  * @param options.applyDamage ダメージ適用関数（DI用、デフォルトは applyDamageToPlayer）
  */
@@ -145,18 +144,6 @@ export function applyTileEffect(
 			return {
 				state: next,
 				triggeredTile: tileType,
-				gameOver: false,
-				hpBefore,
-				hpAfter: next.player.hp,
-			};
-		}
-		case "rest_area": {
-			next = updatePlayer(next, (p) => ({ ...p, hp: p.maxHp }));
-			next = addActionLog(next, "休憩所で回復した！", "player");
-			next = addSpeechLog(next, "rest_area_used");
-			return {
-				state: next,
-				triggeredTile: "rest_area",
 				gameOver: false,
 				hpBefore,
 				hpAfter: next.player.hp,

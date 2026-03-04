@@ -11,7 +11,6 @@ import type { CardType, ComboHistory, ComboType, Direction } from "../types";
  *
  * - 連撃（chain）: fire → fire
  * - 奇襲（ambush）: jump → fire（同方向）
- * - 集中攻撃（focus）: wait → fire
  * - 「攻撃」は fire のみ（thunder は含まない）
  */
 export function detectCombo(
@@ -37,11 +36,6 @@ export function detectCombo(
 		history.lastDirection === currentDirection
 	) {
 		return "ambush";
-	}
-
-	// 集中攻撃: wait → fire
-	if (history.lastCardType === "wait" && currentCardType === "fire") {
-		return "focus";
 	}
 
 	return null;

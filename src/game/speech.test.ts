@@ -668,9 +668,12 @@ describe("レアセリフ判定", () => {
 		expect(defaultVariants).toContain(next.speechLog?.message);
 	});
 
-	it("レアバリエーション未定義イベントでは通常セリフにフォールバックする", () => {
-		// rest_area_usedはRARE_SPEECH_VARIANTSに未定義
-		randomSpy = vi.spyOn(Math, "random").mockReturnValue(0.05);
+	it("レアバリエーション未定義イベントではレア判定でも通常セリフにフォールバックする", () => {
+		// Math.random を固定: 1回目=0.05(レア判定), 2回目=0(バリエーション選択)
+		randomSpy = vi
+			.spyOn(Math, "random")
+			.mockReturnValueOnce(0.05)
+			.mockReturnValueOnce(0);
 		const state = createTestState({
 			player: {
 				position: { x: 3, y: 3 },
@@ -678,8 +681,8 @@ describe("レアセリフ判定", () => {
 				maxHp: PLAYER_INITIAL_HP,
 			},
 		});
-		const next = addSpeechLog(state, "rest_area_used");
-		const defaultVariants = SPEECH_VARIANTS[DEFAULT_PERSONALITY].rest_area_used;
+		const next = addSpeechLog(state, "move_fail");
+		const defaultVariants = SPEECH_VARIANTS[DEFAULT_PERSONALITY].move_fail;
 		expect(defaultVariants).toContain(next.speechLog?.message);
 	});
 });
