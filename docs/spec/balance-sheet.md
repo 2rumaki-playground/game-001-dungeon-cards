@@ -55,9 +55,6 @@
 |----|-------------|--------|--------|-----------------|
 | G-1 | 強化攻撃の発動確率 | [constants.md#ミニボス-強化攻撃power_strike](./constants.md#ミニボス-強化攻撃power_strike) | スキル発動回数 | ボス戦所要時間、被ダメ累計 |
 | G-2 | 強化攻撃のダメージ倍率 | [constants.md#ミニボス-強化攻撃power_strike](./constants.md#ミニボス-強化攻撃power_strike) | スキル被ダメージ | 到達階層 |
-| G-3 | 範囲攻撃の発動確率 | [constants.md#ボス-範囲攻撃area_attack](./constants.md#ボス-範囲攻撃area_attack) | スキル発動回数 | ボス戦所要時間、被ダメ累計 |
-| G-4 | 範囲攻撃のダメージ | [constants.md#ボス-範囲攻撃area_attack](./constants.md#ボス-範囲攻撃area_attack) | スキル被ダメージ | 到達階層 |
-| G-5 | 範囲攻撃の射程 | [constants.md#ボス-範囲攻撃area_attack](./constants.md#ボス-範囲攻撃area_attack) | 安全距離、回避難度 | ボス戦所要時間 |
 | G-6 | 激昂の発動条件 | [constants.md#ボス-激昂enrage](./constants.md#ボス-激昂enrage) | 後半戦の被ダメージ量 | ボス戦所要時間 |
 | G-7 | 激昂の攻撃ダメージ増加 | [constants.md#ボス-激昂enrage](./constants.md#ボス-激昂enrage) | 後半戦の被ダメージ量 | 到達階層 |
 
@@ -167,7 +164,7 @@ flowchart LR
 - **ボスHP（F-4, F-5）**
   - 影響を与える先: 必要攻撃回数、ボス戦所要ターン数
   - 影響を受ける元: （根幹パラメータのため外部依存なし）
-- **スキル発動回数（G-1, G-3 × 戦闘ターン数）**
+- **スキル発動回数（G-1 × 戦闘ターン数）**
   - 影響を与える先: 累積被ダメージ、回避判断の回数
   - 影響を受ける元: ボスHP（HPが高い＝戦闘が長い＝発動機会が増える）
 - **激昂（G-6, G-7）**
