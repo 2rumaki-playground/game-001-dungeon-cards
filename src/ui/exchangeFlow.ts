@@ -1,6 +1,6 @@
 /**
  * 宝箱スクロール獲得時のカード交換フロー
- * @see docs/spec/deckbuilding.md
+ * @see docs/spec/constants.md 「宝箱ドロップ」節
  */
 
 import { exchangeCardInDeck } from "../game/cardAcquisition";
