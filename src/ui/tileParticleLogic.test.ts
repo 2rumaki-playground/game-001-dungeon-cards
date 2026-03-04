@@ -31,6 +31,26 @@ describe("getTileParticleEmitterConfig", () => {
 		expect(config.colors).toHaveLength(4);
 	});
 
+	it("chest_rareの設定を返す", () => {
+		const config = getTileParticleEmitterConfig("chest_rare");
+		expect(config.movement).toBe("orbit");
+		expect(config.shape).toBe("diamond");
+		expect(config.maxParticles).toBe(7);
+		expect(config.spawnInterval).toBe(300);
+		expect(config.maxAlpha).toBe(0.85);
+		expect(config.colors).toHaveLength(4);
+	});
+
+	it("chest_epicの設定を返す", () => {
+		const config = getTileParticleEmitterConfig("chest_epic");
+		expect(config.movement).toBe("orbit");
+		expect(config.shape).toBe("diamond");
+		expect(config.maxParticles).toBe(8);
+		expect(config.spawnInterval).toBe(250);
+		expect(config.maxAlpha).toBe(0.9);
+		expect(config.colors).toHaveLength(4);
+	});
+
 	it("rest_areaの設定を返す", () => {
 		const config = getTileParticleEmitterConfig("rest_area");
 		expect(config.movement).toBe("float");
