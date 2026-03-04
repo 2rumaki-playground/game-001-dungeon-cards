@@ -21,6 +21,7 @@ import type {
 } from "../types";
 import { isChestTileType } from "../types";
 import type { RNG } from "../utils/rng";
+import { hasEnemyAt } from "./enemyUtils";
 import { isInBounds } from "./map";
 import { positionToKey } from "./positionUtils";
 
@@ -176,9 +177,18 @@ function findPlacementPosition(
 function canPlaceChest(state: GameState, pos: Position): boolean {
 	if (!isInBounds(state.map, pos.x, pos.y)) return false;
 	const tile = state.map[pos.y][pos.x];
-	return (
-		tile.type === "floor" || tile.type === "trap" || tile.type === "rest_area"
-	);
+	if (
+		tile.type !== "floor" &&
+		tile.type !== "trap" &&
+		tile.type !== "rest_area"
+	)
+		return false;
+	// プレイヤー位置には配置しない
+	if (state.player.position.x === pos.x && state.player.position.y === pos.y)
+		return false;
+	// 敵がいる位置には配置しない
+	if (hasEnemyAt(state.enemies, pos.x, pos.y)) return false;
+	return true;
 }
 
 /**

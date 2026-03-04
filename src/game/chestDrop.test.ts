@@ -164,6 +164,33 @@ describe("placeChestTile", () => {
 		expect(neighbors.some((t) => t?.type === "chest_rare")).toBe(true);
 	});
 
+	it("プレイヤー位置には配置しない", () => {
+		const state = createTestState();
+		// プレイヤーは(3,3)にいる
+		const result = placeChestTile(state, { x: 3, y: 3 }, "common", "normal");
+		// 隣接の空き床に配置される
+		expect(result).not.toBeNull();
+		expect(result?.map[3][3].type).toBe("floor");
+	});
+
+	it("敵がいる位置には配置しない", () => {
+		const state = createTestState({
+			enemies: [
+				{
+					id: "e1",
+					type: "normal",
+					hp: 3,
+					maxHp: 3,
+					position: { x: 2, y: 2 },
+				},
+			],
+		});
+		const result = placeChestTile(state, { x: 2, y: 2 }, "common", "normal");
+		// 敵の位置には配置されず、隣接の空き床に配置される
+		expect(result).not.toBeNull();
+		expect(result?.map[2][2].type).toBe("floor");
+	});
+
 	it("配置不可でnullを返す", () => {
 		// 壁で囲まれた位置（壁タイル）
 		const state = createTestState();
