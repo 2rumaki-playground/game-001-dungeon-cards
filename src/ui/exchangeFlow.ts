@@ -1,9 +1,8 @@
 /**
- * 敵撃破時のカード交換フロー
+ * 宝箱スクロール獲得時のカード交換フロー
  * @see docs/spec/deckbuilding.md
  */
 
-import { ENEMY_TYPE_LABEL } from "../constants";
 import { exchangeCardInDeck } from "../game/cardAcquisition";
 import { addRunEvent } from "../game/eventLog";
 import { getCurrentSession } from "../game/playStats";
@@ -13,6 +12,14 @@ import type { CardType, GameState } from "../types";
 import { CARD_TYPE_NAME } from "./cardConstants";
 import { getGameAreaSize, getScreenSize } from "./gameAnimations";
 import { applyState, render } from "./gameRenderer";
+
+/**
+ * カード交換画面のタイトルを生成
+ */
+export function buildExchangeTitle(acquiredCardType: CardType): string {
+	const cardName = CARD_TYPE_NAME[acquiredCardType];
+	return `宝箱から${cardName}のスクロールを獲得！`;
+}
 
 /**
  * カード交換フローを実行する（キューの先頭1件を処理）
@@ -31,9 +38,7 @@ export async function executeExchangeFlow(
 	const { width: screenWidth, height: screenHeight } = getScreenSize(ctx);
 	const gameArea = getGameAreaSize(ctx);
 
-	const cardName = CARD_TYPE_NAME[exchange.acquiredCardType];
-	const enemyName = ENEMY_TYPE_LABEL[exchange.defeatedEnemyType];
-	const title = `${enemyName}を倒して${cardName}を獲得！交換するカードを選択`;
+	const title = buildExchangeTitle(exchange.acquiredCardType);
 
 	state = addSpeechLog(state, "card_acquired");
 
