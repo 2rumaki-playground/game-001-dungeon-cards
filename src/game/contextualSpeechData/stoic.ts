@@ -92,16 +92,6 @@ export const contextualVariants: Partial<
 			variants: ["…回復する", "丁度良い", "…ありがたい"],
 		},
 	],
-	rest_area_used: [
-		{
-			context: "hp_critical",
-			variants: ["…助かった", "ここで…回復する", "…限界だった"],
-		},
-		{
-			context: "hp_tension",
-			variants: ["…休む", "態勢を整える", "…一息"],
-		},
-	],
 	floor_reached: [
 		{
 			context: "hp_critical",

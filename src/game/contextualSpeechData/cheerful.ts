@@ -164,24 +164,6 @@ export const contextualVariants: Partial<
 			],
 		},
 	],
-	rest_area_used: [
-		{
-			context: "hp_critical",
-			variants: [
-				"はぁ〜…助かった…",
-				"ここで休めてよかった…本当に",
-				"もうダメかと思った…回復！",
-			],
-		},
-		{
-			context: "hp_tension",
-			variants: [
-				"休憩〜！ちょうどよかった！",
-				"ふぅ、これで安心だね！",
-				"回復したら元気百倍！",
-			],
-		},
-	],
 	floor_reached: [
 		{
 			context: "hp_critical",

@@ -6,7 +6,7 @@ import {
 	resetTestEnemySeq,
 } from "../test-utils/createTestFixtures";
 import type { RNG } from "../utils/rng";
-import { checkEnrage, tryBossSkill, tryMinibossSkill } from "./bossSkill";
+import { checkEnrage, tryMinibossSkill } from "./bossSkill";
 
 /** random()が固定値を返すスタブRNG */
 function createStubRng(value: number): RNG {
@@ -95,57 +95,5 @@ describe("tryMinibossSkill", () => {
 		expect(result.state.player.hp).toBe(state.player.hp);
 		expect(result.damage).toBe(0);
 		expect(result.executed).toBe(false);
-	});
-});
-
-describe("tryBossSkill", () => {
-	it("確率判定成功かつ射程内で即ダメージを与える", () => {
-		const rng = createStubRng(BOSS_SKILL.areaAttackChance - 0.001);
-		// プレイヤー(3,3)、ボス(5,3) → 距離2 → 範囲内
-		const enemy = createTestEnemy("boss", { x: 5, y: 3 });
-		const state = createTestState({ enemies: [enemy] });
-		const result = tryBossSkill(state, enemy, rng);
-
-		expect(result.state.player.hp).toBe(
-			state.player.hp - BOSS_SKILL.areaAttackDamage,
-		);
-		expect(result.damage).toBe(BOSS_SKILL.areaAttackDamage);
-		expect(result.executed).toBe(true);
-		expect(result.state.lastAttackerEnemyType).toBe("boss");
-	});
-
-	it("確率判定不発でダメージなし", () => {
-		const rng = createStubRng(BOSS_SKILL.areaAttackChance);
-		const enemy = createTestEnemy("boss", { x: 5, y: 3 });
-		const state = createTestState({ enemies: [enemy] });
-		const result = tryBossSkill(state, enemy, rng);
-
-		expect(result.state.player.hp).toBe(state.player.hp);
-		expect(result.damage).toBe(0);
-		expect(result.executed).toBe(false);
-	});
-
-	it("確率判定成功でも射程外ならダメージなし", () => {
-		const rng = createStubRng(BOSS_SKILL.areaAttackChance - 0.001);
-		// プレイヤー(3,3)、ボス(1,1) → 距離4 → 範囲外
-		const enemy = createTestEnemy("boss", { x: 1, y: 1 });
-		const state = createTestState({ enemies: [enemy] });
-		const result = tryBossSkill(state, enemy, rng);
-
-		expect(result.state.player.hp).toBe(state.player.hp);
-		expect(result.damage).toBe(0);
-		expect(result.executed).toBe(false);
-	});
-
-	it("隣接プレイヤーにも範囲ダメージを与える", () => {
-		const rng = createStubRng(BOSS_SKILL.areaAttackChance - 0.001);
-		const enemy = createTestEnemy("boss", { x: 4, y: 3 });
-		const state = createTestState({ enemies: [enemy] });
-		const result = tryBossSkill(state, enemy, rng);
-
-		expect(result.state.player.hp).toBe(
-			state.player.hp - BOSS_SKILL.areaAttackDamage,
-		);
-		expect(result.executed).toBe(true);
 	});
 });

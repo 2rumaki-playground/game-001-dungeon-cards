@@ -393,7 +393,6 @@ export const CARD_LEVEL_SHOCKWAVE = 5;
 export const COMBO_BONUS = {
 	chain: 1,
 	ambush: 2,
-	focus: 1,
 } as const;
 
 // 特殊タイル効果
@@ -402,19 +401,18 @@ export const TRAP_DAMAGE = 1;
 // 階層別特殊タイル配置テーブル
 export type SpecialTileComposition = {
 	trap: number;
-	rest_area: number;
 };
 
 export const SPECIAL_TILE_TABLE: {
 	maxFloor: number;
 	composition: SpecialTileComposition;
 }[] = [
-	{ maxFloor: 2, composition: { trap: 1, rest_area: 0 } },
-	{ maxFloor: 4, composition: { trap: 2, rest_area: 1 } },
-	{ maxFloor: 6, composition: { trap: 2, rest_area: 1 } },
-	{ maxFloor: 9, composition: { trap: 3, rest_area: 1 } },
-	{ maxFloor: 14, composition: { trap: 3, rest_area: 1 } },
-	{ maxFloor: Infinity, composition: { trap: 4, rest_area: 1 } },
+	{ maxFloor: 2, composition: { trap: 1 } },
+	{ maxFloor: 4, composition: { trap: 2 } },
+	{ maxFloor: 6, composition: { trap: 2 } },
+	{ maxFloor: 9, composition: { trap: 3 } },
+	{ maxFloor: 14, composition: { trap: 3 } },
+	{ maxFloor: Infinity, composition: { trap: 4 } },
 ];
 
 export function getSpecialTileComposition(
@@ -426,7 +424,7 @@ export function getSpecialTileComposition(
 
 export function getSpecialTileCount(floor: number): number {
 	const comp = getSpecialTileComposition(floor);
-	return comp.trap + comp.rest_area;
+	return comp.trap;
 }
 
 // ビューポート（表示領域）
@@ -513,12 +511,6 @@ export const BOSS_SKILL = {
 	powerStrikeChance: 0.3,
 	/** ミニボス: 強化攻撃のダメージ倍率 */
 	powerStrikeMultiplier: 1.5,
-	/** ボス: 範囲攻撃の発動確率 */
-	areaAttackChance: 0.25,
-	/** ボス: 範囲攻撃のダメージ */
-	areaAttackDamage: 1,
-	/** ボス: 範囲攻撃の射程（マンハッタン距離） */
-	areaAttackRange: 2,
 	/** ボス: 激昂発動のHP閾値（maxHpに対する割合） */
 	enrageThreshold: 0.5,
 	/** ボス: 激昂時の攻撃ダメージ加算 */
@@ -650,7 +642,6 @@ export const COLORS = {
 	chestCommon: 0xccaa44,
 	chestRare: 0x4488dd,
 	chestEpic: 0xcc44dd,
-	restArea: 0x44aa88,
 	crackedWall: 0x6a5a3a,
 	// キャラクター
 	player: 0x4a8cca,

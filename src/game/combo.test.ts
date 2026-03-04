@@ -40,20 +40,12 @@ describe("detectCombo", () => {
 		expect(detectCombo(history, "move", "up")).toBeNull();
 	});
 
-	it("wait→fire で集中攻撃コンボ", () => {
+	it("wait→fire はコンボなし", () => {
 		const history: ComboHistory = {
 			lastCardType: "wait",
 			lastDirection: null,
 		};
-		expect(detectCombo(history, "fire", "up")).toBe("focus");
-	});
-
-	it("wait→thunder はコンボなし", () => {
-		const history: ComboHistory = {
-			lastCardType: "wait",
-			lastDirection: null,
-		};
-		expect(detectCombo(history, "thunder", "up")).toBeNull();
+		expect(detectCombo(history, "fire", "up")).toBeNull();
 	});
 
 	it("thunder→fire はコンボなし（thunderはfireではない）", () => {
@@ -128,9 +120,5 @@ describe("getComboBonus", () => {
 
 	it("奇襲コンボのボーナスはCOMBO_BONUS.ambushと一致", () => {
 		expect(getComboBonus("ambush")).toBe(COMBO_BONUS.ambush);
-	});
-
-	it("集中攻撃コンボのボーナスはCOMBO_BONUS.focusと一致", () => {
-		expect(getComboBonus("focus")).toBe(COMBO_BONUS.focus);
 	});
 });

@@ -14,8 +14,7 @@ export type TileType =
 	| "trap"
 	| "chest_common"
 	| "chest_rare"
-	| "chest_epic"
-	| "rest_area";
+	| "chest_epic";
 
 /**
  * 宝箱タイル種別
@@ -52,7 +51,7 @@ export type GameMap = Tile[][];
  */
 export type SpecialTileType = Extract<
 	TileType,
-	"trap" | "chest_common" | "chest_rare" | "chest_epic" | "rest_area"
+	"trap" | "chest_common" | "chest_rare" | "chest_epic"
 >;
 
 /**

@@ -246,6 +246,5 @@ describe("isChestTile", () => {
 		expect(isChestTile("floor")).toBe(false);
 		expect(isChestTile("wall")).toBe(false);
 		expect(isChestTile("trap")).toBe(false);
-		expect(isChestTile("rest_area")).toBe(false);
 	});
 });

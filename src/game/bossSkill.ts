@@ -8,7 +8,7 @@ import { BOSS_SKILL, ENEMY_PARAMS } from "../constants";
 import type { Enemy, GameState } from "../types";
 import type { RNG } from "../utils/rng";
 import { applyEnemyDamageToPlayer } from "./combat";
-import { isAdjacent, manhattanDistance } from "./positionUtils";
+import { isAdjacent } from "./positionUtils";
 import { addActionLog } from "./state";
 
 /**
@@ -64,38 +64,6 @@ export function tryMinibossSkill(
 	);
 	let next = applyPlayerDamage(state, damage, enemy.type);
 	next = addActionLog(next, "ミニボスが強化攻撃を放った", "enemy");
-
-	return { state: next, damage, executed: true };
-}
-
-/**
- * ボスのスキル即発動判定
- *
- * RNG判定→射程チェック→即ダメージ
- */
-export function tryBossSkill(
-	state: GameState,
-	enemy: Enemy,
-	rng: RNG,
-	applyPlayerDamage: typeof applyEnemyDamageToPlayer = applyEnemyDamageToPlayer,
-): SkillResult {
-	if (enemy.type !== "boss") {
-		return { state, damage: 0, executed: false };
-	}
-
-	const roll = rng.random();
-	if (roll >= BOSS_SKILL.areaAttackChance) {
-		return { state, damage: 0, executed: false };
-	}
-
-	const dist = manhattanDistance(enemy.position, state.player.position);
-	if (dist > BOSS_SKILL.areaAttackRange) {
-		return { state, damage: 0, executed: false };
-	}
-
-	const damage = BOSS_SKILL.areaAttackDamage;
-	let next = applyPlayerDamage(state, damage, enemy.type);
-	next = addActionLog(next, "ボスが範囲攻撃を放った", "enemy");
 
 	return { state: next, damage, executed: true };
 }

@@ -96,23 +96,6 @@ describe("MapRenderer ダメージ/タイル効果ポップアップ", () => {
 		).resolves.toBeUndefined();
 	});
 
-	it("animateTileEffectPopupが休憩所タイプで正常に完了する", async () => {
-		const renderer = new MapRenderer();
-		const map = createRendererTestMap();
-		const player = {
-			position: { x: 2, y: 2 },
-			hp: 10,
-			maxHp: 10,
-			ap: 3,
-			maxAp: 3,
-		};
-		renderer.render(map, player, []);
-
-		await expect(
-			renderer.animateTileEffectPopup("rest_area", 5),
-		).resolves.toBeUndefined();
-	});
-
 	it("ポップアップ完了後にTextが破棄されている", async () => {
 		const renderer = new MapRenderer();
 		const map = createRendererTestMap();

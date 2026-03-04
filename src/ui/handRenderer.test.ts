@@ -1037,7 +1037,7 @@ describe("HandRenderer コンボ予告表示", () => {
 		expect(attackCard.children.length).toBe(baseCount);
 	});
 
-	it("lastCardType=waitの場合、集中攻撃の予告（全辺強調）が表示される", () => {
+	it("lastCardType=waitの場合、コンボ予告は表示されない", () => {
 		const baseCount = getBaseChildCount("fire");
 
 		const renderer = new HandRenderer();
@@ -1045,7 +1045,7 @@ describe("HandRenderer コンボ予告表示", () => {
 		renderer.render(createTestCards());
 
 		const attackCard = findCardContainer(renderer, 1);
-		expect(attackCard.children.length).toBe(baseCount + 1);
+		expect(attackCard.children.length).toBe(baseCount);
 	});
 });
 

@@ -103,7 +103,7 @@ export function chestRarityToTileType(rarity: ChestRarity): TileType {
 
 /**
  * 宝箱タイルを配置
- * 指定位置が既にチェストの場合は4近傍の床/罠/休憩所タイルを探索
+ * 指定位置が既にチェストの場合は4近傍の床/罠タイルを探索
  * 配置成功時はstateを返し、配置不可時はnullを返す
  */
 export function placeChestTile(
@@ -146,7 +146,7 @@ export function placeChestTile(
 
 /**
  * 配置可能な位置を探索
- * 指定位置が配置可能（床/罠/休憩所）なら直接返す。それ以外なら4近傍の配置可能タイルから探す。
+ * 指定位置が配置可能（床/罠）なら直接返す。それ以外なら4近傍の配置可能タイルから探す。
  */
 function findPlacementPosition(
 	state: GameState,
@@ -171,18 +171,13 @@ function findPlacementPosition(
 
 /**
  * 指定位置に宝箱を配置できるか判定
- * 床タイルおよび通行可能な特殊タイル（罠・休憩所）に配置可能。
+ * 床タイルおよび罠タイルに配置可能。
  * 既に宝箱が配置されている場合は不可。
  */
 function canPlaceChest(state: GameState, pos: Position): boolean {
 	if (!isInBounds(state.map, pos.x, pos.y)) return false;
 	const tile = state.map[pos.y][pos.x];
-	if (
-		tile.type !== "floor" &&
-		tile.type !== "trap" &&
-		tile.type !== "rest_area"
-	)
-		return false;
+	if (tile.type !== "floor" && tile.type !== "trap") return false;
 	// プレイヤー位置には配置しない
 	if (state.player.position.x === pos.x && state.player.position.y === pos.y)
 		return false;

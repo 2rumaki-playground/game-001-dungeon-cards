@@ -48,7 +48,6 @@ const TILE_TOOLTIP_CONTENT: Partial<
 	chest_common: { name: "宝箱（普通）", effect: "回復またはスクロール" },
 	chest_rare: { name: "宝箱（レア）", effect: "回復またはスクロール" },
 	chest_epic: { name: "宝箱（エピック）", effect: "回復またはスクロール" },
-	rest_area: { name: "休憩所タイル", effect: "HPを全回復" },
 };
 
 /**

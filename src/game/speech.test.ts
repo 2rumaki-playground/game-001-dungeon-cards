@@ -667,19 +667,4 @@ describe("レアセリフ判定", () => {
 		const defaultVariants = SPEECH_VARIANTS[DEFAULT_PERSONALITY].enemy_defeated;
 		expect(defaultVariants).toContain(next.speechLog?.message);
 	});
-
-	it("レアバリエーション未定義イベントでは通常セリフにフォールバックする", () => {
-		// rest_area_usedはRARE_SPEECH_VARIANTSに未定義
-		randomSpy = vi.spyOn(Math, "random").mockReturnValue(0.05);
-		const state = createTestState({
-			player: {
-				position: { x: 3, y: 3 },
-				hp: PLAYER_INITIAL_HP,
-				maxHp: PLAYER_INITIAL_HP,
-			},
-		});
-		const next = addSpeechLog(state, "rest_area_used");
-		const defaultVariants = SPEECH_VARIANTS[DEFAULT_PERSONALITY].rest_area_used;
-		expect(defaultVariants).toContain(next.speechLog?.message);
-	});
 });

@@ -12,7 +12,7 @@ import {
 } from "../constants";
 import type { Direction, Enemy, GameState, Position } from "../types";
 import { DIRECTION_DELTA } from "../types";
-import { checkEnrage, tryBossSkill, tryMinibossSkill } from "./bossSkill";
+import { checkEnrage, tryMinibossSkill } from "./bossSkill";
 import { applyEnemyDamageToPlayer, checkGameOver, isDefeated } from "./combat";
 import { DIRECTION_LABEL } from "./enemyAiAnalysis";
 import { hasEnemyAt } from "./enemyUtils";
@@ -503,12 +503,6 @@ export function executeEnemyTurn(
 			const movedEnemy = next.enemies[idx];
 			if (movedEnemy.type === "miniboss") {
 				const skillResult = tryMinibossSkill(next, movedEnemy, rng, applyDmg);
-				next = skillResult.state;
-				if (skillResult.executed) {
-					next = checkGameOver(next);
-				}
-			} else if (movedEnemy.type === "boss") {
-				const skillResult = tryBossSkill(next, movedEnemy, rng, applyDmg);
 				next = skillResult.state;
 				if (skillResult.executed) {
 					next = checkGameOver(next);

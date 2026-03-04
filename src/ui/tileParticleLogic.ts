@@ -81,23 +81,11 @@ const CHEST_EPIC_CONFIG: TileParticleEmitterConfig = {
 	maxAlpha: 0.9,
 };
 
-const REST_AREA_CONFIG: TileParticleEmitterConfig = {
-	movement: "float",
-	shape: "circle",
-	colors: [COLORS.restArea, 0x27ae60, 0x2ecc71, 0x1abc9c],
-	maxParticles: 4,
-	spawnInterval: 500,
-	lifetime: { min: 2500, max: 3500 },
-	size: { min: 2, max: 3.5 },
-	maxAlpha: 0.6,
-};
-
 const CONFIGS: Record<SpecialTileType, TileParticleEmitterConfig> = {
 	trap: TRAP_CONFIG,
 	chest_common: CHEST_COMMON_CONFIG,
 	chest_rare: CHEST_RARE_CONFIG,
 	chest_epic: CHEST_EPIC_CONFIG,
-	rest_area: REST_AREA_CONFIG,
 };
 
 export function getTileParticleEmitterConfig(

@@ -42,7 +42,7 @@ describe("SpecialTileEffectManager", () => {
 		const manager = new SpecialTileEffectManager();
 		const map = createSimpleMap([
 			["floor", "trap"],
-			["chest_common", "rest_area"],
+			["chest_common", "floor"],
 		]);
 		manager.update(map);
 		expect(tickerMock.callbacks).toHaveLength(1);
@@ -77,7 +77,7 @@ describe("SpecialTileEffectManager", () => {
 		const manager = new SpecialTileEffectManager();
 		const map = createSimpleMap([
 			["trap", "chest_common"],
-			["floor", "rest_area"],
+			["floor", "floor"],
 		]);
 		const visited = new Set(["0,0"]); // trapのみ訪問済み
 		manager.update(map, visited);
@@ -96,21 +96,21 @@ describe("SpecialTileEffectManager", () => {
 		const manager = new SpecialTileEffectManager();
 		const map = createSimpleMap([
 			["trap", "chest_common"],
-			["floor", "rest_area"],
+			["floor", "floor"],
 		]);
 		const visited = new Set(["0,0", "1,0", "0,1", "1,1"]);
 		manager.update(map, visited);
-		expect(manager.getEffectCount()).toBe(3); // trap, chest_common, rest_area
+		expect(manager.getEffectCount()).toBe(2); // trap, chest_common
 	});
 
 	it("visitedTilesが未指定の場合、全特殊タイルにエフェクトが作成される", () => {
 		const manager = new SpecialTileEffectManager();
 		const map = createSimpleMap([
 			["trap", "chest_common"],
-			["floor", "rest_area"],
+			["floor", "floor"],
 		]);
 		manager.update(map);
-		expect(manager.getEffectCount()).toBe(3);
+		expect(manager.getEffectCount()).toBe(2);
 	});
 
 	it("clear()でTickerコールバックが解除される", () => {

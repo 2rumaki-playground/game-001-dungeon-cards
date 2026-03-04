@@ -22,7 +22,6 @@ const HOVERABLE_TILE_TYPES: ReadonlySet<TileType> = new Set([
 	"chest_common",
 	"chest_rare",
 	"chest_epic",
-	"rest_area",
 ]);
 
 /**

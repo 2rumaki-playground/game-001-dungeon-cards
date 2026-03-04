@@ -81,16 +81,6 @@ describe("TileTooltip", () => {
 			expect(effectText.text).toBe("回復またはスクロール");
 		});
 
-		it("rest_area のテキストが正しい", () => {
-			const tooltip = new TileTooltip();
-			tooltip.show("rest_area", 100, 100);
-			const container = tooltip.getContainer();
-			const nameText = container.children[1] as import("pixi.js").Text;
-			const effectText = container.children[2] as import("pixi.js").Text;
-			expect(nameText.text).toBe("休憩所タイル");
-			expect(effectText.text).toBe("HPを全回復");
-		});
-
 		it("stairs のテキストが正しい", () => {
 			const tooltip = new TileTooltip();
 			tooltip.show("stairs", 100, 100);

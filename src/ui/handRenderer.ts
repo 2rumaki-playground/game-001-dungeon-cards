@@ -417,7 +417,7 @@ export class HandRenderer {
 			const comboPreview = this.getComboPreviewType(card.type);
 			if (comboPreview !== null) {
 				const comboBorderGraphics = new Graphics();
-				if (comboPreview.type === "chain" || comboPreview.type === "focus") {
+				if (comboPreview.type === "chain") {
 					drawRoundedRect(
 						comboBorderGraphics,
 						CARD_WIDTH,
@@ -925,10 +925,6 @@ export class HandRenderer {
 
 		if (lastCardType === "jump" && lastDirection !== null) {
 			return { type: "ambush", direction: lastDirection };
-		}
-
-		if (lastCardType === "wait") {
-			return { type: "focus" };
 		}
 
 		return null;

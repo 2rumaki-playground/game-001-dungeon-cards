@@ -164,24 +164,6 @@ export const contextualVariants: Partial<
 			],
 		},
 	],
-	rest_area_used: [
-		{
-			context: "hp_critical",
-			variants: [
-				"ここで休まないと…本当に危なかった",
-				"回復…この場所の仕組みが気になるけど",
-				"助かった…なぜここだけ安全なんだろう",
-			],
-		},
-		{
-			context: "hp_tension",
-			variants: [
-				"休憩しながら手帳を整理しよう",
-				"この休憩所の成り立ちが気になるな",
-				"回復しつつ次の探索計画を",
-			],
-		},
-	],
 	floor_reached: [
 		{
 			context: "hp_critical",

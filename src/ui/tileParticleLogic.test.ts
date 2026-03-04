@@ -50,14 +50,6 @@ describe("getTileParticleEmitterConfig", () => {
 		expect(config.maxAlpha).toBe(0.9);
 		expect(config.colors).toHaveLength(4);
 	});
-
-	it("rest_areaの設定を返す", () => {
-		const config = getTileParticleEmitterConfig("rest_area");
-		expect(config.movement).toBe("float");
-		expect(config.shape).toBe("circle");
-		expect(config.maxParticles).toBe(4);
-		expect(config.colors).toHaveLength(4);
-	});
 });
 
 describe("spawnTileParticle", () => {
@@ -82,7 +74,7 @@ describe("spawnTileParticle", () => {
 	});
 
 	it("設定のcolors配列から色が選択される", () => {
-		const config = getTileParticleEmitterConfig("rest_area");
+		const config = getTileParticleEmitterConfig("chest_common");
 		const p = spawnTileParticle(config, CELL_SIZE, createFixedRandom(0.5));
 		expect(config.colors).toContain(p.color);
 	});

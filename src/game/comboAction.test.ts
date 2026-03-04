@@ -207,7 +207,7 @@ describe("コンボ発動（統合テスト）", () => {
 		expect(comboLogs).toHaveLength(2);
 	});
 
-	it("wait→攻撃で集中攻撃コンボが発動しダメージが+1", () => {
+	it("wait→攻撃でコンボなし", () => {
 		const waitState = executeWait(state, "test-card-0");
 		expect(waitState.comboHistory).toEqual({
 			lastCardType: "wait",
@@ -217,20 +217,13 @@ describe("コンボ発動（統合テスト）", () => {
 		const attackResult = executeFire(waitState, "test-card-1", "up");
 
 		expect(attackResult.hit).toBe(true);
-		expect(attackResult.comboType).toBe("focus");
+		expect(attackResult.comboType).toBeUndefined();
 
-		// 敵のHP: 初期HP - (基本ダメージ + コンボボーナス)
-		const expectedDamage = PLAYER_FIRE_DAMAGE + COMBO_BONUS.focus;
+		// 敵のHP: 初期HP - 基本ダメージ（コンボボーナスなし）
 		const enemy = attackResult.state.enemies.find((e) => e.id === "enemy-1");
 		expect(enemy).toBeDefined();
 		if (!enemy) return;
-		expect(enemy.hp).toBe(ENEMY_PARAMS.normal.hp - expectedDamage);
-
-		// コンボ発動ログ
-		const comboLog = attackResult.state.actionLog.find(
-			(log) => log.message === "集中攻撃コンボ発動！",
-		);
-		expect(comboLog).toBeDefined();
+		expect(enemy.hp).toBe(ENEMY_PARAMS.normal.hp - PLAYER_FIRE_DAMAGE);
 	});
 
 	it("jump成功→攻撃（同方向）で奇襲コンボが発動しダメージが+2", () => {

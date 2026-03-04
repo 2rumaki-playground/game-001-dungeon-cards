@@ -40,21 +40,12 @@ describe("getSpecialTileEffectConfig", () => {
 		expect(config.pulseAlphaMax).toBe(0.45);
 	});
 
-	it("rest_areaの設定が正しい色と周期を持つ", () => {
-		const config = getSpecialTileEffectConfig("rest_area");
-		expect(config.glowColor).toBe(COLORS.restArea);
-		expect(config.pulsePeriod).toBe(3000);
-		expect(config.pulseAlphaMin).toBe(0.1);
-		expect(config.pulseAlphaMax).toBe(0.3);
-	});
-
 	it("全タイルタイプで有効なグロー半径を持つ", () => {
 		const types: SpecialTileType[] = [
 			"trap",
 			"chest_common",
 			"chest_rare",
 			"chest_epic",
-			"rest_area",
 		];
 		for (const type of types) {
 			const config = getSpecialTileEffectConfig(type);

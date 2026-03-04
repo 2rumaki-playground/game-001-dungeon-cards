@@ -120,7 +120,6 @@ function getSpecialTileTypes(floor: number): SpecialTileType[] {
 	const comp = getSpecialTileComposition(floor);
 	const types: SpecialTileType[] = [];
 	for (let i = 0; i < comp.trap; i++) types.push("trap");
-	for (let i = 0; i < comp.rest_area; i++) types.push("rest_area");
 	return types;
 }
 

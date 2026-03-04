@@ -164,24 +164,6 @@ export const contextualVariants: Partial<
 			],
 		},
 	],
-	rest_area_used: [
-		{
-			context: "hp_critical",
-			variants: [
-				"助かった…ここで回復しないと",
-				"体が…限界だった…",
-				"生き延びた…休ませてくれ",
-			],
-		},
-		{
-			context: "hp_tension",
-			variants: [
-				"ここで回復しておこう",
-				"少し休めば…まだ戦える",
-				"態勢を整えるぞ",
-			],
-		},
-	],
 	floor_reached: [
 		{
 			context: "hp_critical",

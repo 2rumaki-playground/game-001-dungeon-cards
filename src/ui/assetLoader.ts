@@ -18,7 +18,6 @@ export const TILE_ASSET_PATHS: Record<TileType, string> = {
 	chest_common: "assets/tiles/treasure.png",
 	chest_rare: "assets/tiles/treasure.png",
 	chest_epic: "assets/tiles/treasure.png",
-	rest_area: "assets/tiles/rest_area.png",
 };
 
 /** 敵タイプごとのアセットパス */

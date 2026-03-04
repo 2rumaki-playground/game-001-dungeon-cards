@@ -43,13 +43,6 @@ const CONFIGS: Record<SpecialTileType, SpecialTileEffectConfig> = {
 		glowColor: COLORS.chestEpic,
 		glowRadius: 0.45,
 	},
-	rest_area: {
-		pulsePeriod: 3000,
-		pulseAlphaMin: 0.1,
-		pulseAlphaMax: 0.3,
-		glowColor: COLORS.restArea,
-		glowRadius: 0.35,
-	},
 };
 
 const STAIRS_NORMAL: SpecialTileEffectConfig = {
