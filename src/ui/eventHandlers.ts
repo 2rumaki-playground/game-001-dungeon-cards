@@ -184,6 +184,20 @@ async function handleMoveCardExecution(
 			await ctx.ui.screenTransition.fadeTransition(() => {
 				updateState(ctx, next);
 			});
+		} else if (next.cardExchangeQueue.length > 0) {
+			// カードドロップがある場合、交換UIを順次表示
+			const prevIsAnimating = ctx.isAnimating;
+			ctx.isAnimating = true;
+			try {
+				let currentState = next;
+				while (currentState.cardExchangeQueue.length > 0) {
+					currentState = await executeExchangeFlow(ctx, currentState);
+					applyState(ctx, currentState);
+					render(ctx);
+				}
+			} finally {
+				ctx.isAnimating = prevIsAnimating;
+			}
 		}
 	} else if (bodySlam) {
 		if (gameOver) {
