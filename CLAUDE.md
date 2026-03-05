@@ -38,6 +38,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - 曖昧点は勝手に決めずにIssue化
 - 提案はOKだが、断定して実装に入れない
 
+### 仕様書の同期
+- コード変更が仕様（`docs/spec/`）に影響する場合、仕様ドキュメントも同時に更新する
+- ゲームルール・定数・タイル種別・敵パラメータなどの変更は特に注意
+
 ## 作業の進め方
 
 ### 計画ファースト

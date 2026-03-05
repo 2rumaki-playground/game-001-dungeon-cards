@@ -69,6 +69,7 @@ $![gh issue list]
    - `pnpm build`（ビルドエラー時は vite skill を参照）
    - `pnpm test:run`（テスト失敗時は vitest skill を参照）
    - `pnpm test:e2e`
+   - 仕様書同期チェック — 変更内容が `docs/spec/` 配下の仕様に影響するか確認し、影響がある場合は仕様ドキュメントも同時に更新する
 6. **コミット**: Conventional Commits形式、日本語、50文字以内
    - `git add <files>`（対象ファイルを個別指定、`git add .` は使わない）
    - `git commit -m "<message>"`
@@ -157,6 +158,7 @@ Issue の内容に従い、TDD（テスト駆動開発）で実装を行って�
   3. `pnpm build` — TypeScriptビルド確認（ビルドエラー時は vite skill を参照）
   4. `pnpm test:run` — ユニットテスト全通過を確認（テスト失敗時は vitest skill を参照）
   5. `pnpm test:e2e` — E2Eテスト全通過を確認
+  6. 仕様書同期チェック — 変更内容が `docs/spec/` 配下の仕様に影響するか確認し、影響がある場合は仕様ドキュメントも同時に更新する
 
 ### 7. 仕様の曖昧さへの対応
 

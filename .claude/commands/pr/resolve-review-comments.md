@@ -83,6 +83,7 @@ pnpm install
    - `pnpm lint`
    - `pnpm build`（ビルドエラー時は vite skill を参照）
    - `pnpm test:run`（テスト失敗時は vitest skill を参照）
+   - 仕様書同期チェック — 変更内容が `docs/spec/` 配下の仕様（例: `rules.md` / `cards.md` / `constants.md` / `glossary.md`）に影響するか確認し、影響がある場合は必ず該当ドキュメントも更新する。仕様の未定義や曖昧さに気付いた場合は、実装側で勝手に決めず別途 Issue を起票する
 
 3. **コミット・push**:
    - Conventional Commits形式、日本語、50文字以内
@@ -210,6 +211,7 @@ gh pr checkout <番号>
 2. `pnpm lint` — リントチェック
 3. `pnpm build` — TypeScriptビルド確認（ビルドエラー時は vite skill を参照）
 4. `pnpm test:run` — ユニットテスト全通過を確認（テスト失敗時は vitest skill を参照）
+5. 仕様書同期チェック — 変更内容が `docs/spec/` 配下の仕様（例: `rules.md` / `cards.md` / `constants.md` / `glossary.md`）に影響するか確認し、影響がある場合は必ず該当ドキュメントも更新する。仕様の未定義や曖昧さに気付いた場合は、実装側で勝手に決めず別途 Issue を起票する
 
 #### 5c. コミット・push
 
