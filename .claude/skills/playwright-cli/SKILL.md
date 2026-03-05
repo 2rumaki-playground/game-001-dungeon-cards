@@ -1,3 +1,9 @@
+---
+name: playwright-cli
+description: Playwright CLIで対話的にブラウザを操作し、UIフロー確認やE2Eテスト設計を行う
+disable-model-invocation: true
+---
+
 # Playwright CLI — 対話的ブラウザ操作
 
 ## 概要

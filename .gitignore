@@ -159,8 +159,12 @@ pnpm-debug.log*
 # Playwright CLI
 .playwright-cli/
 
-# Claude Code skills (各開発者が手動インストール)
-.claude/skills/
+# Claude Code skills (外部インストール分のみ除外)
+.claude/skills/.agents/
+.claude/skills/.claude/
+.claude/skills/.cursor/
+.claude/skills/find-skills
+.claude/commands/.agents/
 .agents/
 
 # Codex CLI review results

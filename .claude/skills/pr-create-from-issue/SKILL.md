@@ -1,3 +1,10 @@
+---
+name: pr:create-from-issue
+description: GitHub IssueからブランチとPRを作成する
+disable-model-invocation: true
+argument-hint: "[Issue番号... (スペース区切りで複数指定可)]"
+---
+
 # Issue対応ブランチ・PR作成
 
 ## コンテキスト
@@ -12,7 +19,7 @@ $![gh issue list]
 
 上記のオープンIssue一覧を確認し、以下の手順で対応ブランチの作成からPR作成までを行ってください。
 
-### 1. 対象Issueの決定
+### 対象Issueの決定
 
 - 引数: `$ARGUMENTS`
 - 引数にIssue番号が指定されていればそのIssueを対象とする（スペース区切りで複数指定可能）
@@ -21,11 +28,19 @@ $![gh issue list]
 **複数Issue番号が指定された場合**: → [並列処理モード](#並列処理モード複数issue) に進む
 **単一Issue（または引数なし）の場合**: → [単一処理モード](#単一処理モード) に進む
 
+### 共通リファレンス
+
+実行時に以下の共通ファイルを読み、手順に従うこと:
+- `.claude/skills/_shared/pre-commit-checks.md` — コミット前チェック
+- `.claude/skills/_shared/commit-rules.md` — コミットルール
+- `.claude/skills/_shared/spec-sync.md` — 仕様書同期
+- `.claude/skills/_shared/pr-body-template.md` — PRテンプレート
+
 ---
 
 ## 並列処理モード（複数Issue）
 
-複数のIssue番号が指定された場合、Task toolの `isolation: "worktree"` を使って並列に作業を進める。
+Agentツール（Claude Code）の `isolation: "worktree"` を使って並列に作業を進める。
 
 ### P-1. 事前準備
 
@@ -50,6 +65,13 @@ $![gh issue list]
 ## Issue内容
 <gh issue viewの出力>
 
+## 共通リファレンス
+実行前に以下のファイルを読んで手順に従うこと:
+- `.claude/skills/_shared/pre-commit-checks.md`
+- `.claude/skills/_shared/commit-rules.md`
+- `.claude/skills/_shared/spec-sync.md`
+- `.claude/skills/_shared/pr-body-template.md`
+
 ## ブランチ名の規則
 <prefix>/<issue番号>-<簡潔な英語の説明>（例: feat/42-add-card-effect）
 プレフィックス: feat/ fix/ docs/ refactor/ chore/（Issueの内容に応じて選択）
@@ -63,33 +85,11 @@ $![gh issue list]
    - Red: 失敗するテストを先に書く
    - Green: テストが通る最小限の実装
    - Refactor: 必要に応じてリファクタリング
-5. **コミット前チェック**（各コミットの前に必ず実行）:
-   - `pnpm format`
-   - `pnpm lint`
-   - `pnpm build`（ビルドエラー時は vite skill を参照）
-   - `pnpm test:run`（テスト失敗時は vitest skill を参照）
-   - `pnpm test:e2e`
-   - 仕様書同期チェック — 変更内容が `docs/spec/` 配下の仕様に影響するか確認し、影響がある場合は仕様ドキュメントも同時に更新する
-6. **コミット**: Conventional Commits形式、日本語、50文字以内
-   - `git add <files>`（対象ファイルを個別指定、`git add .` は使わない）
-   - `git commit -m "<message>"`
-7. **push**: `git push -u origin <ブランチ名>`
-8. **PR作成**:
-   ```
-   gh pr create --base main --head <ブランチ名> --title "<type>: <日本語の説明>" --body "$(cat <<'EOF'
-   ## 概要
-   <変更内容の箇条書き>
-
-   Closes #<Issue番号>
-
-   ## テスト計画
-   <テスト方法のチェックリスト>
-
-   🤖 Generated with [Claude Code](https://claude.com/claude-code)
-   EOF
-   )"
-   ```
-   - PRタイトルはConventional Commits形式、日本語、70文字以内
+5. **仕様書同期の確認**: `spec-sync.md` に従う
+6. **コミット前チェック**: `pre-commit-checks.md` に従う。加えて `pnpm test:e2e` も実行する
+7. **コミット**: `commit-rules.md` に従う
+8. **push**: `git push -u origin <ブランチ名>`
+9. **PR作成**: `pr-body-template.md` に従う。PRタイトルはConventional Commits形式、日本語、70文字以内
 
 ## 仕様の曖昧さへの対応
 実装中に仕様の曖昧さを発見した場合:
@@ -107,8 +107,6 @@ $![gh issue list]
 ### P-3. 完了待機・結果報告
 
 全エージェントの完了を待ち、各エージェントの結果（PRのURL等）をまとめてユーザーに報告する。
-
-**注意**: worktreeは `isolation: "worktree"` により自動管理される（変更なしなら自動削除、変更ありなら保持）。手動での削除は不要。
 
 ---
 
@@ -133,7 +131,7 @@ $![gh issue list]
 
 Issueが複数ファイルにまたがる変更や、設計判断を伴う場合は、実装に入る前にプランモードで設計方針を提示し、ユーザーの承認を得てから進めること。単純な修正の場合はこのステップをスキップしてよい。
 
-**重要**: プランモードを使用する場合、プランには実装だけでなく**コミット・push・PR作成**までの全ステップを必ず含めること。プラン実行後にコンテキストが失われても、PR作成が確実に行われるようにするため。
+**重要**: プランモードを使用する場合、プランには実装だけでなく**コミット・push・PR作成**までの全ステップを必ず含めること。
 
 ### 5. 実装（TDD）
 
@@ -143,54 +141,29 @@ Issue の内容に従い、TDD（テスト駆動開発）で実装を行って�
 2. **Green**: テストが通る最小限の実装を行う
 3. **Refactor**: 必要に応じてリファクタリングする
 
-テストとプロダクションコードは必ずこの順序で作成すること。
+### 6. 仕様書同期の確認
 
-**スキル参照**: テストの書き方・API・モック・カバレッジ等で迷った場合は vitest skill のreferencesを参照すること。
+`spec-sync.md` に従って確認する。
 
-### 6. コミット
+### 7. コミット
 
-- Conventional Commits形式、日本語、50文字以内
-- 例: `feat: カード効果の実装`
-- **粒度**: 意味のあるまとまりごとにコミットする。1つのIssueに対して複数コミットでよい（例: テスト追加、実装、リファクタリングを分けるなど）。ただし、Red（失敗するテストのみ）の状態ではコミットしない
-- **コミット前チェック**: 各コミットの前に以下を実行し、問題があれば修正してからコミットする
-  1. `pnpm format` — フォーマット適用
-  2. `pnpm lint` — リントチェック
-  3. `pnpm build` — TypeScriptビルド確認（ビルドエラー時は vite skill を参照）
-  4. `pnpm test:run` — ユニットテスト全通過を確認（テスト失敗時は vitest skill を参照）
-  5. `pnpm test:e2e` — E2Eテスト全通過を確認
-  6. 仕様書同期チェック — 変更内容が `docs/spec/` 配下の仕様に影響するか確認し、影響がある場合は仕様ドキュメントも同時に更新する
+- `commit-rules.md` に従う
+- **粒度**: 意味のあるまとまりごとにコミットする。1つのIssueに対して複数コミットでよい。ただし、Red（失敗するテストのみ）の状態ではコミットしない
+- **コミット前チェック**: `pre-commit-checks.md` に従う。加えて `pnpm test:e2e` も実行する
 
-### 7. 仕様の曖昧さへの対応
+### 8. 仕様の曖昧さへの対応
 
 実装中にIssueの受け入れ条件や仕様ドキュメント（`docs/spec/`）に曖昧な点を発見した場合:
 
 1. 曖昧な点を明記した新しいIssueを起票する（CLAUDE.mdの「仕様の曖昧さを見つけたら」に従う）
 2. 現在の実装は、曖昧な部分に依存しない範囲で進める。曖昧な部分に依存せざるを得ない場合は、最も保守的な解釈で実装し、PRの概要に判断理由を記載する
 
-### 8. PR作成
+### 9. PR作成
 
-以下の形式でPRを作成してください:
-
-```
-gh pr create --base main --title "<type>: <日本語の説明>" --body "$(cat <<'EOF'
-## 概要
-<変更内容の箇条書き>
-
-Closes #<Issue番号>
-
-## テスト計画
-<テスト方法のチェックリスト>
-
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-EOF
-)"
-```
-
-- PRタイトルはConventional Commits形式、日本語、70文字以内
-- bodyに `Closes #<Issue番号>` を必ず含め、マージ時にIssueが自動クローズされるようにする
+`pr-body-template.md` に従ってPRを作成する。`Closes #<Issue番号>` を必ず含める。
 
 ---
 
 ## 完了条件
 
-**このコマンドはPR作成が完了するまで終了しない。** コミット・pushだけで終わらせず、必ず `gh pr create` でPRを作成し、PRのURLをユーザーに報告すること。PRのURLの報告をもって完了とする。
+**このコマンドはPR作成が完了するまで終了しない。** コミット・pushだけで終わらせず、必ず `gh pr create` でPRを作成し、PRのURLをユーザーに報告すること。

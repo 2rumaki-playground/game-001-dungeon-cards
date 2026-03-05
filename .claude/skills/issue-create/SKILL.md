@@ -1,3 +1,10 @@
+---
+name: issue:create
+description: GitHub Issueを調査・作成する
+disable-model-invocation: true
+argument-hint: "<Issueの概要（1行の要約）>"
+---
+
 # Issue作成
 
 引数 `$ARGUMENTS` にIssueの概要（1行の要約）が渡される。
@@ -34,7 +41,7 @@ AskUserQuestion を使い、Issue内容を確認する。
 
 #### 詳細の確認
 
-調査結果をもとに以下の草案を提示し、ユーザーに確認・修正してもらう：
+調査結果をもとに以下の草案を提示し、ユーザーに確認・修正してもらう:
 
 - **ラベル**: 自動判定したラベル（変更可）
 - **タイトル**: 何をするかを1行で（日本語、50文字以内）
